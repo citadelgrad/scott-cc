@@ -1,0 +1,21 @@
+{
+  "name": "scott-claude-code",
+  "owner": {
+    "name": "Scott",
+    "contact": "github.com/citadelgrad"
+  },
+  "description": "Scott's curated Claude Code setup for productive development",
+  "plugins": [
+    {
+      "name": "scott-claude-code",
+      "source": "./",
+      "description": "Personal Claude Code configuration with 14 productivity commands and 11 specialized AI agents for modern web development",
+      "version": "1.0.0",
+      "author": {
+        "name": "Scott",
+        "email": "your-email@example.com"
+      },
+      "tags": ["productivity", "nextjs", "supabase", "typescript", "react", "development"]
+    }
+  ]
+}
