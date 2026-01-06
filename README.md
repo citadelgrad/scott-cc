@@ -2,7 +2,7 @@
 
 My personal Claude Code configuration for productive web development. This plugin provides **14 slash commands** and **11 specialized AI agents** to supercharge your development workflow.
 
-The started as a clone of https://github.com/edmund-io/edmunds-claude-code
+Copied and enhanced from https://github.com/edmund-io/edmunds-claude-code
 
 ## Quick Install
 
