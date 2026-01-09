@@ -1,7 +1,7 @@
 {
   "name": "scott-cc",
-  "description": "Scott's personal Claude Code setup with 14 productivity commands and 11 specialized AI agents for modern web development",
-  "version": "1.0.2",
+  "description": "Scott's personal Claude Code setup with 14 productivity commands and 12 specialized AI agents for modern web development",
+  "version": "1.0.3",
   "author": {
     "name": "Scott Nixon"
   },
