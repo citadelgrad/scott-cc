@@ -8,3 +8,4 @@
 # Local settings (users should not commit these)
 .claude/settings.local.json
 agents/CLAUDE.md
+.claude-plugin/CLAUDE.md
