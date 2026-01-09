@@ -6,7 +6,7 @@ Complete step-by-step instructions for publishing your Claude Code plugin to Git
 
 - [ ] GitHub account
 - [ ] Git installed locally
-- [ ] Repository renamed to `scott-claude-code` ✅
+- [ ] Repository renamed to `scott-cc` ✅
 - [ ] All configuration files updated ✅
 
 ## Step 1: Create GitHub Repository
@@ -15,7 +15,7 @@ Complete step-by-step instructions for publishing your Claude Code plugin to Git
 
 1. Go to https://github.com/new
 2. Fill in the details:
-   - **Repository name**: `scott-claude-code`
+   - **Repository name**: `scott-cc`
    - **Description**: "Scott's personal Claude Code setup with 14 productivity commands and 11 specialized AI agents for modern web development"
    - **Visibility**: Public (so others can install it)
    - **Initialize**: ❌ Don't add README, .gitignore, or license (we already have these)
@@ -26,10 +26,10 @@ Complete step-by-step instructions for publishing your Claude Code plugin to Git
 Once the GitHub repository is created, run these commands:
 
 ```bash
-cd /path/to/scott-claude-code
+cd /path/to/scott-cc
 
 # Add the GitHub remote
-git remote add origin https://github.com/citadelgrad/scott-claude-code.git
+git remote add origin https://github.com/citadelgrad/scott-cc.git
 
 # Push your code
 git push -u origin main
@@ -45,18 +45,18 @@ Test that your plugin can be installed:
 
 ```bash
 # Install from your GitHub repo
-/plugin install citadelgrad/scott-claude-code
+/plugin install citadelgrad/scott-cc
 
 # Verify commands are available (note: commands are namespaced)
-/scott-claude-code:code-explain
-/scott-claude-code:feature-plan
+/scott-cc:code-explain
+/scott-cc:feature-plan
 
 # Verify agents are available (they'll activate automatically based on context)
 ```
 
 To uninstall and test again:
 ```bash
-/plugin uninstall scott-claude-code
+/plugin uninstall scott-cc
 ```
 
 ## Step 3: Share Your Plugin
@@ -68,7 +68,7 @@ Your README already includes your GitHub username, so users can copy-paste comma
 Share this command with others:
 
 ```bash
-/plugin install citadelgrad/scott-claude-code
+/plugin install citadelgrad/scott-cc
 ```
 
 ### Option B: Submit to Community Marketplaces
@@ -86,8 +86,8 @@ Share this command with others:
 
 ```json
 {
-  "name": "scott-claude-code",
-  "source": "citadelgrad/scott-claude-code",
+  "name": "scott-cc",
+  "source": "citadelgrad/scott-cc",
   "description": "Personal Claude Code configuration with 14 productivity commands and 11 specialized AI agents for modern web development",
   "version": "1.0.0",
   "author": "Scott",
@@ -110,7 +110,7 @@ Just published my Claude Code setup as a plugin!
 14 slash commands + 11 specialized AI agents for productive web development
 
 Install with:
-/plugin install citadelgrad/scott-claude-code
+/plugin install citadelgrad/scott-cc
 
 Features:
 - API scaffolding (/api-new)
@@ -122,7 +122,7 @@ Features:
 
 Perfect for Next.js, React, TypeScript, and Supabase projects!
 
-GitHub: https://github.com/citadelgrad/scott-claude-code
+GitHub: https://github.com/citadelgrad/scott-cc
 ```
 
 ## Step 5: Maintain Your Plugin
@@ -132,13 +132,13 @@ GitHub: https://github.com/citadelgrad/scott-claude-code
 When you make changes to your local setup:
 
 ```bash
-cd /path/to/scott-claude-code
+cd /path/to/scott-cc
 
 # Make your changes to commands/ or agents/ directories
 # Then commit and push
 
 git add .
-git commit -m "Add new command: scott-claude-code:new-command-name"
+git commit -m "Add new command: scott-cc:new-command-name"
 
 # Update version in .claude-plugin/plugin.json
 # Bump version: 1.0.0 -> 1.1.0
@@ -151,7 +151,7 @@ git push
 
 Users can update to the latest version:
 ```bash
-/plugin update scott-claude-code
+/plugin update scott-cc
 ```
 
 ### Versioning Guidelines
@@ -175,7 +175,7 @@ Check:
 - `commands/` directory exists at plugin root (not inside `.claude/`)
 - Command files have `.md` extension
 - Command files are not empty
-- Commands are namespaced (e.g., `/scott-claude-code:command-name`)
+- Commands are namespaced (e.g., `/scott-cc:command-name`)
 
 ### Issue: Agents Don't Activate
 
@@ -188,7 +188,7 @@ Check:
 
 For major versions, create GitHub releases:
 
-1. Go to your repo: https://github.com/citadelgrad/scott-claude-code
+1. Go to your repo: https://github.com/citadelgrad/scott-cc
 2. Click "Releases" → "Create a new release"
 3. Tag version: `v1.0.0`
 4. Release title: `v1.0.0 - Initial Release`
@@ -197,7 +197,7 @@ For major versions, create GitHub releases:
 
 Users can install specific versions:
 ```bash
-/plugin install citadelgrad/scott-claude-code@v1.0.0
+/plugin install citadelgrad/scott-cc@v1.0.0
 ```
 
 ## Success Metrics

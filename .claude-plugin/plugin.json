@@ -1,11 +1,11 @@
 {
-  "name": "scott-claude-code",
+  "name": "scott-cc",
   "description": "Scott's personal Claude Code setup with 14 productivity commands and 11 specialized AI agents for modern web development",
   "version": "1.0.0",
   "author": {
     "name": "Scott Nixon"
   },
   "license": "MIT",
-  "repository": "https://github.com/citadelgrad/scott-claude-code",
-  "homepage": "https://github.com/citadelgrad/scott-claude-code"
+  "repository": "https://github.com/citadelgrad/scott-cc",
+  "homepage": "https://github.com/citadelgrad/scott-cc"
 }

@@ -8,39 +8,39 @@ Copied and enhanced from https://github.com/edmund-io/edmunds-claude-code
 
 ```bash
 # Step 1: Add the marketplace
-/plugin marketplace add citadelgrad/scott-claude-code
+/plugin marketplace add citadelgrad/scott-cc
 
 # Step 2: Install the plugin
-/plugin install scott-claude-code
+/plugin install scott-cc
 ```
 
 ## What's Inside
 
 ### 📋 Development Commands (7)
 
-- `/scott-claude-code:new-task` - Analyze code for performance issues
-- `/scott-claude-code:code-explain` - Generate detailed explanations
-- `/scott-claude-code:code-optimize` - Performance optimization
-- `/scott-claude-code:code-cleanup` - Refactoring and cleanup
-- `/scott-claude-code:feature-plan` - Feature implementation planning
-- `/scott-claude-code:lint` - Linting and fixes
-- `/scott-claude-code:docs-generate` - Documentation generation
+- `/scott-cc:new-task` - Analyze code for performance issues
+- `/scott-cc:code-explain` - Generate detailed explanations
+- `/scott-cc:code-optimize` - Performance optimization
+- `/scott-cc:code-cleanup` - Refactoring and cleanup
+- `/scott-cc:feature-plan` - Feature implementation planning
+- `/scott-cc:lint` - Linting and fixes
+- `/scott-cc:docs-generate` - Documentation generation
 
 ### 🔌 API Commands (3)
 
-- `/scott-claude-code:api-new` - Create new API endpoints
-- `/scott-claude-code:api-test` - Test API endpoints
-- `/scott-claude-code:api-protect` - Add protection & validation
+- `/scott-cc:api-new` - Create new API endpoints
+- `/scott-cc:api-test` - Test API endpoints
+- `/scott-cc:api-protect` - Add protection & validation
 
 ### 🎨 UI Commands (2)
 
-- `/scott-claude-code:component-new` - Create React components
-- `/scott-claude-code:page-new` - Create Next.js pages
+- `/scott-cc:component-new` - Create React components
+- `/scott-cc:page-new` - Create Next.js pages
 
 ### 💾 Supabase Commands (2)
 
-- `/scott-claude-code:types-gen` - Generate TypeScript types
-- `/scott-claude-code:edge-function-new` - Create Edge Functions
+- `/scott-cc:types-gen` - Generate TypeScript types
+- `/scott-cc:edge-function-new` - Create Edge Functions
 
 ### 🤖 Specialized AI Agents (11)
 
@@ -67,23 +67,23 @@ Copied and enhanced from https://github.com/edmund-io/edmunds-claude-code
 
 ```bash
 # Add marketplace
-/plugin marketplace add citadelgrad/scott-claude-code
+/plugin marketplace add citadelgrad/scott-cc
 
 # Install plugin
-/plugin install scott-claude-code
+/plugin install scott-cc
 ```
 
 ### From Local Clone (for development)
 
 ```bash
-git clone https://github.com/citadelgrad/scott-claude-code.git
-cd scott-claude-code
+git clone https://github.com/citadelgrad/scott-cc.git
+cd scott-cc
 
 # Add as local marketplace
-/plugin marketplace add /path/to/scott-claude-code
+/plugin marketplace add /path/to/scott-cc
 
 # Install plugin
-/plugin install scott-claude-code
+/plugin install scott-cc
 ```
 
 ## Best For
@@ -99,14 +99,14 @@ cd scott-claude-code
 ### Planning a Feature
 
 ```bash
-/scott-claude-code:feature-plan
+/scott-cc:feature-plan
 # Then describe your feature idea
 ```
 
 ### Creating an API
 
 ```bash
-/scott-claude-code:api-new
+/scott-cc:api-new
 # Claude will scaffold a complete API route with types, validation, and error handling
 ```
 

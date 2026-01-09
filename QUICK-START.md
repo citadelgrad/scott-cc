@@ -4,18 +4,18 @@
 
 ```bash
 # 1. Create GitHub repo at: https://github.com/new
-# Name: scott-claude-code
+# Name: scott-cc
 # Visibility: Public
 
 # 2. Push your code
-cd /path/to/scott-claude-code
-git remote add origin https://github.com/citadelgrad/scott-claude-code.git
+cd /path/to/scott-cc
+git remote add origin https://github.com/citadelgrad/scott-cc.git
 git push -u origin main
 
 # 3. Share with others
 # Installation commands:
-# /plugin marketplace add citadelgrad/scott-claude-code
-# /plugin install scott-claude-code
+# /plugin marketplace add citadelgrad/scott-cc
+# /plugin install scott-cc
 ```
 
 ## What You Have
@@ -36,22 +36,22 @@ git push -u origin main
 1. **Read PUBLISHING.md** - Full step-by-step guide
 2. **Create GitHub Repo** - https://github.com/new
 3. **Push Code** - See commands above
-4. **Test Installation** - `/plugin install citadelgrad/scott-claude-code`
+4. **Test Installation** - `/plugin install citadelgrad/scott-cc`
 5. **Share** - Post on social media, submit to marketplaces
 
 ## Installation Commands (for users)
 
 ```bash
 # Step 1: Add marketplace
-/plugin marketplace add citadelgrad/scott-claude-code
+/plugin marketplace add citadelgrad/scott-cc
 
 # Step 2: Install plugin
-/plugin install scott-claude-code
+/plugin install scott-cc
 ```
 
 ## Your Plugin URL (after publishing)
 
-https://github.com/citadelgrad/scott-claude-code
+https://github.com/citadelgrad/scott-cc
 
 ## Need Help?
 
