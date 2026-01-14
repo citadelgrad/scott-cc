@@ -1,21 +1,10 @@
 # MCP Servers Included
 
-This plugin includes 3 pre-configured MCP servers that enhance Claude Code's capabilities.
+This plugin includes 1 pre-configured MCP server that enhances Claude Code's capabilities.
 
 ## Included Servers
 
-### 1. **Context7** (`@upstash/context7-mcp`)
-**Purpose**: Access up-to-date, version-specific documentation for any library
-
-**Usage**: Just mention "use context7" in your prompt when you need current library documentation
-
-**Benefits**:
-- Always up-to-date docs
-- Version-specific information
-- Works with thousands of libraries
-- No manual searching required
-
-### 2. **Playwright** (`@playwright/mcp`)
+### 1. **Playwright** (`@playwright/mcp`)
 **Purpose**: Browser automation and web testing
 
 **Capabilities**:
@@ -30,22 +19,6 @@ This plugin includes 3 pre-configured MCP servers that enhance Claude Code's cap
 - Web scraping
 - Browser automation
 - Visual testing
-
-### 3. **Supabase** (`@supabase/mcp-server-supabase`)
-**Purpose**: Supabase database operations
-
-**Capabilities**:
-- Query databases
-- Manage tables
-- Execute SQL
-- Handle authentication
-- Work with storage
-
-**Use Cases**:
-- Database management
-- Schema exploration
-- Data queries
-- Admin operations
 
 ## Servers Not Included (Not Yet Available)
 

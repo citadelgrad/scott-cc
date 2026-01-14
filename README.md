@@ -37,11 +37,6 @@ Copied and enhanced from https://github.com/edmund-io/edmunds-claude-code
 - `/scott-cc:component-new` - Create React components
 - `/scott-cc:page-new` - Create Next.js pages
 
-### 💾 Supabase Commands (2)
-
-- `/scott-cc:types-gen` - Generate TypeScript types
-- `/scott-cc:edge-function-new` - Create Edge Functions
-
 ### 🤖 Specialized AI Agents (11)
 
 **Architecture & Planning**

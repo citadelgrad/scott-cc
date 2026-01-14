@@ -103,7 +103,6 @@ After each major step:
 **Extraction Routing**
 - Static HTML → Tavily extraction
 - JavaScript content → Playwright
-- Technical docs → Context7
 - Local context → Native tools
 
 **Parallel Optimization**

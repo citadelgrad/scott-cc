@@ -91,7 +91,7 @@ Share this command with others:
   "description": "Personal Claude Code configuration with 14 productivity commands and 11 specialized AI agents for modern web development",
   "version": "1.0.0",
   "author": "Scott",
-  "tags": ["productivity", "python", "nextjs", "supabase", "typescript", "react", "development"]
+  "tags": ["productivity", "python", "nextjs", "typescript", "react", "development"]
 }
 ```
 
