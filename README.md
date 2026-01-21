@@ -7,9 +7,11 @@ Copied and enhanced from https://github.com/edmund-io/edmunds-claude-code
 ## Quick Install
 
 ```bash
-# Install the plugin
-/plugin install citadelgrad/scott-cc
+# Install from the plugins marketplace
+/plugin marketplace add citadelgrad/scott-cc
 ```
+
+Or browse the marketplace at [https://claudecode.dev/plugins](https://claudecode.dev/plugins) to discover this and other plugins.
 
 ## What's Inside
 
@@ -94,16 +96,18 @@ Copied and enhanced from https://github.com/edmund-io/edmunds-claude-code
 
 ## Installation
 
-### From GitHub (Recommended)
+### From Plugins Marketplace (Recommended)
 
 ```bash
-/plugin install citadelgrad/scott-cc
+/plugin marketplace add citadelgrad/scott-cc
 ```
+
+You can also browse available plugins at [claudecode.dev/plugins](https://claudecode.dev/plugins).
 
 ### Update Existing Installation
 
 ```bash
-/plugin update scott-cc
+/plugin marketplace update scott-cc
 ```
 
 ### From Local Clone (for development)
