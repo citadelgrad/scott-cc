@@ -72,9 +72,30 @@ After each phase, write state to `.claude/feature-builder/<epic-id>/checkpoint.j
   "completed_phases": [1],
   "tasks_completed": ["TASK-001", "TASK-002"],
   "tasks_remaining": ["TASK-003"],
+  "human_tasks": [
+    {"description": "Configure third-party API credentials in production", "phase": 2},
+    {"description": "Review and approve deployment to staging", "phase": 6}
+  ],
   "notes": "Architecture review complete, ready for implementation"
 }
 ```
+
+### Human Tasks Tracking
+
+Throughout all phases, identify tasks that **require human action** and cannot be automated. Add these to the `human_tasks` array in the checkpoint.
+
+**Common human-required tasks:**
+- **Environment setup**: Production credentials, API keys, secrets
+- **Infrastructure**: Manual provisioning, DNS changes, SSL certificates
+- **Third-party services**: Account setup, webhook configuration
+- **Approvals**: Deployment approvals, security sign-offs
+- **Manual testing**: User acceptance testing, accessibility audits
+- **Documentation**: Legal review, compliance documentation
+
+When you identify a human-required task during any phase:
+1. Add it to checkpoint's `human_tasks` array with description and phase number
+2. Continue with automated work
+3. In Phase 6, these will be created as `[Human]` beads tasks
 
 **On `--resume`:**
 1. Read checkpoint file
@@ -230,6 +251,7 @@ Write to `.claude/feature-builder/<epic-id>/checkpoint.json`:
   "completed_phases": [1],
   "tasks_completed": [],
   "tasks_remaining": ["<list from bd list>"],
+  "human_tasks": [],
   "notes": "Setup complete, ready for architecture review"
 }
 ```
@@ -395,6 +417,25 @@ Identify what's needed before implementation starts:
 
 If dependencies are non-trivial, create a setup task: `bd create --epic <epic-id> "Setup dependencies and configuration"`
 
+### Step 2.6.1: Identify Human Tasks
+
+During dependency/environment audit, identify items that **require human action**:
+
+**Add to `human_tasks` in checkpoint if you find:**
+- Production credentials or secrets that need manual configuration
+- Third-party service accounts that need to be created
+- DNS/domain changes that need manual provisioning
+- Infrastructure that needs manual approval or setup
+- External service webhooks that need manual configuration
+
+Example entries:
+```json
+"human_tasks": [
+  {"description": "Add STRIPE_API_KEY to production environment", "phase": 2},
+  {"description": "Configure webhook URL in Stripe dashboard", "phase": 2}
+]
+```
+
 ### Step 2.7: Collect Background Agent Results
 
 If any architect agents were spawned in background:
@@ -444,6 +485,7 @@ Update `.claude/feature-builder/<epic-id>/checkpoint.json`:
   "completed_phases": [1, 2],
   "tasks_completed": [],
   "tasks_remaining": ["<updated list>"],
+  "human_tasks": ["<any identified from Step 2.6.1>"],
   "notes": "Architecture review complete"
 }
 ```
@@ -491,7 +533,7 @@ Append to `.claude/feature-builder/<epic-id>/phase-3-implementation.md` as you c
 
 ### Step 3.3: Write Checkpoint
 
-After all tasks complete, update checkpoint:
+After all tasks complete, update checkpoint (preserve human_tasks from previous phases):
 ```json
 {
   "epic_id": "<epic-id>",
@@ -499,6 +541,7 @@ After all tasks complete, update checkpoint:
   "completed_phases": [1, 2, 3],
   "tasks_completed": ["TASK-001", "TASK-002", "..."],
   "tasks_remaining": [],
+  "human_tasks": ["<preserved from Phase 2>"],
   "notes": "Implementation complete"
 }
 ```
@@ -547,7 +590,7 @@ Write to `.claude/feature-builder/<epic-id>/phase-4-quality.md`:
 - Simplifications applied: <list>
 ```
 
-Update checkpoint:
+Update checkpoint (preserve human_tasks):
 ```json
 {
   "epic_id": "<epic-id>",
@@ -555,6 +598,7 @@ Update checkpoint:
   "completed_phases": [1, 2, 3, 4],
   "tasks_completed": ["..."],
   "tasks_remaining": [],
+  "human_tasks": ["<preserved from previous phases>"],
   "notes": "Quality review complete"
 }
 ```
@@ -760,6 +804,7 @@ Consolidate all validation results into `.claude/feature-builder/<epic-id>/phase
   "completed_phases": [1, 2, 3, 4, 5],
   "tasks_completed": ["..."],
   "tasks_remaining": [],
+  "human_tasks": ["<preserved from previous phases>"],
   "notes": "Validation complete, ready for final review"
 }
 ```
@@ -823,13 +868,41 @@ Skip this step if the feature is:
 - Minor UI changes with no data changes
 - Fully covered by existing monitoring
 
-### Step 6.4: Close Epic
+### Step 6.4: Create Human Tasks
+
+If the checkpoint contains any `human_tasks`, create beads tasks for each one with `[Human]` prefix:
+
+```bash
+# For each item in human_tasks array:
+bd create --epic <epic-id> "[Human] <description>"
+```
+
+**Examples:**
+```bash
+bd create --epic EPIC-001 "[Human] Add STRIPE_API_KEY to production environment"
+bd create --epic EPIC-001 "[Human] Configure webhook URL in Stripe dashboard"
+bd create --epic EPIC-001 "[Human] Review and approve deployment to staging"
+```
+
+**Skip this step if:** `human_tasks` array is empty or not present.
+
+**After creating:**
+- These tasks will appear in `bd list --epic <epic-id>` with `[Human]` prefix
+- The epic will NOT be fully complete until a human closes these tasks
+- Document in the final output that human action is required
+
+### Step 6.5: Close Epic
 
 ```bash
 bd close <epic-id>
 ```
 
-### Step 6.5: Final Checkpoint
+**Note:** If `[Human]` tasks were created in Step 6.4, the epic should NOT be closed yet. Instead:
+1. Mark automated work complete in the checkpoint
+2. Leave epic open for human to close after completing their tasks
+3. Skip directly to Step 6.6
+
+### Step 6.6: Final Checkpoint
 
 Update checkpoint to mark complete:
 ```json
@@ -839,7 +912,8 @@ Update checkpoint to mark complete:
   "completed_phases": [1, 2, 3, 4, 5, 6],
   "tasks_completed": ["..."],
   "tasks_remaining": [],
-  "notes": "Epic complete",
+  "human_tasks_created": ["<list of [Human] task IDs created>"],
+  "notes": "Automated work complete. Human tasks pending: <count>",
   "completed_at": "<timestamp>"
 }
 ```
@@ -849,7 +923,7 @@ Update checkpoint to mark complete:
 rm -rf .claude/feature-builder/<epic-id>
 ```
 
-**Exit criteria:** All tasks complete, changes committed, rollout readiness verified, epic closed, final checkpoint written.
+**Exit criteria:** All automated tasks complete, changes committed, rollout readiness verified, human tasks created (if any), final checkpoint written. If no human tasks: epic closed.
 
 ---
 
