@@ -1,6 +1,6 @@
 # Scott's Claude Code Setup
 
-My personal Claude Code configuration for productive web development. This plugin provides **18 slash commands**, **16 specialized AI agents**, and **3 skills** to supercharge your development workflow.
+My personal Claude Code configuration for productive web development. This plugin provides **18 slash commands**, **17 specialized AI agents**, and **3 skills** to supercharge your development workflow.
 
 Copied and enhanced from https://github.com/edmund-io/edmunds-claude-code
 
@@ -56,10 +56,11 @@ Copied and enhanced from https://github.com/edmund-io/edmunds-claude-code
 - `/scott-cc:process-list` - List running processes
 - `/scott-cc:process-retry` - Retry failed processes
 
-### Specialized AI Agents (16)
+### Specialized AI Agents (17)
 
 **Orchestration**
 - **feature-builder** - 6-phase development workflow orchestrator using beads
+- **epic-planner** - Structured feature planning from concept to implementation-ready tasks
 
 **Architecture & Planning**
 - **tech-stack-researcher** - Technology choice recommendations with trade-offs
@@ -180,6 +181,71 @@ The `/build-feature` command orchestrates complete feature development:
 [CP] = Checkpoint written (enables --resume)
 ```
 
+## Epic Planner Workflow
+
+The **epic-planner** agent guides features from initial concept through implementation-ready tasks:
+
+```
+User describes feature
+         │
+         ▼
+┌─────────────────────────────────────┐
+│  Stage 1: Research                  │
+│  - Adaptive depth (simple vs deep)  │
+│  - Architecture recommendations     │
+│  - Technology decisions             │
+└─────────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────┐
+│  Stage 2: Research Approval Gate    │
+│  - Present findings to user         │
+│  - Wait for explicit approval       │
+└─────────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────┐
+│  Stage 3: Create PRD Document       │
+│  - docs/prd-{feature}.md            │
+│  - Goals, user stories, requirements│
+└─────────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────┐
+│  Stage 4: Create SPEC Document      │
+│  - docs/spec-{feature}.md           │
+│  - Architecture, schemas, APIs      │
+│  - Complete code examples           │
+└─────────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────┐
+│  Stage 5: Document Approval Gate    │
+│  - Review PRD and SPEC              │
+│  - Wait for explicit approval       │
+└─────────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────┐
+│  Stage 6: Create Beads Epic         │
+│  - Link documents to epic           │
+└─────────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────┐
+│  Stage 7: Create Granular Tasks     │
+│  - Self-contained implementation    │
+│  - Full code in task notes          │
+│  - Dependencies configured          │
+└─────────────────────────────────────┘
+```
+
+**Key Features:**
+- **Approval gates** - Never proceeds without explicit user approval
+- **Adaptive research** - Spawns deep-research-agent for complex features, lightweight for simple ones
+- **Self-contained tasks** - Each task includes all implementation details (not just doc references)
+- **Beads integration** - Creates epic and linked tasks with proper dependencies
+
 ### Context Management
 
 The feature-builder uses several strategies to avoid running out of context:
@@ -210,6 +276,20 @@ All code follows these principles (enforced by simplifier skills):
 - Teams using beads for task tracking
 
 ## Usage Examples
+
+### Plan a New Feature
+
+```bash
+# Describe a feature to the epic-planner agent
+"I want to build a notification system that sends email and push notifications"
+
+# Epic-planner will:
+# 1. Research approaches (adaptive depth)
+# 2. Create PRD document (docs/prd-notifications.md)
+# 3. Create SPEC document (docs/spec-notifications.md)
+# 4. Create beads epic with granular tasks
+# All with approval gates before proceeding
+```
 
 ### Build a Complete Feature
 
