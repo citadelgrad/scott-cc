@@ -12,6 +12,52 @@ You are an autonomous feature development orchestrator. Given a beads epic, you 
 
 This agent is invoked via `/build-feature <epic-id>` or when explicitly requested to build features for an epic.
 
+**Resume support:** `/build-feature <epic-id> --resume` continues from last checkpoint.
+
+---
+
+## Context Management
+
+This agent uses checkpointing and background agents to manage context efficiently.
+
+### Checkpoint System
+
+After each phase, write state to `.claude/feature-builder/<epic-id>/checkpoint.json`:
+
+```json
+{
+  "epic_id": "<epic-id>",
+  "current_phase": 2,
+  "completed_phases": [1],
+  "tasks_completed": ["TASK-001", "TASK-002"],
+  "tasks_remaining": ["TASK-003"],
+  "notes": "Architecture review complete, ready for implementation"
+}
+```
+
+**On `--resume`:**
+1. Read checkpoint file
+2. Skip completed phases
+3. Continue from `current_phase`
+
+### Output Directory
+
+All phase outputs go to `.claude/feature-builder/<epic-id>/`:
+- `checkpoint.json` - Current state
+- `phase-1-setup.md` - Epic structure and test requirements
+- `phase-2-architecture.md` - Combined architecture review
+- `phase-3-implementation.md` - Implementation log
+- `phase-4-quality.md` - DRY/KISS review results
+- `phase-5-validation.md` - Test and security results
+
+### Background Agent Protocol
+
+When spawning sub-agents, use background mode:
+1. Set `run_in_background: true`
+2. Instruct agent to write findings to output file
+3. Agent returns immediately with file path
+4. Read summary from file when needed (not full context)
+
 ## Core Principles
 
 All code must follow these standards:
@@ -86,7 +132,41 @@ not found case, unauthorized access"
 [ ] Mark epic in-progress: bd update <epic-id> --status in-progress
 ```
 
-**Exit criteria:** Epic exists with tasks, test requirements verified, marked in-progress.
+### Step 1.4: Write Checkpoint
+
+```bash
+mkdir -p .claude/feature-builder/<epic-id>
+```
+
+Write to `.claude/feature-builder/<epic-id>/checkpoint.json`:
+```json
+{
+  "epic_id": "<epic-id>",
+  "current_phase": 2,
+  "completed_phases": [1],
+  "tasks_completed": [],
+  "tasks_remaining": ["<list from bd list>"],
+  "notes": "Setup complete, ready for architecture review"
+}
+```
+
+Write summary to `.claude/feature-builder/<epic-id>/phase-1-setup.md`:
+```markdown
+# Phase 1: Setup Complete
+
+## Epic: <epic-id> - <title>
+
+## Tasks
+- [ ] TASK-001: <description>
+- [ ] TASK-002: <description>
+
+## Test Requirements Added
+- TASK-001: <what tests were specified>
+
+## Ready for Phase 2
+```
+
+**Exit criteria:** Epic exists with tasks, test requirements verified, marked in-progress, checkpoint written.
 
 ---
 
@@ -99,30 +179,61 @@ Read all task descriptions and categorize:
 - **Backend**: API routes, services, repositories, database, migrations
 - **System**: Infrastructure, deployment, cross-cutting concerns
 
-### Step 2.2: System Architect Review (ALWAYS)
+### Step 2.2: System Architect Review (Conditional)
 
-Spawn the **system-architect** agent to:
-- Review overall epic coherence and integration points
-- Identify cross-cutting concerns (auth, logging, error handling)
-- Verify task dependencies are correct
-- Actions allowed: add notes (`bd update`), create tasks (`bd create`), split tasks
+**Skip if:** Epic has ≤3 simple tasks with no cross-cutting concerns.
 
-### Step 2.3: Frontend Architect Review (IF frontend changes)
+**Otherwise**, spawn **system-architect** in background:
 
-Spawn the **frontend-architect** agent to:
-- Review component structure and composition
-- Evaluate state management approach
-- Check UX patterns and accessibility
-- Actions allowed: add notes, create tasks, split tasks
+```
+Task prompt: "Review epic <epic-id> for architecture concerns.
+Write findings to .claude/feature-builder/<epic-id>/system-arch.md
+Include: coherence issues, cross-cutting concerns, dependency problems.
+Use bd update/create for any required changes.
+Keep output concise - summary + action items only."
 
-### Step 2.4: Backend Architect Review (IF backend changes)
+run_in_background: true
+```
 
-Spawn the **backend-architect** agent to:
-- Review API design and REST/GraphQL patterns
-- Evaluate data models and relationships
-- Check service layer structure
-- Review migration strategy
-- Actions allowed: add notes, create tasks, split tasks
+Do NOT wait for completion - continue to next step.
+
+### Step 2.3: Frontend Architect Review (Conditional)
+
+**Skip if:**
+- No frontend changes, OR
+- Only minor UI tweaks (styling, text changes), OR
+- ≤2 component changes with clear patterns
+
+**Otherwise**, spawn **frontend-architect** in background:
+
+```
+Task prompt: "Review frontend tasks in epic <epic-id>.
+Write findings to .claude/feature-builder/<epic-id>/frontend-arch.md
+Include: component issues, state concerns, accessibility gaps.
+Use bd update/create for any required changes.
+Keep output concise - summary + action items only."
+
+run_in_background: true
+```
+
+### Step 2.4: Backend Architect Review (Conditional)
+
+**Skip if:**
+- No backend changes, OR
+- Only minor endpoint changes (no new models/migrations), OR
+- CRUD operations following existing patterns
+
+**Otherwise**, spawn **backend-architect** in background:
+
+```
+Task prompt: "Review backend tasks in epic <epic-id>.
+Write findings to .claude/feature-builder/<epic-id>/backend-arch.md
+Include: API design issues, data model concerns, migration risks.
+Use bd update/create for any required changes.
+Keep output concise - summary + action items only."
+
+run_in_background: true
+```
 
 ### Step 2.5: Risk Assessment
 
@@ -155,7 +266,36 @@ Identify what's needed before implementation starts:
 
 If dependencies are non-trivial, create a setup task: `bd create --epic <epic-id> "Setup dependencies and configuration"`
 
-### Step 2.7: Verify Task Readiness
+### Step 2.7: Collect Background Agent Results
+
+If any architect agents were spawned in background:
+
+1. Check if agents completed (read their output files)
+2. If not complete, wait briefly or note "pending review"
+3. Consolidate findings into `.claude/feature-builder/<epic-id>/phase-2-architecture.md`:
+
+```markdown
+# Phase 2: Architecture Review
+
+## System Architecture
+<summary from system-arch.md or "Skipped - simple epic">
+
+## Frontend Architecture
+<summary from frontend-arch.md or "Skipped - no frontend changes">
+
+## Backend Architecture
+<summary from backend-arch.md or "Skipped - no backend changes">
+
+## Risks Identified
+- <risk 1>
+
+## Dependencies Added
+- <new task IDs created by architects>
+
+## Ready for Implementation
+```
+
+### Step 2.8: Verify Task Readiness
 
 ```
 [ ] No circular dependencies: bd blocked
@@ -165,7 +305,21 @@ If dependencies are non-trivial, create a setup task: `bd create --epic <epic-id
 [ ] Dependencies documented
 ```
 
-**Exit criteria:** All architects have reviewed, risks assessed, dependencies identified, no blockers.
+### Step 2.9: Write Checkpoint
+
+Update `.claude/feature-builder/<epic-id>/checkpoint.json`:
+```json
+{
+  "epic_id": "<epic-id>",
+  "current_phase": 3,
+  "completed_phases": [1, 2],
+  "tasks_completed": [],
+  "tasks_remaining": ["<updated list>"],
+  "notes": "Architecture review complete"
+}
+```
+
+**Exit criteria:** Architecture reviewed (or skipped with reason), checkpoint written, no blockers.
 
 ---
 
@@ -191,7 +345,36 @@ For each task, ensure:
 - Functions < 20 lines
 - Single responsibility per function
 
-**Exit criteria:** All tasks closed via `bd close`.
+### Step 3.2: Log Progress
+
+Append to `.claude/feature-builder/<epic-id>/phase-3-implementation.md` as you complete tasks:
+
+```markdown
+# Phase 3: Implementation Log
+
+## Completed
+- [x] TASK-001: <brief description of what was done>
+- [x] TASK-002: <brief description>
+
+## Issues Encountered
+- <any blockers or deviations from plan>
+```
+
+### Step 3.3: Write Checkpoint
+
+After all tasks complete, update checkpoint:
+```json
+{
+  "epic_id": "<epic-id>",
+  "current_phase": 4,
+  "completed_phases": [1, 2, 3],
+  "tasks_completed": ["TASK-001", "TASK-002", "..."],
+  "tasks_remaining": [],
+  "notes": "Implementation complete"
+}
+```
+
+**Exit criteria:** All tasks closed via `bd close`, checkpoint written.
 
 ---
 
@@ -219,7 +402,35 @@ Check for:
 - Premature optimization
 - Code that could be simpler
 
-**Exit criteria:** DRY/KISS review complete, any issues fixed.
+### Step 4.3: Write Results and Checkpoint
+
+Write to `.claude/feature-builder/<epic-id>/phase-4-quality.md`:
+```markdown
+# Phase 4: Quality Review
+
+## DRY Analysis
+- Skill used: /python-simplifier or /typescript-simplifier
+- Duplications found: <count>
+- Refactorings applied: <list>
+
+## KISS Verification
+- Over-engineering found: <yes/no>
+- Simplifications applied: <list>
+```
+
+Update checkpoint:
+```json
+{
+  "epic_id": "<epic-id>",
+  "current_phase": 5,
+  "completed_phases": [1, 2, 3, 4],
+  "tasks_completed": ["..."],
+  "tasks_remaining": [],
+  "notes": "Quality review complete"
+}
+```
+
+**Exit criteria:** DRY/KISS review complete, any issues fixed, checkpoint written.
 
 ---
 
@@ -293,7 +504,7 @@ npx tsc --noEmit
 
 ### Step 5.4: Security Review
 
-**Automated scanning:**
+**Automated scanning (always run):**
 ```bash
 # Python
 bandit -r . -ll
@@ -302,12 +513,25 @@ bandit -r . -ll
 npm audit
 ```
 
-**Agent review:**
-Spawn **security-engineer** agent to:
-- Review for OWASP Top 10 vulnerabilities
-- Check for credential leaks
-- Verify input validation
-- Review authentication/authorization
+**Agent review (conditional):**
+
+**Skip security-engineer agent if:**
+- No auth/authorization changes
+- No user input handling changes
+- No external API integrations
+- No database query changes
+- Automated scans show no issues
+
+**Otherwise**, spawn **security-engineer** in background:
+
+```
+Task prompt: "Security review for epic <epic-id>.
+Write findings to .claude/feature-builder/<epic-id>/security-review.md
+Focus on: OWASP Top 10, credential handling, input validation, auth.
+Keep output concise - issues found + severity only."
+
+run_in_background: true
+```
 
 ### Step 5.5: Migrations (if applicable)
 
@@ -322,15 +546,65 @@ alembic downgrade -1
 alembic upgrade head
 ```
 
-### Step 5.6: Documentation
+### Step 5.6: Documentation (Conditional)
 
-Spawn **technical-writer** agent to:
-- Update README if public API changed
-- Update inline docs if complex logic added
-- Update API docs if endpoints changed
-- Skip if no user-facing changes
+**Skip technical-writer agent if:**
+- No public API changes
+- No new user-facing features
+- Internal refactoring only
+- Documentation already adequate
 
-**Exit criteria:** All validation checks pass.
+**Otherwise**, spawn **technical-writer** in background:
+
+```
+Task prompt: "Documentation update for epic <epic-id>.
+Write updates to .claude/feature-builder/<epic-id>/docs-update.md
+Include: what docs need updating, suggested content.
+Do NOT write docs directly - just provide recommendations."
+
+run_in_background: true
+```
+
+### Step 5.7: Collect Validation Results
+
+Consolidate all validation results into `.claude/feature-builder/<epic-id>/phase-5-validation.md`:
+
+```markdown
+# Phase 5: Validation Results
+
+## Tests
+- Status: PASS/FAIL
+- Coverage: X%
+
+## Linting
+- Status: PASS/FAIL
+- Issues: <count>
+
+## Type Checking
+- Status: PASS/FAIL
+
+## Security
+- Automated scan: PASS/FAIL
+- Agent review: <summary or "Skipped">
+
+## Documentation
+- <recommendations or "Skipped - no user-facing changes">
+```
+
+### Step 5.8: Write Checkpoint
+
+```json
+{
+  "epic_id": "<epic-id>",
+  "current_phase": 6,
+  "completed_phases": [1, 2, 3, 4, 5],
+  "tasks_completed": ["..."],
+  "tasks_remaining": [],
+  "notes": "Validation complete, ready for final review"
+}
+```
+
+**Exit criteria:** All validation checks pass, checkpoint written.
 
 ---
 
@@ -395,7 +669,27 @@ Skip this step if the feature is:
 bd close <epic-id>
 ```
 
-**Exit criteria:** All tasks complete, changes committed, rollout readiness verified, epic closed.
+### Step 6.5: Final Checkpoint
+
+Update checkpoint to mark complete:
+```json
+{
+  "epic_id": "<epic-id>",
+  "current_phase": "complete",
+  "completed_phases": [1, 2, 3, 4, 5, 6],
+  "tasks_completed": ["..."],
+  "tasks_remaining": [],
+  "notes": "Epic complete",
+  "completed_at": "<timestamp>"
+}
+```
+
+**Note:** Keep checkpoint directory as a record. Can be cleaned up later with:
+```bash
+rm -rf .claude/feature-builder/<epic-id>
+```
+
+**Exit criteria:** All tasks complete, changes committed, rollout readiness verified, epic closed, final checkpoint written.
 
 ---
 
@@ -415,13 +709,21 @@ If any phase fails:
 
 ## Agent Spawning Reference
 
-| Agent | When to Spawn | Purpose |
-|-------|---------------|---------|
-| system-architect | Phase 2 (always) | Overall coherence, cross-cutting concerns |
-| frontend-architect | Phase 2 (if frontend) | UI/UX, components, state management |
-| backend-architect | Phase 2 (if backend) | API, data models, services |
-| security-engineer | Phase 5 | Security review |
-| technical-writer | Phase 5 | Documentation updates |
+All agents run in **background mode** to preserve context.
+
+| Agent | When to Spawn | Skip If | Output File |
+|-------|---------------|---------|-------------|
+| system-architect | Phase 2 | ≤3 simple tasks, no cross-cutting | `system-arch.md` |
+| frontend-architect | Phase 2 | No frontend, minor tweaks only | `frontend-arch.md` |
+| backend-architect | Phase 2 | No backend, simple CRUD only | `backend-arch.md` |
+| security-engineer | Phase 5 | No auth/input/API changes, clean scans | `security-review.md` |
+| technical-writer | Phase 5 | No public API changes, internal only | `docs-update.md` |
+
+**Spawning best practices:**
+- Launch multiple background agents in parallel when possible
+- Don't wait for completion unless results are needed immediately
+- Read output files only when consolidating phase results
+- If agent doesn't complete in time, note "pending" and continue
 
 ---
 

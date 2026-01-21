@@ -17,11 +17,12 @@ Copied and enhanced from https://github.com/edmund-io/edmunds-claude-code
 
 - `/scott-cc:build-feature` - **6-phase feature development workflow** from epic to deployment
   - Phase 1: Epic setup with test requirements audit
-  - Phase 2: Architecture review (spawns system/frontend/backend architects)
+  - Phase 2: Architecture review (conditional agent spawning)
   - Phase 3: Implementation via beads task tracking
   - Phase 4: Quality review (DRY/KISS via simplifier skills)
   - Phase 5: Validation (tests, lint, types, security, migrations, docs)
   - Phase 6: Final review and commit
+  - **Context management**: Checkpointing, resume support, background agents
 
 ### Development Commands (6)
 
@@ -125,11 +126,11 @@ cd scott-cc
 The `/build-feature` command orchestrates complete feature development:
 
 ```
-/build-feature <epic-id>
+/build-feature <epic-id> [--resume]
          │
          ▼
 ┌─────────────────────────────────────┐
-│  Phase 1: Epic Setup                │
+│  Phase 1: Epic Setup         [CP]   │
 │  - Verify epic structure            │
 │  - Test requirements audit          │
 │  - Classify critical/important      │
@@ -137,44 +138,56 @@ The `/build-feature` command orchestrates complete feature development:
          │
          ▼
 ┌─────────────────────────────────────┐
-│  Phase 2: Architecture Review       │
-│  - system-architect (always)        │
-│  - frontend-architect (if needed)   │
-│  - backend-architect (if needed)    │
+│  Phase 2: Architecture Review [CP]  │
+│  - system-architect (conditional)   │
+│  - frontend-architect (conditional) │
+│  - backend-architect (conditional)  │
+│  - Agents run in background         │
 └─────────────────────────────────────┘
          │
          ▼
 ┌─────────────────────────────────────┐
-│  Phase 3: Implementation            │
+│  Phase 3: Implementation     [CP]   │
 │  - Task-by-task via beads           │
 │  - Quality standards enforced       │
 └─────────────────────────────────────┘
          │
          ▼
 ┌─────────────────────────────────────┐
-│  Phase 4: Quality Review            │
+│  Phase 4: Quality Review     [CP]   │
 │  - /python-simplifier               │
 │  - /typescript-simplifier           │
 └─────────────────────────────────────┘
          │
          ▼
 ┌─────────────────────────────────────┐
-│  Phase 5: Validation                │
+│  Phase 5: Validation         [CP]   │
 │  - Meaningful tests (Z.O.M.)        │
 │  - Lint, types (pyright/tsc)        │
-│  - Security (bandit + agent)        │
+│  - Security (conditional agent)     │
 │  - Migrations (alembic)             │
-│  - Documentation (technical-writer) │
+│  - Documentation (conditional)      │
 └─────────────────────────────────────┘
          │
          ▼
 ┌─────────────────────────────────────┐
-│  Phase 6: Final Review              │
+│  Phase 6: Final Review       [CP]   │
 │  - Verify all tasks complete        │
 │  - Commit changes                   │
 │  - Close epic                       │
 └─────────────────────────────────────┘
+
+[CP] = Checkpoint written (enables --resume)
 ```
+
+### Context Management
+
+The feature-builder uses several strategies to avoid running out of context:
+
+- **Checkpointing**: State saved after each phase to `.claude/feature-builder/<epic-id>/`
+- **Resume support**: `--resume` flag continues from last checkpoint
+- **Background agents**: Sub-agents write to files instead of returning full context
+- **Conditional spawning**: Agents skipped when not needed (simple epics, no relevant changes)
 
 ## Code Quality Standards
 
@@ -203,6 +216,9 @@ All code follows these principles (enforced by simplifier skills):
 ```bash
 /build-feature my-epic-123
 # Orchestrates architecture review → implementation → validation → commit
+
+# If context runs out, resume from last checkpoint:
+/build-feature my-epic-123 --resume
 ```
 
 ### Creating an API
