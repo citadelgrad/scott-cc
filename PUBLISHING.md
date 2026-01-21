@@ -112,7 +112,6 @@ Install with:
 /plugin install citadelgrad/scott-cc
 
 Features:
-- API scaffolding (/api-new)
 - Code optimization (/code-optimize)
 - Tech research agent
 - Architecture agents
