@@ -1,6 +1,6 @@
 # Scott's Claude Code Setup
 
-My personal Claude Code configuration for productive web development. This plugin provides **18 slash commands**, **17 specialized AI agents**, and **3 skills** to supercharge your development workflow.
+My personal Claude Code configuration for productive web development. This plugin provides **15 slash commands**, **17 specialized AI agents**, and **3 skills** to supercharge your development workflow.
 
 Copied and enhanced from https://github.com/edmund-io/edmunds-claude-code
 
@@ -32,12 +32,6 @@ Copied and enhanced from https://github.com/edmund-io/edmunds-claude-code
 - `/scott-cc:code-cleanup` - Refactoring and cleanup
 - `/scott-cc:lint` - Linting and fixes
 - `/scott-cc:docs-generate` - Documentation generation
-
-### API Commands (3)
-
-- `/scott-cc:api-new` - Create new API endpoints
-- `/scott-cc:api-test` - Test API endpoints
-- `/scott-cc:api-protect` - Add protection & validation
 
 ### UI Commands (2)
 
@@ -299,13 +293,6 @@ All code follows these principles (enforced by simplifier skills):
 
 # If context runs out, resume from last checkpoint:
 /build-feature my-epic-123 --resume
-```
-
-### Creating an API
-
-```bash
-/scott-cc:api-new
-# Scaffolds complete API route with types, validation, error handling
 ```
 
 ### Code Quality Review
