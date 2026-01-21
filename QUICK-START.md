@@ -20,8 +20,8 @@ git push -u origin main
 
 ## What You Have
 
-✅ **12 Slash Commands**
-- Development: `/new-task`, `/code-explain`, `/code-optimize`, `/code-cleanup`, `/feature-plan`, `/lint`, `/docs-generate`
+✅ **11 Slash Commands**
+- Development: `/new-task`, `/code-explain`, `/code-optimize`, `/code-cleanup`, `/lint`, `/docs-generate`
 - API: `/api-new`, `/api-test`, `/api-protect`
 - UI: `/component-new`, `/page-new`
 

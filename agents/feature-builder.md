@@ -124,15 +124,48 @@ Spawn the **backend-architect** agent to:
 - Review migration strategy
 - Actions allowed: add notes, create tasks, split tasks
 
-### Step 2.5: Verify Task Readiness
+### Step 2.5: Risk Assessment
+
+Before implementation, identify and document risks:
+
+| Risk Type | Examples | Action |
+|-----------|----------|--------|
+| **Technical** | Unknown libraries, complex integrations, performance concerns | Create spike/research task |
+| **Dependency** | External APIs, third-party services, upstream changes | Document fallback approach |
+| **Data** | Migrations, backward compatibility, data loss potential | Create rollback plan |
+
+For each identified risk:
+1. Add risk note to relevant task: `bd update <task-id>`
+2. Create mitigation task if needed: `bd create --epic <epic-id>`
+3. Flag high-risk tasks for extra review
+
+### Step 2.6: Dependencies Audit
+
+Identify what's needed before implementation starts:
+
+**Packages/Libraries:**
+- [ ] List new dependencies required
+- [ ] Check for version conflicts with existing packages
+- [ ] Verify license compatibility
+
+**Environment:**
+- [ ] New environment variables needed
+- [ ] External service credentials required
+- [ ] Infrastructure changes (database, cache, etc.)
+
+If dependencies are non-trivial, create a setup task: `bd create --epic <epic-id> "Setup dependencies and configuration"`
+
+### Step 2.7: Verify Task Readiness
 
 ```
 [ ] No circular dependencies: bd blocked
 [ ] All tasks have clear acceptance criteria
 [ ] Task breakdown is implementation-ready
+[ ] Risks identified and mitigated
+[ ] Dependencies documented
 ```
 
-**Exit criteria:** All architects have reviewed, tasks updated, no blockers.
+**Exit criteria:** All architects have reviewed, risks assessed, dependencies identified, no blockers.
 
 ---
 
@@ -332,13 +365,37 @@ Tasks completed: <list task IDs>
 Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
-### Step 6.3: Close Epic
+### Step 6.3: Rollout Readiness
+
+Before closing, verify deployment considerations:
+
+**Feature Flags** (if applicable):
+- [ ] Large feature that needs gradual rollout? Add feature flag
+- [ ] A/B testing required? Document flag configuration
+- [ ] Flag cleanup task created for post-rollout
+
+**Rollback Plan** (if migrations involved):
+- [ ] Migration rollback tested in Step 5.5
+- [ ] Rollback steps documented in epic or README
+- [ ] Data backup strategy confirmed for production
+
+**Monitoring** (for critical paths):
+- [ ] Error tracking in place for new endpoints/services
+- [ ] Logging added for key operations
+- [ ] Alerts configured if SLA-critical
+
+Skip this step if the feature is:
+- Internal tooling with no production impact
+- Minor UI changes with no data changes
+- Fully covered by existing monitoring
+
+### Step 6.4: Close Epic
 
 ```bash
 bd close <epic-id>
 ```
 
-**Exit criteria:** All tasks complete, changes committed, epic closed.
+**Exit criteria:** All tasks complete, changes committed, rollout readiness verified, epic closed.
 
 ---
 

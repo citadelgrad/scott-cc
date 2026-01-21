@@ -1,6 +1,6 @@
 # Scott's Claude Code Setup
 
-My personal Claude Code configuration for productive web development. This plugin provides **19 slash commands**, **16 specialized AI agents**, and **3 skills** to supercharge your development workflow.
+My personal Claude Code configuration for productive web development. This plugin provides **18 slash commands**, **16 specialized AI agents**, and **3 skills** to supercharge your development workflow.
 
 Copied and enhanced from https://github.com/edmund-io/edmunds-claude-code
 
@@ -23,13 +23,12 @@ Copied and enhanced from https://github.com/edmund-io/edmunds-claude-code
   - Phase 5: Validation (tests, lint, types, security, migrations, docs)
   - Phase 6: Final review and commit
 
-### Development Commands (7)
+### Development Commands (6)
 
 - `/scott-cc:new-task` - Analyze task complexity and create implementation plan
 - `/scott-cc:code-explain` - Generate detailed explanations
 - `/scott-cc:code-optimize` - Performance optimization
 - `/scott-cc:code-cleanup` - Refactoring and cleanup
-- `/scott-cc:feature-plan` - Feature implementation planning
 - `/scott-cc:lint` - Linting and fixes
 - `/scott-cc:docs-generate` - Documentation generation
 
@@ -204,13 +203,6 @@ All code follows these principles (enforced by simplifier skills):
 ```bash
 /build-feature my-epic-123
 # Orchestrates architecture review → implementation → validation → commit
-```
-
-### Planning a Feature
-
-```bash
-/scott-cc:feature-plan
-# Then describe your feature idea
 ```
 
 ### Creating an API

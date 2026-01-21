@@ -49,7 +49,6 @@ Test that your plugin can be installed:
 
 # Verify commands are available (note: commands are namespaced)
 /scott-cc:code-explain
-/scott-cc:feature-plan
 
 # Verify agents are available (they'll activate automatically based on context)
 ```
@@ -107,7 +106,7 @@ Example post:
 ```
 Just published my Claude Code setup as a plugin!
 
-14 slash commands + 11 specialized AI agents for productive web development
+13 slash commands + 11 specialized AI agents for productive web development
 
 Install with:
 /plugin install citadelgrad/scott-cc
@@ -115,7 +114,6 @@ Install with:
 Features:
 - API scaffolding (/api-new)
 - Code optimization (/code-optimize)
-- Feature planning (/feature-plan)
 - Tech research agent
 - Architecture agents
 - Security & performance agents
