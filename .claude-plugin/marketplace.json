@@ -9,7 +9,7 @@
     {
       "name": "scott-cc",
       "source": "./",
-      "description": "Personal Claude Code configuration with 14 productivity commands and 11 specialized AI agents for modern web development",
+      "description": "Personal Claude Code plugin with commands, AI agents, skills, and Process Engine integration.",
       "version": "1.0.0",
       "author": {
         "name": "Scott",
