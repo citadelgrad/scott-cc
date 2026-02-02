@@ -87,6 +87,24 @@ Or browse the marketplace at [https://claudecode.dev/plugins](https://claudecode
 - **typescript-simplifier** - DRY/KISS code quality standards for TypeScript/JavaScript
 - **context7** - Fetch up-to-date documentation for any library
 
+### Hooks
+
+- **ghostty-bell** (`Stop` event) - Ghostty terminal tab indicator when Claude finishes responding
+  - Adds 🔔 to the Ghostty tab title (clears on focus)
+  - Bounces the dock icon
+  - Sends a macOS desktop notification with a brief summary of the work done
+  - Skips if `stop_hook_active` is true (prevents double-bell)
+  - Requires [Ghostty](https://ghostty.org) terminal (v1.2.0+)
+
+#### Ghostty Bell Setup
+
+The hook works out of the box with Ghostty's defaults (`bell-features` includes `title` and `attention`, `desktop-notifications = true`).
+
+To make notifications **persist until clicked** (instead of auto-dismissing):
+
+1. Open **System Settings > Notifications > Ghostty**
+2. Set **Alert Style** to **Persistent**
+
 ### Reference Documentation
 
 - `docs/MEANINGFUL_TESTS.md` - Test quality guidelines (Pytest/Vitest)
