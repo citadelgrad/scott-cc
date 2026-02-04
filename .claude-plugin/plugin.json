@@ -1,7 +1,7 @@
 {
   "name": "scott-cc",
   "description": "Scott's personal Claude Code setup with 18 commands, 18 AI agents, 5 skills, and Process Engine integration for modern web development",
-  "version": "1.9.1",
+  "version": "2.0.0",
   "author": {
     "name": "Scott Nixon"
   },
