@@ -1,0 +1,11 @@
+{
+  "name": "scott-cc-core",
+  "description": "Essential development tools: API debugging, system architecture, and code refactoring with documentation lookup",
+  "version": "1.0.0",
+  "author": {
+    "name": "Scott Nixon"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/citadelgrad/scott-cc",
+  "homepage": "https://github.com/citadelgrad/scott-cc/tree/main/plugins/scott-cc-core"
+}

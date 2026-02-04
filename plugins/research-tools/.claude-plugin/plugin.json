@@ -1,0 +1,11 @@
+{
+  "name": "research-tools",
+  "description": "Deep research, learning, and technical writing tools with AI writing pattern detection",
+  "version": "1.0.0",
+  "author": {
+    "name": "Scott Nixon"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/citadelgrad/scott-cc",
+  "homepage": "https://github.com/citadelgrad/scott-cc/tree/main/plugins/research-tools"
+}

@@ -1,0 +1,11 @@
+{
+  "name": "process-engine",
+  "description": "Workflow management and process monitoring for structured development workflows",
+  "version": "1.0.0",
+  "author": {
+    "name": "Scott Nixon"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/citadelgrad/scott-cc",
+  "homepage": "https://github.com/citadelgrad/scott-cc/tree/main/plugins/process-engine"
+}

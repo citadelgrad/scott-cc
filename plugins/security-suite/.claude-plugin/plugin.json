@@ -1,0 +1,11 @@
+{
+  "name": "security-suite",
+  "description": "Security-focused development with security advisory and vulnerability scanning agents",
+  "version": "1.0.0",
+  "author": {
+    "name": "Scott Nixon"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/citadelgrad/scott-cc",
+  "homepage": "https://github.com/citadelgrad/scott-cc/tree/main/plugins/security-suite"
+}

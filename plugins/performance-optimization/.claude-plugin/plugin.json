@@ -1,0 +1,11 @@
+{
+  "name": "performance-optimization",
+  "description": "Performance engineering and optimization with bottleneck analysis and performance profiling",
+  "version": "1.0.0",
+  "author": {
+    "name": "Scott Nixon"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/citadelgrad/scott-cc",
+  "homepage": "https://github.com/citadelgrad/scott-cc/tree/main/plugins/performance-optimization"
+}

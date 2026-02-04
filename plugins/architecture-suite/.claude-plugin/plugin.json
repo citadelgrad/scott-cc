@@ -1,0 +1,11 @@
+{
+  "name": "architecture-suite",
+  "description": "Complete feature planning & architecture workflow with 5 specialized agents for backend, frontend, epic planning, and requirements analysis",
+  "version": "1.0.0",
+  "author": {
+    "name": "Scott Nixon"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/citadelgrad/scott-cc",
+  "homepage": "https://github.com/citadelgrad/scott-cc/tree/main/plugins/architecture-suite"
+}

@@ -4,29 +4,87 @@
     "name": "Scott",
     "contact": "github.com/citadelgrad"
   },
-  "description": "Scott's curated Claude Code setup for productive development",
+  "description": "Modular Claude Code plugin suite for productive development - choose the tools you need",
   "plugins": [
     {
-      "name": "scott-cc",
-      "source": "./",
-      "description": "Personal Claude Code plugin with commands, AI agents, skills, and Process Engine integration.",
-      "version": "1.9.0",
+      "name": "scott-cc-core",
+      "source": "./plugins/scott-cc-core",
+      "description": "Essential development tools: API debugging, system architecture, refactoring, and documentation lookup (3 agents, 2 skills)",
+      "version": "1.0.0",
       "author": {
-        "name": "Scott",
-        "email": "your-email@example.com"
+        "name": "Scott Nixon"
       },
-      "tags": ["productivity", "nextjs", "supabase", "typescript", "react", "development"]
+      "tags": ["essential", "debugging", "architecture", "refactoring"]
+    },
+    {
+      "name": "architecture-suite",
+      "source": "./plugins/architecture-suite",
+      "description": "Complete feature planning & architecture workflow with specialized agents for backend, frontend, epic planning, and requirements (5 agents)",
+      "version": "1.0.0",
+      "author": {
+        "name": "Scott Nixon"
+      },
+      "tags": ["architecture", "planning", "design", "features"]
+    },
+    {
+      "name": "security-suite",
+      "source": "./plugins/security-suite",
+      "description": "Security-focused development with advisory and vulnerability scanning (2 agents)",
+      "version": "1.0.0",
+      "author": {
+        "name": "Scott Nixon"
+      },
+      "tags": ["security", "vulnerabilities", "owasp", "pentesting"]
+    },
+    {
+      "name": "browser-automation",
+      "source": "./plugins/browser-automation",
+      "description": "Browser testing & validation with E2E test generation and UI validation (2 agents, 2 skills)",
+      "version": "1.0.0",
+      "author": {
+        "name": "Scott Nixon"
+      },
+      "tags": ["testing", "e2e", "browser", "automation", "playwright"]
+    },
+    {
+      "name": "research-tools",
+      "source": "./plugins/research-tools",
+      "description": "Deep research, learning, technical writing, and AI pattern detection (4 agents, 1 skill)",
+      "version": "1.0.0",
+      "author": {
+        "name": "Scott Nixon"
+      },
+      "tags": ["research", "learning", "documentation", "writing"]
+    },
+    {
+      "name": "performance-optimization",
+      "source": "./plugins/performance-optimization",
+      "description": "Performance engineering with bottleneck analysis and profiling (1 agent)",
+      "version": "1.0.0",
+      "author": {
+        "name": "Scott Nixon"
+      },
+      "tags": ["performance", "optimization", "profiling", "speed"]
+    },
+    {
+      "name": "process-engine",
+      "source": "./plugins/process-engine",
+      "description": "Workflow management and process monitoring for structured development (1 agent)",
+      "version": "1.0.0",
+      "author": {
+        "name": "Scott Nixon"
+      },
+      "tags": ["workflow", "process", "management", "beads"]
     },
     {
       "name": "mutation-testing",
       "source": "./plugins/mutation-testing",
-      "description": "Comprehensive mutation testing plugin with 5 specialized AI agents for identifying zombie tests, calculating mutation scores, and auto-generating refactored test suites. Uses parallel git worktree execution for fast results.",
+      "description": "Comprehensive mutation testing with zombie test detection and auto-generated refactoring (5 agents, 1 skill)",
       "version": "1.0.0",
       "author": {
-        "name": "Scott Nixon",
-        "email": "your-email@example.com"
+        "name": "Scott Nixon"
       },
-      "tags": ["testing", "mutation-testing", "test-quality", "tdd", "quality-assurance", "agents"]
+      "tags": ["testing", "mutation-testing", "test-quality", "tdd", "quality-assurance"]
     }
   ]
 }

@@ -1,0 +1,11 @@
+{
+  "name": "browser-automation",
+  "description": "Complete browser testing & validation suite with E2E test generation, browser automation, and UI validation",
+  "version": "1.0.0",
+  "author": {
+    "name": "Scott Nixon"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/citadelgrad/scott-cc",
+  "homepage": "https://github.com/citadelgrad/scott-cc/tree/main/plugins/browser-automation"
+}
