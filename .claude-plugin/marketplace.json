@@ -10,12 +10,23 @@
       "name": "scott-cc",
       "source": "./",
       "description": "Personal Claude Code plugin with commands, AI agents, skills, and Process Engine integration.",
-      "version": "1.0.0",
+      "version": "1.9.0",
       "author": {
         "name": "Scott",
         "email": "your-email@example.com"
       },
       "tags": ["productivity", "nextjs", "supabase", "typescript", "react", "development"]
+    },
+    {
+      "name": "mutation-testing",
+      "source": "./plugins/mutation-testing",
+      "description": "Comprehensive mutation testing plugin with 5 specialized AI agents for identifying zombie tests, calculating mutation scores, and auto-generating refactored test suites. Uses parallel git worktree execution for fast results.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Scott Nixon",
+        "email": "your-email@example.com"
+      },
+      "tags": ["testing", "mutation-testing", "test-quality", "tdd", "quality-assurance", "agents"]
     }
   ]
 }

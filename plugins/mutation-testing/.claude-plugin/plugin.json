@@ -1,0 +1,11 @@
+{
+  "name": "mutation-testing",
+  "description": "Comprehensive mutation testing for identifying zombie tests and improving test quality through automated code mutation analysis and parallel test execution",
+  "version": "1.0.0",
+  "author": {
+    "name": "Scott Nixon"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/citadelgrad/scott-cc",
+  "homepage": "https://github.com/citadelgrad/scott-cc/tree/main/plugins/mutation-testing"
+}
