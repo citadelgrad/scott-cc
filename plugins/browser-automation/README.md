@@ -100,7 +100,7 @@ Generate executable E2E tests from natural language.
 
 **Frontend development**:
 - browser-automation ✅
-- scott-cc-core ✅ (for refactoring components)
+- scott-cc ✅ (main plugin for refactoring)
 - mutation-testing ✅ (to verify tests work)
 
 **QA automation**:

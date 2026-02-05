@@ -71,5 +71,5 @@ Before deployment, use security-suite to verify:
 
 **Full security audit**:
 - security-suite ✅
-- scott-cc-core ✅ (for refactoring after security fixes)
+- scott-cc ✅ (main plugin for refactoring)
 - mutation-testing ✅ (to verify security tests work)

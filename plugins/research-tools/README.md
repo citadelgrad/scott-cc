@@ -4,8 +4,7 @@
 
 ## What's Included
 
-### Agents (4)
-- **deep-research-agent** - Comprehensive research with adaptive strategies and intelligent exploration
+### Agents (3)
 - **tech-stack-researcher** - Research and compare technologies, frameworks, and tools
 - **learning-guide** - Teach programming concepts with progressive learning and practical examples
 - **technical-writer** - Create clear, comprehensive technical documentation
@@ -41,21 +40,14 @@ learning-guide: Progressive explanation with examples
 Output: Tutorial with runnable code samples
 ```
 
-### 3. Deep Research
-```
-User: "Research approaches for real-time collaboration in web apps"
-deep-research-agent: Multi-source research, compares CRDTs, OT, etc.
-Output: Comprehensive research report with trade-offs
-```
-
-### 4. Documentation Writing
+### 3. Documentation Writing
 ```
 User: "Write API documentation for this endpoint"
 technical-writer: Creates clear, comprehensive docs
 Output: Markdown documentation with examples
 ```
 
-### 5. Humanize AI Writing
+### 4. Humanize AI Writing
 ```
 /humanizer Review this README and make it less AI-sounding
 ```
@@ -105,11 +97,7 @@ Output: Step-by-step documentation
 
 **Learning new tech**:
 - research-tools ✅
-- scott-cc-core ✅ (to try implementations)
-
-**Documentation-heavy projects**:
-- research-tools ✅
-- architecture-suite ✅ (for technical design docs)
+- scott-cc ✅ (main plugin for implementations)
 
 **Solo developer**:
 - research-tools ✅ (learn and document)

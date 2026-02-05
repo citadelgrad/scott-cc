@@ -115,7 +115,7 @@ Output: Before/after comparison
 
 **Full performance audit**:
 - performance-optimization ✅
-- scott-cc-core ✅ (for refactoring after optimizations)
+- scott-cc ✅ (main plugin for refactoring)
 - browser-automation ✅ (to measure frontend performance)
 
 **Backend optimization**:

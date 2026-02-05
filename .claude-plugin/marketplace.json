@@ -7,26 +7,6 @@
   "description": "Modular Claude Code plugin suite for productive development - choose the tools you need",
   "plugins": [
     {
-      "name": "scott-cc-core",
-      "source": "./plugins/scott-cc-core",
-      "description": "Essential development tools: API debugging, system architecture, refactoring, and documentation lookup (3 agents, 2 skills)",
-      "version": "1.0.0",
-      "author": {
-        "name": "Scott Nixon"
-      },
-      "tags": ["essential", "debugging", "architecture", "refactoring"]
-    },
-    {
-      "name": "architecture-suite",
-      "source": "./plugins/architecture-suite",
-      "description": "Complete feature planning & architecture workflow with specialized agents for backend, frontend, epic planning, and requirements (5 agents)",
-      "version": "1.0.0",
-      "author": {
-        "name": "Scott Nixon"
-      },
-      "tags": ["architecture", "planning", "design", "features"]
-    },
-    {
       "name": "security-suite",
       "source": "./plugins/security-suite",
       "description": "Security-focused development with advisory and vulnerability scanning (2 agents)",
@@ -49,7 +29,7 @@
     {
       "name": "research-tools",
       "source": "./plugins/research-tools",
-      "description": "Deep research, learning, technical writing, and AI pattern detection (4 agents, 1 skill)",
+      "description": "Learning guides, tech stack research, and technical writing (3 agents, 1 skill)",
       "version": "1.0.0",
       "author": {
         "name": "Scott Nixon"

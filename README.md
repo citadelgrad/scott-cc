@@ -1,6 +1,6 @@
 # Scott's Claude Code Setup
 
-My personal Claude Code configuration for productive web development. This plugin provides **15 slash commands**, **17 specialized AI agents**, and **3 skills** to supercharge your development workflow.
+Core + Architecture plugin for productive web development. This plugin provides **18 slash commands**, **9 specialized AI agents**, and **3 skills** for essential development workflows.
 
 Copied and enhanced from https://github.com/edmund-io/edmunds-claude-code
 
@@ -52,40 +52,37 @@ Or browse the marketplace at [https://claudecode.dev/plugins](https://claudecode
 - `/scott-cc:process-list` - List running processes
 - `/scott-cc:process-retry` - Retry failed processes
 
-### Specialized AI Agents (17)
+### Specialized AI Agents (9)
 
-**Orchestration**
+**Core Development (4)**
+- **api-debugger** - Full-stack API debugging with browser integration
+- **refactoring-expert** - Systematic refactoring and clean code
+- **system-architect** - Scalable system architecture design
+- **deep-research-agent** - Comprehensive research with adaptive strategies
+
+**Architecture & Planning (5)**
 - **feature-builder** - 6-phase development workflow orchestrator using beads
 - **epic-planner** - Structured feature planning from concept to implementation-ready tasks
-
-**Architecture & Planning**
-- **tech-stack-researcher** - Technology choice recommendations with trade-offs
-- **system-architect** - Scalable system architecture design
 - **backend-architect** - Backend systems with data integrity & security
 - **frontend-architect** - Performant, accessible UI architecture
 - **requirements-analyst** - Transform ideas into concrete specifications
-
-**Code Quality & Performance**
-- **refactoring-expert** - Systematic refactoring and clean code
-- **performance-engineer** - Measurement-driven optimization
-- **security-engineer** - Vulnerability identification and security standards
-- **security-advisor** - Security guidance and best practices
-
-**Testing & Validation**
-- **api-debugger** - Full-stack API debugging with browser integration
-- **browser-validator** - UI validation via Playwright MCP
-- **process-monitor** - Track Process Engine execution and gates
-
-**Documentation & Research**
-- **technical-writer** - Clear, comprehensive documentation
-- **learning-guide** - Teaching programming concepts progressively
-- **deep-research-agent** - Comprehensive research with adaptive strategies
 
 ### Skills (3)
 
 - **python-simplifier** - DRY/KISS code quality standards for Python
 - **typescript-simplifier** - DRY/KISS code quality standards for TypeScript/JavaScript
 - **context7** - Fetch up-to-date documentation for any library
+
+### Specialized Plugins
+
+For additional capabilities, install these specialized plugins from the marketplace:
+
+- **browser-automation** - Browser testing & validation (2 agents, 2 skills)
+- **research-tools** - Learning guides, tech stack research, technical writing (3 agents, 1 skill)
+- **security-suite** - Security advisory and vulnerability scanning (2 agents)
+- **performance-optimization** - Performance engineering and profiling (1 agent)
+- **process-engine** - Workflow management and process monitoring (1 agent)
+- **mutation-testing** - Comprehensive mutation testing suite (5 agents, 1 skill)
 
 ### Hooks
 

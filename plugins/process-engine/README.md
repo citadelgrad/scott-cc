@@ -103,10 +103,10 @@ process-monitor: "Feature X is 60% complete (3/5 tasks done)"
 
 **Structured development**:
 - process-engine ✅
-- architecture-suite ✅ (for architecture phase)
+- scott-cc ✅ (main plugin for architecture & core work)
 - mutation-testing ✅ (for quality gate)
 
 **Team workflows**:
 - process-engine ✅
-- scott-cc-core ✅ (for day-to-day work)
+- scott-cc ✅ (main plugin for day-to-day work)
 - browser-automation ✅ (for E2E validation gate)
