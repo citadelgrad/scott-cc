@@ -9,3 +9,5 @@
 .claude/settings.local.json
 agents/CLAUDE.md
 .claude-plugin/CLAUDE.md
+docs/
+.testing/
