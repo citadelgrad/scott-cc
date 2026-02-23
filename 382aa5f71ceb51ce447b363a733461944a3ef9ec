@@ -1,0 +1,23 @@
+.claude-plugin/marketplace.json
+  bc8899f6fe0d15b1 10-18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.4",
+  "base_commit_sha": "382aa5f71ceb51ce447b363a733461944a3ef9ec",
+  "prompts": {
+    "bc8899f6fe0d15b1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0ba8f676-f54a-4f43-b44e-11324885b996",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>",
+      "messages": [],
+      "total_additions": 10,
+      "total_deletions": 0,
+      "accepted_lines": 10,
+      "overriden_lines": 0
+    }
+  }
+}
