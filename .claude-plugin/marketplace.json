@@ -5,10 +5,13 @@
     "contact": "github.com/citadelgrad"
   },
   "description": "Modular Claude Code plugin suite for productive development - choose the tools you need",
+  "metadata": {
+    "description": "Modular Claude Code plugin suite for productive development - choose the tools you need"
+  },
   "plugins": [
     {
       "name": "scott-cc",
-      "source": ".",
+      "source": "./",
       "description": "Core development tools with agents, commands, skills, and hooks for productive modern web development",
       "version": "2.0.0",
       "author": {
