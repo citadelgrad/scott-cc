@@ -7,6 +7,16 @@
   "description": "Modular Claude Code plugin suite for productive development - choose the tools you need",
   "plugins": [
     {
+      "name": "scott-cc",
+      "source": ".",
+      "description": "Core development tools with agents, commands, skills, and hooks for productive modern web development",
+      "version": "2.0.0",
+      "author": {
+        "name": "Scott Nixon"
+      },
+      "tags": ["development", "architecture", "agents", "commands"]
+    },
+    {
       "name": "security-suite",
       "source": "./plugins/security-suite",
       "description": "Security-focused development with advisory and vulnerability scanning (2 agents)",
