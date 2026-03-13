@@ -1,0 +1,29 @@
+plugins/beads-epic-builder/commands/epic-swarm.md
+  7cb9e1fd436d22a8 1-573
+.claude-plugin/plugin.json
+  7cb9e1fd436d22a8 4
+plugins/beads-epic-builder/.claude-plugin/plugin.json
+  7cb9e1fd436d22a8 1-11
+.claude-plugin/marketplace.json
+  7cb9e1fd436d22a8 73-75,80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.11",
+  "base_commit_sha": "53f7b3f0d9d98a006080a5a3e3daa14d24488601",
+  "prompts": {
+    "7cb9e1fd436d22a8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e28915e-5ad5-445c-8289-d3933b71d448",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>",
+      "messages": [],
+      "total_additions": 1192,
+      "total_deletions": 24,
+      "accepted_lines": 1179,
+      "overriden_lines": 0
+    }
+  }
+}
