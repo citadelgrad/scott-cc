@@ -60,16 +60,6 @@
       "tags": ["performance", "optimization", "profiling", "speed"]
     },
     {
-      "name": "process-engine",
-      "source": "./plugins/process-engine",
-      "description": "Workflow management and process monitoring for structured development (1 agent)",
-      "version": "1.0.0",
-      "author": {
-        "name": "Scott Nixon"
-      },
-      "tags": ["workflow", "process", "management", "beads"]
-    },
-    {
       "name": "mutation-testing",
       "source": "./plugins/mutation-testing",
       "description": "Comprehensive mutation testing with zombie test detection and auto-generated refactoring (5 agents, 1 skill)",
@@ -78,6 +68,16 @@
         "name": "Scott Nixon"
       },
       "tags": ["testing", "mutation-testing", "test-quality", "tdd", "quality-assurance"]
+    },
+    {
+      "name": "beads-epic-builder",
+      "source": "./plugins/beads-epic-builder",
+      "description": "Plan, build, and swarm beads epics - sequential and parallel epic execution with CE code review (2 agents, 3 commands)",
+      "version": "1.0.0",
+      "author": {
+        "name": "Scott Nixon"
+      },
+      "tags": ["beads", "epic", "swarm", "parallel", "worktree", "orchestration"]
     }
   ]
 }
