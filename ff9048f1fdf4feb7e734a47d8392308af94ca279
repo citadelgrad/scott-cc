@@ -1,0 +1,31 @@
+README.md
+  7cb9e1fd436d22a8 3,16,28,32-33,35,37,39,44,49,54,56,58-63,65,67,69,71,74-92,95,97,101-110,113,115,118-130,133-137,159,161,164,167,170,173,176-178,181-184,189
+.claude-plugin/plugin.json
+  7cb9e1fd436d22a8 3
+QUICK-START.md
+  7cb9e1fd436d22a8 1,3,6,9,11-14,16-22,24,27-28,30-31,33-34,36-39,41,43-45
+.claude-plugin/marketplace.json
+  7cb9e1fd436d22a8 15
+PUBLISHING.md
+  7cb9e1fd436d22a8 19,90-91,109
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.11",
+  "base_commit_sha": "ff9048f1fdf4feb7e734a47d8392308af94ca279",
+  "prompts": {
+    "7cb9e1fd436d22a8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3e28915e-5ad5-445c-8289-d3933b71d448",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>",
+      "messages": [],
+      "total_additions": 123,
+      "total_deletions": 300,
+      "accepted_lines": 123,
+      "overriden_lines": 0
+    }
+  }
+}
