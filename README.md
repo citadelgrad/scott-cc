@@ -1,8 +1,6 @@
 # Scott's Claude Code Setup
 
-Core + Architecture plugin for productive web development. This plugin provides **18 slash commands**, **9 specialized AI agents**, and **3 skills** for essential development workflows.
-
-Copied and enhanced from https://github.com/edmund-io/edmunds-claude-code
+Modular Claude Code plugin suite for productive development. The core plugin provides **9 slash commands**, **8 specialized AI agents**, and **4 skills**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, and more.
 
 ## Quick Install
 
@@ -15,18 +13,7 @@ Or browse the marketplace at [https://claudecode.dev/plugins](https://claudecode
 
 ## What's Inside
 
-### Orchestration
-
-- `/scott-cc:build-feature` - **6-phase feature development workflow** from epic to deployment
-  - Phase 1: Epic setup with test requirements audit
-  - Phase 2: Architecture review (conditional agent spawning)
-  - Phase 3: Implementation via beads task tracking
-  - Phase 4: Quality review (DRY/KISS via simplifier skills)
-  - Phase 5: Validation (tests, lint, types, security, migrations, docs)
-  - Phase 6: Final review and commit
-  - **Context management**: Checkpointing, resume support, background agents
-
-### Development Commands (6)
+### Development Commands (9)
 
 - `/scott-cc:new-task` - Analyze task complexity and create implementation plan
 - `/scott-cc:code-explain` - Generate detailed explanations
@@ -34,239 +21,120 @@ Or browse the marketplace at [https://claudecode.dev/plugins](https://claudecode
 - `/scott-cc:code-cleanup` - Refactoring and cleanup
 - `/scott-cc:lint` - Linting and fixes
 - `/scott-cc:docs-generate` - Documentation generation
-
-### UI Commands (2)
-
 - `/scott-cc:component-new` - Create React components
 - `/scott-cc:page-new` - Create Next.js pages
-
-### Security Commands (1)
-
 - `/scott-cc:security-cheatsheet` - Comprehensive security reference
 
-### Process Engine Commands (5)
+### Specialized AI Agents (8)
 
-- `/scott-cc:process-start` - Start 5-phase validation for a beads epic
-- `/scott-cc:process-status` - Check process status
-- `/scott-cc:process-approve` - Approve architecture gate
-- `/scott-cc:process-list` - List running processes
-- `/scott-cc:process-retry` - Retry failed processes
-
-### Specialized AI Agents (9)
-
-**Core Development (4)**
 - **api-debugger** - Full-stack API debugging with browser integration
-- **refactoring-expert** - Systematic refactoring and clean code
-- **system-architect** - Scalable system architecture design
-- **deep-research-agent** - Comprehensive research with adaptive strategies
-
-**Architecture & Planning (5)**
-- **feature-builder** - 6-phase development workflow orchestrator using beads
-- **epic-planner** - Structured feature planning from concept to implementation-ready tasks
 - **backend-architect** - Backend systems with data integrity & security
+- **deep-research-agent** - Comprehensive research with adaptive strategies
+- **emergent-behavior** - Analyze systems for emergent properties
 - **frontend-architect** - Performant, accessible UI architecture
+- **refactoring-expert** - Systematic refactoring and clean code
 - **requirements-analyst** - Transform ideas into concrete specifications
+- **system-architect** - Scalable system architecture design
 
-### Skills (3)
+### Skills (4)
 
 - **python-simplifier** - DRY/KISS code quality standards for Python
 - **typescript-simplifier** - DRY/KISS code quality standards for TypeScript/JavaScript
 - **context7** - Fetch up-to-date documentation for any library
-
-### Specialized Plugins
-
-For additional capabilities, install these specialized plugins from the marketplace:
-
-- **browser-automation** - Browser testing & validation (2 agents, 2 skills)
-- **research-tools** - Learning guides, tech stack research, technical writing (3 agents, 1 skill)
-- **security-suite** - Security advisory and vulnerability scanning (2 agents)
-- **performance-optimization** - Performance engineering and profiling (1 agent)
-- **process-engine** - Workflow management and process monitoring (1 agent)
-- **mutation-testing** - Comprehensive mutation testing suite (5 agents, 1 skill)
+- **context-file-optimizer** - Audit and rewrite AI agent context files (AGENTS.md, CLAUDE.md)
 
 ### Hooks
 
 - **ghostty-bell** (`Stop` event) - Ghostty terminal tab indicator when Claude finishes responding
-  - Adds 🔔 to the Ghostty tab title (clears on focus)
+  - Adds bell to the Ghostty tab title (clears on focus)
   - Bounces the dock icon
   - Sends a macOS desktop notification with a brief summary of the work done
-  - Skips if `stop_hook_active` is true (prevents double-bell)
   - Requires [Ghostty](https://ghostty.org) terminal (v1.2.0+)
 
-#### Ghostty Bell Setup
+### Specialized Plugins
 
-The hook works out of the box with Ghostty's defaults (`bell-features` includes `title` and `attention`, `desktop-notifications = true`).
+Install these sub-plugins from the marketplace for additional capabilities:
 
-To make notifications **persist until clicked** (instead of auto-dismissing):
+- **beads-epic-builder** - Plan, build, and swarm beads epics (2 agents, 2 commands)
+- **browser-automation** - Browser testing & validation (2 agents, 2 skills)
+- **research-tools** - Learning guides, tech stack research, technical writing (3 agents, 1 skill)
+- **security-suite** - Security advisory and vulnerability scanning (2 agents)
+- **performance-optimization** - Performance engineering and profiling (1 agent)
+- **mutation-testing** - Comprehensive mutation testing suite (5 agents, 1 skill)
 
-1. Open **System Settings > Notifications > Ghostty**
-2. Set **Alert Style** to **Persistent**
+## Beads Epic Builder
 
-### Reference Documentation
+The `beads-epic-builder` plugin provides three ways to work with beads epics:
 
-- `docs/MEANINGFUL_TESTS.md` - Test quality guidelines (Pytest/Vitest)
-  - Z.O.M. heuristic (Zero, One, Many boundary testing)
-  - Error path coverage requirements
-  - Negative test case strategy
+### 1. Plan an Epic
 
-## Installation
-
-### From Plugins Marketplace (Recommended)
-
-```bash
-/plugin marketplace add citadelgrad/scott-cc
-```
-
-You can also browse available plugins at [claudecode.dev/plugins](https://claudecode.dev/plugins).
-
-### Update Existing Installation
-
-```bash
-/plugin marketplace update scott-cc
-```
-
-### From Local Clone (for development)
-
-```bash
-git clone https://github.com/citadelgrad/scott-cc.git
-cd scott-cc
-
-# Install from local path
-/plugin install /path/to/scott-cc
-```
-
-## Feature Builder Workflow
-
-The `/build-feature` command orchestrates complete feature development:
-
-```
-/build-feature <epic-id> [--resume]
-         │
-         ▼
-┌─────────────────────────────────────┐
-│  Phase 1: Epic Setup         [CP]   │
-│  - Verify epic structure            │
-│  - Test requirements audit          │
-│  - Classify critical/important      │
-└─────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────┐
-│  Phase 2: Architecture Review [CP]  │
-│  - system-architect (conditional)   │
-│  - frontend-architect (conditional) │
-│  - backend-architect (conditional)  │
-│  - Agents run in background         │
-└─────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────┐
-│  Phase 3: Implementation     [CP]   │
-│  - Task-by-task via beads           │
-│  - Quality standards enforced       │
-└─────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────┐
-│  Phase 4: Quality Review     [CP]   │
-│  - /python-simplifier               │
-│  - /typescript-simplifier           │
-└─────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────┐
-│  Phase 5: Validation         [CP]   │
-│  - Meaningful tests (Z.O.M.)        │
-│  - Lint, types (pyright/tsc)        │
-│  - Security (conditional agent)     │
-│  - Migrations (alembic)             │
-│  - Documentation (conditional)      │
-└─────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────┐
-│  Phase 6: Final Review       [CP]   │
-│  - Verify all tasks complete        │
-│  - Commit changes                   │
-│  - Close epic                       │
-└─────────────────────────────────────┘
-
-[CP] = Checkpoint written (enables --resume)
-```
-
-## Epic Planner Workflow
-
-The **epic-planner** agent guides features from initial concept through implementation-ready tasks:
+The **epic-planner** agent guides features from concept to implementation-ready tasks:
 
 ```
 User describes feature
-         │
-         ▼
-┌─────────────────────────────────────┐
-│  Stage 1: Research                  │
-│  - Adaptive depth (simple vs deep)  │
-│  - Architecture recommendations     │
-│  - Technology decisions             │
-└─────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────┐
-│  Stage 2: Research Approval Gate    │
-│  - Present findings to user         │
-│  - Wait for explicit approval       │
-└─────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────┐
-│  Stage 3: Create PRD Document       │
-│  - docs/prd-{feature}.md            │
-│  - Goals, user stories, requirements│
-└─────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────┐
-│  Stage 4: Create SPEC Document      │
-│  - docs/spec-{feature}.md           │
-│  - Architecture, schemas, APIs      │
-│  - Complete code examples           │
-└─────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────┐
-│  Stage 5: Document Approval Gate    │
-│  - Review PRD and SPEC              │
-│  - Wait for explicit approval       │
-└─────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────┐
-│  Stage 6: Create Beads Epic         │
-│  - Link documents to epic           │
-└─────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────┐
-│  Stage 7: Create Granular Tasks     │
-│  - Self-contained implementation    │
-│  - Full code in task notes          │
-│  - Dependencies configured          │
-└─────────────────────────────────────┘
+         |
+         v
+   Research (adaptive depth)
+         |
+         v
+   Research Approval Gate
+         |
+         v
+   Create PRD Document
+         |
+         v
+   Create SPEC Document
+         |
+         v
+   Document Approval Gate
+         |
+         v
+   Create Beads Epic + Tasks
 ```
 
-**Key Features:**
-- **Approval gates** - Never proceeds without explicit user approval
-- **Adaptive research** - Spawns deep-research-agent for complex features, lightweight for simple ones
-- **Self-contained tasks** - Each task includes all implementation details (not just doc references)
-- **Beads integration** - Creates epic and linked tasks with proper dependencies
+### 2. Build Sequentially: `/build-feature <epic-id>`
 
-### Context Management
+The **feature-builder** agent implements tasks one at a time through 6 phases:
 
-The feature-builder uses several strategies to avoid running out of context:
+```
+/build-feature <epic-id> [--resume]
+         |
+         v
+  Phase 1: Epic Setup (verify, test requirements audit)
+  Phase 2: Architecture Review (conditional agent spawning)
+  Phase 3: Implementation (task-by-task via beads)
+  Phase 4: Quality Review (DRY/KISS via simplifier skills)
+  Phase 5: Validation (tests, lint, types, security)
+  Phase 6: Final Review (commit, close epic)
 
-- **Checkpointing**: State saved after each phase to `.claude/feature-builder/<epic-id>/`
-- **Resume support**: `--resume` flag continues from last checkpoint
-- **Background agents**: Sub-agents write to files instead of returning full context
-- **Conditional spawning**: Agents skipped when not needed (simple epics, no relevant changes)
+Each phase writes a checkpoint for --resume support.
+```
+
+### 3. Build in Parallel: `/epic-swarm <epic-id>`
+
+Spawns parallel worker agents in isolated git worktrees:
+
+```
+/epic-swarm <epic-id> [--max-parallel 3] [--no-review] [--dry-run]
+         |
+         v
+  Phase 1: Load epic, build dependency-aware wave plan
+  Phase 2: Execute waves (parallel workers in worktrees)
+           - Wave 1: independent tasks run simultaneously
+           - Wave 2: tasks depending on Wave 1
+           - Wave N: continue until done
+           - Merge branches, run tests, close tasks after each wave
+  Phase 3: CE code review (architecture, simplicity, security, performance)
+  Phase 4: Ship (commit, push)
+
+Checkpointing after every wave survives context compaction.
+```
+
+**Key differences from CE's `/ce:work` swarm mode:**
+- Workers are explicitly implementers, not researchers
+- Beads-native (reads tasks from `bd show`, not a plan file)
+- Worktree isolation prevents file conflicts between parallel agents
+- Dependency-aware waves respect beads task ordering
 
 ## Code Quality Standards
 
@@ -288,66 +156,38 @@ All code follows these principles (enforced by simplifier skills):
 - TypeScript projects
 - Teams using beads for task tracking
 
-## Usage Examples
+## Installation
 
-### Plan a New Feature
-
-```bash
-# Describe a feature to the epic-planner agent
-"I want to build a notification system that sends email and push notifications"
-
-# Epic-planner will:
-# 1. Research approaches (adaptive depth)
-# 2. Create PRD document (docs/prd-notifications.md)
-# 3. Create SPEC document (docs/spec-notifications.md)
-# 4. Create beads epic with granular tasks
-# All with approval gates before proceeding
-```
-
-### Build a Complete Feature
+### From Plugins Marketplace (Recommended)
 
 ```bash
-/build-feature my-epic-123
-# Orchestrates architecture review → implementation → validation → commit
-
-# If context runs out, resume from last checkpoint:
-/build-feature my-epic-123 --resume
+/plugin marketplace add citadelgrad/scott-cc
 ```
 
-### Code Quality Review
+### Update Existing Installation
 
 ```bash
-/python-simplifier
-# or
-/typescript-simplifier
-# Reviews code for DRY/KISS violations
+/plugin marketplace update scott-cc
 ```
+
+### From Local Clone (for development)
+
+```bash
+git clone https://github.com/citadelgrad/scott-cc.git
+cd scott-cc
+/plugin install /path/to/scott-cc
+```
+
+### Reference Documentation
+
+- `docs/MEANINGFUL_TESTS.md` - Test quality guidelines (Pytest/Vitest)
 
 ## Requirements
 
 - Claude Code CLI
 - Works with any project (optimized for Next.js, FastAPI, TypeScript)
-- Beads plugin recommended for `/build-feature` workflow
-
-## Customization
-
-After installation, customize by editing files in:
-- `commands/` - Slash commands
-- `agents/` - AI agent personas
-- `skills/` - Reusable skill definitions
-- `docs/` - Reference documentation
-
-## Contributing
-
-Feel free to:
-- Fork and customize for your needs
-- Submit issues or suggestions
-- Share your improvements
+- Beads plugin recommended for epic workflows
 
 ## License
 
 MIT - Use freely in your projects
-
----
-
-**Note**: This is my personal setup refined over time. Commands are optimized for modern full-stack workflows but work great with any web stack.

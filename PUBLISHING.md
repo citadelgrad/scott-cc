@@ -16,7 +16,7 @@ Complete step-by-step instructions for publishing your Claude Code plugin to Git
 1. Go to https://github.com/new
 2. Fill in the details:
    - **Repository name**: `scott-cc`
-   - **Description**: "Scott's personal Claude Code setup with 14 productivity commands and 11 specialized AI agents for modern web development"
+   - **Description**: "Modular Claude Code plugin suite for productive development"
    - **Visibility**: Public (so others can install it)
    - **Initialize**: ❌ Don't add README, .gitignore, or license (we already have these)
 3. Click "Create repository"
@@ -87,8 +87,8 @@ Share this command with others:
 {
   "name": "scott-cc",
   "source": "citadelgrad/scott-cc",
-  "description": "Personal Claude Code configuration with 14 productivity commands and 11 specialized AI agents for modern web development",
-  "version": "1.0.0",
+  "description": "Modular Claude Code plugin suite for productive development",
+  "version": "3.0.0",
   "author": "Scott",
   "tags": ["productivity", "python", "nextjs", "typescript", "react", "development"]
 }
@@ -106,7 +106,7 @@ Example post:
 ```
 Just published my Claude Code setup as a plugin!
 
-13 slash commands + 11 specialized AI agents for productive web development
+9 commands + 8 agents + 4 skills + beads epic builder for productive web development
 
 Install with:
 /plugin install citadelgrad/scott-cc

@@ -1,62 +1,45 @@
-# Quick Start: Publish Your Plugin in 5 Minutes
+# Quick Start
 
-## TL;DR
-
-```bash
-# 1. Create GitHub repo at: https://github.com/new
-# Name: scott-cc
-# Visibility: Public
-
-# 2. Push your code
-cd /path/to/scott-cc
-git remote add origin https://github.com/citadelgrad/scott-cc.git
-git push -u origin main
-
-# 3. Share with others
-# Installation commands:
-# /plugin marketplace add citadelgrad/scott-cc
-# /plugin install scott-cc
-```
-
-## What You Have
-
-✅ **8 Slash Commands**
-- Development: `/new-task`, `/code-explain`, `/code-optimize`, `/code-cleanup`, `/lint`, `/docs-generate`
-- UI: `/component-new`, `/page-new`
-
-✅ **11 AI Agents**
-- Architecture: tech-stack-researcher, system-architect, backend-architect, frontend-architect, requirements-analyst
-- Code Quality: refactoring-expert, performance-engineer, security-engineer
-- Documentation: technical-writer, learning-guide, deep-research-agent
-
-## Next Steps
-
-1. **Read PUBLISHING.md** - Full step-by-step guide
-2. **Create GitHub Repo** - https://github.com/new
-3. **Push Code** - See commands above
-4. **Test Installation** - `/plugin install citadelgrad/scott-cc`
-5. **Share** - Post on social media, submit to marketplaces
-
-## Installation Commands (for users)
+## Install
 
 ```bash
-# Step 1: Add marketplace
 /plugin marketplace add citadelgrad/scott-cc
-
-# Step 2: Install plugin
-/plugin install scott-cc
 ```
 
-## Your Plugin URL (after publishing)
+## What You Get
 
-https://github.com/citadelgrad/scott-cc
+**Core Plugin (scott-cc)**
+- 9 slash commands (new-task, code-cleanup, code-optimize, code-explain, lint, docs-generate, component-new, page-new, security-cheatsheet)
+- 8 AI agents (api-debugger, backend-architect, deep-research-agent, emergent-behavior, frontend-architect, refactoring-expert, requirements-analyst, system-architect)
+- 4 skills (python-simplifier, typescript-simplifier, context7, context-file-optimizer)
 
-## Need Help?
+**Sub-Plugins**
+- beads-epic-builder - Plan, build, and swarm beads epics (2 agents, 2 commands)
+- browser-automation - Browser testing & validation (2 agents, 2 skills)
+- research-tools - Learning guides, tech stack research (3 agents, 1 skill)
+- security-suite - Security advisory and scanning (2 agents)
+- performance-optimization - Performance engineering (1 agent)
+- mutation-testing - Mutation testing suite (5 agents, 1 skill)
 
-- See **PUBLISHING.md** for detailed instructions
-- See **README.md** for plugin documentation
-- Claude Code Docs: https://docs.claude.com/en/docs/claude-code/plugin-marketplaces
+## Usage
 
----
+```bash
+# Plan a feature into a beads epic
+# Just describe what you want to build - epic-planner agent activates automatically
 
-**You're ready to publish!** 🚀
+# Build an epic sequentially
+/build-feature <epic-id>
+
+# Build an epic with parallel workers
+/epic-swarm <epic-id>
+
+# Code quality
+/python-simplifier
+/typescript-simplifier
+```
+
+## Links
+
+- GitHub: https://github.com/citadelgrad/scott-cc
+- README: Full documentation
+- PUBLISHING.md: How to publish updates
