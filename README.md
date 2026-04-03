@@ -1,6 +1,6 @@
 # Scott's Claude Code Setup
 
-Modular Claude Code plugin suite for productive development. The core plugin provides **9 slash commands**, **8 specialized AI agents**, and **4 skills**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, and more.
+Modular Claude Code plugin suite for productive development. The core plugin provides **10 slash commands**, **8 specialized AI agents**, and **4 skills**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, and more.
 
 ## Quick Install
 
@@ -13,7 +13,7 @@ Or browse the marketplace at [https://claudecode.dev/plugins](https://claudecode
 
 ## What's Inside
 
-### Development Commands (9)
+### Development Commands (10)
 
 - `/scott-cc:new-task` - Analyze task complexity and create implementation plan
 - `/scott-cc:code-explain` - Generate detailed explanations
@@ -24,6 +24,7 @@ Or browse the marketplace at [https://claudecode.dev/plugins](https://claudecode
 - `/scott-cc:component-new` - Create React components
 - `/scott-cc:page-new` - Create Next.js pages
 - `/scott-cc:security-cheatsheet` - Comprehensive security reference
+- `/scott-cc:gha` - Debug failing GitHub Actions runs and audit workflow YAML
 
 ### Specialized AI Agents (8)
 

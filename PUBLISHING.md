@@ -88,7 +88,7 @@ Share this command with others:
   "name": "scott-cc",
   "source": "citadelgrad/scott-cc",
   "description": "Modular Claude Code plugin suite for productive development",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "author": "Scott",
   "tags": ["productivity", "python", "nextjs", "typescript", "react", "development"]
 }
@@ -106,7 +106,7 @@ Example post:
 ```
 Just published my Claude Code setup as a plugin!
 
-9 commands + 8 agents + 4 skills + beads epic builder for productive web development
+10 commands + 8 agents + 4 skills + beads epic builder for productive web development
 
 Install with:
 /plugin install citadelgrad/scott-cc
