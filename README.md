@@ -1,6 +1,6 @@
 # Scott's Claude Code Setup
 
-Modular Claude Code plugin suite for productive development. The core plugin provides **10 slash commands**, **8 specialized AI agents**, and **4 skills**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, and more.
+Modular Claude Code plugin suite for productive development. The core plugin provides **3 slash commands**, **8 specialized AI agents**, and **4 skills**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, and more.
 
 ## Quick Install
 
@@ -13,16 +13,9 @@ Or browse the marketplace at [https://claudecode.dev/plugins](https://claudecode
 
 ## What's Inside
 
-### Development Commands (10)
+### Development Commands (3)
 
 - `/scott-cc:new-task` - Analyze task complexity and create implementation plan
-- `/scott-cc:code-explain` - Generate detailed explanations
-- `/scott-cc:code-optimize` - Performance optimization
-- `/scott-cc:code-cleanup` - Refactoring and cleanup
-- `/scott-cc:lint` - Linting and fixes
-- `/scott-cc:docs-generate` - Documentation generation
-- `/scott-cc:component-new` - Create React components
-- `/scott-cc:page-new` - Create Next.js pages
 - `/scott-cc:security-cheatsheet` - Comprehensive security reference
 - `/scott-cc:gha` - Debug failing GitHub Actions runs and audit workflow YAML
 
@@ -46,11 +39,10 @@ Or browse the marketplace at [https://claudecode.dev/plugins](https://claudecode
 
 ### Hooks
 
-- **ghostty-bell** (`Stop` event) - Ghostty terminal tab indicator when Claude finishes responding
-  - Adds bell to the Ghostty tab title (clears on focus)
-  - Bounces the dock icon
-  - Sends a macOS desktop notification with a brief summary of the work done
-  - Requires [Ghostty](https://ghostty.org) terminal (v1.2.0+)
+- **terminal-bell** (`Stop` event) - Terminal tab indicator when Claude finishes responding
+  - Sends BEL for tab indicator + dock bounce
+  - Sends desktop notification with a brief summary of the work done
+  - Supports Ghostty/iTerm2 (OSC 9) and WezTerm (OSC 777)
 
 ### Specialized Plugins
 

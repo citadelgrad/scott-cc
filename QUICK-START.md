@@ -9,7 +9,7 @@
 ## What You Get
 
 **Core Plugin (scott-cc)**
-- 9 slash commands (new-task, code-cleanup, code-optimize, code-explain, lint, docs-generate, component-new, page-new, security-cheatsheet)
+- 3 slash commands (new-task, security-cheatsheet, gha)
 - 8 AI agents (api-debugger, backend-architect, deep-research-agent, emergent-behavior, frontend-architect, refactoring-expert, requirements-analyst, system-architect)
 - 4 skills (python-simplifier, typescript-simplifier, context7, context-file-optimizer)
 

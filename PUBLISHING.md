@@ -48,7 +48,7 @@ Test that your plugin can be installed:
 /plugin install citadelgrad/scott-cc
 
 # Verify commands are available (note: commands are namespaced)
-/scott-cc:code-explain
+/scott-cc:new-task
 
 # Verify agents are available (they'll activate automatically based on context)
 ```
@@ -106,18 +106,18 @@ Example post:
 ```
 Just published my Claude Code setup as a plugin!
 
-10 commands + 8 agents + 4 skills + beads epic builder for productive web development
+3 commands + 8 agents + 4 skills + beads epic builder for productive web development
 
 Install with:
 /plugin install citadelgrad/scott-cc
 
 Features:
-- Code optimization (/code-optimize)
-- Tech research agent
-- Architecture agents
-- Security & performance agents
+- Task analysis and planning (/new-task)
+- Security cheatsheets (/security-cheatsheet)
+- GitHub Actions debugging (/gha)
+- Architecture and research agents
 
-Perfect for Next.js, React, TypeScript, and Supabase projects!
+Perfect for Next.js, React, TypeScript, and Python projects!
 
 GitHub: https://github.com/citadelgrad/scott-cc
 ```
