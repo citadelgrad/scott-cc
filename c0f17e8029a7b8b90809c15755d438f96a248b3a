@@ -1,0 +1,42 @@
+PUBLISHING.md
+  55849d247ac40698 109
+README.md
+  55849d247ac40698 3,16
+QUICK-START.md
+  55849d247ac40698 12
+.claude-plugin/plugin.json
+  55849d247ac40698 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.8",
+  "base_commit_sha": "c0f17e8029a7b8b90809c15755d438f96a248b3a",
+  "prompts": {
+    "55849d247ac40698": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b4642e9-22d8-4fe0-8c95-b196d4874430",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Scott Nixon",
+      "messages": [],
+      "total_additions": 5,
+      "total_deletions": 109,
+      "accepted_lines": 77,
+      "overriden_lines": 0
+    },
+    "b7224ca338ccecc9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "847645cb-6769-4624-9054-7e74ad4383e5",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Scott Nixon",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 75,
+      "overriden_lines": 0
+    }
+  }
+}
