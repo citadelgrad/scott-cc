@@ -1,0 +1,36 @@
+hooks/toon_post_hook.sh
+  b7224ca338ccecc9 1-75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.8",
+  "base_commit_sha": "c67f3d5e5467b7a4825a1773b02ad8199285df9c",
+  "prompts": {
+    "55849d247ac40698": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b4642e9-22d8-4fe0-8c95-b196d4874430",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Scott Nixon",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 72,
+      "overriden_lines": 0
+    },
+    "b7224ca338ccecc9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "847645cb-6769-4624-9054-7e74ad4383e5",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Scott Nixon",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 75,
+      "overriden_lines": 0
+    }
+  }
+}
