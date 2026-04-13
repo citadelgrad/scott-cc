@@ -1,0 +1,36 @@
+.claude-plugin/plugin.json
+  55849d247ac40698 3-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.2.8",
+  "base_commit_sha": "b8418b3cdecb24669aaa8b267a978499680c8d3e",
+  "prompts": {
+    "55849d247ac40698": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2b4642e9-22d8-4fe0-8c95-b196d4874430",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Scott Nixon",
+      "messages": [],
+      "total_additions": 2,
+      "total_deletions": 2,
+      "accepted_lines": 74,
+      "overriden_lines": 0
+    },
+    "b7224ca338ccecc9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "847645cb-6769-4624-9054-7e74ad4383e5",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Scott Nixon",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 75,
+      "overriden_lines": 0
+    }
+  }
+}
