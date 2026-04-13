@@ -130,20 +130,31 @@ When you make changes to your local setup:
 ```bash
 cd /path/to/scott-cc
 
-# Make your changes to commands/ or agents/ directories
-# Then commit and push
+# Make your changes to commands/, hooks/, agents/, skills/, etc.
+python3 scripts/verify_plugin.py
 
+# Commit your functional changes
 git add .
 git commit -m "Add new command: scott-cc:new-command-name"
 
-# Update version in .claude-plugin/plugin.json
-# Bump version: 1.0.0 -> 1.1.0
+# If users need to receive the update, bump BOTH plugin versions
+# Example: 1.0.0 -> 1.1.0 in:
+#   .claude-plugin/plugin.json
+#   .claude-plugin/marketplace.json
+python3 scripts/verify_plugin.py
 
-git add .claude-plugin/plugin.json
+git add .claude-plugin/plugin.json .claude-plugin/marketplace.json scripts/verify_plugin.py
+# include any new/changed hook files too, e.g. hooks/toon_post_hook.sh
 git commit -m "Bump version to 1.1.0"
 
 git push
 ```
+
+What `scripts/verify_plugin.py` checks:
+- `.claude-plugin/plugin.json` parses
+- `.claude-plugin/marketplace.json` parses
+- root plugin version matches in both files
+- every `${CLAUDE_PLUGIN_ROOT}/...` file referenced from `hooks/hooks.json` actually exists in the repo
 
 Users can update to the latest version:
 ```bash
