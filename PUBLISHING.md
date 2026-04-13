@@ -106,13 +106,12 @@ Example post:
 ```
 Just published my Claude Code setup as a plugin!
 
-3 commands + 8 agents + 4 skills + beads epic builder for productive web development
+2 commands + 8 agents + 4 skills + beads epic builder for productive web development
 
 Install with:
 /plugin install citadelgrad/scott-cc
 
 Features:
-- Task analysis and planning (/new-task)
 - Security cheatsheets (/security-cheatsheet)
 - GitHub Actions debugging (/gha)
 - Architecture and research agents
