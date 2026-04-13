@@ -1,7 +1,8 @@
 #!/bin/bash
-# Ghostty tab indicator for Claude Code Stop events
-# Sends BEL to trigger 🔔 in tab title + dock bounce
-# Sends OSC 9 desktop notification with brief summary of work done
+# Terminal tab indicator for Claude Code Stop events
+# Supports Ghostty, WezTerm, iTerm2, and other terminals
+# Sends BEL to trigger tab indicator + dock bounce
+# Sends desktop notification via OSC 9 (Ghostty/iTerm2) and OSC 777 (WezTerm)
 # Skips if stop_hook_active (prevents double-bell when another hook blocks)
 
 INPUT=$(cat)
@@ -66,5 +67,6 @@ print(summary)
 
 SUMMARY="${SUMMARY:-Claude finished}"
 
-# OSC 9 desktop notification with summary
-printf '\033]9;%s\a' "$SUMMARY" > /dev/tty 2>/dev/null
+# Desktop notifications (send both; terminals ignore unrecognized sequences)
+printf '\033]9;%s\a' "$SUMMARY" > /dev/tty 2>/dev/null           # OSC 9: Ghostty, iTerm2
+printf '\033]777;notify;Claude Code;%s\033\\' "$SUMMARY" > /dev/tty 2>/dev/null  # OSC 777: WezTerm
