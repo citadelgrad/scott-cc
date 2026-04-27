@@ -1,0 +1,25 @@
+.claude-plugin/marketplace.json
+  7edbeb6d10d1deb8 15-16
+.claude-plugin/plugin.json
+  7edbeb6d10d1deb8 3-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "39fe80b1bedc482fc388b0df5577253f44a8c4d9",
+  "prompts": {
+    "7edbeb6d10d1deb8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a7a51e90-6f5d-4c51-bd05-3fd90c834c95",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon",
+      "messages": [],
+      "total_additions": 152,
+      "total_deletions": 4,
+      "accepted_lines": 152,
+      "overriden_lines": 0
+    }
+  }
+}
