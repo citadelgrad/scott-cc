@@ -48,6 +48,14 @@ PBT complements example-based tests — it doesn't replace them. Use both.
 | Go | `rapid` | `go get pgregory.net/rapid` |
 | Java/Scala | `jqwik` / `ScalaCheck` | Maven/sbt |
 
+## Examples
+
+`examples.py` in this directory contains **two runnable Hypothesis tests per property type** (14 tests total). Copy and adapt them as a starting point.
+
+```
+pytest skills/property-based-testing/examples.py  # requires: uv add hypothesis pytest
+```
+
 ## Hypothesis (Python) Example
 
 ```python
