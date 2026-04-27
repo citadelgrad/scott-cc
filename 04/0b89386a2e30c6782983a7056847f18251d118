@@ -1,0 +1,25 @@
+skills/property-based-testing/examples.py
+  7edbeb6d10d1deb8 1-175
+skills/property-based-testing/SKILL.md
+  7edbeb6d10d1deb8 51-58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "040b89386a2e30c6782983a7056847f18251d118",
+  "prompts": {
+    "7edbeb6d10d1deb8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a7a51e90-6f5d-4c51-bd05-3fd90c834c95",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon",
+      "messages": [],
+      "total_additions": 319,
+      "total_deletions": 0,
+      "accepted_lines": 467,
+      "overriden_lines": 0
+    }
+  }
+}
