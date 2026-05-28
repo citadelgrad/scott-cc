@@ -1,0 +1,34 @@
+hooks/terminal_bell.sh
+  s_c604eb16e38027::t_9f0d12c3604d37 73-74
+skills/karpathy-guidelines/SKILL.md
+  s_c604eb16e38027::t_c995cb0e75c54c 1-67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "5c3d69c4f2309bec19e10ff4dea3edc151bf45c2",
+  "prompts": {
+    "7edbeb6d10d1deb8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a7a51e90-6f5d-4c51-bd05-3fd90c834c95",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>",
+      "total_additions": 22,
+      "total_deletions": 0,
+      "accepted_lines": 276,
+      "overriden_lines": 1
+    }
+  },
+  "sessions": {
+    "s_c604eb16e38027": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4673bc04-4b26-41c3-b30c-de8def9c6867",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
