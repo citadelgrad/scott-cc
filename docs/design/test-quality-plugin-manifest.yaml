@@ -1,0 +1,92 @@
+# Add these agents to your scott-cc plugin manifest
+
+agents:
+  # Mutation Generator
+  - name: scott-cc:test-saboteur
+    description: |
+      Create semantic code mutations for test quality analysis. This agent identifies
+      mutation points in source code and applies controlled changes (boundary conditions,
+      boolean inversions, return value mutations) to test if the test suite catches them.
+
+      Use when you need to create code mutations for mutation testing.
+
+      Examples:
+      - "Create mutations for this function"
+      - "Generate 10 semantic mutations for stripe_handler.py"
+      - "Mutate the retry logic to test if tests catch boundary bugs"
+    tools:
+      - All tools
+
+  # Test Runner
+  - name: scott-cc:test-executor
+    description: |
+      Execute test suites against mutated code and collect detailed results. Runs pytest,
+      jest, vitest, or other test frameworks and parses output to identify which tests
+      passed/failed, coverage metrics, and execution time.
+
+      Use when you need to run tests and analyze results against mutated code.
+
+      Examples:
+      - "Run tests against mutation mut-001"
+      - "Execute pytest and collect coverage for this mutation"
+      - "Run test suite in worktree test-mutation-005"
+    tools:
+      - All tools
+
+  # Quality Analyzer
+  - name: scott-cc:test-auditor
+    description: |
+      Analyze mutation test results to identify low-quality tests. Calculates mutation
+      score, identifies "zombie tests" (tests that pass despite code being broken),
+      finds redundant tests, and detects over-mocked tests.
+
+      Use when you need to analyze test quality from mutation testing results.
+
+      Examples:
+      - "Analyze mutation test results and calculate mutation score"
+      - "Find zombie tests from these 15 mutation runs"
+      - "Identify redundant tests in the test suite"
+    tools:
+      - All tools
+
+  # Test Refactoring Specialist
+  - name: scott-cc:test-refactor-specialist
+    description: |
+      Consolidate redundant tests and improve test quality. Converts multiple similar
+      tests into parameterized tests, removes zombie tests (with user approval), and
+      suggests minimal high-quality test sets.
+
+      Use when you need to refactor and consolidate tests based on quality analysis.
+
+      Examples:
+      - "Consolidate these 150 model validation tests"
+      - "Convert similar tests to parameterized tests"
+      - "Refactor test suite to improve mutation score"
+    tools:
+      - All tools
+
+  # Orchestrator
+  - name: scott-cc:test-quality-reviewer
+    description: |
+      Orchestrate comprehensive mutation testing workflow for test quality analysis.
+      Launches saboteur to create mutations, executor to run tests, auditor to analyze
+      results, and refactor specialist to propose improvements. Generates executive
+      summary with mutation score, zombie test identification, and refactoring plan.
+
+      Use when the user wants comprehensive test quality analysis via mutation testing.
+
+      Examples:
+      - "Audit test quality for my Stripe dunning logic"
+      - "Review test suite quality with mutation testing"
+      - "Find weak tests in my payment processing code"
+      - "Mutation test this module and find zombie tests"
+    tools:
+      - All tools
+
+# Optional: Add a skill as a user-facing command
+skills:
+  - name: scott-cc:mutation-test
+    description: |
+      Run comprehensive mutation testing to audit test quality
+    trigger: /mutation-test
+    agent: scott-cc:test-quality-reviewer

@@ -1,6 +1,6 @@
 # Scott's Claude Code Setup
 
-Modular Claude Code plugin suite for productive development. The core plugin provides **2 slash commands**, **8 specialized AI agents**, and **4 skills**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, and more.
+Modular Claude Code plugin suite for productive development. The core plugin provides **2 slash commands**, **8 specialized AI agents**, and **8 skills**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, and more.
 
 ## Quick Install
 
@@ -29,12 +29,16 @@ Or browse the marketplace at [https://claudecode.dev/plugins](https://claudecode
 - **requirements-analyst** - Transform ideas into concrete specifications
 - **system-architect** - Scalable system architecture design
 
-### Skills (4)
+### Skills (8)
 
 - **python-simplifier** - DRY/KISS code quality standards for Python
 - **typescript-simplifier** - DRY/KISS code quality standards for TypeScript/JavaScript
 - **context7** - Fetch up-to-date documentation for any library
 - **context-file-optimizer** - Audit and rewrite AI agent context files (AGENTS.md, CLAUDE.md)
+- **karpathy-guidelines** - Behavioral guidelines to reduce common LLM coding mistakes
+- **property-based-testing** - Property-based testing for serialization, algorithms, and API contracts
+- **writing-about-engineering** - First-person engineering writing (blog posts, postmortems, threads)
+- **writing-skills-excellence** - Framework for creating and improving agent skills
 
 ### Hooks
 
