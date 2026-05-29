@@ -12,8 +12,8 @@
     {
       "name": "scott-cc",
       "source": "./",
-      "description": "Core development tools with 10 commands, 8 agents, 7 skills, and hooks for productive modern web development",
-      "version": "3.7.0",
+      "description": "Core development tools with 2 commands, 8 agents, 8 skills, and hooks for productive modern web development",
+      "version": "3.8.0",
       "author": {
         "name": "Scott Nixon"
       },
