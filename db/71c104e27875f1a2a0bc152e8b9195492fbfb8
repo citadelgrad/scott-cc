@@ -1,0 +1,27 @@
+skills/init/SKILL.md
+  s_86491924023bbe::t_41c780897f635a 1-174
+templates/AGENTS.md
+  s_86491924023bbe::t_bd1ae7451d2d86 1-30
+templates/CLAUDE.md
+  s_86491924023bbe::t_846399043314fb 1-85
+docs/setup-architecture.md
+  s_86491924023bbe::t_00c979ca02fc6f 1-225
+templates/.pre-commit-config.yaml
+  s_86491924023bbe::t_f328bcc37ac420 1-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "db71c104e27875f1a2a0bc152e8b9195492fbfb8",
+  "prompts": {},
+  "sessions": {
+    "s_86491924023bbe": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a44597d0-2784-4bb5-aa21-0d7427b65300",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
