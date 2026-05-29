@@ -7,6 +7,14 @@ description: Audit and rewrite AGENTS.md, CLAUDE.md, and other AI agent context 
 
 Audit and rewrite AI agent context files following research-backed principles. Verbose context files hurt agent performance (-2 to -3%) and increase costs (+20%). Minimal, tooling-focused files improve performance (+4%) with lower overhead.
 
+## Principle Hierarchy
+
+Three layers inform what belongs in a context file:
+
+1. **karpathy-guidelines** (skill) — Foundational behavioral principles: think before coding, simplicity first, surgical changes, goal-driven execution. These govern how an agent acts; they don't need to be restated in every project's CLAUDE.md since the skill is globally available.
+2. **Code quality standards** — Project coding rules (DRY, KISS, thin handlers, no hardcoded values, no silent failures, ~20-line functions, no premature abstraction). These ARE project-specific and belong in CLAUDE.md. **Preserve them — do not cut them as "general advice".**
+3. **This skill** — Strips everything else: architecture prose, directory listings, duplicated docs, tutorial content.
+
 ## When to Use
 
 - Creating a new AGENTS.md, CLAUDE.md, or similar context file
@@ -48,12 +56,14 @@ For every section in every context file, classify it:
 | **Build/test command** | KEEP | Exact test commands with paths, build commands |
 | **Non-obvious gotcha** | KEEP | "Worker caches env vars", "pitchers stored as P not SP/RP" |
 | **Operational rule** | KEEP (condense) | "Stop after 2-3 failures", "never use pip" |
+| **Code quality standards** | KEEP | DRY, KISS, thin handlers, no silent failures, ~20-line functions — project coding rules belong in CLAUDE.md |
 | **Architecture overview** | CUT | System diagrams, component descriptions |
 | **Directory listing** | CUT | File tree enumerations, module inventories |
 | **Duplicated docs** | CUT | Content from README, config files, or other context files |
 | **Tutorial/reference** | MOVE to docs/ | MCP tool guides, pipeline authoring references |
 | **Code examples of patterns** | CUT | Agents discover patterns from actual code |
 | **Tool installation instructions** | CUT | One-time setup, not per-session |
+| **Behavioral guidelines** | CUT | Karpathy-style agent behavior rules — covered by the `karpathy-guidelines` skill globally |
 
 ### Step 4: Rewrite
 
