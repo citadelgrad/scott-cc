@@ -1,0 +1,25 @@
+docs/setup-architecture.md
+  s_86491924023bbe::t_30b6f4547f449e 3,5,7-13,22-33,38,46,48,50-57,60,62,64
+README.md
+  s_86491924023bbe::t_9b33a1d366ec6f 3,11,13-20,22,24,26-27,29,31-38,40,42-50,52,54,56,58-83,159-160,165-171,202,204-205,215
+.claude-plugin/marketplace.json
+  s_86491924023bbe::t_51cf1dee571337 15-16
+.claude-plugin/plugin.json
+  s_86491924023bbe::t_b86ccdeaa6caae 3-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "d4a013fa0d7d3c65eb56b67f59875a61ad91f658",
+  "prompts": {},
+  "sessions": {
+    "s_86491924023bbe": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a44597d0-2784-4bb5-aa21-0d7427b65300",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
