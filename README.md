@@ -1,62 +1,86 @@
 # Scott's Claude Code Setup
 
-Modular Claude Code plugin suite for productive development. The core plugin provides **2 slash commands**, **8 specialized AI agents**, and **8 skills**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, and more.
+Modular Claude Code plugin suite for productive development. The core plugin provides **2 slash commands**, **8 specialized AI agents**, **9 skills**, **2 hooks**, and **3 project templates**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, and more.
 
 ## Quick Install
 
 ```bash
-# Install from the plugins marketplace
 /plugin marketplace add citadelgrad/scott-cc
 ```
 
-Or browse the marketplace at [https://claudecode.dev/plugins](https://claudecode.dev/plugins) to discover this and other plugins.
+## What's Inside — At a Glance
 
-## What's Inside
+| Type | Count | Names |
+|------|------:|-------|
+| Commands | 2 | `security-cheatsheet`, `gha` |
+| Agents | 8 | `api-debugger`, `backend-architect`, `deep-research-agent`, `emergent-behavior`, `frontend-architect`, `refactoring-expert`, `requirements-analyst`, `system-architect` |
+| Skills | 9 | `init`, `python-simplifier`, `typescript-simplifier`, `context7`, `context-file-optimizer`, `karpathy-guidelines`, `property-based-testing`, `writing-about-engineering`, `writing-skills-excellence` |
+| Hooks | 2 | `terminal-bell` (Stop), `toon-post-hook` (PostToolUse) |
+| Templates | 3 | `.pre-commit-config.yaml`, `CLAUDE.md`, `AGENTS.md` |
+| Sub-plugins | 6 | `beads-epic-builder`, `browser-automation`, `research-tools`, `security-suite`, `performance-optimization`, `mutation-testing` |
 
-### Development Commands (2)
+---
 
-- `/scott-cc:security-cheatsheet` - Comprehensive security reference
-- `/scott-cc:gha` - Debug failing GitHub Actions runs and audit workflow YAML
+## Commands (2)
 
-### Specialized AI Agents (8)
+- `/scott-cc:security-cheatsheet` — Comprehensive security reference for common vulnerabilities and mitigations
+- `/scott-cc:gha` — Debug failing GitHub Actions runs and audit workflow YAML
 
-- **api-debugger** - Full-stack API debugging with browser integration
-- **backend-architect** - Backend systems with data integrity & security
-- **deep-research-agent** - Comprehensive research with adaptive strategies
-- **emergent-behavior** - Analyze systems for emergent properties
-- **frontend-architect** - Performant, accessible UI architecture
-- **refactoring-expert** - Systematic refactoring and clean code
-- **requirements-analyst** - Transform ideas into concrete specifications
-- **system-architect** - Scalable system architecture design
+## Agents (8)
 
-### Skills (8)
+- **api-debugger** — Full-stack API debugging with browser integration
+- **backend-architect** — Backend systems with data integrity & security focus
+- **deep-research-agent** — Comprehensive research with adaptive exploration strategies
+- **emergent-behavior** — Analyze systems for emergent and non-obvious properties
+- **frontend-architect** — Performant, accessible UI architecture
+- **refactoring-expert** — Systematic refactoring and clean code principles
+- **requirements-analyst** — Transform ambiguous ideas into concrete specifications
+- **system-architect** — Scalable system architecture and long-term technical decisions
 
-- **python-simplifier** - DRY/KISS code quality standards for Python
-- **typescript-simplifier** - DRY/KISS code quality standards for TypeScript/JavaScript
-- **context7** - Fetch up-to-date documentation for any library
-- **context-file-optimizer** - Audit and rewrite AI agent context files (AGENTS.md, CLAUDE.md)
-- **karpathy-guidelines** - Behavioral guidelines to reduce common LLM coding mistakes
-- **property-based-testing** - Property-based testing for serialization, algorithms, and API contracts
-- **writing-about-engineering** - First-person engineering writing (blog posts, postmortems, threads)
-- **writing-skills-excellence** - Framework for creating and improving agent skills
+## Skills (9)
 
-### Hooks
+- **init** — Interactive project scaffolding: beads, CLAUDE.md, AGENTS.md symlink, .envrc, Makefile, pre-commit hooks (all optional)
+- **python-simplifier** — DRY/KISS code quality review for Python
+- **typescript-simplifier** — DRY/KISS code quality review for TypeScript/JavaScript
+- **context7** — Fetch up-to-date documentation for any library or framework
+- **context-file-optimizer** — Audit and rewrite AI agent context files (AGENTS.md, CLAUDE.md)
+- **karpathy-guidelines** — Behavioral guidelines to reduce common LLM coding mistakes
+- **property-based-testing** — Property-based testing for serialization, algorithms, and API contracts
+- **writing-about-engineering** — First-person engineering writing (blog posts, postmortems, threads)
+- **writing-skills-excellence** — Framework for creating and improving agent skills
 
-- **terminal-bell** (`Stop` event) - Terminal tab indicator when Claude finishes responding
-  - Sends BEL for tab indicator + dock bounce
-  - Sends desktop notification with a brief summary of the work done
-  - Supports Ghostty/iTerm2 (OSC 9) and WezTerm (OSC 777)
+## Hooks (2)
 
-### Specialized Plugins
+- **terminal-bell** (`Stop`) — Terminal tab indicator when Claude finishes responding. Sends BEL character for tab/dock notification, desktop notification with a brief summary, and supports Ghostty/iTerm2 (OSC 9) and WezTerm (OSC 777).
 
-Install these sub-plugins from the marketplace for additional capabilities:
+- **toon-post-hook** (`PostToolUse`) — Encodes large tool responses to TOON format (a compact alternative to JSON) before they enter the context window. Reduces token consumption on verbose MCP and built-in tool outputs. No-op if `toon` is not installed.
 
-- **beads-epic-builder** - Plan, build, and swarm beads epics (2 agents, 2 commands)
-- **browser-automation** - Browser testing & validation (2 agents, 2 skills)
-- **research-tools** - Learning guides, tech stack research, technical writing (3 agents, 1 skill)
-- **security-suite** - Security advisory and vulnerability scanning (2 agents)
-- **performance-optimization** - Performance engineering and profiling (1 agent)
-- **mutation-testing** - Comprehensive mutation testing suite (5 agents, 1 skill)
+## Templates (3)
+
+Stored in `templates/` — copy to your project or use the `/init` skill to deploy them.
+
+- **`.pre-commit-config.yaml`** — Canonical pre-commit hooks: general hygiene (trailing whitespace, file checks), Python (ruff lint+format, ty type check), TypeScript/JS (biome lint+format), security (gitleaks secret scanning)
+- **`CLAUDE.md`** — Global Claude Code instructions template (CLI tool preferences, direnv/Makefile/port conventions, uv-only Python, diagram standards, TLDR MCP usage)
+- **`AGENTS.md`** — Global Codex/agent instructions template (project conventions, code style, git workflow)
+
+## Sub-plugins (6)
+
+Install these from the marketplace for additional capabilities:
+
+```bash
+/plugin marketplace add citadelgrad/scott-cc/<name>
+```
+
+| Plugin | Agents | Commands | Skills | Description |
+|--------|-------:|--------:|-------:|-------------|
+| `beads-epic-builder` | 2 | 2 | — | Plan, build, and swarm beads epics |
+| `browser-automation` | 2 | — | 2 | Browser testing & E2E validation |
+| `research-tools` | 3 | — | 1 | Learning guides, tech stack research, technical writing |
+| `security-suite` | 2 | — | — | Security advisory and vulnerability scanning |
+| `performance-optimization` | 1 | — | — | Performance engineering and profiling |
+| `mutation-testing` | 5 | — | 1 | Comprehensive mutation testing suite |
+
+---
 
 ## Beads Epic Builder
 
@@ -132,17 +156,19 @@ Checkpointing after every wave survives context compaction.
 - Worktree isolation prevents file conflicts between parallel agents
 - Dependency-aware waves respect beads task ordering
 
+---
+
 ## Code Quality Standards
 
 All code follows these principles (enforced by simplifier skills):
 
-- **DRY** - Remove duplicate code
-- **KISS** - Straightforward over clever
-- **Thin Handlers** - Business logic in services
-- **No Hardcoded Values** - Use config/env
-- **No Silent Failures** - Fail fast, specific exceptions
-- **Function Size** - ~20 lines max
-- **No Premature Abstraction** - Wait for 3+ patterns
+- **DRY** — Remove duplicate code
+- **KISS** — Straightforward over clever
+- **Thin Handlers** — Business logic in services
+- **No Hardcoded Values** — Use config/env
+- **No Silent Failures** — Fail fast, specific exceptions
+- **Function Size** — ~20 lines max
+- **No Premature Abstraction** — Wait for 3+ patterns
 
 ## Best For
 
@@ -170,13 +196,13 @@ All code follows these principles (enforced by simplifier skills):
 
 ```bash
 git clone https://github.com/citadelgrad/scott-cc.git
-cd scott-cc
 /plugin install /path/to/scott-cc
 ```
 
-### Reference Documentation
+## Reference Documentation
 
-- `docs/MEANINGFUL_TESTS.md` - Test quality guidelines (Pytest/Vitest)
+- `docs/setup-architecture.md` — Full system architecture with C4 diagrams, bootstrap and project-init sequences, configuration reference
+- `docs/MEANINGFUL_TESTS.md` — Test quality guidelines (Pytest/Vitest)
 
 ## Requirements
 
@@ -186,4 +212,4 @@ cd scott-cc
 
 ## License
 
-MIT - Use freely in your projects
+MIT — Use freely in your projects
