@@ -103,11 +103,11 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 
 Stored in `templates/` — copy to your project or use the `/init` skill to deploy them.
 
-| Template | Description |
-|----------|-------------|
-| `.pre-commit-config.yaml` | Canonical pre-commit hooks: general hygiene (trailing whitespace, file checks), Python (ruff lint+format, ty type check), TypeScript/JS (biome lint+format), security (gitleaks secret scanning). |
-| `CLAUDE.md` | Global Claude Code instructions template covering CLI tool preferences, direnv/Makefile/port conventions, uv-only Python, C4 diagram standards, and TLDR MCP usage. |
-| `AGENTS.md` | Global Codex/agent instructions template covering project conventions, code style, git workflow, and beads task tracking. |
+| Template | Deployed by | Description |
+|----------|-------------|-------------|
+| `.pre-commit-config.yaml` | `init` skill | Canonical pre-commit hooks: general hygiene (trailing whitespace, file checks), Python (ruff lint+format, ty type check), TypeScript/JS (biome lint+format), security (gitleaks secret scanning). |
+| `CLAUDE.md` | `init` skill | Global Claude Code instructions template covering CLI tool preferences, direnv/Makefile/port conventions, uv-only Python, C4 diagram standards, and TLDR MCP usage. |
+| `AGENTS.md` | `init` skill (symlink) | Global Codex/agent instructions template. Deployed as a symlink pointing to `CLAUDE.md` so both agents share the same instructions. |
 
 ---
 

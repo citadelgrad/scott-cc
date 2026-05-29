@@ -2,6 +2,15 @@
 name: init
 description: Initialize a new project with standard scaffolding. Sets up beads, CLAUDE.md, AGENTS.md symlink, .envrc, Makefile, and pre-commit hooks. All components are optional — pick what you need.
 license: MIT
+tags: [project-setup, scaffolding, templates]
+uses:
+  templates:
+    - templates/CLAUDE.md
+    - templates/.pre-commit-config.yaml
+  tools:
+    - beads (bd init)
+    - direnv
+    - pre-commit
 ---
 
 # Project Init
