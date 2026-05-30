@@ -1,0 +1,33 @@
+.gitignore
+  s_bb3a1796e23464::t_3316727d45d77d 12
+skills/init/SKILL.md
+  s_09fd37c0c0d496::t_35ad6f95ce6b5e 159-177
+.claude-plugin/plugin.json
+  s_09fd37c0c0d496::t_2ef5de274f1845 4
+.claude-plugin/marketplace.json
+  s_09fd37c0c0d496::t_cb809d0aa2bae8 16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "6950f5a4003e78cfb64e6a94f6275da82eb48722",
+  "prompts": {},
+  "sessions": {
+    "s_09fd37c0c0d496": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "86045c3c-00b6-4848-8846-ca3fe70f0ca4",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_bb3a1796e23464": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c9bc21f5-49cd-4d3e-a9d7-71e3f2144c14",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
