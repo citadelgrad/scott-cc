@@ -156,6 +156,25 @@ Steps:
    ```bash
    pre-commit install
    ```
+4. After install, check if a `.legacy` hook was created (pre-commit's migration mode displaces any existing hook):
+   ```bash
+   ls .git/hooks/pre-commit.legacy 2>/dev/null
+   ```
+   If the legacy file exists, merge it into the new hook. The generated hook uses `exec` to hand off to Python, which replaces the shell process — anything after `exec` never runs. Replace the `exec` calls with plain calls, append the legacy content, then exit with the accumulated code:
+   ```bash
+   # Replace exec calls so chaining works
+   sed -i.bak \
+     's/^    exec "\$INSTALL_PYTHON"/    "\$INSTALL_PYTHON"/' \
+     .git/hooks/pre-commit
+   sed -i.bak \
+     's/^    exec pre-commit /    pre-commit /' \
+     .git/hooks/pre-commit
+   # Insert _exit tracking and append legacy blocks
+   # (do this with the Write tool or a heredoc — see below)
+   ```
+   In practice: read `.git/hooks/pre-commit`, replace `exec "$INSTALL_PYTHON"` with `"$INSTALL_PYTHON"` and `exec pre-commit` with `pre-commit`, add `_exit=0` before the dispatch block and `_exit=$?` after each call, then append the full contents of `.git/hooks/pre-commit.legacy` (excluding its shebang line), and end with `exit $_exit`. Delete the `.legacy` file when done.
+
+   **Why:** `pre-commit install` intentionally uses `exec` for efficiency. Any beads or UBS integration blocks in the prior hook are silently dropped. This merge step preserves them.
 
 ## Step 4: Report Results
 
