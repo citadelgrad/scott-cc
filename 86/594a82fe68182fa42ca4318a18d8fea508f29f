@@ -1,0 +1,45 @@
+skills/writing-skills-excellence/SKILL.md
+  s_732ef4f5f2c0f5::t_fbe2ff85026aff 85
+  s_732ef4f5f2c0f5::t_ea73e812267012 98
+  s_732ef4f5f2c0f5::t_a54084f266feb5 109,111-118,123-125
+skills/context7/SKILL.md
+  s_732ef4f5f2c0f5::t_2ef105847b766e 32-33
+  s_732ef4f5f2c0f5::t_11fdc642cf70f6 10
+skills/writing-skills-excellence/gotchas.md
+  s_732ef4f5f2c0f5::t_2b9771b5305a76 156,161,163-168,175,177
+skills/writing-skills-excellence/references/standards/metadata-standard.md
+  s_732ef4f5f2c0f5::t_c44ee5b8e55fe0 30
+  s_732ef4f5f2c0f5::t_c6ae0e7d19028c 65
+  s_732ef4f5f2c0f5::t_ded592a0cad95c 3
+.claude-plugin/plugin.json
+  s_732ef4f5f2c0f5::t_d67d714603dbaa 4
+skills/init/SKILL.md
+  s_732ef4f5f2c0f5::t_f5a4e559eae7b5 236
+  s_732ef4f5f2c0f5::t_6d2f947b77c840 241
+  s_732ef4f5f2c0f5::t_c98311ad71255a 86,89-93,98
+  s_732ef4f5f2c0f5::t_c67d7d1dc34ab9 250
+  s_732ef4f5f2c0f5::t_236347b25fd993 309
+skills/context-file-optimizer/SKILL.md
+  s_732ef4f5f2c0f5::t_e26fb3de646815 66
+  s_732ef4f5f2c0f5::t_76c97a01be8a7f 14
+skills/property-based-testing/SKILL.md
+  s_732ef4f5f2c0f5::t_210eb4504153ab 88,92
+skills/writing-skills-excellence/references/standards/README.md
+  s_732ef4f5f2c0f5::t_12329373f35b1c 13,15,23,25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "86594a82fe68182fa42ca4318a18d8fea508f29f",
+  "prompts": {},
+  "sessions": {
+    "s_732ef4f5f2c0f5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ed14dd62-74e9-4857-98b6-ac2e590f11bc",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
