@@ -1,0 +1,21 @@
+skills/cli-design/SKILL.md
+  s_84991d90ed8623::t_5b3099aa478163 1-333
+.claude-plugin/plugin.json
+  s_84991d90ed8623::t_10c4c80c49fcbe 3-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "f3e702a597e1d7a432196a3ae6a841588e9325d8",
+  "prompts": {},
+  "sessions": {
+    "s_84991d90ed8623": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "92354e0a-2885-4b06-8e4a-dad772776f09",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
