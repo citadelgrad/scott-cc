@@ -11,7 +11,7 @@ Audit and rewrite AI agent context files following research-backed principles. V
 
 Three layers inform what belongs in a context file:
 
-1. **karpathy-guidelines** (skill) — Foundational behavioral principles: think before coding, simplicity first, surgical changes, goal-driven execution. These govern how an agent acts; they don't need to be restated in every project's CLAUDE.md since the skill is globally available.
+1. **karpathy-guidelines** (skill) — Foundational behavioral principles: think before coding, simplicity first, surgical changes, goal-driven execution. These govern how an agent acts; they don't need to be restated in every project's CLAUDE.md if the project explicitly uses this skill on a regular basis.
 2. **Code quality standards** — Project coding rules (DRY, KISS, thin handlers, no hardcoded values, no silent failures, ~20-line functions, no premature abstraction). These ARE project-specific and belong in CLAUDE.md. **Preserve them — do not cut them as "general advice".**
 3. **This skill** — Strips everything else: architecture prose, directory listings, duplicated docs, tutorial content.
 
@@ -63,7 +63,7 @@ For every section in every context file, classify it:
 | **Tutorial/reference** | MOVE to docs/ | MCP tool guides, pipeline authoring references |
 | **Code examples of patterns** | CUT | Agents discover patterns from actual code |
 | **Tool installation instructions** | CUT | One-time setup, not per-session |
-| **Behavioral guidelines** | CUT | Karpathy-style agent behavior rules — covered by the `karpathy-guidelines` skill globally |
+| **Behavioral guidelines** | CUT (with caution) | Karpathy-style rules — only cut if the project team consistently invokes `/karpathy-guidelines`; keep them if behavioral consistency matters more than token savings |
 
 ### Step 4: Rewrite
 

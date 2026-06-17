@@ -10,8 +10,9 @@ Comprehensive reference for creating effective agent skills.
 
 ## Directory Structure
 
+**User-global** (available in all sessions):
 ```
-~/.config/opencode/skills/
+~/.claude/skills/
   {skill-name}/           # kebab-case, matches `name` field
     SKILL.md              # Required: main skill definition
     references/           # Optional: supporting documentation
@@ -19,9 +20,9 @@ Comprehensive reference for creating effective agent skills.
       *.md                # Additional files
 ```
 
-**Project-local alternative:**
+**Project-local** (available only in this project):
 ```
-.agent/skills/{skill-name}/SKILL.md
+.claude/skills/{skill-name}/SKILL.md
 ```
 
 ## Naming Rules

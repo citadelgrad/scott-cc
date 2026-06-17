@@ -1,6 +1,6 @@
 # SKILL.md Metadata Standard
 
-Official frontmatter fields recognized by OpenCode.
+Frontmatter fields for Claude Code skills.
 
 ## Required Fields
 
@@ -27,7 +27,7 @@ name: skill-name
 description: Purpose and triggers.
 metadata:
   license: MIT
-  compatibility: opencode
+  compatibility: claude-code
   author: "your-name"
   version: "1.0.0"
   category: "reference"
@@ -47,7 +47,7 @@ metadata:
 ^[a-z0-9]+(-[a-z0-9]+)*$
 ```
 
-**Valid**: `my-skill`, `git-release`, `tdd`  
+**Valid**: `my-skill`, `git-release`, `tdd`
 **Invalid**: `My-Skill`, `my_skill`, `-my-skill`, `my--skill`
 
 ## Common Metadata Keys
@@ -62,4 +62,4 @@ Use these conventions for consistency across skills:
 | `tags` | `"react, hooks"` | Searchable keywords |
 
 > [!IMPORTANT]
-> Any field not listed here is **ignored** by OpenCode's skill loader.
+> Claude Code reads only `name` and `description` from frontmatter for skill discovery. All other fields are ignored by the skill loader but useful as documentation.

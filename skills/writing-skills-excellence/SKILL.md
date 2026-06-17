@@ -82,7 +82,7 @@ metadata:
 | Mistake | Fix |
 |---------|-----|
 | Description summarizes workflow | Use "Use when..." triggers only |
-| No `metadata.triggers` | Add 3+ keywords |
+| Vague description | Put "Use when..." trigger conditions in `description`; Claude Code uses this for discovery |
 | Generic name ("helper") | Use gerund (`creating-skills`) |
 | Long monolithic SKILL.md | Split into `references/` |
 
@@ -95,29 +95,34 @@ Before deploying any skill:
 - [ ] `name` field matches directory name exactly
 - [ ] `SKILL.md` filename is ALL CAPS
 - [ ] Description starts with "Use when..."
-- [ ] `metadata.triggers` has 3+ keywords
+- [ ] Description has clear "Use when..." trigger conditions (Claude Code uses `description` for discovery, not `metadata.triggers`)
 - [ ] Total lines < 500 (use `references/` for more)
 - [ ] No `@` force-loading in cross-references
 - [ ] Tested with real scenarios
 
 ## 🔗 Related Skills
 
-- **opencode-expert**: For OpenCode environment configuration
 - Use `/write-skill` command for guided skill creation
 
 ## Examples
 
-**Create a Tier 1 skill:**
+**Create a Tier 1 skill (user-global):**
 ```bash
-mkdir -p ~/.config/opencode/skills/my-technique
-touch ~/.config/opencode/skills/my-technique/SKILL.md
+mkdir -p ~/.claude/skills/my-technique
+touch ~/.claude/skills/my-technique/SKILL.md
+```
+
+**Create a Tier 1 skill (project-local):**
+```bash
+mkdir -p .claude/skills/my-technique
+touch .claude/skills/my-technique/SKILL.md
 ```
 
 **Create a Tier 2 skill:**
 ```bash
-mkdir -p ~/.config/opencode/skills/my-skill/references/core
-touch ~/.config/opencode/skills/my-skill/{SKILL.md,gotchas.md}
-touch ~/.config/opencode/skills/my-skill/references/core/README.md
+mkdir -p .claude/skills/my-skill/references/core
+touch .claude/skills/my-skill/{SKILL.md,gotchas.md}
+touch .claude/skills/my-skill/references/core/README.md
 ```
 
 ## Limitations

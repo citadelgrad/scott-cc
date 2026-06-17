@@ -7,7 +7,7 @@ description: Retrieve up-to-date documentation for software libraries, framework
 
 ## Overview
 
-This skill enables retrieval of current documentation for software libraries and components by querying the Context7 API via curl. Use it instead of relying on potentially outdated training data.
+This skill enables retrieval of current documentation for software libraries and components. **Prefer the Context7 MCP tools** (`mcp__plugin_compound-engineering_context7__resolve-library-id` and `mcp__plugin_compound-engineering_context7__query-docs`) when they are available — they handle auth, rate limits, and error handling natively. Use the curl workflow below only when the MCP tools are not loaded.
 
 ## Workflow
 
@@ -28,6 +28,8 @@ curl -s "https://context7.com/api/v2/libs/search?libraryName=LIBRARY_NAME&query=
 - `title`: Human-readable library name
 - `description`: Brief description of the library
 - `totalSnippets`: Number of documentation snippets available
+
+**After step 1:** verify the results array is non-empty before proceeding. If `jq '.results'` returns `[]` or `null`, the library was not found — try a different `libraryName` or broader `query` instead of proceeding with a null ID.
 
 ### Step 2: Fetch Documentation
 

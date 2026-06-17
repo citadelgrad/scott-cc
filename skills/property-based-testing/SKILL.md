@@ -85,11 +85,11 @@ def test_sort_invariants(xs):
     assert all(result[i] <= result[i+1]    # ordered
                for i in range(len(result)-1))
 
-# Metamorphic: adding the minimum value produces a known first element
+# Metamorphic: prepending the minimum value still produces it as the first element
 @given(st.lists(st.integers(), min_size=1))
 def test_sort_metamorphic(xs):
     minimum = min(xs)
-    result = my_sort(xs)
+    result = my_sort(xs + [minimum])
     assert result[0] == minimum
 
 # Oracle: compare new fast implementation against trusted reference

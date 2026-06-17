@@ -83,14 +83,19 @@ If `.git/` already exists, skip and note it. All other components that touch `.g
 
 ### CLAUDE.md
 
-Source: `~/projects/oss/scott-cc/templates/CLAUDE.md`
+Source: `templates/CLAUDE.md` in the scott-cc repo
 Destination: `./CLAUDE.md`
+
+First, locate the scott-cc repo on this machine:
+```bash
+SCOTT_CC_DIR=$(fd -HI -t d -g 'scott-cc' ~ 2>/dev/null | grep -E '/scott-cc$' | head -1)
+```
 
 Steps:
 1. If `CLAUDE.md` already exists, ask the user: "CLAUDE.md already exists — overwrite? (y/n)"
 2. Copy the file:
    ```bash
-   cp ~/projects/oss/scott-cc/templates/CLAUDE.md ./CLAUDE.md
+   cp "$SCOTT_CC_DIR/templates/CLAUDE.md" ./CLAUDE.md
    ```
 3. Add `CLAUDE.md`, `AGENTS.md`, and `.envrc` to `.gitignore` if not already present (all three are personal/local config, not project config). The `||` branch creates `.gitignore` if it doesn't exist:
    ```bash
@@ -228,12 +233,12 @@ If `Makefile` already exists, skip it — do not overwrite, do not ask.
 
 ### pre-commit
 
-Source: `~/projects/oss/scott-cc/templates/.pre-commit-config.yaml`
+Source: `templates/.pre-commit-config.yaml` in the scott-cc repo (use `$SCOTT_CC_DIR` from the CLAUDE.md step above)
 Destination: `./.pre-commit-config.yaml`
 
 Check tool availability first:
 ```bash
-command -v pre-commit >/dev/null 2>&1 || { echo "pre-commit not found — install with: pip install pre-commit"; exit 1; }
+command -v pre-commit >/dev/null 2>&1 || { echo "pre-commit not found — install with: uv tool install pre-commit"; exit 1; }
 ```
 
 **Why `pre-commit install` is NOT used:** beads sets `core.hooksPath = .beads/hooks/`, which overrides `.git/hooks/` entirely. `pre-commit install` detects `core.hooksPath` and refuses to run (exits 1 with "Cowardly refusing to install hooks with `core.hooksPath` set"). Do not run it. Hook environments install lazily on the first commit that triggers `pre-commit run`.
@@ -242,7 +247,7 @@ Steps:
 1. If `.pre-commit-config.yaml` already exists, ask: "`.pre-commit-config.yaml` already exists — overwrite? (y/n)"
 2. Copy the template:
    ```bash
-   cp ~/projects/oss/scott-cc/templates/.pre-commit-config.yaml ./.pre-commit-config.yaml
+   cp "$SCOTT_CC_DIR/templates/.pre-commit-config.yaml" ./.pre-commit-config.yaml
    ```
 3. Write the chain into `.beads/hooks/pre-commit` using this decision tree:
    - **Already chained:** `grep -q 'pre-commit run' .beads/hooks/pre-commit 2>/dev/null` → if true, skip (idempotent).
@@ -301,6 +306,6 @@ Make an initial commit? (y/n)
 
 If yes:
 ```bash
-git add AGENTS.md Makefile .pre-commit-config.yaml .gitignore
+git add Makefile .pre-commit-config.yaml .gitignore
 git commit -m "chore: initial project scaffolding"
 ```

@@ -15,7 +15,7 @@ Tribal knowledge to avoid common mistakes.
 ```yaml
 # ❌ BAD: Mixed list and map
 metadata:
-  references: 
+  references:
   triggers: a, b, c
   - item1
   - item2
@@ -153,25 +153,28 @@ See [patterns.md] and [advanced.md]
 See [my-skill] for details.
 ```
 
-## OpenCode Integration
+## Claude Code Skill Locations
 
 ### Correct Skill Directory
 
 ```bash
-# ❌ BAD: Old singular path
-~/.config/opencode/skill/my-skill/
-
-# ✅ GOOD: Plural path
+# ❌ BAD: OpenCode path (wrong runtime)
 ~/.config/opencode/skills/my-skill/
+
+# ✅ GOOD: User-global Claude Code path
+~/.claude/skills/my-skill/
+
+# ✅ GOOD: Project-local Claude Code path
+.claude/skills/my-skill/
 ```
 
 ### Skill Cross-Reference Syntax
 
 ```markdown
 # ❌ BAD: File path (fragile)
-See /home/user/.config/opencode/skills/my-skill/SKILL.md
+See .claude/skills/my-skill/SKILL.md
 
-# ✅ GOOD: Skill protocol
+# ✅ GOOD: Skill name reference
 See my-skill
 ```
 
