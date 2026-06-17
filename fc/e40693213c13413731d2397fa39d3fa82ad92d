@@ -1,0 +1,29 @@
+.claude-plugin/plugin.json
+  s_5d7e2e602c12fe::t_453fca8e90b3dd 4
+skills/init/SKILL.md
+  s_5d7e2e602c12fe::t_7658a13161835d 276,279
+  s_5d7e2e602c12fe::t_0b0081d42d07d7 3
+  s_5d7e2e602c12fe::t_1cea4e98257a01 72,74,76,79,82
+  s_5d7e2e602c12fe::t_ea945aa6d67f22 36,40,47-53,60-68,95,98-99,104-107,109-114,117-118,120-121,154-206,225-226,234-239,247-262,267,281-283,289,294-306
+  s_5d7e2e602c12fe::t_f61707eacc4a31 116,122-126,129
+  s_5d7e2e602c12fe::t_6913e393b5d2ac 240,264
+  s_5d7e2e602c12fe::t_047923c132be6a 25-27
+.claude-plugin/marketplace.json
+  s_5d7e2e602c12fe::t_bb3c1b0d1d6e87 16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "fce40693213c13413731d2397fa39d3fa82ad92d",
+  "prompts": {},
+  "sessions": {
+    "s_5d7e2e602c12fe": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d8c8a52d-1bc6-407e-8822-2eb54f3edf4b",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
