@@ -10,6 +10,9 @@ Prefer these modern CLI tools when available:
 | Display file contents | `bat --style=plain` | `cat` | Use for showing code to user |
 | Follow file changes | `uu-tail -f` | `tail -f` | uutils uses kqueue (efficient, no polling) |
 | View file start | `uu-head` | `head` | Rust-based from uutils-coreutils |
+| Disk usage | `dust` | `du \| sort -h` | Size-sorted by default; different output format — use `dust`, not `du` |
+| Process list | `procs` | `ps aux` | `procs --tree` for hierarchy; different flags — use `procs`, not `ps` |
+| Field extraction | `choose` | `cut -f` | Zero-based: `choose 1` = `cut -f2`; `choose 1:3` = `cut -f2-4` — never alias |
 
 **Important:** These tools are installed at `/opt/homebrew/bin/` and should be preferred for their speed and better output formatting.
 
@@ -34,6 +37,7 @@ Prefer these modern CLI tools when available:
 - For Docker Compose services, use `docker compose up -d` (detached) in Make targets
 - If a project is missing a Makefile, create one with the standard targets
 - All service lifecycle commands should go through Make — avoid raw `docker compose` or direct process management in normal workflows
+- When initiating a background service via `make up`, always follow up with `make status` or `docker compose logs --tail=20` to verify the service didn't immediately crash on startup (`make logs` streams with `-f` and will hang — use the raw docker command for a quick tail)
 
 ## Port Selection: Avoid Defaults
 
@@ -62,16 +66,7 @@ Prefer these modern CLI tools when available:
 
 ## Architecture Diagrams
 
-When creating architecture or system diagrams:
-
-- **Always use C4 model** (Context, Container, Component levels) to structure diagrams
-- **Use standard Mermaid `flowchart`** syntax, NOT the `C4Context`/`C4Container`/`C4Component` Mermaid plugin (it has broken layout with overlapping labels)
-- Apply C4 conventions via styling: color-code nodes by type (person, system, container, external), use subgraphs for system boundaries
-- **Keep node labels short** (max ~5 words). Put details in a separate legend table below the diagram, not inside node text
-- **Use `flowchart TB`** (top-to-bottom) for hierarchy diagrams, `flowchart LR` (left-to-right) for sequence-like flows
-- Include a **sequence diagram** (`sequenceDiagram`) alongside C4 levels when showing runtime behavior
-- Save diagrams as `.md` files in `docs/`
-- When creating Graphviz charts in markdown use `graphviz` as the language identifier
+Always use C4 model (Context/Container/Component) with standard Mermaid `flowchart` syntax. **Never use the `C4Context`/`C4Container`/`C4Component` Mermaid plugin** — broken layout. Keep node labels ≤5 words; put detail in a legend table below. Save diagrams as `.md` files in `docs/`. For full guidance invoke `/scott-cc:c4-diagram`.
 
 ## Code Analysis: TLDR MCP
 
@@ -83,3 +78,23 @@ When analyzing code, prefer using TLDR tools (via the `tldr` MCP server) for:
 - **Code structure**: use `tldr_structure` to list functions/classes without reading raw files
 - **Dead code**: use `tldr_dead` to find unreachable code
 - **Program slicing**: use `tldr_slice` to trace what affects a specific line
+- **Fallback Strategy:** If the `tldr` MCP server is unavailable or fails to index the workspace, fall back immediately to precise `rg` and `fd` commands to map the codebase rather than reading entire directory trees
+
+## Beads Task Tracking
+
+**Use `bd` for all task tracking.** Never use TodoWrite, TaskCreate, or markdown files for tasks.
+
+Key commands:
+- `bd create --title="..." --description="..." --type=task|bug|feature --priority=2`
+- `bd ready` — show work with no blockers
+- `bd update <id> --claim` — claim a task before starting
+- `bd close <id1> <id2>` — mark complete (close multiple at once)
+- `bd show <id>` — see details and dependencies
+- **Never use `bd edit`** — opens $EDITOR and blocks agents
+
+Session close checklist: close completed issues → run quality gates → `git status` → commit only if explicitly authorized.
+
+## Verification & Testing
+
+- **Never assume code works on generation:** Always run the project's test suite via `uv run pytest` or the appropriate Makefile target before presenting a solution.
+- **Linter compliance:** Run formatting and linting checks (`uv run ruff check --fix` or equivalent) on any modified files before committing or finalizing a task.

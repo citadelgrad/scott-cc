@@ -300,7 +300,7 @@ List skipped items with a reason (e.g., "already exists", "user declined").
 Then offer an initial commit:
 ```
 Make an initial commit? (y/n)
-  Would stage: AGENTS.md, Makefile, .pre-commit-config.yaml, .gitignore
+  Would stage: Makefile, .pre-commit-config.yaml, .gitignore
   Message: "chore: initial project scaffolding"
 ```
 
@@ -309,3 +309,20 @@ If yes:
 git add Makefile .pre-commit-config.yaml .gitignore
 git commit -m "chore: initial project scaffolding"
 ```
+
+## Available Skills
+
+Mention these scott-cc skills after setup completes, so the user knows what's available:
+
+```
+Available skills for common workflows:
+
+  /scott-cc:pas-pipeline    — run, resume, and manage PAS AI pipelines
+  /scott-cc:reck-factory    — register repos and run tasks in the software factory
+  /scott-cc:c4-diagram      — generate C4 architecture diagrams with Mermaid
+  /scott-cc:cli-design      — design or audit CLIs for agent compatibility
+```
+
+Only list skills that are relevant to the project type detected in Step 1:
+- Python or unknown project: list all four
+- Node/TS project: omit `pas-pipeline` and `reck-factory` unless `pas.toml` or `foundry.yaml` is present
