@@ -15,6 +15,23 @@ Three layers inform what belongs in a context file:
 2. **Code quality standards** — Project coding rules (DRY, KISS, thin handlers, no hardcoded values, no silent failures, ~20-line functions, no premature abstraction). These ARE project-specific and belong in CLAUDE.md. **Preserve them — do not cut them as "general advice".**
 3. **This skill** — Strips everything else: architecture prose, directory listings, duplicated docs, tutorial content.
 
+## CLAUDE.md Loading Model
+
+Understanding how Claude Code loads context determines where content belongs:
+
+| Location | When it loads | Token cost |
+|---|---|---|
+| Root CLAUDE.md (or @path imports from it) | Every session start, every request | Always paid |
+| Subdirectory CLAUDE.md | On-demand, when Claude reads a file in that directory | JIT — only when needed |
+| Skill description (one-liner) | Every session start | ~450 tokens, always |
+| Skill body | Only when the skill is invoked | JIT — only when needed |
+
+**Key implications:**
+- `@path` imports in CLAUDE.md are **organizational only** — imported files expand eagerly at launch and cost the same as inline content. They do not defer loading.
+- Plain text references like `"see docs/foo.md"` do **not** trigger auto-fetch — they are dead text unless Claude actively decides to read the file.
+- **Skills are the only genuine just-in-time mechanism** for reference material, tool guides, and long docs. Move content there, not to @-referenced files.
+- Target **under 200 lines** for root CLAUDE.md. Attention degrades past this threshold (files load in full regardless — it is not a truncation limit).
+
 ## When to Use
 
 - Creating a new AGENTS.md, CLAUDE.md, or similar context file
@@ -60,7 +77,7 @@ For every section in every context file, classify it:
 | **Architecture overview** | CUT | System diagrams, component descriptions |
 | **Directory listing** | CUT | File tree enumerations, module inventories |
 | **Duplicated docs** | CUT | Content from README, config files, or other context files |
-| **Tutorial/reference** | MOVE to docs/ | MCP tool guides, pipeline authoring references |
+| **Tutorial/reference** | MOVE to a Skill | MCP tool guides, pipeline authoring references — Skills load JIT; docs/ files don't auto-fetch |
 | **Code examples of patterns** | CUT | Agents discover patterns from actual code |
 | **Tool installation instructions** | CUT | One-time setup, not per-session |
 | **Behavioral guidelines** | CUT (with caution) | Karpathy-style rules — only cut if the project team consistently invokes `/karpathy-guidelines`; keep them if behavioral consistency matters more than token savings |
@@ -81,7 +98,7 @@ Apply these rules when rewriting:
 - Exact test/build/lint commands with full paths
 - Session workflow (start → work → close checklist)
 - Domain-specific gotchas that cause real bugs (not general advice)
-- Pointers to detailed docs for complex subsystems (e.g., "see docs/pipelines.md")
+- Names of Skills that cover complex subsystems (agents can invoke them JIT)
 
 **Content rules — what NOT to include:**
 - Repository overviews or architecture descriptions
@@ -101,10 +118,11 @@ Apply these rules when rewriting:
 After rewriting, verify:
 
 1. **Word count** — Each file should be under 700 words
-2. **No duplication** — No section appears in more than one context file
-3. **No redundancy** — No section restates what's in standard project files
-4. **Commands are exact** — Every command can be copy-pasted and run
-5. **Displaced content preserved** — Any cut reference material was moved to docs/, not deleted
+2. **Line count (CLAUDE.md)** — Root CLAUDE.md should be under 200 lines; attention degrades past this
+3. **No duplication** — No section appears in more than one context file
+4. **No redundancy** — No section restates what's in standard project files
+5. **Commands are exact** — Every command can be copy-pasted and run
+6. **Displaced content goes to Skills** — Cut reference material becomes a Skill, not a docs/ file
 
 ## Research Reference
 
