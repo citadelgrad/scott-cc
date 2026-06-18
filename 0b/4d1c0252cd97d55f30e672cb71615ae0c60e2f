@@ -1,0 +1,26 @@
+.claude-plugin/plugin.json
+  s_08c0d87ec9affd::t_545067140d29b0 4
+docs/research/claudemd-management-best-practices.md
+  s_08c0d87ec9affd::t_47a1ea2e786393 1-111
+skills/context-file-optimizer/SKILL.md
+  s_08c0d87ec9affd::t_dff9e354c7d73d 121-125
+  s_08c0d87ec9affd::t_c55933812064a5 101
+  s_08c0d87ec9affd::t_a0e3ee80af1c49 80
+  s_08c0d87ec9affd::t_2bf20995c25a51 18-34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "0b4d1c0252cd97d55f30e672cb71615ae0c60e2f",
+  "prompts": {},
+  "sessions": {
+    "s_08c0d87ec9affd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "63068613-6a12-46d9-b6a6-2b5d523b8b8c",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
