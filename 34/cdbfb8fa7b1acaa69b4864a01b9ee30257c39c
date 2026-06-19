@@ -1,0 +1,61 @@
+skills/c4-diagram/SKILL.md
+  s_f97de4225823a4::t_d4d90e66d1fa53 1-240
+plugins/browser-automation/skills/browser-use-e2e/setup_profile.py
+  s_42dce4385e850b::t_d5c37f5a16f6fe 84,90
+README.md
+  s_42dce4385e850b::t_fe153b0061f9c5 60
+  s_42dce4385e850b::t_79f4ade5972ac2 93-99
+  s_42dce4385e850b::t_de2b23672e2f11 18
+  s_42dce4385e850b::t_4b46f6e9f46c53 74
+  s_42dce4385e850b::t_ad35c419314767 17
+  s_42dce4385e850b::t_796a3f2d935e91 102,108
+  s_42dce4385e850b::t_033b051eec1fbb 84
+  s_42dce4385e850b::t_9b085d75f25737 3
+pyproject.toml
+  s_42dce4385e850b::t_8c48f0679e060c 1-2
+.claude-plugin/plugin.json
+  s_42dce4385e850b::t_09c6df4dfc18bf 3
+skills/reck-factory/SKILL.md
+  s_f97de4225823a4::t_050ca8b2bd13e3 1-175
+scripts/verify_plugin.py
+  s_42dce4385e850b::t_4d215fd0903d5a 23
+  s_42dce4385e850b::t_b9853baf940219 18
+  s_42dce4385e850b::t_f78fe0f273c302 8
+  s_42dce4385e850b::t_4117cdfc761605 36
+hooks/prefer_modern_tools.py
+  s_42dce4385e850b::t_68c6e8d989aff4 1-21,24,26,28,32-47,49-50,52-54,56-59,61
+skills/property-based-testing/examples.py
+  s_42dce4385e850b::t_c9c1f22dcf8f50 10-11
+hooks/hooks.json
+  s_42dce4385e850b::t_432e93ed2151e8 22-31
+plugins/browser-automation/skills/browser-use-e2e/conftest.py
+  s_42dce4385e850b::t_610c38099318f1 109,135
+skills/pas-pipeline/SKILL.md
+  s_f97de4225823a4::t_5630abaf45c22f 1-163
+.claude-plugin/marketplace.json
+  s_42dce4385e850b::t_ad131dc505633f 15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "34cdbfb8fa7b1acaa69b4864a01b9ee30257c39c",
+  "prompts": {},
+  "sessions": {
+    "s_42dce4385e850b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "36c5db51-346d-4abd-b478-465c10e066ea",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_f97de4225823a4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d8b9543-835e-4b3d-a584-093662e4c1f3",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
