@@ -1,0 +1,23 @@
+skills/reck-factory/SKILL.md
+  s_42dce4385e850b::t_4e566d0f1d252a 1-175
+skills/c4-diagram/SKILL.md
+  s_42dce4385e850b::t_92026eef9b324f 1-177
+skills/pas-pipeline/SKILL.md
+  s_42dce4385e850b::t_ba766e0853c3cc 1-163
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.8",
+  "base_commit_sha": "cd70b314c1dd7cb261e58ae40e668f7c3be34daa",
+  "prompts": {},
+  "sessions": {
+    "s_42dce4385e850b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "36c5db51-346d-4abd-b478-465c10e066ea",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
