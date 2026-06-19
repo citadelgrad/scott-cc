@@ -11,23 +11,23 @@ Credentials are loaded from .env.test using domain-prefixed naming:
 
 import os
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict
 
 import pytest
 from dotenv import load_dotenv
 
 # Load test credentials
-load_dotenv('.env.test')
+load_dotenv(".env.test")
 
 # Map service prefixes to their domains
 DOMAIN_MAP = {
-    'GITHUB': 'https://*.github.com',
-    'GITLAB': 'https://*.gitlab.com',
-    'GMAIL': 'https://*.google.com',
-    'GOOGLE': 'https://*.google.com',
-    'BITBUCKET': 'https://*.bitbucket.org',
-    'AZURE': 'https://*.azure.com',
-    'AWS': 'https://*.aws.amazon.com',
+    "GITHUB": "https://*.github.com",
+    "GITLAB": "https://*.gitlab.com",
+    "GMAIL": "https://*.google.com",
+    "GOOGLE": "https://*.google.com",
+    "BITBUCKET": "https://*.bitbucket.org",
+    "AZURE": "https://*.azure.com",
+    "AWS": "https://*.aws.amazon.com",
 }
 
 
@@ -48,10 +48,10 @@ def build_sensitive_data() -> Dict[str, Dict[str, str]]:
 
     for key in os.environ:
         # Find user/email keys
-        if not (key.endswith('_USER') or key.endswith('_EMAIL')):
+        if not (key.endswith("_USER") or key.endswith("_EMAIL")):
             continue
 
-        prefix = key.rsplit('_', 1)[0]
+        prefix = key.rsplit("_", 1)[0]
         if prefix in processed_prefixes:
             continue
         processed_prefixes.add(prefix)
@@ -62,13 +62,13 @@ def build_sensitive_data() -> Dict[str, Dict[str, str]]:
             continue
 
         # Get password
-        pass_key = f'{prefix}_PASS'
+        pass_key = f"{prefix}_PASS"
         pass_val = os.getenv(pass_key)
         if not pass_val:
             continue
 
         # Determine domain (explicit or mapped)
-        domain_key = f'{prefix}_DOMAIN'
+        domain_key = f"{prefix}_DOMAIN"
         domain = os.getenv(domain_key) or DOMAIN_MAP.get(prefix)
         if not domain:
             # Skip if no domain can be determined
@@ -76,8 +76,8 @@ def build_sensitive_data() -> Dict[str, Dict[str, str]]:
 
         # Create placeholder names (lowercase prefix)
         prefix_lower = prefix.lower()
-        placeholder_user = f'{prefix_lower}_user'
-        placeholder_pass = f'{prefix_lower}_pass'
+        placeholder_user = f"{prefix_lower}_user"
+        placeholder_pass = f"{prefix_lower}_pass"
 
         credentials[domain] = {
             placeholder_user: user_val,
@@ -89,7 +89,7 @@ def build_sensitive_data() -> Dict[str, Dict[str, str]]:
 
 def get_profile_path(profile_name: str) -> Path:
     """Get path to a persistent browser profile."""
-    return Path.home() / '.browser-use-profiles' / profile_name
+    return Path.home() / ".browser-use-profiles" / profile_name
 
 
 @pytest.fixture
@@ -103,10 +103,10 @@ async def browser():
     """Fixture providing a browser-use Browser instance."""
     from browser_use import Browser
 
-    headless = os.getenv('HEADLESS', 'true').lower() == 'true'
+    headless = os.getenv("HEADLESS", "true").lower() == "true"
     browser = Browser(headless=headless)
     yield browser
-    await browser.close()
+    await browser.close()  # ty: ignore[unresolved-attribute]
 
 
 @pytest.fixture
@@ -132,10 +132,11 @@ async def browser_with_profile(request):
         user_data_dir=str(profile_path),
     )
     yield browser
-    await browser.close()
+    await browser.close()  # ty: ignore[unresolved-attribute]
 
 
 def get_llm():
     """Get the default LLM for browser-use agents."""
     from browser_use import ChatBrowserUse
+
     return ChatBrowserUse()

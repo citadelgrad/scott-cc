@@ -5,6 +5,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from typing import Any, NoReturn
 
 ROOT = Path(__file__).resolve().parents[1]
 PLUGIN_JSON = ROOT / ".claude-plugin" / "plugin.json"
@@ -14,12 +15,12 @@ HOOKS_JSON = ROOT / "hooks" / "hooks.json"
 COMMAND_PATH_RE = re.compile(r"\$\{CLAUDE_PLUGIN_ROOT\}/([^\s\"']+)")
 
 
-def fail(message: str) -> None:
+def fail(message: str) -> NoReturn:
     print(f"FAIL: {message}")
     sys.exit(1)
 
 
-def load_json(path: Path) -> object:
+def load_json(path: Path) -> Any:
     try:
         return json.loads(path.read_text())
     except FileNotFoundError:
@@ -32,7 +33,7 @@ def iter_hook_commands(payload: object) -> list[str]:
     commands: list[str] = []
     if not isinstance(payload, dict):
         fail(f"expected object in {HOOKS_JSON}")
-    hooks = payload.get("hooks")
+    hooks = payload.get("hooks")  # ty: ignore[invalid-argument-type]
     if not isinstance(hooks, dict):
         fail(f"expected 'hooks' object in {HOOKS_JSON}")
     for event_name, entries in hooks.items():
@@ -40,13 +41,17 @@ def iter_hook_commands(payload: object) -> list[str]:
             fail(f"expected list for hooks.{event_name} in {HOOKS_JSON}")
         for entry in entries:
             if not isinstance(entry, dict):
-                fail(f"expected object entries under hooks.{event_name} in {HOOKS_JSON}")
+                fail(
+                    f"expected object entries under hooks.{event_name} in {HOOKS_JSON}"
+                )
             nested = entry.get("hooks")
             if not isinstance(nested, list):
                 fail(f"expected list for hooks.{event_name}[].hooks in {HOOKS_JSON}")
             for hook in nested:
                 if not isinstance(hook, dict):
-                    fail(f"expected object hook under hooks.{event_name} in {HOOKS_JSON}")
+                    fail(
+                        f"expected object hook under hooks.{event_name} in {HOOKS_JSON}"
+                    )
                 command = hook.get("command")
                 if isinstance(command, str):
                     commands.append(command)
@@ -91,7 +96,9 @@ def main() -> int:
         fail(f"hooks.json references missing plugin file(s): {unique_missing}")
 
     if not referenced_paths:
-        print("OK: plugin manifests parse cleanly; no CLAUDE_PLUGIN_ROOT hook file references found")
+        print(
+            "OK: plugin manifests parse cleanly; no CLAUDE_PLUGIN_ROOT hook file references found"
+        )
     else:
         refs = ", ".join(sorted(set(referenced_paths)))
         print(

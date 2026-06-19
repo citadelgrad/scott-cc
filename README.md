@@ -1,6 +1,6 @@
 # Scott's Claude Code Setup
 
-Modular Claude Code plugin suite for productive development. The core plugin provides **2 slash commands**, **8 specialized AI agents**, **9 skills**, **2 hooks**, and **3 project templates**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, and more.
+Modular Claude Code plugin suite for productive development. The core plugin provides **2 slash commands**, **8 specialized AI agents**, **13 skills**, **3 hooks**, and **3 project templates**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, and more.
 
 ## Quick Install
 
@@ -14,8 +14,8 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 |------|------:|-------|
 | Commands | 2 | `gha`, `security-cheatsheet` |
 | Agents | 8 | `api-debugger`, `backend-architect`, `deep-research-agent`, `find-emergent-behavior`, `frontend-architect`, `refactoring-expert`, `requirements-analyst`, `system-architect` |
-| Skills | 9 | `init`, `python-simplifier`, `typescript-simplifier`, `karpathy-guidelines`, `context7`, `context-file-optimizer`, `property-based-testing`, `writing-about-engineering`, `writing-skills-excellence` |
-| Hooks | 2 | `terminal-bell` (Stop), `toon-post-hook` (PostToolUse) |
+| Skills | 13 | `init`, `cli-design`, `python-simplifier`, `typescript-simplifier`, `karpathy-guidelines`, `property-based-testing`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory` |
+| Hooks | 3 | `terminal-bell` (Stop), `toon-post-hook` (PostToolUse), `prefer-modern-tools` (PreToolUse) |
 | Templates | 3 | `.pre-commit-config.yaml`, `CLAUDE.md`, `AGENTS.md` |
 | Sub-plugins | 6 | `beads-epic-builder`, `browser-automation`, `research-tools`, `security-suite`, `performance-optimization`, `mutation-testing` |
 
@@ -57,7 +57,7 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 
 ---
 
-## Skills (9)
+## Skills (13)
 
 ### Project Setup
 
@@ -71,6 +71,7 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 |-------|-------------|
 | `python-simplifier` | Simplifies and refines Python code for clarity, consistency, and maintainability. Applies KISS principles, Pythonic patterns, and framework best practices. Use when reviewing or refactoring Python code. |
 | `typescript-simplifier` | Simplifies and refines TypeScript/JavaScript code for clarity, consistency, and maintainability. Applies KISS principles, modern ES features, and framework best practices. Use when reviewing or refactoring TS/JS code. |
+| `cli-design` | Design patterns and conventions for building agent-compatible CLI tools. Covers flag design, output formatting, exit codes, and composability with AI-driven workflows. |
 | `karpathy-guidelines` | Behavioral guidelines to reduce common LLM coding mistakes. Helps avoid overcomplication, make surgical changes, surface assumptions, and define verifiable success criteria. |
 | `property-based-testing` | Use when implementing serialization/parsing, data transformations, algorithms with mathematical properties, API contracts, or state machines where testing all edge cases is impractical. Describe invariants instead of specific input/output pairs. |
 
@@ -80,6 +81,7 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 |-------|-------------|
 | `context7` | Retrieve up-to-date documentation for any software library or framework via the Context7 API. Use instead of relying on potentially outdated training data. |
 | `context-file-optimizer` | Audit and rewrite `AGENTS.md`, `CLAUDE.md`, and other AI agent context files to be minimal and effective. Based on research-backed principles: verbose context files hurt performance (−2 to −3%) while minimal, tooling-focused files improve it (+4%). |
+| `c4-diagram` | Generate C4 architecture diagrams using standard Mermaid `flowchart` syntax. Covers Context, Container, and Component levels with short labels, companion legend tables, and sequence diagrams for runtime behavior. Never uses the broken C4 Mermaid plugin. |
 
 ### Writing
 
@@ -88,14 +90,22 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 | `writing-about-engineering` | Use when drafting first-person engineering writing — blog posts, short posts/threads, or postmortems. Produces a conversational-but-rigorous, peer-to-peer voice anchored on the Julia Evans / Simon Willison TIL/blog rhythm. |
 | `writing-skills-excellence` | Framework for creating, updating, or improving agent skills. Covers structure, frontmatter, when-to-use clauses, and quality principles. |
 
+### Automation & Pipelines
+
+| Skill | Description |
+|-------|-------------|
+| `pas-pipeline` | Run, validate, and manage PAS (Pascal's Discrete Attractor) DOT-based AI pipelines. Covers `pas launch`, `pas run`, budget/step caps, checkpoint resumption, and common failure modes. |
+| `reck-factory` | Manage the Reck software factory — register repos, run AI tasks in containers, schedule background pipelines, and monitor results via Loki/Grafana. |
+
 ---
 
-## Hooks (2)
+## Hooks (3)
 
 | Hook | Event | Description |
 |------|-------|-------------|
 | `terminal-bell` | `Stop` | Terminal tab indicator when Claude finishes responding. Sends a BEL character for tab/dock notification, a desktop notification with a brief summary, and supports Ghostty/iTerm2 (OSC 9) and WezTerm (OSC 777). |
 | `toon-post-hook` | `PostToolUse` | Encodes large tool responses to TOON format (a compact alternative to JSON) before they enter the context window. Reduces token consumption on verbose MCP and built-in tool outputs. No-op if `toon` is not installed. |
+| `prefer-modern-tools` | `PreToolUse` | Rewrites legacy CLI commands to faster modern equivalents at runtime: `grep`/`egrep` → `rg`, `cat` → `bat --style=plain --paging=never`, `ls` → `lsd`, `ps aux`/`ps -ef` → `procs`. Safe near-drop-ins only — tools with incompatible flag syntax (`fd`, `dust`, `choose`) are excluded and documented in CLAUDE.md for native use. |
 
 ---
 

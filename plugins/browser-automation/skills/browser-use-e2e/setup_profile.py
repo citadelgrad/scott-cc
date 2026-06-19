@@ -27,16 +27,16 @@ from pathlib import Path
 
 # Known service login URLs
 SERVICE_URLS = {
-    'github': 'https://github.com/login',
-    'gitlab': 'https://gitlab.com/users/sign_in',
-    'google': 'https://accounts.google.com',
-    'gmail': 'https://accounts.google.com',
-    'bitbucket': 'https://bitbucket.org/account/signin/',
-    'azure': 'https://portal.azure.com',
-    'aws': 'https://console.aws.amazon.com',
+    "github": "https://github.com/login",
+    "gitlab": "https://gitlab.com/users/sign_in",
+    "google": "https://accounts.google.com",
+    "gmail": "https://accounts.google.com",
+    "bitbucket": "https://bitbucket.org/account/signin/",
+    "azure": "https://portal.azure.com",
+    "aws": "https://console.aws.amazon.com",
 }
 
-PROFILES_DIR = Path.home() / '.browser-use-profiles'
+PROFILES_DIR = Path.home() / ".browser-use-profiles"
 
 
 def list_profiles():
@@ -81,16 +81,16 @@ async def setup_profile(url: str, profile_name: str):
         user_data_dir=str(profile_dir),
     )
 
-    ctx = await browser.new_context()
+    ctx = await browser.new_context()  # ty: ignore[unresolved-attribute]
     page = await ctx.new_page()
     await page.goto(url)
 
     input("Press Enter after completing login...")
 
-    await browser.close()
+    await browser.close()  # ty: ignore[unresolved-attribute]
 
     print(f"\nProfile saved to: {profile_dir}")
-    print(f"\nUsage in tests:")
+    print("\nUsage in tests:")
     print(f"  browser = Browser(user_data_dir='{profile_dir}')")
 
 
@@ -102,22 +102,22 @@ def main():
     )
 
     parser.add_argument(
-        '--service',
+        "--service",
         choices=list(SERVICE_URLS.keys()),
-        help='Known service to set up (provides default URL)',
+        help="Known service to set up (provides default URL)",
     )
     parser.add_argument(
-        '--url',
-        help='Custom login URL (overrides --service)',
+        "--url",
+        help="Custom login URL (overrides --service)",
     )
     parser.add_argument(
-        '--profile-name',
-        help='Name for the browser profile',
+        "--profile-name",
+        help="Name for the browser profile",
     )
     parser.add_argument(
-        '--list',
-        action='store_true',
-        help='List existing profiles',
+        "--list",
+        action="store_true",
+        help="List existing profiles",
     )
 
     args = parser.parse_args()
@@ -144,5 +144,5 @@ def main():
     asyncio.run(setup_profile(url, profile_name))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
