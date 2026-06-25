@@ -1,0 +1,19 @@
+CLAUDE.md
+  s_aaf8884141b854::t_f9415be333101b 1-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "7bf9d1e37cd449cd4eafea6383c1c4beb93937c7",
+  "prompts": {},
+  "sessions": {
+    "s_aaf8884141b854": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07bf57ec-17dc-47fe-81ce-444c97163c7e",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
