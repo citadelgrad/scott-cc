@@ -94,6 +94,8 @@ Key commands:
 
 Session close checklist: close completed issues → run quality gates → `git status` → commit only if explicitly authorized.
 
+When creating beads issues (via `bd create` or `/beads:create`), always generate acceptance criteria first using the `acceptance-criteria` skill, then pass the result via `--acceptance="..."`. AC must be testable (each criterion gets an unambiguous PASS/FAIL), cover the happy path, error states, and boundary conditions, and exclude Definition-of-Done items (tests passing, code reviewed).
+
 ## Verification & Testing
 
 - **Never assume code works on generation:** Always run the project's test suite via `uv run pytest` or the appropriate Makefile target before presenting a solution.
