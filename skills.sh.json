@@ -1,0 +1,55 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Project Setup",
+      "description": "Scaffold and initialize projects with standard tooling, config, and conventions.",
+      "skills": [
+        "init"
+      ]
+    },
+    {
+      "title": "AI Pipelines",
+      "description": "Run and manage AI workflows with pas and reck.",
+      "skills": [
+        "pas-pipeline",
+        "reck-factory"
+      ]
+    },
+    {
+      "title": "Code Quality",
+      "description": "Simplify, test, and enforce coding standards across Python and TypeScript.",
+      "skills": [
+        "python-simplifier",
+        "typescript-simplifier",
+        "property-based-testing",
+        "karpathy-guidelines"
+      ]
+    },
+    {
+      "title": "Dev Tools",
+      "description": "Work faster with modern CLI tools, documentation lookup, and context management.",
+      "skills": [
+        "cli-design",
+        "context7",
+        "context-file-optimizer"
+      ]
+    },
+    {
+      "title": "Writing",
+      "description": "Write clearly about engineering topics with consistent voice and structure.",
+      "skills": [
+        "writing-skills-excellence",
+        "writing-about-engineering"
+      ]
+    },
+    {
+      "title": "Diagrams",
+      "description": "Create C4 architecture diagrams using Mermaid.",
+      "skills": [
+        "c4-diagram"
+      ]
+    }
+  ]
+}
