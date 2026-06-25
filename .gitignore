@@ -9,4 +9,7 @@
 .claude/settings.local.json
 agents/CLAUDE.md
 .claude-plugin/CLAUDE.md
-.testing/CLAUDE.md
+
+# Runtime / operational data — not for version control
+.beads/
+.testing/
