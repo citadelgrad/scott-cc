@@ -1,0 +1,41 @@
+.claude-plugin/plugin.json
+  s_dfbaebbf10446c::t_da6e7efd97ae71 4
+  s_dfbaebbf10446c::t_83563d8caef587 3
+README.md
+  s_dfbaebbf10446c::t_c096c16cb06530 78
+  s_dfbaebbf10446c::t_f11ac6feb1212d 102-107
+  s_dfbaebbf10446c::t_6640959e6a2c40 3
+  s_dfbaebbf10446c::t_310840d40552a7 17
+  s_dfbaebbf10446c::t_25541f0628e84d 60
+  s_dfbaebbf10446c::t_d0b09af58356c3 67
+skills/thinking-in-systems/SKILL.md
+  s_dfbaebbf10446c::t_00cdf3638643db 352-353
+  s_dfbaebbf10446c::t_160cd3f4b80c22 1-157,160-300,303-320,324-326,328-351
+  s_dfbaebbf10446c::t_6d7156384fa6ff 158-159
+  s_dfbaebbf10446c::t_d4c92d9bdf6ae0 301-302
+  s_dfbaebbf10446c::t_5e926581cbb550 321-323,327
+.claude-plugin/marketplace.json
+  s_dfbaebbf10446c::t_310f9b348aeda2 15
+skills.sh.json
+  s_dfbaebbf10446c::t_361eae6420cfd6 28-29
+  s_dfbaebbf10446c::t_19ff0e83a90843 55-61
+  s_dfbaebbf10446c::t_5f94b73bd73fc0 9-10
+QUICK-START.md
+  s_dfbaebbf10446c::t_f7c4c0a0746b80 14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "61d0bdc8ceac2398871de5244184b33e7df6b483",
+  "prompts": {},
+  "sessions": {
+    "s_dfbaebbf10446c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8360c7f4-b197-4f11-baf0-d295ba228f07",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
