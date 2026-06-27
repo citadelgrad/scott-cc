@@ -1,7 +1,11 @@
 .claude-plugin/plugin.json
   s_dfbaebbf10446c::t_da6e7efd97ae71 4
+  s_dfbaebbf10446c::t_38ed0f138b3451 3
 README.md
   s_dfbaebbf10446c::t_f11ac6feb1212d 105-110
+  s_dfbaebbf10446c::t_2528686d5303e1 62
+  s_dfbaebbf10446c::t_08de0e72be049a 3
+  s_dfbaebbf10446c::t_b94ce1e7cd59ef 17
 skills/thinking-in-systems/SKILL.md
   s_dfbaebbf10446c::t_00cdf3638643db 352-353
   s_dfbaebbf10446c::t_160cd3f4b80c22 1-157,160-300,303-320,324-326,328-351
@@ -12,6 +16,10 @@ skills.sh.json
   s_dfbaebbf10446c::t_361eae6420cfd6 28-29
   s_dfbaebbf10446c::t_19ff0e83a90843 56-62
   s_dfbaebbf10446c::t_5f94b73bd73fc0 9-10
+QUICK-START.md
+  s_dfbaebbf10446c::t_73d3b1e47031b8 14
+.claude-plugin/marketplace.json
+  s_dfbaebbf10446c::t_a3a223d32f3bd2 15
 ---
 {
   "schema_version": "authorship/3.0.0",
