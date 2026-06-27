@@ -9,6 +9,8 @@ tags: [pas, pipeline, ai-workflows, automation]
 
 Operates `pas` — the DOT-based AI pipeline runner. Version: 0.7.2.
 
+**Role in the stack:** PAS is the sole execution engine for AI tasks. Reckoner (the factory layer) wraps PAS — it never invokes Claude directly. Foundry sits above as the platform quality layer. All task execution ultimately calls `pas run` inside a container.
+
 Use this skill when:
 - Launching a pipeline from spec/PRD documents (`pas launch`)
 - Running or resuming a `.dot` pipeline file (`pas run`)
@@ -32,6 +34,7 @@ Ask or infer from context which command applies:
 | Generate `.dot` from specs | `pas generate <docs-dir>` |
 | Inspect a pipeline | `pas info <file>` |
 | Create PRD/spec stubs | `pas plan` |
+| Create spec from a prompt | `pas plan --spec --from-prompt` |
 | Decompose spec to beads epic | `pas decompose` |
 | Scaffold pipeline from epic | `pas scaffold` |
 | Initialize `pas.toml` | `pas init` |
