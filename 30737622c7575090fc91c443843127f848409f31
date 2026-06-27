@@ -1,0 +1,25 @@
+CLAUDE.md
+  s_282327c56af77a::t_7f6606cc8a163a 44-46
+templates/CLAUDE.md
+  s_282327c56af77a::t_489431dac3e5b7 97-98
+.claude-plugin/marketplace.json
+  s_282327c56af77a::t_ea132359990214 15-16
+.claude-plugin/plugin.json
+  s_282327c56af77a::t_aee3946fbe5113 3-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "30737622c7575090fc91c443843127f848409f31",
+  "prompts": {},
+  "sessions": {
+    "s_282327c56af77a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "19d243db-f184-438a-b75a-adff45ca3469",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}

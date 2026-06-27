@@ -1,0 +1,28 @@
+skills/acceptance-criteria/SKILL.md
+  s_f9a740890da0a3::t_0fdc44508138b0 1-7,9-203
+  s_aaf8884141b854::t_378b4590167438 8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "b73f48774bc1619b5284ba7b485d8e706f6ffbfd",
+  "prompts": {},
+  "sessions": {
+    "s_aaf8884141b854": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "07bf57ec-17dc-47fe-81ce-444c97163c7e",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_f9a740890da0a3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7182e6e3-eeb0-4f6c-ba8e-2ee0cb917d13",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}

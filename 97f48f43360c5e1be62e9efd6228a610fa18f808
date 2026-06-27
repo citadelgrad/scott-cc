@@ -1,0 +1,21 @@
+skills/verified-implementation/SKILL.md
+  s_7c4fdaf560c2a0::t_af1f9599a8856c 1-212
+skills/verified-implementation/references/domain-sources.md
+  s_7c4fdaf560c2a0::t_5edfc5dd8d8a4c 1-128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.9",
+  "base_commit_sha": "97f48f43360c5e1be62e9efd6228a610fa18f808",
+  "prompts": {},
+  "sessions": {
+    "s_7c4fdaf560c2a0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "344b04d1-9654-4f6d-a99a-2ff2ddec8a74",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
