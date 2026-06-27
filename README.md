@@ -1,6 +1,6 @@
 # Scott's Claude Code Setup
 
-Modular Claude Code plugin suite for productive development. The core plugin provides **2 slash commands**, **8 specialized AI agents**, **13 skills**, **3 hooks**, and **3 project templates**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, and more.
+Modular Claude Code plugin suite for productive development. The core plugin provides **4 slash commands**, **8 specialized AI agents**, **16 skills**, **3 hooks**, and **3 project templates**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, and more.
 
 ## Quick Install
 
@@ -12,20 +12,22 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 
 | Type | Count | Names |
 |------|------:|-------|
-| Commands | 2 | `gha`, `security-cheatsheet` |
+| Commands | 4 | `delegate-first`, `gha`, `handoff`, `security-cheatsheet` |
 | Agents | 8 | `api-debugger`, `backend-architect`, `deep-research-agent`, `find-emergent-behavior`, `frontend-architect`, `refactoring-expert`, `requirements-analyst`, `system-architect` |
-| Skills | 13 | `init`, `cli-design`, `python-simplifier`, `typescript-simplifier`, `karpathy-guidelines`, `property-based-testing`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory` |
+| Skills | 16 | `init`, `acceptance-criteria`, `cli-design`, `delegate-first`, `python-simplifier`, `typescript-simplifier`, `karpathy-guidelines`, `property-based-testing`, `verified-implementation`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory` |
 | Hooks | 3 | `terminal-bell` (Stop), `toon-post-hook` (PostToolUse), `prefer-modern-tools` (PreToolUse) |
 | Templates | 3 | `.pre-commit-config.yaml`, `CLAUDE.md`, `AGENTS.md` |
 | Sub-plugins | 6 | `beads-epic-builder`, `browser-automation`, `research-tools`, `security-suite`, `performance-optimization`, `mutation-testing` |
 
 ---
 
-## Commands (2)
+## Commands (4)
 
 | Command | Description |
 |---------|-------------|
+| `/scott-cc:delegate-first` | Keep the main conversation clean by forking implementation work to sub-agents. |
 | `/scott-cc:gha` | Debug failing GitHub Actions runs and audit workflow YAML. Fetches logs via `gh` CLI, analyzes errors, suggests fixes. |
+| `/scott-cc:handoff` | Generate a compact session handoff with git state, active work, key files, and concrete next actions. |
 | `/scott-cc:security-cheatsheet` | Look up OWASP security cheatsheets by topic. Comprehensive security reference for common vulnerabilities and mitigations. |
 
 ---
@@ -57,13 +59,14 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 
 ---
 
-## Skills (13)
+## Skills (16)
 
 ### Project Setup
 
 | Skill | Description |
 |-------|-------------|
 | `init` | Interactive project scaffolding. Detects what already exists, presents a menu, and sets up only what you select: beads (`bd init`), `CLAUDE.md`, `AGENTS.md` symlink, `.envrc`, `Makefile`, and pre-commit hooks. |
+| `acceptance-criteria` | Generate testable acceptance criteria before creating beads issues or planning implementation work. |
 
 ### Code Quality
 
@@ -72,8 +75,10 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 | `python-simplifier` | Simplifies and refines Python code for clarity, consistency, and maintainability. Applies KISS principles, Pythonic patterns, and framework best practices. Use when reviewing or refactoring Python code. |
 | `typescript-simplifier` | Simplifies and refines TypeScript/JavaScript code for clarity, consistency, and maintainability. Applies KISS principles, modern ES features, and framework best practices. Use when reviewing or refactoring TS/JS code. |
 | `cli-design` | Design patterns and conventions for building agent-compatible CLI tools. Covers flag design, output formatting, exit codes, and composability with AI-driven workflows. |
+| `delegate-first` | Keep the parent conversation clean by forking noisy implementation, validation, and multi-file work to sub-agents. |
 | `karpathy-guidelines` | Behavioral guidelines to reduce common LLM coding mistakes. Helps avoid overcomplication, make surgical changes, surface assumptions, and define verifiable success criteria. |
 | `property-based-testing` | Use when implementing serialization/parsing, data transformations, algorithms with mathematical properties, API contracts, or state machines where testing all edge cases is impractical. Describe invariants instead of specific input/output pairs. |
+| `verified-implementation` | Require authoritative sources for security-critical, financial, protocol, and production-ready implementation decisions. |
 
 ### Documentation & AI Context
 

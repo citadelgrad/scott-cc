@@ -32,6 +32,7 @@
       "description": "Work faster with modern CLI tools, documentation lookup, and context management.",
       "skills": [
         "cli-design",
+        "delegate-first",
         "context7",
         "context-file-optimizer"
       ]

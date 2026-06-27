@@ -106,7 +106,7 @@ Example post:
 ```
 Just published my Claude Code setup as a plugin!
 
-2 commands + 8 agents + 4 skills + beads epic builder for productive web development
+4 commands + 8 agents + 16 skills + beads epic builder for productive web development
 
 Install with:
 /plugin install citadelgrad/scott-cc
@@ -114,6 +114,8 @@ Install with:
 Features:
 - Security cheatsheets (/security-cheatsheet)
 - GitHub Actions debugging (/gha)
+- Delegate-first subagent workflow (/delegate-first)
+- Compact session handoffs (/handoff)
 - Architecture and research agents
 
 Perfect for Next.js, React, TypeScript, and Python projects!
