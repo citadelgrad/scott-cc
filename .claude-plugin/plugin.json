@@ -1,7 +1,7 @@
 {
   "name": "scott-cc",
   "description": "Core development tools with 2 commands, 8 AI agents, 14 skills, 3 hooks, and 3 templates for productive modern web development",
-  "version": "4.3.0",
+  "version": "4.3.1",
   "author": {
     "name": "Scott Nixon"
   },
