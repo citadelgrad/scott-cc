@@ -1,6 +1,6 @@
 # Scott's Claude Code Setup
 
-Modular Claude Code plugin suite for productive development. The core plugin provides **4 slash commands**, **8 specialized AI agents**, **16 skills**, **3 hooks**, and **3 project templates**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, and more.
+Modular Claude Code plugin suite for productive development. The core plugin provides **4 slash commands**, **8 specialized AI agents**, **17 skills**, **3 hooks**, and **3 project templates**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, and more.
 
 ## Quick Install
 
@@ -14,7 +14,7 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 |------|------:|-------|
 | Commands | 4 | `delegate-first`, `gha`, `handoff`, `security-cheatsheet` |
 | Agents | 8 | `api-debugger`, `backend-architect`, `deep-research-agent`, `find-emergent-behavior`, `frontend-architect`, `refactoring-expert`, `requirements-analyst`, `system-architect` |
-| Skills | 16 | `init`, `acceptance-criteria`, `cli-design`, `delegate-first`, `python-simplifier`, `typescript-simplifier`, `karpathy-guidelines`, `property-based-testing`, `verified-implementation`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory` |
+| Skills | 17 | `init`, `acceptance-criteria`, `cli-design`, `delegate-first`, `python-simplifier`, `typescript-simplifier`, `karpathy-guidelines`, `property-based-testing`, `verified-implementation`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory`, `thinking-in-systems` |
 | Hooks | 3 | `terminal-bell` (Stop), `toon-post-hook` (PostToolUse), `prefer-modern-tools` (PreToolUse) |
 | Templates | 3 | `.pre-commit-config.yaml`, `CLAUDE.md`, `AGENTS.md` |
 | Sub-plugins | 6 | `beads-epic-builder`, `browser-automation`, `research-tools`, `security-suite`, `performance-optimization`, `mutation-testing` |
@@ -59,7 +59,7 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 
 ---
 
-## Skills (16)
+## Skills (17)
 
 ### Project Setup
 
@@ -101,6 +101,12 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 |-------|-------------|
 | `pas-pipeline` | Run, validate, and manage PAS (Pascal's Discrete Attractor) DOT-based AI pipelines. Covers `pas launch`, `pas run`, budget/step caps, checkpoint resumption, and common failure modes. |
 | `reck-factory` | Manage the Reck software factory — register repos, run AI tasks in containers, schedule background pipelines, and monitor results via Loki/Grafana. |
+
+### Systems Thinking
+
+| Skill | Description |
+|-------|-------------|
+| `thinking-in-systems` | Apply Donella Meadows' systems thinking framework to map, diagnose, and redesign any system — organizational, technical, ecological, or policy. Covers stocks/flows, feedback loops, system archetypes, leverage points, and concrete intervention recommendations. Use with `--design` to build a new system, or `--focus map/archetypes/leverage` to run a partial analysis. |
 
 ---
 

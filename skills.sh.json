@@ -6,7 +6,8 @@
       "title": "Project Setup",
       "description": "Scaffold and initialize projects with standard tooling, config, and conventions.",
       "skills": [
-        "init"
+        "init",
+        "acceptance-criteria"
       ]
     },
     {
@@ -24,7 +25,8 @@
         "python-simplifier",
         "typescript-simplifier",
         "property-based-testing",
-        "karpathy-guidelines"
+        "karpathy-guidelines",
+        "verified-implementation"
       ]
     },
     {
@@ -50,6 +52,13 @@
       "description": "Create C4 architecture diagrams using Mermaid.",
       "skills": [
         "c4-diagram"
+      ]
+    },
+    {
+      "title": "Systems Thinking",
+      "description": "Map, diagnose, and redesign complex systems using Donella Meadows' framework.",
+      "skills": [
+        "thinking-in-systems"
       ]
     }
   ]

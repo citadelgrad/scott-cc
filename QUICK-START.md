@@ -11,7 +11,7 @@
 **Core Plugin (scott-cc)**
 - 4 slash commands (delegate-first, handoff, security-cheatsheet, gha)
 - 8 AI agents (api-debugger, backend-architect, deep-research-agent, emergent-behavior, frontend-architect, refactoring-expert, requirements-analyst, system-architect)
-- 16 skills (delegate-first, acceptance-criteria, verified-implementation, python-simplifier, typescript-simplifier, context7, context-file-optimizer, and more)
+- 17 skills (delegate-first, acceptance-criteria, verified-implementation, python-simplifier, typescript-simplifier, context7, thinking-in-systems, and more)
 
 **Sub-Plugins**
 - beads-epic-builder - Plan, build, and swarm beads epics (2 agents, 2 commands)
