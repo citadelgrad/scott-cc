@@ -1,0 +1,19 @@
+commands/handoff.md
+  s_4e087dfe303ba0::t_dfd17bfb2873e1 1-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.3",
+  "base_commit_sha": "79f9757ac5472e13cf385a06ba6491b095e6884a",
+  "prompts": {},
+  "sessions": {
+    "s_4e087dfe303ba0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a6ff8cca9a4a83f94",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
