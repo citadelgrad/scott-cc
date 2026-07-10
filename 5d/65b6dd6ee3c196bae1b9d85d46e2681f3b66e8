@@ -1,0 +1,19 @@
+plugins/beads-epic-builder/commands/epic-swarm.md
+  s_6a60c476f96bfb::t_6060481c38b46e 101-109,111,114,197,199,203,206,210,212,214,217-254,256-264,267,269,271,273-275,281,283,295,311,339-340,342-343,346,352,359,366,373,377-378,426-427,429-430,433-434,451-452,493-496,499-500,502,552-556
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "5d65b6dd6ee3c196bae1b9d85d46e2681f3b66e8",
+  "prompts": {},
+  "sessions": {
+    "s_6a60c476f96bfb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6966a711-c7b8-4b98-91a8-50f239b960e1",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
