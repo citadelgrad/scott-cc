@@ -1,0 +1,136 @@
+# CONVERGE, and Pipeline-Not-Barrier
+
+Stage 7, plus the cross-cutting pipeline-not-barrier mechanism that stages CAST through MERGE
+implement (not a separate stage of its own — it's a property of how the earlier stages run).
+
+---
+
+## CONVERGE
+
+**Goal:** decide, after each RE-REVIEW, whether the panel loop is done, needs another round, or
+must circuit-break and escalate to a human.
+
+### Decision rule
+
+1. **Clean round → done.** If RE-REVIEW's Axis (a) regression check and Axis (b) coherence check
+   both come back clean (zero new findings, zero unresolved findings from the round that just
+   fixed), the loop stops. Emit the final report (human mode) or the final JSON blob
+   (`mode:agent`) per [dual-mode-contract.md](dual-mode-contract.md), with status `converged`.
+2. **Dirty round → loop.** If RE-REVIEW surfaces any new or unresolved finding, the loop continues.
+   Take the new packaged diff RE-REVIEW already produced and hand it to the next iteration.
+3. **Loop back to SPAWN, not always CAST.** The re-entry point for a looped iteration is
+   **SPAWN**, using the same cast list CAST already produced, UNLESS RE-REVIEW's findings suggest
+   the diff has changed in a way that plausibly changes which seats should be cast (e.g. FIX
+   introduced a new type/schema surface that wasn't there in round 1, which would newly trigger
+   Domain-Intent if it wasn't already cast). In that case, re-run CAST first. **Justification for
+   defaulting to SPAWN over CAST:** casting judgment is a property of the diff's overall shape
+   (does it touch types, security boundaries, new architecture), which rarely changes
+   qualitatively between one fix-pass and the next — re-running the full CAST judgment call every
+   iteration is redundant work for no expected behavior change in the common case. Re-running MERGE
+   is implied either way, since a new SPAWN round always needs a new MERGE pass over its output;
+   there's no version of "loop back to MERGE directly" that skips SPAWN, since MERGE has nothing
+   to merge without a fresh SPAWN round to consume the new diff.
+
+### What counts as "progress" (for the circuit-breaker)
+
+Define progress precisely, round-over-round, using RE-REVIEW's finding counts (never a vague
+"seems better"):
+
+- **Total finding count** (post-MERGE, pre-VALIDATE, across both RE-REVIEW axes) strictly
+  decreasing from the previous round, OR
+- **Severity mix improving**: even if the raw count is flat or slightly up, progress still counts
+  if the number of Critical findings strictly decreased and no new Critical finding appeared, OR
+- **A previously-circuit-relevant finding is now resolved**: a specific finding present in round
+  N's RE-REVIEW output is absent (and not replaced by a fingerprint-equivalent new finding) in
+  round N+1.
+
+**No progress** means: the total finding count is flat or increased, AND the Critical count did
+not strictly decrease, AND no previously-flagged finding was actually resolved (a finding that
+just moved file:line by more than the ±3 fingerprint tolerance without being genuinely fixed does
+not count as resolved — that's evasion, not progress, and should itself be flagged as suspicious
+in the report).
+
+### 3-strikes circuit-breaker
+
+Track consecutive rounds with no progress (per the definition above). On the **3rd consecutive**
+round with no progress:
+
+1. **Stop looping immediately.** Do not attempt a 4th round.
+2. **Escalate to a human.** Human-interactive mode: print an escalation block containing the last
+   3 rounds' finding counts (total, by severity), a diagnosis of what specifically isn't
+   converging (e.g. "the same Important finding at `foo.ts:42` has survived 3 fix attempts — the
+   fixer's approach is not resolving the root cause, or the finding itself may be a false
+   positive that VALIDATE incorrectly passed"), and a recommendation (fix manually, or challenge
+   the finding's validity directly). `mode:agent`: set the top-level JSON status to
+   `circuit_broken` with the same diagnostic detail in a structured field — see
+   [dual-mode-contract.md](dual-mode-contract.md).
+3. **Do not silently give up.** A circuit-break is a distinct, explicit terminal state — never
+   collapse it into either `converged` (it did not converge) or a bare error (it's not a crash,
+   it's a designed stop condition). Downstream automation (a `foundry` gate) must be able to
+   distinguish "converged clean," "circuit broken, needs a human," and "run failed to execute" as
+   three different outcomes.
+
+A "strike" resets to 0 the moment a round shows progress by the definition above — this is a
+consecutive-rounds counter, not a lifetime counter across the whole run.
+
+### Loop iteration cap independent of circuit-breaker
+
+The circuit-breaker triggers on *no progress*; it does not, by itself, cap a slowly-but-genuinely
+converging run. In practice this loop should still rarely exceed ~5-6 total rounds even when
+making progress every round (real diffs converge fast once Critical/Important findings are fixed).
+If a run is still looping past 6 rounds while technically showing progress each time (e.g.
+shrinking by one Minor finding per round), treat that as worth flagging in the report as unusually
+slow convergence, even though it hasn't tripped the circuit-breaker — this is a coverage-honesty
+note, not a hard stop.
+
+---
+
+## Pipeline-Not-Barrier
+
+This is the concurrency shape CAST through MERGE actually run in — described here as its own
+section because it's load-bearing across multiple stages, not a property of any single one.
+
+### The principle, in this orchestrator's own words
+
+A seat that finishes reviewing and has nothing to report should be marked done and let the rest of
+the pipeline move on immediately — it must not sit and wait for the slowest seat in its batch to
+also finish before MERGE is allowed to start processing anyone's output. Symmetrically, a seat that
+comes back with findings should have those findings flow into MERGE as soon as they're available,
+not held back until every other seat in the batch also reports in. The only point in the entire
+7-stage loop where everything must wait for everything else is immediately before final synthesis
+— CONVERGE's decision (and the report it produces) genuinely needs every seat's output and every
+RE-REVIEW axis's result to make a correct call, since progress-measurement and the clean/dirty
+verdict are both whole-round judgments, not per-seat ones.
+
+### Concretely, in this orchestrator
+
+- **Within a SPAWN batch** (see [cast-and-spawn.md](cast-and-spawn.md)'s bounded-parallel
+  concurrency bound): as each seat in the batch returns, immediately start MERGE's fingerprinting
+  and confidence-scoring work on that seat's findings against whatever has already been merged so
+  far, rather than buffering all batch results and starting MERGE only once the whole batch is
+  back. A seat reporting zero findings contributes nothing to fingerprinting and should not block
+  MERGE's processing of seats that did report findings.
+- **Across SPAWN batches**: if a panel needs 2 batches (more than 5 cast seats), MERGE can begin
+  consolidating batch 1's results while batch 2 is still running — MERGE's fingerprint/confidence
+  work is incremental (each new finding either joins an existing fingerprint group or starts a
+  new one), so there's no structural reason to wait for batch 2 before starting on batch 1's
+  output.
+- **VALIDATE**: each merged finding's validator(s) can be dispatched as soon as that finding clears
+  MERGE, independent of whether other findings have finished merging yet. A finding with a clear,
+  early fingerprint match doesn't need to wait for a slower, more ambiguous finding elsewhere in
+  the diff to finish its own merge/dedup resolution.
+- **The one hard barrier**: CONVERGE's decision. It cannot run until (a) every cast seat's SPAWN
+  result is accounted for (returned, or recorded as a coverage gap if it errored/timed out), (b)
+  every surviving finding has completed VALIDATE, (c) FIX has completed and reported its
+  fix/skip list, and (d) RE-REVIEW has completed both axes. Any one of these still pending means
+  CONVERGE cannot yet decide clean-vs-loop-vs-circuit-break, since the decision genuinely depends
+  on the complete picture.
+
+### Why this matters here specifically
+
+The plan's core insight is perspective diversity from independent seats — but independence of
+*judgment* is not the same as independence of *scheduling*. Serializing every seat behind a full
+batch barrier before MERGE can start doesn't add any independence value (each seat already formed
+its judgment in isolation during SPAWN); it only adds wall-clock latency. Pipeline-not-barrier is
+how this orchestrator keeps the diversity benefit of casting many seats without paying for it with
+a slow, fully-serialized stage-by-stage loop.
