@@ -1,0 +1,88 @@
+plugins/review-panel/skills/abstraction-quality/SKILL.md
+  s_91e6e083f716c4::t_640e9b1c5c67b8 1-7,10-65
+  s_91e6e083f716c4::t_385b920ecc60e7 8-9
+plugins/review-panel/skills/comments-docs/SKILL.md
+  s_91e6e083f716c4::t_640e9b1c5c67b8 1-7,10-107
+  s_91e6e083f716c4::t_385b920ecc60e7 8-9
+plugins/review-panel/skills/design-review/SKILL.md
+  s_91e6e083f716c4::t_385b920ecc60e7 8-9
+  s_91e6e083f716c4::t_640e9b1c5c67b8 1-7,10-76
+plugins/review-panel/skills/red-flags/references/flag-interaction-map.md
+  s_91e6e083f716c4::t_385b920ecc60e7 1-2
+  s_91e6e083f716c4::t_640e9b1c5c67b8 3-47
+plugins/review-panel/skills/information-hiding/references/back-door-leakage.md
+  s_91e6e083f716c4::t_385b920ecc60e7 1-2
+  s_91e6e083f716c4::t_640e9b1c5c67b8 3-59
+plugins/review-panel/skills/naming-obviousness/SKILL.md
+  s_91e6e083f716c4::t_640e9b1c5c67b8 1-7,10-108
+  s_91e6e083f716c4::t_385b920ecc60e7 8-9
+plugins/review-panel/skills/deep-modules/SKILL.md
+  s_91e6e083f716c4::t_385b920ecc60e7 8-9
+  s_91e6e083f716c4::t_640e9b1c5c67b8 1-7,10-143
+plugins/review-panel/skills/strategic-mindset/SKILL.md
+  s_91e6e083f716c4::t_385b920ecc60e7 8-9
+  s_91e6e083f716c4::t_640e9b1c5c67b8 1-7,10-89
+plugins/review-panel/skills/pull-complexity-down/references/configuration-parameter-audit.md
+  s_91e6e083f716c4::t_385b920ecc60e7 1-2
+  s_91e6e083f716c4::t_640e9b1c5c67b8 3-61
+plugins/review-panel/skills/module-boundaries/SKILL.md
+  s_91e6e083f716c4::t_640e9b1c5c67b8 1-7,10-98
+  s_91e6e083f716c4::t_385b920ecc60e7 8-9
+plugins/review-panel/skills/red-flags/SKILL.md
+  s_91e6e083f716c4::t_385b920ecc60e7 8-9
+  s_91e6e083f716c4::t_640e9b1c5c67b8 1-7,10-251
+plugins/review-panel/skills/code-evolution/SKILL.md
+  s_91e6e083f716c4::t_640e9b1c5c67b8 1-7,10-103
+  s_91e6e083f716c4::t_385b920ecc60e7 8-9
+plugins/review-panel/skills/complexity-recognition/SKILL.md
+  s_91e6e083f716c4::t_385b920ecc60e7 8-9
+  s_91e6e083f716c4::t_640e9b1c5c67b8 1-7,10-90
+plugins/review-panel/skills/design-it-twice/references/pre-mortem-fallback.md
+  s_91e6e083f716c4::t_640e9b1c5c67b8 3-27
+  s_91e6e083f716c4::t_385b920ecc60e7 1-2
+plugins/review-panel/skills/error-design/SKILL.md
+  s_91e6e083f716c4::t_640e9b1c5c67b8 1-7,10-106
+  s_91e6e083f716c4::t_385b920ecc60e7 8-9
+plugins/review-panel/skills/general-vs-special/SKILL.md
+  s_91e6e083f716c4::t_385b920ecc60e7 8-9
+  s_91e6e083f716c4::t_640e9b1c5c67b8 1-7,10-78
+plugins/review-panel/agents/clean-room-alternative.md
+  s_91e6e083f716c4::t_640e9b1c5c67b8 1-7,10-29
+  s_91e6e083f716c4::t_385b920ecc60e7 8-9
+plugins/review-panel/skills/information-hiding/SKILL.md
+  s_91e6e083f716c4::t_640e9b1c5c67b8 1-7,10-100
+  s_91e6e083f716c4::t_385b920ecc60e7 8-9
+plugins/review-panel/skills/design-review/references/workflow-builder.md
+  s_91e6e083f716c4::t_385b920ecc60e7 1-2
+  s_91e6e083f716c4::t_640e9b1c5c67b8 3-66
+plugins/review-panel/skills/design-it-twice/SKILL.md
+  s_91e6e083f716c4::t_385b920ecc60e7 8-9
+  s_91e6e083f716c4::t_640e9b1c5c67b8 1-7,10-100
+plugins/review-panel/skills/comments-docs/references/comments-first-workflow.md
+  s_91e6e083f716c4::t_385b920ecc60e7 1-2
+  s_91e6e083f716c4::t_640e9b1c5c67b8 3-45
+plugins/review-panel/skills/diagnose/SKILL.md
+  s_91e6e083f716c4::t_640e9b1c5c67b8 1-7,10-82
+  s_91e6e083f716c4::t_385b920ecc60e7 8-9
+plugins/review-panel/skills/pull-complexity-down/SKILL.md
+  s_91e6e083f716c4::t_640e9b1c5c67b8 1-7,10-83
+  s_91e6e083f716c4::t_385b920ecc60e7 8-9
+plugins/review-panel/CREDITS.md
+  s_91e6e083f716c4::t_410b72f9842164 17-47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "eb76127e2ec4c8f024a523bd5842f20a2626cdc5",
+  "prompts": {},
+  "sessions": {
+    "s_91e6e083f716c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e36d4190-65f4-4eb8-afc2-6615d9938339",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
