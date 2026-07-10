@@ -69,7 +69,20 @@ excluded from this plugin.
 
 ## DietrichGebert/ponytail (MIT)
 
-_To be filled in by the vendoring task that pulls from this source._
+Two review seats vendored verbatim from the upstream `skills/` directory.
+Both files have a one-line `<!-- Vendored from DietrichGebert/ponytail (MIT).
+See CREDITS.md. -->` attribution comment inserted immediately after the YAML
+frontmatter (per the License-Header Policy below).
+
+- `skills/ponytail-review/SKILL.md` — verbatim (diff-scoped simplicity review seat)
+- `skills/ponytail-audit/SKILL.md` — verbatim (repo-scoped simplicity audit seat)
+
+Explicitly out of scope and NOT vendored: `ponytail-debt`, `ponytail-gain`,
+`ponytail-help`, the base `ponytail` generation-time persona/mode, and its
+hooks, statusline, and MCP server config. These are a separate UX decision
+and were confirmed absent from `plugins/review-panel/` via `fd` search
+(zero matches for `ponytail-debt|ponytail-gain|ponytail-help`, zero matches
+for a bare `ponytail` skill, and zero matches for `hooks|statusline|mcp`).
 
 ## mattpocock/skills (MIT)
 
