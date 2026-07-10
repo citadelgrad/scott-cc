@@ -65,22 +65,65 @@ After Step 3 produces the primary cast list from the catalog, run a secondary en
 1. Enumerate skills visible in the current session beyond what's vendored in this plugin —
    `~/.claude/skills` (user-level personal skills) and any installed plugin's skills, notably
    `compound-engineering` (per plan decision Q8, it stays installed and its ~15 review personas
-   are cast at runtime, never vendored into this plugin).
+   are cast at runtime, never vendored into this plugin). **Concretely, `compound-engineering`'s
+   review personas are not exposed as `skills/*/SKILL.md` files — they live under `agents/review/`
+   (e.g. `architecture-strategist.md`, `security-sentinel.md`, `code-simplicity-reviewer.md`) and
+   are surfaced to the orchestrator as dispatchable agent types named
+   `compound-engineering:review:<persona>` (visible in the session's available Task/Agent-tool
+   agent-type list, not by directory-listing a `skills/` folder).** So this enumeration step must
+   cover two distinct sources, not one: (a) skill directories under `~/.claude/skills` and any
+   plugin's `skills/` tree, matched by reading each `SKILL.md`'s description; and (b) agent types
+   available via the `Task`/Agent tool whose name is namespaced `<plugin>:review:*` or otherwise
+   self-describes as a review persona, matched by reading their one-line description the same way.
+   A live-scan that only walks `skills/` directories will silently miss (b) and undercount
+   compound-engineering's actual review-persona roster.
 2. For each skill found that is NOT already represented by a catalog seat (check the catalog's
    "Excluded from Individual Casting" section too — those clairvoyance lenses are intentionally
    subsumed by `design-review` and must not be double-cast even if live-scan finds them
    installed standalone), judge whether its stated purpose applies to this diff using the same
    content-based judgment as Step 2.
-3. Add matching skills as supplementary seats. Common finds: a security-specific skill (resolves
-   the catalog's Security seat when none is vendored — see catalog "Missing skill handling"), a
-   language-specific linter/reviewer skill, a framework-specific reviewer, or one of
-   compound-engineering's personas offering a review angle no catalog seat covers (e.g. a
-   framework-idiom reviewer).
+3. Add matching skills (or matching agent types, per item 1's two-source enumeration) as
+   supplementary seats. Common finds: a security-specific skill (resolves the catalog's Security
+   seat when none is vendored — see catalog "Missing skill handling"), a language-specific
+   linter/reviewer skill, a framework-specific reviewer, or one of compound-engineering's
+   `agents/review/*` personas offering a review angle no catalog seat covers (e.g.
+   `architecture-strategist` for structural review of a new architectural pattern, or
+   `security-sentinel` for the Security seat). A supplementary seat's Step 6 "target skill path"
+   is either a skill file path or, for an agent-type find, the dispatchable agent-type name itself
+   (e.g. `compound-engineering:review:security-sentinel`) — SPAWN dispatches it via `Task` using
+   that name directly, the same as any other seat.
 4. Live-scan results are strictly additive — they never remove or override a catalog-cast seat,
    per the catalog's discovery-source-order rule (catalog is primary and durable; live-scan is
    secondary enrichment that can vanish if the user uninstalls something next session).
 5. If live-scan finds nothing beyond the catalog roster, that's a normal, expected outcome — don't
    manufacture a supplementary seat to look thorough.
+
+**Verified (scc-ns8.11, manual check, 2026-07-10):** confirmed by direct filesystem inspection
+that `compound-engineering` was installed on the machine this plugin was authored on (present
+under `~/.claude/plugins/marketplaces/every-marketplace/plugins/compound-engineering/`, with a
+matching entry in `~/.claude/plugins/cache/every-marketplace/compound-engineering/`). Its ~15
+review personas — `agent-native-reviewer`, `architecture-strategist`, `code-simplicity-reviewer`,
+`data-integrity-guardian`, `data-migration-expert`, `deployment-verification-agent`,
+`dhh-rails-reviewer`, `julik-frontend-races-reviewer`, `kieran-python-reviewer`,
+`kieran-rails-reviewer`, `kieran-typescript-reviewer`, `pattern-recognition-specialist`,
+`performance-oracle`, `schema-drift-detector`, `security-sentinel` — live under that plugin's
+`agents/review/*.md`, **not** under its `skills/` tree, and are surfaced to the host session as
+dispatchable `compound-engineering:review:<persona>` agent types (independently confirmed: this
+exact session's own available-agent-types list included all of the above under that naming
+scheme). The originally-drafted item 1 said "enumerate skills," which — read literally — would
+have walked `skills/` directories only and silently missed all ~15 of these, since
+compound-engineering's `skills/` tree holds unrelated skills (e.g. `document-review`,
+`agent-native-architecture`) rather than the review personas themselves. Item 1 and item 3 above
+were amended (this task, scc-ns8.11) to explicitly enumerate agent types as a second source
+alongside skill directories, closing that gap. With the amendment applied, the live-scan procedure
+as now written **does** concretely surface compound-engineering's personas: e.g.
+`security-sentinel` would be judged against the catalog's Security seat (resolving "Missing skill
+handling" when the diff trips a security signal), and `architecture-strategist` would be judged as
+a supplementary seat for diffs with structural/architectural content the catalog's Structural seat
+description doesn't already fully cover. This was a manual, one-time verification on the
+machine/session available at authoring time, not an automated test — a live-scan on a different
+machine without compound-engineering installed will correctly find nothing from that source (see
+item 5).
 
 ### Step 5 — Missing-skill handling
 
