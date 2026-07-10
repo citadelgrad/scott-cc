@@ -157,3 +157,56 @@ the gate's pass/fail signal: `converged` → gate passes; `circuit_broken` → g
 `agent`/`explain` integrations can consume `convergence.circuit_breaker.diagnosis` directly for
 their explanation/escalation text; `error` → gate fails, treat as an infrastructure problem with
 the panel run itself rather than a code-quality signal.
+
+#### Concrete `foundry.yaml` example
+
+Reckoner calls `foundry run post-feature` automatically after every successful PR creation, so
+defining a `post-feature` profile with a `review-panel` gate is enough to get this skill running
+unattended after every PR with no other wiring:
+
+```yaml
+version: 1
+
+profiles:
+  post-feature:
+    gates:
+      - id: review-panel
+        run: |
+          claude -p "/review-panel $(git merge-base origin/main HEAD)..HEAD --mode=agent" \
+            --dangerously-skip-permissions \
+            --output-format json > "$FOUNDRY_RUN_DIR/review-panel.json"
+          status=$(jq -r '.status' "$FOUNDRY_RUN_DIR/review-panel.json")
+          if [ "$status" = "circuit_broken" ] || [ "$status" = "error" ]; then
+            exit 1
+          fi
+        timeout: 20m
+        allow_failure: false
+        decision_on_failure: fail   # circuit_broken/error -> gate fails; converged -> exit 0 above
+
+integrations:
+  explain:
+    on_failure: true
+  agent:
+    on_failure: true
+    # {run_dir} is interpolated by foundry; the gate already wrote the JSON blob there, so the
+    # explain/agent integrations can jq the diagnosis straight out of it instead of re-deriving one.
+    command: >-
+      claude -p "Read {run_dir}/review-panel.json and summarize why the review-panel gate failed,
+      quoting convergence.circuit_breaker.diagnosis if status is circuit_broken, or the raw error
+      if status is error." --dangerously-skip-permissions
+```
+
+Notes on this example:
+- The gate's `run` command is exactly the `/review-panel` slash command from `commands/` invoked
+  with `--mode=agent`, non-interactively via `claude -p`, over the PR's merge-base range — this is
+  the same target-resolution the command performs for a human, just with the flag set and no TTY.
+- `status: converged` is the only value that should let the gate script exit `0`; both
+  `circuit_broken` and `error` are failures, per the mapping described above, so the script maps
+  both non-`converged` outcomes to a nonzero exit rather than trying to distinguish
+  `decision_on_failure` behavior at the shell level — use `allow_failure: true` +
+  `decision_on_failure: warn` at the profile level instead if a project wants circuit-breaks to
+  warn rather than block.
+- Writing the JSON blob into `$FOUNDRY_RUN_DIR` (foundry's per-run directory, the same one
+  `{run_dir}` refers to in `integrations`) means `integrations.agent`'s command can read the exact
+  same structured result the gate already produced instead of re-invoking the panel or re-parsing
+  `explanation.md`.
