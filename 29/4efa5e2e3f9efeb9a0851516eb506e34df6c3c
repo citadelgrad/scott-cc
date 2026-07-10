@@ -1,0 +1,39 @@
+plugins/review-panel/skills/review-panel/SKILL.md
+  s_91e6e083f716c4::t_690da3c7a98630 1
+plugins/review-panel/agents/clean-room-alternative.md
+  s_91e6e083f716c4::t_0c27e4e9bf1ded 1
+plugins/review-panel/reviewers/persona-catalog.md
+  s_91e6e083f716c4::t_15174104f04475 1
+plugins/review-panel/formats/ADR-FORMAT.md
+  s_91e6e083f716c4::t_673295a473ea5a 1
+plugins/review-panel/skills/domain-modeling/SKILL.md
+  s_91e6e083f716c4::t_b80c931883fc13 1
+plugins/review-panel/CREDITS.md
+  s_91e6e083f716c4::t_2c065a15cd0853 1-71
+plugins/review-panel/commands/review-panel.md
+  s_91e6e083f716c4::t_e56330b20d49c7 1
+plugins/review-panel/skills/adversarial-reviewer/SKILL.md
+  s_91e6e083f716c4::t_9c9a7d862a6025 1
+plugins/review-panel/plugin.json
+  s_91e6e083f716c4::t_5162096259f203 1-10
+plugins/review-panel/formats/CONTEXT-FORMAT.md
+  s_91e6e083f716c4::t_a30624b89f74a6 1
+plugins/review-panel/contracts/reviewer-output.md
+  s_91e6e083f716c4::t_94aefacc7feac4 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "294efa5e2e3f9efeb9a0851516eb506e34df6c3c",
+  "prompts": {},
+  "sessions": {
+    "s_91e6e083f716c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e36d4190-65f4-4eb8-afc2-6615d9938339",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
