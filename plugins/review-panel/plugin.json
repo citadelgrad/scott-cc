@@ -1,0 +1,10 @@
+{
+  "name": "review-panel",
+  "description": "Multi-persona adversarial code and design review panel, vendoring and adapting patterns from compound-engineering, clairvoyance, superpowers, ponytail, and mattpocock/skills",
+  "version": "0.1.0",
+  "author": {
+    "name": "Scott Nixon"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/citadelgrad/scott-cc"
+}
