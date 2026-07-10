@@ -1,0 +1,58 @@
+plugins/review-panel/scripts/review-package
+  s_91e6e083f716c4::t_32ab78a6540b7e 11
+.claude-plugin/marketplace.json
+  s_91e6e083f716c4::t_f5bf386d9a3f0a 81-90
+plugins/review-panel/skills/domain-modeling/SKILL.md
+  s_91e6e083f716c4::t_78d1759e5fb418 35,39-43,45
+plugins/review-panel/reviewers/persona-catalog.md
+  s_91e6e083f716c4::t_1ef12d789f8ff0 259-270
+  s_91e6e083f716c4::t_88f39d67315e16 218-236
+  s_91e6e083f716c4::t_1a79f7ac7c77c8 291
+plugins/review-panel/CREDITS.md
+  s_91e6e083f716c4::t_8f056d8fecc54e 22-43
+  s_91e6e083f716c4::t_e3956436a63046 179
+plugins/review-panel/skills/review-panel/SKILL.md
+  s_91e6e083f716c4::t_bab310d9afe31a 12-13
+plugins/review-panel/skills/adversarial-reviewer/SKILL.md
+  s_91e6e083f716c4::t_1b3df177f337bb 12
+plugins/review-panel/skills/grill-with-docs/SKILL.md
+  s_91e6e083f716c4::t_8ac2bc5ef3cbc1 88
+  s_91e6e083f716c4::t_7ae85961a1f4d7 76
+plugins/review-panel/formats/CONTEXT-FORMAT.md
+  s_91e6e083f716c4::t_bffb84573cede8 2-3,27-40,46,48,51
+plugins/review-panel/tests/PRESSURE-TEST.md
+  s_91e6e083f716c4::t_6eb7d6928bf1e9 145-146
+plugins/review-panel/skills/improve-codebase-architecture/SKILL.md
+  s_91e6e083f716c4::t_49475c2542a8de 70,72
+plugins/review-panel/skills/review-panel/references/fix-and-rereview.md
+  s_91e6e083f716c4::t_5bb56ff122d991 52-71
+  s_91e6e083f716c4::t_bbd894f8a8c76a 79-89
+plugins/review-panel/skills/review-panel/references/cast-and-spawn.md
+  s_91e6e083f716c4::t_cf4b0069d15b95 35-41
+  s_91e6e083f716c4::t_1e0eefd05f052b 108-115
+  s_91e6e083f716c4::t_70a8f251435faa 158-167
+plugins/review-panel/skills/review-panel/references/converge-and-pipeline.md
+  s_91e6e083f716c4::t_a159e560ede08c 32-41
+  s_91e6e083f716c4::t_341e079d076338 133-141
+  s_91e6e083f716c4::t_af1cc7fc1fe037 93-105
+plugins/review-panel/skills/review-panel/references/dual-mode-contract.md
+  s_91e6e083f716c4::t_b44affb6235baa 213-224
+plugins/review-panel/scripts/workspace
+  s_91e6e083f716c4::t_10d4cbfcaaf0af 19-23,28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "7d842b6d608a6052dad62dd43f8a44ca4fe747bc",
+  "prompts": {},
+  "sessions": {
+    "s_91e6e083f716c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e36d4190-65f4-4eb8-afc2-6615d9938339",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
