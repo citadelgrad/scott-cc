@@ -1,0 +1,20 @@
+plugins/review-panel/skills/domain-modeling/CONTEXT-AND-ADR.md
+  s_91e6e083f716c4::t_91750464c01b37 40-71,73-75,77-82,101-103,106,109-132
+  s_91e6e083f716c4::t_ded06ac3471507 72,76,83-100,104-105,107-108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "608971200f667a50e2e020f6589ba715fa753805",
+  "prompts": {},
+  "sessions": {
+    "s_91e6e083f716c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e36d4190-65f4-4eb8-afc2-6615d9938339",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
