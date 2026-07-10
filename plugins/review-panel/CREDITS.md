@@ -14,7 +14,37 @@ _To be filled in by the vendoring task that pulls from this source._
 
 ## codybrom/clairvoyance (MIT)
 
-_To be filled in by the vendoring task that pulls from this source._
+Full design-review lens set (16 skills) and the `clean-room-alternative` agent,
+vendored verbatim from https://github.com/codybrom/clairvoyance. Each file
+below carries a `<!-- Vendored from codybrom/clairvoyance (MIT). See
+CREDITS.md. -->` attribution comment (placed after YAML frontmatter where
+present) since none of the source files had their own license headers.
+
+All files copied verbatim, no adaptation:
+
+- `skills/abstraction-quality/SKILL.md`
+- `skills/code-evolution/SKILL.md`
+- `skills/comments-docs/SKILL.md`
+- `skills/comments-docs/references/comments-first-workflow.md`
+- `skills/complexity-recognition/SKILL.md`
+- `skills/deep-modules/SKILL.md`
+- `skills/design-it-twice/SKILL.md`
+- `skills/design-it-twice/references/pre-mortem-fallback.md`
+- `skills/design-review/SKILL.md`
+- `skills/design-review/references/workflow-builder.md`
+- `skills/diagnose/SKILL.md`
+- `skills/error-design/SKILL.md`
+- `skills/general-vs-special/SKILL.md`
+- `skills/information-hiding/SKILL.md`
+- `skills/information-hiding/references/back-door-leakage.md`
+- `skills/module-boundaries/SKILL.md`
+- `skills/naming-obviousness/SKILL.md`
+- `skills/pull-complexity-down/SKILL.md`
+- `skills/pull-complexity-down/references/configuration-parameter-audit.md`
+- `skills/red-flags/SKILL.md`
+- `skills/red-flags/references/flag-interaction-map.md`
+- `skills/strategic-mindset/SKILL.md`
+- `agents/clean-room-alternative.md`
 
 ## obra/superpowers (MIT)
 
