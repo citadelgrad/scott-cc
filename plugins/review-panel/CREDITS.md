@@ -187,13 +187,47 @@ skill).
 
 ### jpablo/vibe-types (Apache-2.0)
 
-_To be filled in by the domain-modeling vendoring task. Retain the upstream
-NOTICE file contents here if present in the source repo._
+Source: https://github.com/jpablo/vibe-types. This repo was **not** vendored,
+copied, or fetched — this task ran offline with no network access, so no
+verbatim text from `vibe-types` appears anywhere in this plugin.
+
+What was actually done: `skills/domain-modeling/TECHNIQUES.md` and
+`skills/domain-modeling/WORKED-EXAMPLE.md` were authored from scratch, using
+`vibe-types`' publicly-known catalog entry **names** as a checklist of
+well-established, generic patterns to cover — `T01-algebraic-data-types`,
+`T03-newtypes-opaque`, `T14-type-narrowing`, `T57-typestate` — plus one
+specific, independently-verifiable gotcha attributed to that catalog: that
+branded/opaque types are compile-time-only and a JSON serialize/deserialize
+round-trip silently erases the brand, so re-validation is required at
+deserialization boundaries (see `TECHNIQUES.md` §5, "Gotcha" callout).
+
+All prose and code examples (TypeScript, Python, Rust) in this plugin's
+`domain-modeling` skill are original work, not verbatim or paraphrased copies
+of `vibe-types` source text (which was never fetched). This is credited as
+**inspiration / pattern-naming**, not verbatim vendoring, and no
+`vibe-types`-specific license header or NOTICE content is reproduced here
+since no source file was read. If `vibe-types` is vendored into this repo in
+the future with actual network access, this section should be updated to
+reflect real file-level provenance and any upstream NOTICE file contents.
 
 ### 0xBigBoss/claude-code
 
-_To be filled in by the domain-modeling vendoring task, only if the source
-repo's license is verified as compatible._
+**Not used.** This source's `typescript-best-practices` skill has no root
+`LICENSE` file, so its license could not be verified in this offline task.
+Per this plugin's policy of only vendoring or cannibalizing from
+license-verified sources, no text, code, or structure from
+`0xBigBoss/claude-code` appears anywhere in `skills/domain-modeling/` or
+elsewhere in this plugin. If the upstream license is verified in the future,
+this section can be revisited.
+
+### 0xMassi/claude-skills (MIT)
+
+Also not fetched (no network access in this task). `TECHNIQUES.md` §3
+includes a standard `assertNever`/`assert_never` exhaustiveness-check
+pattern — a well-known, generic TypeScript/Python idiom, not unique to this
+source. It is authored independently here, not copied from
+`0xMassi/claude-skills`. Noted as inspiration/pattern-naming credit only,
+per the same policy applied to `jpablo/vibe-types` above.
 
 ## License-Header Policy
 
