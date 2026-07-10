@@ -1,0 +1,40 @@
+plugins/review-panel/skills/adr-skill/scripts/new_adr.js
+  s_bce8831dfc9ccb::t_6a591cc826283b 218-222
+plugins/review-panel/skills/review-panel/references/cast-and-spawn.md
+  s_bce8831dfc9ccb::t_2eb644d9f7b6d5 174-191
+plugins/review-panel/CREDITS.md
+  s_bce8831dfc9ccb::t_69f1150db3f3b7 160
+plugins/beads-epic-builder/commands/epic-swarm.md
+  s_bce8831dfc9ccb::t_7e4ce43229383b 250-251
+plugins/review-panel/skills/review-panel/SKILL.md
+  s_bce8831dfc9ccb::t_085f05815bb4a4 79,81-89
+plugins/review-panel/skills/review-panel/references/dual-mode-contract.md
+  s_bce8831dfc9ccb::t_eb1f8450e3bb71 214-218
+  s_bce8831dfc9ccb::t_255b417caac3ee 173,178-182
+docs/plans/2026-07-10-review-panel-plugin-plan.md
+  s_653495808cea0f::t_4948a11a54ee4e 1-332
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "1a26cf05be85f1d500c5c1437c02dd7c38b178d7",
+  "prompts": {},
+  "sessions": {
+    "s_653495808cea0f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ad1ebc2c-e03f-47d9-a2ad-e952ec96d366",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_bce8831dfc9ccb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d863083e-eee4-48cf-a1cd-02b65b3e6e4f",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
