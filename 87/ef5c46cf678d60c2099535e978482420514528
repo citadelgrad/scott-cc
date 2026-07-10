@@ -1,0 +1,23 @@
+plugins/review-panel/formats/CONTEXT-FORMAT.md
+  s_91e6e083f716c4::t_59bc8031136951 1-62
+plugins/review-panel/CREDITS.md
+  s_91e6e083f716c4::t_a3f1481e263bd7 29-45
+plugins/review-panel/formats/ADR-FORMAT.md
+  s_91e6e083f716c4::t_63f91e243f51d3 1-49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "87ef5c46cf678d60c2099535e978482420514528",
+  "prompts": {},
+  "sessions": {
+    "s_91e6e083f716c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e36d4190-65f4-4eb8-afc2-6615d9938339",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
