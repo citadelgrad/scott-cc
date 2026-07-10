@@ -1,0 +1,21 @@
+plugins/review-panel/skills/review-panel/references/cast-and-spawn.md
+  s_91e6e083f716c4::t_aca9ab968cb2c0 101-127
+  s_91e6e083f716c4::t_42dd4d6781459f 85-94
+  s_91e6e083f716c4::t_e96b83c7cb3595 68-79
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "225bbe63a7f2c2208e8899f40f072f97032b22c1",
+  "prompts": {},
+  "sessions": {
+    "s_91e6e083f716c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e36d4190-65f4-4eb8-afc2-6615d9938339",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
