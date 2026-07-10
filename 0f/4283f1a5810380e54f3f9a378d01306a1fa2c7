@@ -1,0 +1,32 @@
+plugins/review-panel/skills/review-panel/references/dual-mode-contract.md
+  s_91e6e083f716c4::t_b58e23affa6c57 1-159
+plugins/review-panel/skills/review-panel/references/merge-and-validate.md
+  s_91e6e083f716c4::t_7066c877ff00e8 1-176
+plugins/review-panel/skills/review-panel/SKILL.md
+  s_91e6e083f716c4::t_9382453fa63cb7 77-80,82-85
+  s_91e6e083f716c4::t_1533409c2fd1e7 1-76,81,86-110
+plugins/review-panel/skills/review-panel/references/converge-and-pipeline.md
+  s_91e6e083f716c4::t_f57846ebd02434 1-136
+plugins/review-panel/skills/review-panel/references/fix-and-rereview.md
+  s_91e6e083f716c4::t_2581314c781897 1-120
+plugins/review-panel/skills/review-panel/references/design-lineage.md
+  s_91e6e083f716c4::t_92e3d34c7eaef0 1-96
+plugins/review-panel/skills/review-panel/references/cast-and-spawn.md
+  s_91e6e083f716c4::t_b3c4a8d3c69e38 1-168
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "0f4283f1a5810380e54f3f9a378d01306a1fa2c7",
+  "prompts": {},
+  "sessions": {
+    "s_91e6e083f716c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e36d4190-65f4-4eb8-afc2-6615d9938339",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
