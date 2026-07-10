@@ -1,0 +1,35 @@
+plugins/review-panel/tests/fixtures/order-fulfillment/before.ts
+  s_91e6e083f716c4::t_a3569a50c64a56 2-3,5-8,12-18,21,28,43
+  s_91e6e083f716c4::t_a5de1c824c9c36 1
+  s_91e6e083f716c4::t_c81adc70dcf73d 4,9-11,19-20,22-27,29-42
+plugins/review-panel/tests/fixtures/order-fulfillment/warehouse-client.ts
+  s_91e6e083f716c4::t_c81adc70dcf73d 6-10,14
+  s_91e6e083f716c4::t_37e8e65a8cb9f7 1-5,11-13,15
+plugins/review-panel/tests/fixtures/order-fulfillment/diff.patch
+  s_91e6e083f716c4::t_e6e99acb0a094d 1-3,8,14-16,25,27-28,30-46,48-59,61
+  s_91e6e083f716c4::t_761c1a2fe82493 4-6,10-13,17-24,26,29,47,60,62
+  s_91e6e083f716c4::t_cfd4f7370cd4a8 7,9
+plugins/review-panel/tests/fixtures/order-fulfillment/after.ts
+  s_91e6e083f716c4::t_309e185d4f870e 1-3,5-8,12-18,21,23,25,35,37
+  s_91e6e083f716c4::t_c81adc70dcf73d 4,9-11,19-20,22,24,26-34,36
+plugins/review-panel/tests/PRESSURE-TEST.md
+  s_91e6e083f716c4::t_5b47b0c0b763ba 1-362
+plugins/review-panel/tests/fixtures/order-fulfillment/CONTEXT.md
+  s_91e6e083f716c4::t_29ae205693b6aa 1-24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "ff6da5435e953aecb82457c9518ee7e808af401b",
+  "prompts": {},
+  "sessions": {
+    "s_91e6e083f716c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e36d4190-65f4-4eb8-afc2-6615d9938339",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
