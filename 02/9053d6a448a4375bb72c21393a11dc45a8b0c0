@@ -1,0 +1,31 @@
+plugins/review-panel/skills/domain-modeling/WORKED-EXAMPLE.md
+  s_91e6e083f716c4::t_6198da66f014b6 1-227
+plugins/review-panel/skills/domain-modeling/TECHNIQUES.md
+  s_91e6e083f716c4::t_2b743326184c51 1-332
+plugins/review-panel/skills/domain-modeling/RED-FLAGS.md
+  s_91e6e083f716c4::t_9a185e3b45d8b9 1-79
+plugins/review-panel/skills/domain-modeling/SKILL.md
+  s_91e6e083f716c4::t_4e3183720d4d64 1-43
+plugins/review-panel/skills/domain-modeling/CONTEXT-AND-ADR.md
+  s_91e6e083f716c4::t_12ab5253b8f6a5 1-39
+plugins/review-panel/CREDITS.md
+  s_91e6e083f716c4::t_89ea78808901e6 190-211,215-221
+  s_91e6e083f716c4::t_4f888d83ccf943 223-230
+  s_91e6e083f716c4::t_611dc2d71a6f4c 222
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "029053d6a448a4375bb72c21393a11dc45a8b0c0",
+  "prompts": {},
+  "sessions": {
+    "s_91e6e083f716c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e36d4190-65f4-4eb8-afc2-6615d9938339",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
