@@ -10,7 +10,14 @@ for that source, noting which files were copied verbatim vs. adapted.
 
 ## EveryInc/compound-engineering-plugin (MIT)
 
-_To be filled in by the vendoring task that pulls from this source._
+**Not vendored.** No files, code, or verbatim text from this source appear anywhere in this
+plugin. `reviewers/persona-catalog.md` (scc-ns8.9) credits this source as a casting-philosophy
+inspiration only: its `/ce:review` command casts reviewer seats from a persona-catalog-style
+manifest using LLM judgment against actual diff content (not keyword/path matching), combines a
+small always-on core with risk-triggered additions, fails closed on casting ambiguity, and tiers
+models (top-tier for correctness/security/adversarial seats, mid-tier for the rest). This
+plugin's `persona-catalog.md` independently reimplements that *casting philosophy* for this
+plugin's own seat roster; no compound-engineering source file was read, copied, or paraphrased.
 
 ## codybrom/clairvoyance (MIT)
 
