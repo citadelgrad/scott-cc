@@ -86,7 +86,23 @@ for a bare `ponytail` skill, and zero matches for `hooks|statusline|mcp`).
 
 ## mattpocock/skills (MIT)
 
-_To be filled in by the vendoring task that pulls from this source._
+Source: https://github.com/mattpocock/skills, `skills/engineering/domain-modeling/`.
+
+Files copied verbatim, each with a one-line `Vendored from` attribution comment
+added at the top (per the License-Header Policy below, since the source files
+had no existing license header):
+
+- `formats/CONTEXT-FORMAT.md` — verbatim copy of
+  `skills/engineering/domain-modeling/CONTEXT-FORMAT.md`
+- `formats/ADR-FORMAT.md` — verbatim copy of
+  `skills/engineering/domain-modeling/ADR-FORMAT.md`
+
+Explicitly NOT copied from this source: `domain-modeling/SKILL.md` (confirmed
+inadequate — no type-driven content) and any `code-review`, `codebase-design`,
+or `writing-great-skills` material (overlaps with other vendored sources).
+This plugin's own `skills/domain-modeling/SKILL.md` and
+`skills/adversarial-reviewer/SKILL.md` are authored from scratch by a separate
+task and are not derived from mattpocock's files.
 
 ## Snippet-Cannibalization Sources
 
