@@ -1,0 +1,21 @@
+plugins/review-panel/commands/review-panel.md
+  s_91e6e083f716c4::t_afdb9f9607a85b 1-86
+plugins/review-panel/skills/review-panel/references/dual-mode-contract.md
+  s_91e6e083f716c4::t_32052193d95ba3 160-212
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "017bf8d920a27a7bdcc36ccc6893819b29744a0b",
+  "prompts": {},
+  "sessions": {
+    "s_91e6e083f716c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e36d4190-65f4-4eb8-afc2-6615d9938339",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
