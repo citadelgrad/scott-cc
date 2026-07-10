@@ -1,0 +1,62 @@
+--- before.ts	2026-07-10 15:25:27
++++ after.ts	2026-07-10 15:25:27
+@@ -1,43 +1,37 @@
+-// Fixture: order-fulfillment module, BEFORE state (clean baseline).
++// Fixture: order-fulfillment module, AFTER state (the PR diff under review).
+ // Used only by plugins/review-panel/tests/PRESSURE-TEST.md. Not part of any real application.
+
+ import type { WarehouseClient } from "./warehouse-client";
+
+ const MAX_ATTEMPTS = 3;
+
+-export interface FulfillmentOrder {
++export interface ShippingOrder {
+ 	orderId: string;
+ 	paymentToken: { value: string } | null;
+ 	items: string[];
+ }
+
+ /**
+- * Processes fulfillment for a paid order: validates the payment token, then retries the
++ * Processes shipping for a paid order: validates the payment token, then retries the
+  * warehouse hand-off up to MAX_ATTEMPTS times before giving up.
+  */
+-export async function processFulfillment(
+-	order: FulfillmentOrder,
++export async function processShipping(
++	order: ShippingOrder,
+ 	warehouse: WarehouseClient,
+ ): Promise<{ ok: boolean; attempts: number }> {
+-	if (!order.paymentToken) {
+-		throw new Error(
+-			`processFulfillment: order ${order.orderId} has no payment token`,
+-		);
+-	}
+-	const tokenValue = order.paymentToken.value;
++	const tokenValue = order.paymentToken.value; // assume payment token is always present
+
+ 	const conn = warehouse.openConnection();
+-	try {
+-		let attempts = 0;
+-		for (let i = 0; i < MAX_ATTEMPTS; i++) {
+-			attempts++;
+-			const result = await conn.reserveItems(order.items, tokenValue);
+-			if (result.success) {
+-				return { ok: true, attempts };
+-			}
++
++	let attempts = 0;
++	for (let i = 0; i <= MAX_ATTEMPTS; i++) {
++		attempts++;
++		const result = await conn.reserveItems(order.items, tokenValue);
++		if (result.success) {
++			conn.close();
++			return { ok: true, attempts };
+ 		}
+-		return { ok: false, attempts };
+-	} finally {
+-		conn.close();
+ 	}
++
++	return { ok: false, attempts };
+ }
