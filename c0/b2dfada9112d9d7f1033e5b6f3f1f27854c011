@@ -1,0 +1,44 @@
+.gitignore
+  s_bce8831dfc9ccb::t_95c4033eaaca2d 17-21
+  s_bce8831dfc9ccb::t_8eddb7eeec9f20 16,22-26
+CLAUDE.md
+  s_bce8831dfc9ccb::t_8eddb7eeec9f20 52-106
+.agents/skills/beads/SKILL.md
+  s_653495808cea0f::t_184049a4cda4e1 1-80
+.agents/skills/beads/agents/openai.yaml
+  s_653495808cea0f::t_967b6ec373f280 1-4
+.beads/.gitignore
+  s_bce8831dfc9ccb::t_a0fb18fae917c9 1-4,6,8,11-23,28,37-45,47-77
+.beads/config.yaml
+  s_bce8831dfc9ccb::t_c8ed4e88a6500d 46-47,64
+.beads/metadata.json
+  s_bce8831dfc9ccb::t_16966e2389d8cf 2-7
+.codex/config.toml
+  s_653495808cea0f::t_dc2f35ffa0f347 1-2
+.codex/hooks.json
+  s_653495808cea0f::t_c94af06a50f19f 1-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "c0b2dfada9112d9d7f1033e5b6f3f1f27854c011",
+  "prompts": {},
+  "sessions": {
+    "s_653495808cea0f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ad1ebc2c-e03f-47d9-a2ad-e952ec96d366",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_bce8831dfc9ccb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d863083e-eee4-48cf-a1cd-02b65b3e6e4f",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
