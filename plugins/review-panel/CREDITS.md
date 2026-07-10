@@ -48,7 +48,24 @@ All files copied verbatim, no adaptation:
 
 ## obra/superpowers (MIT)
 
-_To be filled in by the vendoring task that pulls from this source._
+Review-related artifacts only. Non-review workflow skills (brainstorming,
+writing-plans, executing-plans, tdd, using-git-worktrees) are explicitly
+excluded from this plugin.
+
+- `contracts/reviewer-output.md` — adapted from
+  `skills/requesting-code-review/code-reviewer.md`. Content preserved
+  verbatim (Strengths / Issues: Critical, Important, Minor w/ file:line /
+  Recommendations / Assessment structure); attribution header added.
+- `contracts/verification-before-completion.md` — adapted from
+  `skills/verification-before-completion/SKILL.md`. Content preserved
+  verbatim; attribution header added.
+- `scripts/review-package` — copied verbatim from
+  `skills/subagent-driven-development/scripts/review-package`, with its
+  internal call to `sdd-workspace` updated to call the renamed `workspace`
+  script below.
+- `scripts/workspace` — copied verbatim (content unchanged) from
+  `skills/subagent-driven-development/scripts/sdd-workspace`; renamed to
+  `workspace` for this plugin.
 
 ## DietrichGebert/ponytail (MIT)
 
