@@ -13,3 +13,14 @@ agents/CLAUDE.md
 # Runtime / operational data — not for version control
 .beads/
 .testing/
+
+# epic-swarm scratch state (checkpoints, per-epic-id) — torn down with
+# `rm -rf .claude/epic-swarm/<epic-id>` at the end of a run; ignored as a
+# backstop for runs that don't reach teardown
+.claude/epic-swarm/
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
+.beads/proxieddb/
