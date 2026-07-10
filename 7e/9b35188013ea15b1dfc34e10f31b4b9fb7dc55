@@ -1,0 +1,69 @@
+plugins/review-panel/skills/adr-skill/ADR-TEMPLATE.md
+  s_91e6e083f716c4::t_8c1a64aaf01f07 1-98
+plugins/review-panel/skills/adr-skill/SKILL.md
+  s_91e6e083f716c4::t_588d7159684ec8 1-324
+plugins/review-panel/skills/adr-skill/assets/templates/adr-madr.md
+  s_91e6e083f716c4::t_745894e448777b 1-86
+plugins/review-panel/skills/adr-skill/assets/templates/adr-readme.md
+  s_91e6e083f716c4::t_6ed59f5f5cd8d1 1-20
+plugins/review-panel/skills/adr-skill/assets/templates/adr-simple.md
+  s_91e6e083f716c4::t_bdf7827a0993c5 1-44
+plugins/review-panel/skills/adr-skill/references/adr-conventions.md
+  s_91e6e083f716c4::t_556ed511428250 1-93
+plugins/review-panel/skills/adr-skill/references/examples.md
+  s_91e6e083f716c4::t_fd21f0812dea13 1-192
+plugins/review-panel/skills/adr-skill/references/review-checklist.md
+  s_91e6e083f716c4::t_736534d0c5b252 1-70
+plugins/review-panel/skills/adr-skill/references/template-variants.md
+  s_91e6e083f716c4::t_7b0c5133074c89 1-52
+plugins/review-panel/skills/adr-skill/scripts/bootstrap_adr.js
+  s_91e6e083f716c4::t_279d205ea40578 1-273
+plugins/review-panel/skills/adr-skill/scripts/new_adr.js
+  s_91e6e083f716c4::t_fdbc9396e07165 1-437
+plugins/review-panel/skills/adr-skill/scripts/set_adr_status.js
+  s_91e6e083f716c4::t_2bdae99edfec4a 1-170
+plugins/review-panel/skills/grill-with-docs/ADR-FORMAT.md
+  s_91e6e083f716c4::t_6c4ee29c86a5fa 1-47
+plugins/review-panel/skills/grill-with-docs/CONTEXT-FORMAT.md
+  s_91e6e083f716c4::t_873e58923c51cc 1-77
+plugins/review-panel/skills/grill-with-docs/SKILL.md
+  s_91e6e083f716c4::t_31413e6c43c6ff 1-90
+plugins/review-panel/skills/improve-codebase-architecture/DEEPENING.md
+  s_91e6e083f716c4::t_3cf7bfcd81aee7 1-37
+plugins/review-panel/skills/improve-codebase-architecture/INTERFACE-DESIGN.md
+  s_91e6e083f716c4::t_f3976d50ba2a6f 1-44
+plugins/review-panel/skills/improve-codebase-architecture/LANGUAGE.md
+  s_91e6e083f716c4::t_82c71cd9df2031 1-53
+plugins/review-panel/skills/improve-codebase-architecture/SKILL.md
+  s_91e6e083f716c4::t_a80e72e0a9354b 1-73
+plugins/review-panel/skills/tdd/SKILL.md
+  s_91e6e083f716c4::t_acffec57ef6965 1-124
+plugins/review-panel/skills/tdd/deep-modules.md
+  s_91e6e083f716c4::t_1bb7b0a00a305c 1-33
+plugins/review-panel/skills/tdd/interface-design.md
+  s_91e6e083f716c4::t_7973669f66612f 1-31
+plugins/review-panel/skills/tdd/mocking.md
+  s_91e6e083f716c4::t_de378bf423f768 1-59
+plugins/review-panel/skills/tdd/refactoring.md
+  s_91e6e083f716c4::t_b45365f79de9ee 1-10
+plugins/review-panel/skills/tdd/tests.md
+  s_91e6e083f716c4::t_236349923e141f 1-61
+plugins/review-panel/CREDITS.md
+  s_91e6e083f716c4::t_6749d044838a78 107-180
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "7e9b35188013ea15b1dfc34e10f31b4b9fb7dc55",
+  "prompts": {},
+  "sessions": {
+    "s_91e6e083f716c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e36d4190-65f4-4eb8-afc2-6615d9938339",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
