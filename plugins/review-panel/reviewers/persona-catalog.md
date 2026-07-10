@@ -215,6 +215,25 @@ ambiguous whether the signal is present, cast the seat.
   actually contested). Not cast for modifications to existing designs — there `code-evolution`
   and `design-review` already cover trajectory and current-state quality.
 
+### Test-Design Quality
+
+- **Casts:** `skills/tdd/SKILL.md`
+- **Cast-when:** The diff adds or modifies test files. This seat evaluates the *test design*
+  already present in the diff against the skill's Philosophy section (integration-style tests
+  through public interfaces vs. implementation-coupled tests that mock internals or verify via
+  side channels) — it is a read-only after-the-fact review lens on this axis, distinct from the
+  skill's other, process-oriented content (the red-green-refactor workflow, Tracer Bullet step,
+  per-cycle checklist), which is written for someone actively writing code test-first and does not
+  translate into a post-hoc diff-review check. Only the test-quality judgment applies here.
+- **Model tier:** Mid-tier. Applying the good-test/bad-test heuristics from the skill's Philosophy
+  section is a well-defined judgment call, not adversarial-grade work.
+- **Why included:** No other seat in this catalog specifically evaluates test *design* quality —
+  `adversarial-reviewer` may flag a missing test, and `design-review`'s funnel evaluates
+  production-code structure, but neither asks whether an added/changed test itself is
+  well-designed (behavior-verifying, refactor-resistant) or a liability (coupled to internals,
+  will false-positive-fail on the next refactor). Scoped narrowly to diffs that actually touch
+  test files, since the seat has nothing to evaluate otherwise.
+
 ---
 
 ## Excluded from Individual Casting (left to `design-review` funnel or live-scan)
@@ -237,6 +256,18 @@ catalog entry, on the judgment that giving each one an independent seat would ei
   better suited to a periodic whole-codebase audit (alongside `ponytail-audit`) than a per-PR
   panel seat, since a single diff rarely has enough signal to assess a *trend*. If the
   orchestrator later grows an audit mode, revisit adding this as an audit-mode seat.
+- **`grill-with-docs`** — a Socratic, interactive dialogue tool: it walks a human through a
+  design/onboarding conversation, asking clarifying questions and updating `CONTEXT.md`/ADRs live
+  as the human answers. It has no diff-scoped findings-producing mode; its entire value is the
+  back-and-forth with a person. Not seat-shaped for an autonomous panel run. `domain-modeling`'s
+  `CONTEXT-AND-ADR.md` mechanism (see the Domain-Intent seat above) already gives the panel its own
+  non-interactive path to the same `CONTEXT.md`/ADR artifacts this skill produces conversationally.
+- **`improve-codebase-architecture`** — also fundamentally conversational: it identifies
+  deepening/refactor *candidates* and then requires a human to pick one and "drop into a grilling
+  conversation" before any side effect (a `CONTEXT.md` update or ADR) happens. Like
+  `grill-with-docs`, it has no autonomous, diff-scoped findings output a panel seat could consume;
+  the user's live selection between candidates is load-bearing to its design, not an implementation
+  detail that could be stubbed out for an unattended panel run.
 
 If any of these are separately installed and updated upstream (e.g. a user's live-scan finds a
 newer or differently-scoped version), the live-scan secondary-enrichment layer may still surface
@@ -257,6 +288,7 @@ is allowed to add.
 | Fresh-Eyes | `clean-room-alternative` | Always | Top-tier |
 | Change-Trajectory | `code-evolution` | Diff modifies pre-existing code | Mid-tier |
 | Design-Alternatives | `design-it-twice` | New class/module/API/architecture with no alternatives-considered evidence | Mid-tier (top-tier for its internal fresh-design dispatch) |
+| Test-Design Quality | `tdd` (Philosophy section only) | Diff adds or modifies test files | Mid-tier |
 
 **Fail-closed reminder:** any ambiguity in the "Cast-when" column above resolves to casting the
 seat, not skipping it.

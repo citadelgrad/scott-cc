@@ -142,8 +142,8 @@ coherence).
 **Domain-Intent seat**, given `CONTEXT.md`, caught **all three** bugs, including — critically —
 bug #3, with the exact citation the baseline structurally could not produce:
 
-> `TRIGGERED — after.ts:19-21 — glossary/naming coherence — processFulfillment renamed to
-> processShipping... The function still validates a payment token and retries against the
+> `TRIGGERED — after.ts:19-21 — glossary/naming coherence — Important — processFulfillment renamed
+> to processShipping... The function still validates a payment token and retries against the
 > warehouse — exactly the behavior the glossary says disqualifies something from being called
 > shipping ("a function that does more than carrier hand-off ... is a fulfillment operation, not
 > a shipping operation"). This is a direct, named violation of the decision log's rationale, not

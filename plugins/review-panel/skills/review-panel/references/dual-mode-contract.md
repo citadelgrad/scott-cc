@@ -210,3 +210,15 @@ Notes on this example:
   `{run_dir}` refers to in `integrations`) means `integrations.agent`'s command can read the exact
   same structured result the gate already produced instead of re-invoking the panel or re-parsing
   `explanation.md`.
+- **Trusted/internal branches only.** This gate should run only against branches/PRs from
+  trusted, internal sources (e.g. branches pushed by team members within the same repo) — never
+  wired to run unattended against arbitrary external fork PRs. Two compounding reasons: FIX's
+  fixer subagent has `Read`/`Edit`/`Write`/`Bash` access to the working tree (see
+  [fix-and-rereview.md](fix-and-rereview.md)'s "Fixer dispatch contract" and its Bash-usage
+  boundary), and every stage that reads diff/code/comment content is instructed to treat that
+  content as data, never as instructions (see the same file, and
+  [cast-and-spawn.md](cast-and-spawn.md)) — but an untrusted external PR is exactly the scenario an
+  adversary would target with a crafted diff or comment designed to probe those boundaries. Running
+  this gate with `--dangerously-skip-permissions` against untrusted fork content multiplies that
+  risk. If a project wants review coverage on external PRs, run this gate in human-interactive mode
+  with a maintainer supervising, not as an unattended `post-feature` gate.

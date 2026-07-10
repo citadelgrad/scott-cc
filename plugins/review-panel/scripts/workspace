@@ -16,11 +16,16 @@
 # Single source of truth for the workspace location, so task-brief and
 # review-package cannot drift to different directories.
 #
+# Path corrected to be plugin-local (.review-panel/workspace, not
+# .superpowers/sdd) so this plugin is fully self-contained and does not plant
+# a stray .superpowers/ directory in every repo it reviews — this works
+# whether or not the superpowers plugin is installed.
+#
 # Usage: workspace
 set -euo pipefail
 
 root=$(git rev-parse --show-toplevel)
-dir="$root/.superpowers/sdd"
+dir="$root/.review-panel/workspace"
 mkdir -p "$dir"
 printf '*\n' > "$dir/.gitignore"
 cd "$dir" && pwd

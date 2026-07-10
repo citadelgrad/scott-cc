@@ -32,12 +32,16 @@ When invoked with `$ARGUMENTS`, scope the review to the specified file, director
 
 ## Output Contract
 
-Output is **markdown**, not JSON, so results merge cleanly with other review-panel skills (`red-flags`, `design-review`) that use the same CLEAR/TRIGGERED/N/A vocabulary. For every `TRIGGERED` flag, report:
+Output is **markdown**, not JSON, so results merge cleanly with other review-panel skills (`red-flags`, `design-review`) that use the same CLEAR/TRIGGERED/N/A vocabulary. `CLEAR`/`TRIGGERED`/`N/A` remain the internal screening vocabulary for working through every check — only a `TRIGGERED` line becomes a reportable finding; `CLEAR` and `N/A` are not findings and carry no severity. For every `TRIGGERED` flag, report:
 
 - **Location** — file:line or type/function name
 - **Principle violated** — which of the 8 techniques or red flags
-- **Candidate fix** — one or two sentences, not a full rewrite
+- **Severity** — `Critical` | `Important` | `Minor`, so the finding is directly consumable by `references/merge-and-validate.md`'s fingerprinting/confidence-scoring pipeline and matches `contracts/reviewer-output.md`'s Issue shape with zero special-casing. Assign this by real judgment about blast radius, not a rigid table: ask what actually happens at runtime if this violation ships as-is.
+  - Lean **Critical** when the triggered technique's absence lets a genuinely bad state reach production behavior — e.g. an illegal-states-unrepresentable violation where the illegal state is actually reachable and would cause silent data corruption or a crash, or a parse-don't-validate gap at a real trust boundary that lets invalid data flow deep into the system unchecked.
+  - Lean **Important** when the violation is real and will bite eventually (a maintainability/correctness risk under future changes, an exhaustive-matching gap that will silently miss a new case, an errors-as-values violation that makes failure handling easy to get wrong) but isn't currently causing an observable bad outcome.
+  - Lean **Minor** when it's a genuine improvement with no current bug behind it — e.g. a parse-don't-validate style tightening on code that is already correct in practice, or a smart-constructor suggestion that would harden an invariant nothing currently violates.
+  - When judgment is genuinely close between two levels, pick the higher one — this findings list feeds MERGE's confidence scoring, which already discounts weakly-evidenced claims; under-flagging severity has no comparable downstream correction.
 
-Example line: `TRIGGERED — src/order.ts:14 — boolean-pair/flag-cluster (illegal states unrepresentable) — replace isPaid/isShipped/isRefunded booleans with a status-tagged union; see WORKED-EXAMPLE.md`
+Example line: `TRIGGERED — src/order.ts:14 — boolean-pair/flag-cluster (illegal states unrepresentable) — Important — replace isPaid/isShipped/isRefunded booleans with a status-tagged union; see WORKED-EXAMPLE.md`
 
 If everything is `CLEAR`, say so plainly — do not force findings where none exist.

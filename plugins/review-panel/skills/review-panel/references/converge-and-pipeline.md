@@ -29,7 +29,16 @@ must circuit-break and escalate to a human.
    iteration is redundant work for no expected behavior change in the common case. Re-running MERGE
    is implied either way, since a new SPAWN round always needs a new MERGE pass over its output;
    there's no version of "loop back to MERGE directly" that skips SPAWN, since MERGE has nothing
-   to merge without a fresh SPAWN round to consume the new diff.
+   to merge without a fresh SPAWN round to consume the new diff. **Full cast list, not RE-REVIEW's
+   scoped subset:** this looped SPAWN dispatches the *entire* cast list (all core seats, plus
+   whatever risk-triggered/live-scan seats CAST added), not the smaller subset RE-REVIEW's Axis (a)
+   re-casts (Correctness/Adversarial plus whichever seats had a finding in the fixed set, scoped to
+   the touched files). RE-REVIEW's scoping is a deliberately narrow, fast regression/coherence check
+   against FIX's specific edits — it is not a substitute full panel pass, and its efficiency does
+   not carry over to the next full SPAWN round: a fix can introduce an issue outside the seats that
+   flagged the original problem (e.g. a Domain-Intent fix's implementation detail trips a Security
+   concern no one was looking for), and only a full-cast SPAWN round, feeding a fresh MERGE/VALIDATE
+   pass, is positioned to catch that.
 
 ### What counts as "progress" (for the circuit-breaker)
 
@@ -81,7 +90,19 @@ making progress every round (real diffs converge fast once Critical/Important fi
 If a run is still looping past 6 rounds while technically showing progress each time (e.g.
 shrinking by one Minor finding per round), treat that as worth flagging in the report as unusually
 slow convergence, even though it hasn't tripped the circuit-breaker — this is a coverage-honesty
-note, not a hard stop.
+note, not a hard stop by itself.
+
+**Hard cap at round 8.** Independent of and in addition to the 3-strikes circuit-breaker above,
+the loop must not run a 9th round under any circumstances, even if every round so far showed
+genuine progress by the strict definition. On reaching the end of round 8 without a clean
+RE-REVIEW, force-escalate exactly like a circuit-break: stop looping immediately, and emit the
+same escalation shape the 3-strikes breaker uses (human mode: escalation block; `mode:agent`: top-
+level status `circuit_broken`), with the diagnosis text noting explicitly that this was the
+**iteration cap**, not stagnation (e.g. "8 rounds completed, each showing progress, but the loop
+did not converge within the hard round cap — this is not stagnation; consider whether the fixer is
+resolving findings correctly but slowly, or whether MERGE/VALIDATE are systematically
+under-batching findings per round"). This is a second, independent stop condition, not a
+replacement for the 3-strikes breaker — whichever triggers first ends the loop.
 
 ---
 
@@ -109,7 +130,15 @@ verdict are both whole-round judgments, not per-seat ones.
   and confidence-scoring work on that seat's findings against whatever has already been merged so
   far, rather than buffering all batch results and starting MERGE only once the whole batch is
   back. A seat reporting zero findings contributes nothing to fingerprinting and should not block
-  MERGE's processing of seats that did report findings.
+  MERGE's processing of seats that did report findings. **Granularity caveat:** a batch of
+  concurrent `Task` dispatches typically returns to the orchestrating conversation together as a
+  group, not with true per-seat completion events the orchestrator can observe individually — most
+  runtimes have no mechanism to notice "seat 2 of 5 just finished" while seats 1, 3, 4, 5 are still
+  running. In practice this principle applies at the granularity of "as each batch of up to 5
+  concurrent seats returns," not literally streaming per-individual-seat; the batch-vs-batch
+  incrementality described below (start MERGE on batch 1 while batch 2 runs) is where the real
+  pipelining benefit comes from in most runtimes. If a specific runtime does expose true per-seat
+  completion within a batch, take advantage of it — but don't assume it's available by default.
 - **Across SPAWN batches**: if a panel needs 2 batches (more than 5 cast seats), MERGE can begin
   consolidating batch 1's results while batch 2 is still running — MERGE's fingerprint/confidence
   work is incremental (each new finding either joins an existing fingerprint group or starts a

@@ -19,6 +19,28 @@ models (top-tier for correctness/security/adversarial seats, mid-tier for the re
 plugin's `persona-catalog.md` independently reimplements that *casting philosophy* for this
 plugin's own seat roster; no compound-engineering source file was read, copied, or paraphrased.
 
+**Live-scan discovery note (scc-ns8.11, manual check, 2026-07-10):** confirmed by direct
+filesystem inspection that `compound-engineering` was installed on the machine this plugin was
+authored on (present under
+`~/.claude/plugins/marketplaces/every-marketplace/plugins/compound-engineering/`, with a matching
+entry in `~/.claude/plugins/cache/every-marketplace/compound-engineering/`). Its ~15 review
+personas — `agent-native-reviewer`, `architecture-strategist`, `code-simplicity-reviewer`,
+`data-integrity-guardian`, `data-migration-expert`, `deployment-verification-agent`,
+`dhh-rails-reviewer`, `julik-frontend-races-reviewer`, `kieran-python-reviewer`,
+`kieran-rails-reviewer`, `kieran-typescript-reviewer`, `pattern-recognition-specialist`,
+`performance-oracle`, `schema-drift-detector`, `security-sentinel` — live under that plugin's
+`agents/review/*.md`, **not** under its `skills/` tree, and are surfaced to the host session as
+dispatchable `compound-engineering:review:<persona>` agent types (independently confirmed: this
+exact session's own available-agent-types list included all of the above under that naming
+scheme). `reviewers/references/cast-and-spawn.md`'s live-scan Step 1 originally said "enumerate
+skills," which — read literally — would have walked `skills/` directories only and silently missed
+all ~15 of these, since compound-engineering's `skills/` tree holds unrelated skills (e.g.
+`document-review`, `agent-native-architecture`) rather than the review personas themselves. Step 1
+and Step 3 were amended (this task, scc-ns8.11) to explicitly enumerate agent types as a second
+source alongside skill directories, closing that gap. This was a manual, one-time verification on
+the machine/session available at authoring time, not an automated test — a live-scan on a
+different machine without compound-engineering installed correctly finds nothing from that source.
+
 ## codybrom/clairvoyance (MIT)
 
 Full design-review lens set (16 skills) and the `clean-room-alternative` agent,
@@ -154,7 +176,7 @@ Copied verbatim from `~/.agents/skills/grill-with-docs/` (local trial
 install, origin unknown, no license header found in source).
 
 - `SKILL.md` — verbatim, attribution comment added (no header in source).
-- `ADR-FORMAT.md`, `CONTEXT-FORMAT.md` — verbatim, no header in source.
+- `ADR-FORMAT.md`, `CONTEXT-FORMAT.md` — originally copied verbatim (no header in source), but were near-duplicates of the mattpocock-vendored `formats/ADR-FORMAT.md` / `formats/CONTEXT-FORMAT.md` and had already started to drift (this local `CONTEXT-FORMAT.md` had gained a Relationships/Example-dialogue/Flagged-ambiguities structure the canonical copy lacked). Consolidated: the canonical `formats/CONTEXT-FORMAT.md` was updated to fold in those improvements, and both local copies were deleted in favor of `SKILL.md` referencing `formats/CONTEXT-FORMAT.md` and `formats/ADR-FORMAT.md` directly. See "mattpocock/skills (MIT)" above.
 
 ### tdd
 

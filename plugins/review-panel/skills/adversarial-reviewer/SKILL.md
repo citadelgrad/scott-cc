@@ -9,7 +9,7 @@ allowed-tools: Read, Grep, Glob, Task
 
 This skill is authored from scratch for this plugin (not vendored). It is a **core, always-cast reviewer** — invoke it directly any time an adversarial pass is wanted, standalone or as one seat in a larger review panel. It is never gated behind Dynamic Workflows or any other skill.
 
-> **Cross-reference note:** once `plugins/review-panel/reviewers/persona-catalog.md` exists (tracked separately as scc-ns8.9), this skill should be listed there as a core/always-cast seat. This file is the forward pointer for that later task.
+> **Cross-reference:** listed as the core/always-cast "Correctness / Adversarial" seat in [`plugins/review-panel/reviewers/persona-catalog.md`](../../reviewers/persona-catalog.md).
 
 ## Purpose
 
