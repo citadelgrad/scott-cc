@@ -171,13 +171,24 @@ start until batch 1's dispatches have returned or been confirmed failed).
 
 ### Read-only tool access
 
-Every seat subagent gets read-only tools only: `Read`, `Grep`, `Glob`, and — for seats whose own
-SKILL.md specifies it (e.g. `adversarial-reviewer`'s internal `clean-room-alternative` dispatch,
-`design-it-twice`'s alternative-design generation) — `Task`, so a seat can itself dispatch a
-nested clean-room subagent for its own independence needs. No seat gets `Edit`, `Write`, or `Bash`
-with mutation capability during SPAWN — findings are gathered here, fixes happen later in FIX,
-under a single fixer with full context, not scattered across N seats each making uncoordinated
-edits.
+Every seat subagent dispatched as one of this plugin's own skills gets read-only tools only:
+`Read`, `Grep`, `Glob`, and — for seats whose own SKILL.md specifies it (e.g.
+`adversarial-reviewer`'s internal `clean-room-alternative` dispatch, `design-it-twice`'s
+alternative-design generation) — `Task`, so a seat can itself dispatch a nested clean-room subagent
+for its own independence needs. No seat gets `Edit`, `Write`, or `Bash` with mutation capability
+during SPAWN — findings are gathered here, fixes happen later in FIX, under a single fixer with
+full context, not scattered across N seats each making uncoordinated edits.
+
+This rule is enforced directly for every seat this orchestrator dispatches via a raw prompt (all
+catalog seats, all live-scan skill-file finds). It is **not** something this orchestrator can
+enforce on a Step 4 live-scan agent-type find like `compound-engineering:review:<persona>` — that
+agent type's tool grant is fixed by its own definition in the plugin that ships it, not by the
+`Task` call dispatching it, so this orchestrator cannot downgrade it to read-only from the outside.
+Before dispatching such a seat in SPAWN, check its actual tool grant (visible in the Agent-tool
+agent-type listing); if it includes `Edit`, `Write`, or mutating `Bash`, note this explicitly in
+the coverage-honesty statement as a documented deviation from the read-only guarantee rather than
+silently assuming compliance — do not block the dispatch on it (the persona still needs to run to
+produce its finding), just report the actual grant.
 
 ### Fresh-Eyes seat specifics
 

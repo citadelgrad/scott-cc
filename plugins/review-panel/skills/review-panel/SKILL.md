@@ -76,14 +76,17 @@ rather than re-deriving diffs ad hoc:
    against `HEAD` if no range is given — use `git merge-base` to find `BASE` when only a branch
    is named).
 2. Run the plugin's `scripts/workspace` script (path relative to the plugin root:
-   `plugins/review-panel/scripts/workspace`, three directories up from this skill's own
+   `plugins/review-panel/scripts/workspace`, two directories up from this skill's own
    `skills/review-panel/` location) to resolve (and create, git-ignored) the scratch directory for
-   this run's artifacts. Do not invent a different scratch location — this script is the single
-   source of truth so every stage's temp files land in one place.
-3. Run `plugins/review-panel/scripts/review-package BASE HEAD` to write the packaged diff (commit
-   list, stat summary, full diff with 10 lines of context) into that workspace as one file. This
-   is the ONE shared diff every seat in SPAWN reads — pass its path, not a re-derived `git diff`
-   invocation, to each seat's dispatch prompt.
+   this run's artifacts. Capture its stdout (the workspace's absolute path, and nothing else) into
+   a variable — do not invent a different scratch location, this script is the single source of
+   truth so every stage's temp files land in one place.
+3. Run `plugins/review-panel/scripts/review-package BASE HEAD "$WORKSPACE/review.diff"`, passing
+   the captured workspace path plus an explicit filename as the third `OUTFILE` argument, so the
+   packaged diff's path is known up front rather than parsed out of the script's
+   `wrote <path>: N commit(s), N bytes` stdout summary. This file is the ONE shared diff every seat
+   in SPAWN reads — pass its path, not a re-derived `git diff` invocation, to each seat's dispatch
+   prompt.
 4. If `scripts/workspace` or `scripts/review-package` are unavailable (non-bash environment, or
    scripts missing from this plugin's install), fall back to running `git diff -U10 BASE..HEAD`
    directly and holding the result in-conversation as the shared diff; note this fallback in the

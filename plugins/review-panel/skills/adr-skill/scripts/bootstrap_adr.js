@@ -23,7 +23,6 @@ function parseArgs(argv) {
 		firstTitle: "Adopt architecture decision records",
 		firstStatus: "accepted",
 		deciders: "",
-		technicalStory: "",
 		strategy: "number",
 		json: false,
 	};
@@ -42,7 +41,6 @@ function parseArgs(argv) {
 		else if (a === "--first-title") out.firstTitle = next();
 		else if (a === "--first-status") out.firstStatus = next();
 		else if (a === "--deciders") out.deciders = next();
-		else if (a === "--technical-story") out.technicalStory = next();
 		else if (a === "--strategy") out.strategy = next();
 		else if (a === "--json") out.json = true;
 		else if (a === "--help" || a === "-h") {

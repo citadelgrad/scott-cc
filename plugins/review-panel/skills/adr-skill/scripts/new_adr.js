@@ -42,8 +42,6 @@ function parseArgs(argv) {
 		deciders: "",
 		consulted: "",
 		informed: "",
-		technicalStory: "",
-		chosenOption: "",
 		updateIndex: false,
 		indexFile: null,
 		json: false,
@@ -66,8 +64,6 @@ function parseArgs(argv) {
 		else if (a === "--deciders") out.deciders = next();
 		else if (a === "--consulted") out.consulted = next();
 		else if (a === "--informed") out.informed = next();
-		else if (a === "--technical-story") out.technicalStory = next();
-		else if (a === "--chosen-option") out.chosenOption = next();
 		else if (a === "--update-index") out.updateIndex = true;
 		else if (a === "--index-file") out.indexFile = next();
 		else if (a === "--json") out.json = true;
@@ -86,8 +82,6 @@ function parseArgs(argv) {
 					'  --deciders "a,b"      Deciders list',
 					'  --consulted "a,b"     Consulted experts (RACI)',
 					'  --informed "a,b"      Informed stakeholders (RACI)',
-					"  --technical-story <x>  Issue/ticket/PR link or short ref",
-					"  --chosen-option <x>    MADR template: chosen option label",
 					"  --update-index         Update adr/README.md (or existing index)",
 					"  --index-file <path>    Override index file (relative to repo root unless absolute)",
 					"  --json                 Output machine-readable JSON (default: off)",
@@ -221,17 +215,11 @@ function renderTemplate(raw, vars) {
 		out = out.replace(/^informed:\s*["']?\{[^}]*\}["']?\s*\n/m, "");
 	}
 
-	// Replace MADR-style heading placeholder
-	out = out.replace(/^(#\s+)\{short title[^}]*\}\s*$/m, `$1${vars.title}`);
-
-	// Inline placeholders (title in heading, etc.)
-	out = out
-		.replaceAll("{TITLE}", vars.title)
-		.replaceAll("{STATUS}", vars.status)
-		.replaceAll("{DATE}", vars.date)
-		.replaceAll("{DECIDERS}", vars.deciders)
-		.replaceAll("{TECHNICAL_STORY}", vars.technicalStory)
-		.replaceAll("{CHOSEN_OPTION}", vars.chosenOption);
+	// Replace MADR-style heading placeholder. Trailing whitespace is matched with
+	// [ \t]* rather than \s* — \s matches newlines too, and since the capture
+	// group only keeps the "# " prefix, a greedy \s*$ silently eats the blank
+	// line that follows the heading in both templates.
+	out = out.replace(/^(#\s+)\{short title[^}]*\}[ \t]*$/m, `$1${vars.title}`);
 
 	return out;
 }
@@ -381,8 +369,6 @@ function main() {
 		deciders,
 		consulted,
 		informed,
-		technicalStory: String(args.technicalStory || "").trim(),
-		chosenOption: String(args.chosenOption || "").trim(),
 	});
 
 	fs.writeFileSync(out, `${rendered.trimEnd()}\n`, "utf8");

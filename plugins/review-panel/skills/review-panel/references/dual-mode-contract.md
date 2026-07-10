@@ -170,11 +170,16 @@ version: 1
 profiles:
   post-feature:
     gates:
+      # Trusted/internal branches only — see the note below the YAML before wiring this up.
       - id: review-panel
         run: |
           claude -p "/review-panel $(git merge-base origin/main HEAD)..HEAD --mode=agent" \
             --dangerously-skip-permissions \
-            --output-format json > "$FOUNDRY_RUN_DIR/review-panel.json"
+            --output-format json > "$FOUNDRY_RUN_DIR/claude-cli.json"
+          # --output-format json wraps the CLI's own response envelope (type, subtype, result,
+          # cost_usd, session_id, ...) — the skill's JSON contract is the agent's final reply,
+          # which lands as a JSON *string* inside .result, not at the envelope's top level.
+          jq -r '.result' "$FOUNDRY_RUN_DIR/claude-cli.json" > "$FOUNDRY_RUN_DIR/review-panel.json"
           status=$(jq -r '.status' "$FOUNDRY_RUN_DIR/review-panel.json")
           if [ "$status" = "circuit_broken" ] || [ "$status" = "error" ]; then
             exit 1
@@ -206,6 +211,11 @@ Notes on this example:
   `decision_on_failure` behavior at the shell level — use `allow_failure: true` +
   `decision_on_failure: warn` at the profile level instead if a project wants circuit-breaks to
   warn rather than block.
+- The `jq -r '.result' claude-cli.json > review-panel.json` step is not optional boilerplate: the
+  raw `claude -p --output-format json` file is the CLI's own envelope, and `jq -r '.status'` run
+  directly against it always returns `null` (the envelope has no top-level `status` field), so the
+  gate would silently never fail without this extraction step first unwrapping `.result` into the
+  skill's actual JSON contract.
 - Writing the JSON blob into `$FOUNDRY_RUN_DIR` (foundry's per-run directory, the same one
   `{run_dir}` refers to in `integrations`) means `integrations.agent`'s command can read the exact
   same structured result the gate already produced instead of re-invoking the panel or re-parsing

@@ -247,7 +247,8 @@ are already on disk — do NOT ask beads for them yourself:
    each clean merge.
 
 3. Run the project's test command exactly once, after all merges, with
-   output redirected to a file (e.g. `<test-cmd> > /tmp/wave-<N>-tests.log
+   output redirected to a file (e.g. `<test-cmd> >
+   <absolute-path-to-repo>/.claude/epic-swarm/<epic-id>/wave-<N>-tests.log
    2>&1`). Only inspect that file for pass/fail and failing test names.
 
 4. Return ONLY this JSON as your final message — no prose, no pasted
