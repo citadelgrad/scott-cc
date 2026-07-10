@@ -104,6 +104,80 @@ This plugin's own `skills/domain-modeling/SKILL.md` and
 `skills/adversarial-reviewer/SKILL.md` are authored from scratch by a separate
 task and are not derived from mattpocock's files.
 
+## Local Trial-Copies
+
+The four sources below are **not** from the 5 main vendored MIT repos listed
+above. They were trial-installed locally by Scott as user-level skills
+(under `~/.agents/skills/<name>/`) prior to this repo's existence, from
+sources whose upstream repository/license could not be independently
+re-verified at copy time. This section is tracked separately from the 5
+main source-repo sections for that reason.
+
+**License/provenance status**: No license header, copyright notice, or
+provenance comment was found at the top of any file in any of the 4 source
+directories (checked every file, including `.js` scripts and `.md` docs).
+No license is fabricated here — each skill is copied as-is with an explicit
+"no header found" note. If the original upstream source and license are
+later identified, update this section and add proper headers.
+
+### adr-skill
+
+Copied verbatim from `~/.agents/skills/adr-skill/` (local trial install,
+origin unknown, no license header found in source). Includes 3 `.js`
+scripts (`scripts/bootstrap_adr.js`, `scripts/new_adr.js`,
+`scripts/set_adr_status.js`) that require Node.js to run.
+
+- `SKILL.md` — verbatim, attribution comment added (no header in source).
+- `scripts/bootstrap_adr.js`, `scripts/new_adr.js`, `scripts/set_adr_status.js` — content vendored as-is (no dependencies installed, no logic changes). This repo's pre-commit `biome check --write` hook auto-reformatted these 3 files on commit (2-space indent → tabs, line-wrap/trailing-comma style, one `let`→`const` for a never-reassigned binding). Whitespace/style only — verified no functional diff by diffing against the original source with `diff -w`.
+- `assets/templates/adr-simple.md`, `assets/templates/adr-madr.md`, `assets/templates/adr-readme.md` — verbatim, no header in source. Left uncommented since these are meant to be copied out into user-authored ADR files verbatim.
+- `references/adr-conventions.md`, `references/examples.md`, `references/review-checklist.md`, `references/template-variants.md` — verbatim, no header in source.
+- `ADR-TEMPLATE.md` — **new file, added during this vendoring task** (not present in the original source). Provides a manual markdown-template fallback workflow for use when `scripts/*.js` cannot run because Node.js is unavailable, reproducing the directory-detection, filename, and template steps the scripts automate. Documented as the fallback path in `SKILL.md`.
+
+### improve-codebase-architecture
+
+Copied verbatim from `~/.agents/skills/improve-codebase-architecture/`
+(local trial install, origin unknown, no license header found in source).
+
+- `SKILL.md` — verbatim, attribution comment added (no header in source).
+- `DEEPENING.md`, `INTERFACE-DESIGN.md`, `LANGUAGE.md` — verbatim, no header in source.
+
+### grill-with-docs
+
+Copied verbatim from `~/.agents/skills/grill-with-docs/` (local trial
+install, origin unknown, no license header found in source).
+
+- `SKILL.md` — verbatim, attribution comment added (no header in source).
+- `ADR-FORMAT.md`, `CONTEXT-FORMAT.md` — verbatim, no header in source.
+
+### tdd
+
+Copied verbatim from `~/.agents/skills/tdd/` (local trial install, origin
+unknown, no license header found in source).
+
+- `SKILL.md` — verbatim, attribution comment added (no header in source), plus an inline redundancy-check note (see below).
+- `deep-modules.md`, `interface-design.md`, `mocking.md`, `refactoring.md`, `tests.md` — verbatim, no header in source.
+
+**Redundancy check against existing scott-cc skills**: No `tdd` skill exists
+in this repo's own top-level `skills/` directory or elsewhere in the
+`scott-cc` marketplace plugin. The closest comparable skill reachable from
+this environment is `superpowers:test-driven-development` (from the
+separately-installed `superpowers` plugin, not part of scott-cc). This local
+`tdd` skill is **distinct, not redundant**:
+
+- `superpowers:test-driven-development` is a strict process-discipline
+  skill built around an "Iron Law" (no production code without a failing
+  test written and observed failing first), with a rationalization-busting
+  checklist aimed at preventing agents from skipping test-first discipline.
+- This local `tdd` skill is design-philosophy-oriented, grounded in
+  Ousterhout's *A Philosophy of Software Design* (deep modules, interface
+  design for testability, what/when to mock, refactor candidates after
+  green). It assumes test-first discipline and focuses on *how* to design
+  testable interfaces and write tests that survive refactors.
+
+The two are complementary (one governs *when*/*whether* to write the test,
+the other governs *how* to design the code and test well) rather than
+overlapping, so both are retained.
+
 ## Snippet-Cannibalization Sources
 
 These are not vendored files but sources of cannibalized code patterns and
