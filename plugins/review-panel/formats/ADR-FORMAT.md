@@ -1,5 +1,3 @@
-<!-- Vendored from mattpocock/skills (MIT). See CREDITS.md. -->
-
 # ADR Format
 
 ADRs live in `docs/adr/` and use sequential numbering: `0001-slug.md`, `0002-slug.md`, etc.

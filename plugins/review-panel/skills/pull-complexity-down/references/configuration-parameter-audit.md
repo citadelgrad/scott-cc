@@ -1,5 +1,3 @@
-<!-- Vendored from codybrom/clairvoyance (MIT). See CREDITS.md. -->
-
 # Configuration Parameter Audit
 
 This reference catalogs the recurring shapes unnecessary configuration parameters take, plus strategies for eliminating each.

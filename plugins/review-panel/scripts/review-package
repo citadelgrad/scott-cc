@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Vendored from obra/superpowers (MIT). See CREDITS.md.
-# Source: skills/subagent-driven-development/scripts/review-package
 #
 # Generate a review package: commit list, stat summary, and the net
 # diff with extended context, written to a file the reviewer reads in one

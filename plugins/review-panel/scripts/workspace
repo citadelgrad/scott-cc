@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-# Vendored from obra/superpowers (MIT). See CREDITS.md.
-# Source: skills/subagent-driven-development/scripts/sdd-workspace (renamed
-# from sdd-workspace to workspace for review-panel).
 #
 # Resolve and ensure the working-tree directory SDD uses for its short-lived
 # artifacts: task briefs, implementer reports, review packages, and the

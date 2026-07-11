@@ -3,8 +3,6 @@ name: improve-codebase-architecture
 description: Find deepening opportunities in a codebase, informed by the domain language in CONTEXT.md and the decisions in docs/adr/. Use when the user wants to improve architecture, find refactoring opportunities, consolidate tightly-coupled modules, or make a codebase more testable and AI-navigable.
 ---
 
-<!-- Vendored from local trial-copy of improve-codebase-architecture. See CREDITS.md ("Local Trial-Copies" section). -->
-
 # Improve Codebase Architecture
 
 Surface architectural friction and propose **deepening opportunities** — refactors that turn shallow modules into deep ones. The aim is testability and AI-navigability.

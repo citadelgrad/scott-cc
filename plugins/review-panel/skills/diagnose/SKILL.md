@@ -5,8 +5,6 @@ argument-hint: "[description of the symptom or problem]"
 allowed-tools: Read, Grep
 ---
 
-<!-- Vendored from codybrom/clairvoyance (MIT). See CREDITS.md. -->
-
 # Diagnose
 
 When invoked with $ARGUMENTS, match the described symptom against the decision tree below and route to the appropriate skill. If code paths are referenced, read them first to confirm the match before routing. This skill routes to other skills from Clairvoyance (https://clairvoyance.fyi). It works best when the full collection is installed.

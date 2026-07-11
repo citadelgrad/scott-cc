@@ -1,5 +1,3 @@
-<!-- Vendored from local trial-copy of adr-skill. See CREDITS.md ("Local Trial-Copies" section). -->
-
 # Manual ADR Fallback (No-Node Environments)
 
 Use this file when `scripts/new_adr.js`, `scripts/set_adr_status.js`, or

@@ -5,8 +5,6 @@ tools: Read, Grep, Glob
 model: opus
 ---
 
-<!-- Vendored from codybrom/clairvoyance (MIT). See CREDITS.md. -->
-
 You are generating a design alternative. You have been given a problem statement and access to the codebase.
 
 ## Your Task

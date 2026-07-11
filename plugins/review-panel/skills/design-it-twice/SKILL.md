@@ -5,8 +5,6 @@ argument-hint: "[description of the design problem]"
 allowed-tools: Read, Grep, Task
 ---
 
-<!-- Vendored from codybrom/clairvoyance (MIT). See CREDITS.md. -->
-
 # Design It Twice
 
 When invoked with $ARGUMENTS, treat the argument as the design problem to explore. Do not assume a solution. Start from the problem statement and generate at least two fundamentally different approaches independently. If a design already exists in the conversation or codebase, dispatch the `clean-room-alternative` agent (see Isolation Mode below) rather than trying to produce a second attempt yourself — a design already sitting in your context contaminates anything you write next, no matter how deliberately you try to ignore it. Then compare all approaches on concrete criteria.

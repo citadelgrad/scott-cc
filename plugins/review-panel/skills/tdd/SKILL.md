@@ -3,7 +3,6 @@ name: tdd
 description: Test-driven development with red-green-refactor loop. Use when user wants to build features or fix bugs using TDD, mentions "red-green-refactor", wants integration tests, or asks for test-first development.
 ---
 
-<!-- Vendored from local trial-copy of tdd. See CREDITS.md ("Local Trial-Copies" section). -->
 <!--
   Redundancy check (scc-ns8.6): This skill is DISTINCT from
   superpowers:test-driven-development (the only other TDD-labeled skill

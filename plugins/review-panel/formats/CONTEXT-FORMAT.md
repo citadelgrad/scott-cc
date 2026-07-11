@@ -1,4 +1,3 @@
-<!-- Vendored from mattpocock/skills (MIT). See CREDITS.md. -->
 <!-- Canonical copy. This is the single source of truth for the CONTEXT.md format —
      do not fork or duplicate this file elsewhere in the plugin; reference it instead. -->
 

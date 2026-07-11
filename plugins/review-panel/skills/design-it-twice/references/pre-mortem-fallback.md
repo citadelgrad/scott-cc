@@ -1,5 +1,3 @@
-<!-- Vendored from codybrom/clairvoyance (MIT). See CREDITS.md. -->
-
 # Pre-Mortem Fallback (No Agent Available)
 
 If your setup does not support running subagents, your first design might already be in the context window and cannot be unseen. Attempting to "just ignore it" is useless. Proximity bias contaminates the alternative the same way a finished draft contaminates a rewrite.

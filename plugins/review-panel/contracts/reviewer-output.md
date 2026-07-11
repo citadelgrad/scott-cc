@@ -1,6 +1,3 @@
-<!-- Vendored from obra/superpowers (MIT). See CREDITS.md. -->
-<!-- Source: skills/requesting-code-review/code-reviewer.md -->
-
 # Code Reviewer Prompt Template
 
 Use this template when dispatching a code reviewer subagent.

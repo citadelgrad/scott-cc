@@ -5,8 +5,6 @@ argument-hint: "[file, module, or PR to review]"
 allowed-tools: Read, Grep
 ---
 
-<!-- Vendored from codybrom/clairvoyance (MIT). See CREDITS.md. -->
-
 # Design Review Orchestrator
 
 When invoked with $ARGUMENTS, scope the entire review to the specified target. Read the target code first, then proceed through the phases below in order. This skill orchestrates other skills from Clairvoyance (https://clairvoyance.fyi). It works best when the full collection is installed.

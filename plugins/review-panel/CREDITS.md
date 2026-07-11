@@ -44,10 +44,9 @@ different machine without compound-engineering installed correctly finds nothing
 ## codybrom/clairvoyance (MIT)
 
 Full design-review lens set (16 skills) and the `clean-room-alternative` agent,
-vendored verbatim from https://github.com/codybrom/clairvoyance. Each file
-below carries a `<!-- Vendored from codybrom/clairvoyance (MIT). See
-CREDITS.md. -->` attribution comment (placed after YAML frontmatter where
-present) since none of the source files had their own license headers.
+vendored verbatim from https://github.com/codybrom/clairvoyance. None of the
+source files had their own license headers; attribution for all of them is
+tracked here only (see the License-Header Policy below).
 
 All files copied verbatim, no adaptation:
 
@@ -84,10 +83,10 @@ excluded from this plugin.
 - `contracts/reviewer-output.md` — adapted from
   `skills/requesting-code-review/code-reviewer.md`. Content preserved
   verbatim (Strengths / Issues: Critical, Important, Minor w/ file:line /
-  Recommendations / Assessment structure); attribution header added.
+  Recommendations / Assessment structure); attribution tracked here only.
 - `contracts/verification-before-completion.md` — adapted from
   `skills/verification-before-completion/SKILL.md`. Content preserved
-  verbatim; attribution header added.
+  verbatim; attribution tracked here only.
 - `scripts/review-package` — copied verbatim from
   `skills/subagent-driven-development/scripts/review-package`, with its
   internal call to `sdd-workspace` updated to call the renamed `workspace`
@@ -99,9 +98,7 @@ excluded from this plugin.
 ## DietrichGebert/ponytail (MIT)
 
 Two review seats vendored verbatim from the upstream `skills/` directory.
-Both files have a one-line `<!-- Vendored from DietrichGebert/ponytail (MIT).
-See CREDITS.md. -->` attribution comment inserted immediately after the YAML
-frontmatter (per the License-Header Policy below).
+Attribution for both is tracked here only (see the License-Header Policy below).
 
 - `skills/ponytail-review/SKILL.md` — verbatim (diff-scoped simplicity review seat)
 - `skills/ponytail-audit/SKILL.md` — verbatim (repo-scoped simplicity audit seat)
@@ -117,9 +114,8 @@ for a bare `ponytail` skill, and zero matches for `hooks|statusline|mcp`).
 
 Source: https://github.com/mattpocock/skills, `skills/engineering/domain-modeling/`.
 
-Files copied verbatim, each with a one-line `Vendored from` attribution comment
-added at the top (per the License-Header Policy below, since the source files
-had no existing license header):
+Files copied verbatim; the source files had no existing license header, so
+attribution is tracked here only (see the License-Header Policy below):
 
 - `formats/CONTEXT-FORMAT.md` — verbatim copy of
   `skills/engineering/domain-modeling/CONTEXT-FORMAT.md`
@@ -156,7 +152,7 @@ origin unknown, no license header found in source). Includes 3 `.js`
 scripts (`scripts/bootstrap_adr.js`, `scripts/new_adr.js`,
 `scripts/set_adr_status.js`) that require Node.js to run.
 
-- `SKILL.md` — verbatim, attribution comment added (no header in source).
+- `SKILL.md` — verbatim, no header in source; attribution tracked in this file only.
 - `scripts/bootstrap_adr.js`, `scripts/new_adr.js`, `scripts/set_adr_status.js` — content vendored as-is (no dependencies installed). This repo's pre-commit `biome check --write` hook auto-reformatted these 3 files on commit (2-space indent → tabs, line-wrap/trailing-comma style, one `let`→`const` for a never-reassigned binding). Whitespace/style only — verified no functional diff by diffing against the original source with `diff -w`. Two local bug fixes applied on top of the vendored content since: (1) `new_adr.js`'s H1-title regex used a greedy `\s*$` that silently ate the blank line after the heading in every generated ADR (`\s` matches newlines; since only the `# ` prefix is captured, the consumed blank line never made it back into the replacement) — narrowed to `[ \t]*$`; (2) `--technical-story`/`--chosen-option` (both scripts) were parsed and threaded through but never actually inserted anywhere — neither template defines a `{TECHNICAL_STORY}`/`{CHOSEN_OPTION}` placeholder, only natural-language ones — so the flags silently no-op'd; removed rather than wired up, since fixing them correctly would mean editing the verbatim templates.
 - `assets/templates/adr-simple.md`, `assets/templates/adr-madr.md`, `assets/templates/adr-readme.md` — verbatim, no header in source. Left uncommented since these are meant to be copied out into user-authored ADR files verbatim.
 - `references/adr-conventions.md`, `references/examples.md`, `references/review-checklist.md`, `references/template-variants.md` — verbatim, no header in source.
@@ -167,7 +163,7 @@ scripts (`scripts/bootstrap_adr.js`, `scripts/new_adr.js`,
 Copied verbatim from `~/.agents/skills/improve-codebase-architecture/`
 (local trial install, origin unknown, no license header found in source).
 
-- `SKILL.md` — verbatim, attribution comment added (no header in source).
+- `SKILL.md` — verbatim, no header in source; attribution tracked in this file only.
 - `DEEPENING.md`, `INTERFACE-DESIGN.md`, `LANGUAGE.md` — verbatim, no header in source.
 
 ### grill-with-docs
@@ -175,7 +171,7 @@ Copied verbatim from `~/.agents/skills/improve-codebase-architecture/`
 Copied verbatim from `~/.agents/skills/grill-with-docs/` (local trial
 install, origin unknown, no license header found in source).
 
-- `SKILL.md` — verbatim, attribution comment added (no header in source).
+- `SKILL.md` — verbatim, no header in source; attribution tracked in this file only.
 - `ADR-FORMAT.md`, `CONTEXT-FORMAT.md` — originally copied verbatim (no header in source), but were near-duplicates of the mattpocock-vendored `formats/ADR-FORMAT.md` / `formats/CONTEXT-FORMAT.md` and had already started to drift (this local `CONTEXT-FORMAT.md` had gained a Relationships/Example-dialogue/Flagged-ambiguities structure the canonical copy lacked). Consolidated: the canonical `formats/CONTEXT-FORMAT.md` was updated to fold in those improvements, and both local copies were deleted in favor of `SKILL.md` referencing `formats/CONTEXT-FORMAT.md` and `formats/ADR-FORMAT.md` directly. See "mattpocock/skills (MIT)" above.
 
 ### tdd
@@ -183,7 +179,7 @@ install, origin unknown, no license header found in source).
 Copied verbatim from `~/.agents/skills/tdd/` (local trial install, origin
 unknown, no license header found in source).
 
-- `SKILL.md` — verbatim, attribution comment added (no header in source), plus an inline redundancy-check note (see below).
+- `SKILL.md` — verbatim, no header in source; attribution tracked in this file only, plus an inline redundancy-check note (see below).
 - `deep-modules.md`, `interface-design.md`, `mocking.md`, `refactoring.md`, `tests.md` — verbatim, no header in source.
 
 **Redundancy check against existing scott-cc skills**: No `tdd` skill exists
@@ -265,20 +261,15 @@ external source:
 
 1. **Preserve original license headers verbatim.** If a copied file already
    contains a license/copyright header, that header must be kept intact and
-   unmodified at the top of the file, exactly as it appeared upstream.
-2. **Attribute files with no existing header.** If a vendored or adapted file
-   has no license header of its own (e.g. a plain Markdown skill file), add a
-   one-line attribution comment near the top of the file, in the
-   language-appropriate comment syntax, pointing back to this CREDITS.md:
-
-   - Markdown / HTML:
-     `<!-- Vendored from <org>/<repo> (MIT). See CREDITS.md. -->`
-   - Shell scripts:
-     `# Vendored from <org>/<repo> (MIT). See CREDITS.md.`
-   - Adapted (not verbatim) files should say "Adapted from" instead of
-     "Vendored from", e.g.
-     `<!-- Adapted from <org>/<repo> (MIT). See CREDITS.md. -->`
-
+   unmodified at the top of the file, exactly as it appeared upstream. (None
+   of the files currently vendored into this plugin had one.)
+2. **No per-file attribution comments.** Files with no license header of
+   their own are *not* given an in-file "Vendored from ..." comment — this
+   document is the single source of truth for provenance, and duplicating it
+   into every skill/script/reference file the panel reads at runtime wastes
+   tokens for no benefit. If a source file's upstream carries its own
+   license header, that's preserved per rule 1 above; otherwise attribution
+   lives here only.
 3. **Record verbatim vs. adapted status in this file.** Each per-source
    section above must note, for every file it introduces, whether that file
    was copied verbatim or adapted, so provenance stays auditable.

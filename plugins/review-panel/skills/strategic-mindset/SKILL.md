@@ -5,8 +5,6 @@ argument-hint: "[file, module, or codebase area]"
 allowed-tools: Read, Grep
 ---
 
-<!-- Vendored from codybrom/clairvoyance (MIT). See CREDITS.md. -->
-
 # Strategic Mindset Review Lens
 
 When invoked with $ARGUMENTS, focus the analysis on the specified file, module, or codebase area. Read the target code first, then apply the checks below.

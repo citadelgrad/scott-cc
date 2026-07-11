@@ -1,5 +1,3 @@
-<!-- Vendored from codybrom/clairvoyance (MIT). See CREDITS.md. -->
-
 # Back-Door Leakage Detection Patterns
 
 Back-door leakage is invisible by definition. Nothing in any interface signals the dependency. These patterns help you see it anyway.

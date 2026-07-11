@@ -9,8 +9,6 @@ description: >
   not apply fixes.
 ---
 
-<!-- Vendored from DietrichGebert/ponytail (MIT). See CREDITS.md. -->
-
 ponytail-review, repo-wide. Scan the whole tree instead of a diff. Rank
 findings biggest cut first.
 

@@ -1,5 +1,3 @@
-<!-- Vendored from codybrom/clairvoyance (MIT). See CREDITS.md. -->
-
 # Flag Interaction Map
 
 Red flags rarely fire alone. When several trigger at once, they often share a single architectural root cause. These syndrome clusters map common co-occurrences to the design problem underneath.

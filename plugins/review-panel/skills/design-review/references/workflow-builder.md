@@ -1,5 +1,3 @@
-<!-- Vendored from codybrom/clairvoyance (MIT). See CREDITS.md. -->
-
 # Building a Design Review Workflow
 
 How to turn the five-phase funnel in SKILL.md into a Dynamic Workflow script, for reviews too large to run once per file in a single conversation.

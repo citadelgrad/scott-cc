@@ -5,8 +5,6 @@ argument-hint: "[file or module path]"
 allowed-tools: Read, Grep
 ---
 
-<!-- Vendored from codybrom/clairvoyance (MIT). See CREDITS.md. -->
-
 # Abstraction Quality Review Lens
 
 When invoked with $ARGUMENTS, focus the analysis on the specified file or module. Read the target code first, then apply the checks below.

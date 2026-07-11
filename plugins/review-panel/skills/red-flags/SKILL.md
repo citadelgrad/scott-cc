@@ -5,8 +5,6 @@ argument-hint: "[file or directory]"
 allowed-tools: Read, Grep
 ---
 
-<!-- Vendored from codybrom/clairvoyance (MIT). See CREDITS.md. -->
-
 # Red Flags Diagnostic
 
 When invoked with $ARGUMENTS, scope the scan to the specified file or directory. Read the target code first, then run every flag below against it. Each flag points to a deeper lens from Clairvoyance (https://clairvoyance.fyi). This skill works best when the full collection is installed.

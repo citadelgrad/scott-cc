@@ -1,5 +1,3 @@
-<!-- Vendored from codybrom/clairvoyance (MIT). See CREDITS.md. -->
-
 # Write the Comments First: 6-Step Workflow
 
 ## The Process

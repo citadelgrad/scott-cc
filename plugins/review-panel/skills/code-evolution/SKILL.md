@@ -5,8 +5,6 @@ argument-hint: "[file, module, or PR]"
 allowed-tools: Read, Grep
 ---
 
-<!-- Vendored from codybrom/clairvoyance (MIT). See CREDITS.md. -->
-
 # Code Evolution Review Lens
 
 When invoked with $ARGUMENTS, focus the analysis on the specified file, module, or pull request. Read the target code first, then apply the checks below.
