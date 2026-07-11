@@ -1,0 +1,25 @@
+plugins/review-panel/CREDITS.md
+  s_bce8831dfc9ccb::t_dfc5ce26f5dcab 47-49
+  s_bce8831dfc9ccb::t_11d840a5f5254d 117-118
+  s_bce8831dfc9ccb::t_6238b50c1c923a 155,166,174
+  s_bce8831dfc9ccb::t_dfcb4b49ec7449 182
+  s_bce8831dfc9ccb::t_343ce6e9351299 264-272
+  s_bce8831dfc9ccb::t_80e352c9a03578 86,89
+  s_bce8831dfc9ccb::t_5fd2e4f059bb50 101
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.11",
+  "base_commit_sha": "9be04f713836e4bd13ac686d7d70cbc4a14ea800",
+  "prompts": {},
+  "sessions": {
+    "s_bce8831dfc9ccb": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d863083e-eee4-48cf-a1cd-02b65b3e6e4f",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
