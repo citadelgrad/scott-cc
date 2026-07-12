@@ -98,14 +98,20 @@ If the epic doesn't exist, stop and tell the user.
 
 ### Step 1.2: Load All Tasks
 
+Fetch every child task in **one call** and write the full JSON straight to a file — never `bd show` per task, and never read the full payload into your own context:
+
 ```bash
-bd list --status=open
+mkdir -p .claude/epic-swarm/<epic-id>
+bd list --parent=<epic_id> --status=open --json > .claude/epic-swarm/<epic-id>/tasks.json
 ```
 
-Filter for tasks that are children of this epic. For each task, run `bd show <task-id>` to get:
-- Title, description, notes (these contain the implementation details)
-- Dependencies (what blocks this task)
-- Status
+Then pull only the compact fields you actually need to plan waves:
+
+```bash
+jq -r '.[] | "\(.id)|\(.title)|\(.status)|\(.dependencies|join(","))"' .claude/epic-swarm/<epic-id>/tasks.json
+```
+
+That id/title/status/deps table is everything Step 1.3 needs. The full `description` and `acceptance_criteria` for every task stay on disk in `tasks.json` — Phase 2 hands worker agents the file path instead of pasting their contents into your context.
 
 If no open tasks exist, tell the user the epic has no work to do.
 
@@ -188,123 +194,94 @@ For each task in the current wave:
 bd update <task-id> --status=in_progress
 ```
 
-### Step 2.2: Spawn Worker Agents
+### Step 2.2: Spawn ONE Wave Coordinator
 
-For each task in the wave, spawn an Agent with `isolation: "worktree"`:
+**Do not** spawn workers directly, and do not merge or run tests yourself. Both dump large amounts of output — `git merge` logs, full test suite runs — straight into your context, which is the thing that fills it up on large epics. Instead, spawn a single coordinator agent for the wave that does that noisy work in its **own** context and hands you back a small JSON summary.
 
 ```
 Agent(
-  description: "Implement <task-id>",
+  description: "Coordinate wave <N> for epic <epic-id>",
   subagent_type: "general-purpose",
-  isolation: "worktree",
   mode: "auto",
-  prompt: "<worker prompt - see below>"
+  prompt: "<wave coordinator prompt - see below>"
 )
 ```
 
-**Launch all agents for the wave in a SINGLE message** so they run in parallel.
+Do **not** set `isolation: "worktree"` on the coordinator itself — it needs to run in the real checkout on `<feature-branch>` so its merges land there directly. (The workers it spawns get `isolation: "worktree"`.)
 
-If the wave has more tasks than `--max-parallel`, split into sub-batches:
-- Launch first N agents
-- Wait for them to complete
-- Launch next N agents
-- Repeat
+If the wave has more tasks than `--max-parallel`, tell the coordinator that limit and let it sub-batch its worker spawns internally — it still returns one summary for the whole wave.
 
-### Worker Agent Prompt Template
-
-For each task, construct this prompt:
+### Wave Coordinator Prompt Template
 
 ```
-You are a CODE IMPLEMENTER. Your ONLY job is to write production code for one task.
+You are the WAVE COORDINATOR for wave <N> of epic <epic-id>. You are running
+in the real repo checkout on branch <feature-branch>.
 
-## Your Task
+## Tasks this wave
+<task-id-1>, <task-id-2>, ...
 
-**ID:** <task-id>
-**Title:** <title>
-**Description:**
-<full description from bd show>
+Full details for every task (description, acceptance_criteria, dependencies)
+are already on disk — do NOT ask beads for them yourself:
+  <absolute-path-to-repo>/.claude/epic-swarm/<epic-id>/tasks.json
 
-**Implementation Notes:**
-<full notes field from bd show - this contains the actual code/specs to implement>
+## What to do
 
-## Instructions
+1. For each task ID above, spawn an Agent (isolation: "worktree",
+   subagent_type: "general-purpose") with a prompt that tells it to:
+   - Pull its own entry out of tasks.json, e.g.:
+     jq '.[] | select(.id=="<task-id>")' <absolute-path>/.claude/epic-swarm/<epic-id>/tasks.json
+   - Implement the code change it describes, write tests if the task
+     involves testable logic, run the project's test command, fix
+     failures, and commit.
+   - Follow existing code patterns; don't refactor unrelated code; don't
+     install new dependencies unless the task requires it.
+   Launch ALL of this wave's workers in a SINGLE message so they run in
+   parallel (max <max-parallel> at once — sub-batch if there are more).
 
-1. Read the task description and notes carefully - they contain what to build
-2. Explore the codebase briefly to understand existing patterns (spend at most 2-3 file reads for orientation)
-3. IMPLEMENT the code changes described in the task
-4. Write tests for your changes if the task involves testable logic
-5. Run the project's test command to verify nothing is broken
-6. Fix any test failures before finishing
+2. After every worker finishes, for each one that returned a worktree
+   branch with changes: `git merge <branch> --no-edit`, redirecting output
+   to a scratch file rather than printing it. Resolve simple conflicts
+   yourself (keep both sides' changes if they touch different parts of a
+   file); if a conflict is too ambiguous to resolve confidently, leave it
+   unmerged and report it — don't guess. `git branch -d <branch>` after
+   each clean merge.
 
-## Rules
+3. Run the project's test command exactly once, after all merges, with
+   output redirected to a file (e.g. `<test-cmd> >
+   <absolute-path-to-repo>/.claude/epic-swarm/<epic-id>/wave-<N>-tests.log
+   2>&1`). Only inspect that file for pass/fail and failing test names.
 
-- IMPLEMENT, don't research. The task notes tell you what to build.
-- Follow existing code patterns and conventions in the project
-- Do NOT refactor code unrelated to your task
-- Do NOT create planning documents or research notes
-- Do NOT install new dependencies unless the task explicitly requires it
-- Keep changes focused and minimal - only what the task requires
-- If the task notes contain code snippets, use them as your starting point
+4. Return ONLY this JSON as your final message — no prose, no pasted
+   command output, no test logs:
 
-## You Are Done When
-
-- The code changes described in the task are complete
-- Tests pass (or new tests are written and pass)
-- Your changes are committed in the worktree
+{
+  "wave": <N>,
+  "tasks_completed": ["<id>", ...],
+  "tasks_failed": [{"id": "<id>", "reason": "<one line>"}],
+  "test_status": "pass" | "fail",
+  "failure_summary": "<one paragraph, or null>",
+  "merged_branches": ["<branch>", ...],
+  "unresolved_conflicts": [{"branch": "<branch>", "files": ["..."]}]
+}
 ```
 
-**Important:** Include the FULL task description and notes in the prompt. Workers have no access to beads commands or the parent conversation. They need all context embedded in their prompt.
+**Important:** The coordinator prompt only needs task IDs and the path to `tasks.json` — never paste task descriptions into it. The coordinator reads them itself, in its own context, not yours.
 
-### Step 2.3: Collect Results
+### Step 2.3: Handle the Coordinator's Result
 
-After all agents in the wave complete, for each agent result:
+The coordinator's returned JSON is small — safe to read in full.
 
-1. **If the agent made changes** (worktree path and branch returned):
-   - Note the branch name for merging
-2. **If the agent made no changes:**
-   - Log that the task may not have needed code changes
-   - Investigate if the task was supposed to produce changes
+- `unresolved_conflicts` non-empty → stop, show the user the conflicting branch/files, follow Error Handling below.
+- `test_status: "fail"` → show the user `failure_summary` only. If it needs deeper investigation, spawn a fresh small agent to dig in rather than re-running the suite yourself in the foreground.
+- Otherwise, close the completed tasks:
 
-### Step 2.4: Merge Worktree Branches
-
-For each completed worktree branch with changes, merge into the feature branch:
-
-```bash
-git merge <worktree-branch> --no-edit
-```
-
-**If merge conflicts occur:**
-1. List the conflicting files
-2. Read the conflict markers
-3. Resolve conflicts intelligently (both agents' changes should be kept if they're in different parts of the file)
-4. If conflicts are too complex, tell the user and ask for guidance
-
-**After merging each branch:**
-```bash
-git branch -d <worktree-branch>  # Clean up the temporary branch
-```
-
-### Step 2.5: Verify & Close Tasks
-
-After merging all branches for the wave:
-
-```bash
-# Run tests to verify merged code works
-# Use project's test command (pytest, npm test, vitest, etc.)
-```
-
-If tests pass, close all tasks in the wave:
 ```bash
 bd close <task-id-1> <task-id-2> ...
 ```
 
-If tests fail:
-1. Identify which merge caused the failure
-2. Fix the issue
-3. Re-run tests
-4. Only close tasks whose code is working
+Tasks listed in `tasks_failed` stay open — don't close them.
 
-### Step 2.6: Write Wave Checkpoint
+### Step 2.4: Write Wave Checkpoint
 
 **After every wave**, update the checkpoint:
 - Move completed task IDs from `tasks_remaining` to `tasks_completed`
@@ -316,7 +293,7 @@ If tests fail:
 
 This is the most important checkpoint write. If context compacts between waves, the orchestrator can read this file and know exactly where to resume.
 
-### Step 2.7: Report Wave Progress
+### Step 2.5: Report Wave Progress
 
 After each wave, report:
 
@@ -332,7 +309,7 @@ After each wave, report:
 **Next wave:** Wave N+1 (N tasks)
 ```
 
-### Step 2.8: Repeat for Next Wave
+### Step 2.6: Repeat for Next Wave
 
 Continue to the next wave. The dependencies from completed waves are now satisfied.
 
@@ -360,47 +337,46 @@ Check if `compound-engineering.local.md` exists in the project root.
 
 ### Step 3.2: Launch Review Agents in Parallel
 
-Get the diff of all changes:
+Write the diff to a file — do **not** print it to your own context, and do not paste it inline into each agent's prompt (that quadruplicates a potentially huge diff across one message):
+
 ```bash
-git diff <default-branch>...HEAD
+git diff <default-branch>...HEAD > .claude/epic-swarm/<epic-id>/review-diff.patch
+git diff --stat <default-branch>...HEAD  # small, safe to glance at for sanity
 ```
 
-Spawn all review agents in parallel:
+Spawn all review agents in parallel, each pointed at the file by path:
 
 ```
 Agent(
   description: "Architecture review",
   subagent_type: "compound-engineering:review:architecture-strategist",
-  prompt: "Review the following code changes for architectural concerns.
-
-<git diff output>
+  prompt: "Read the diff at <absolute-path-to-repo>/.claude/epic-swarm/<epic-id>/review-diff.patch and review it for architectural concerns.
 
 Focus on:
 - Pattern compliance and design integrity
 - Cross-cutting concerns
 - Coupling and cohesion issues
 
-Return a concise list of findings with severity (CRITICAL/IMPORTANT/NICE-TO-HAVE).",
+Return a concise list of findings with severity (CRITICAL/IMPORTANT/NICE-TO-HAVE) — no pasted code, just file:line + description.",
   run_in_background: true
 )
 
 Agent(
   description: "Simplicity review",
   subagent_type: "compound-engineering:review:code-simplicity-reviewer",
-  prompt: "Review the following code changes for unnecessary complexity.
-
-<git diff output>
+  prompt: "Read the diff at <absolute-path-to-repo>/.claude/epic-swarm/<epic-id>/review-diff.patch and review it for unnecessary complexity.
 
 Focus on:
 - YAGNI violations
 - Over-engineering
 - Simplification opportunities
 
-Return a concise list of findings with severity.",
+Return a concise list of findings with severity — no pasted code, just file:line + description.",
   run_in_background: true
 )
 
-// ... same pattern for security-sentinel, performance-oracle, etc.
+// ... same pattern for security-sentinel, performance-oracle, etc. — every
+// agent reads the same file, none of them get the diff pasted into their prompt.
 ```
 
 ### Step 3.3: Collect & Apply Review Findings
@@ -448,10 +424,14 @@ Update checkpoint:
 
 ### Step 4.1: Final Test Run
 
+Redirect output to a file and only report pass/fail — don't let a full suite run dump into your context:
+
 ```bash
-# Run the full test suite one final time
-# pytest / npm test / vitest / etc.
+# pytest / npm test / vitest / etc., e.g.:
+<test-cmd> > .claude/epic-swarm/<epic-id>/final-tests.log 2>&1 && echo PASS || echo FAIL
 ```
+
+On FAIL, inspect the log file for the failing test names only, not the whole run.
 
 ### Step 4.2: Commit Any Review Fixes
 
@@ -468,6 +448,8 @@ bd close <epic-id>
 ```
 
 ### Step 4.4: Push & Report
+
+Ask the user before pushing — "Push `<branch-name>` to origin? (yes/no)" — pushing is a shared, hard-to-reverse action and needs a fresh confirmation even if the user approved the epic run earlier. If they decline, skip straight to the final summary.
 
 ```bash
 git push -u origin <branch-name>
@@ -509,19 +491,16 @@ rm -rf .claude/epic-swarm/<epic-id>
 ## Error Handling
 
 ### Task Implementation Failure
-If a worker agent fails to implement a task:
-1. Log the failure with details
-2. Add to `tasks_failed` in checkpoint
-3. Skip the task (don't close it in beads)
-4. Continue with remaining tasks in the wave
-5. Report failed tasks at the end
+If the wave coordinator reports a task in `tasks_failed`:
+1. Add it to `tasks_failed` in checkpoint (from the coordinator's `reason`)
+2. Skip the task (don't close it in beads)
+3. Report failed tasks at the end
 
 ### Merge Conflict Deadlock
-If merge conflicts can't be auto-resolved:
-1. Show the conflicting files and changes from each agent
+If the coordinator reports non-empty `unresolved_conflicts`, the repo is sitting exactly where it left it — the conflict markers are still in those specific files in the working tree. Only look at the files it listed, not the whole diff:
+1. Read the conflict markers in the listed files
 2. Ask the user to choose a resolution strategy:
-   - Keep agent A's changes
-   - Keep agent B's changes
+   - Keep one side's changes
    - Manual merge (show both sides)
 
 ### Test Failures After Merge
@@ -571,3 +550,8 @@ If you lose context and are re-invoked:
 - Checkpointing is simpler and survives context compaction
 - TeammateTool adds inbox messaging overhead that isn't needed here
 - If you need inter-agent coordination (agents negotiating file ownership, shared state), use TeammateTool via a separate command
+
+**Why a wave coordinator, not the orchestrator itself, spawns workers and merges/tests:**
+- `bd show`/`bd list` output, `git merge` logs, and test suite runs are the actual source of context bloat on large epics — not the worker agents, which were already delegated
+- Every one of those is now written to a file or absorbed into a subagent's own context; the orchestrator only ever sees compact JSON summaries and small id/title/status tables
+- The orchestrator's context now scales with *wave count*, not with total task/test/diff volume — that's what lets it survive a 20-task epic without compacting
