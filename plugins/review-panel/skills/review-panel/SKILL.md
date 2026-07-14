@@ -33,11 +33,12 @@ hand or a `foundry` gate invokes unattended.
 ## The 7-stage loop
 
 ```
-CAST        judgment-based casting against persona-catalog.md (read diff CONTENT) + live-scan
-              enrichment of installed skills; fail-closed on ambiguity
+CAST        ONE dispatched subagent judgment-casts against persona-catalog.md (reads diff CONTENT
+              in its own disposable context, never the orchestrator's) + live-scan enrichment of
+              installed skills; fail-closed on ambiguity; returns only the small cast list
   ↓
 SPAWN       bounded-parallel dispatch of the cast panel, read-only tools, ALL seats see the
-              SAME shared diff (never re-derived per seat)
+              SAME shared diff by path (never re-derived, never inlined into the orchestrator)
   ↓
 MERGE       fingerprint-dedupe (file + line±3 + normalized title) → confidence anchors
               0/25/50/75/100 → quote-the-line evidence gate
@@ -54,17 +55,21 @@ CONVERGE    clean round → done. Else loop to SPAWN with the new diff. 3-strike
 ```
 
 Full procedural detail for each stage lives in `references/` — this file is the entry point and
-spine, not the complete procedure. Read the relevant reference file before executing a stage for
-the first time in a run; don't try to execute from memory of this summary alone.
+spine, not the complete procedure. **Read references one at a time, just-in-time**: read only the
+file for the stage you are about to execute, immediately before executing it — never batch-read
+multiple reference files at the start of a run. The orchestrator's own context has to survive the
+entire loop, potentially across several CONVERGE iterations, so it is the one place in this skill
+that must stay lean; a stage's reference is cheap to re-read next time you need it but expensive to
+hold unused for the many tool calls between, say, CAST and CONVERGE.
 
-| Stages | Reference |
+| Stage reached | Read this reference (only this one, only now) |
 |---|---|
 | CAST, SPAWN | [references/cast-and-spawn.md](references/cast-and-spawn.md) |
 | MERGE, VALIDATE | [references/merge-and-validate.md](references/merge-and-validate.md) |
 | FIX, RE-REVIEW | [references/fix-and-rereview.md](references/fix-and-rereview.md) |
 | CONVERGE, pipeline-not-barrier | [references/converge-and-pipeline.md](references/converge-and-pipeline.md) |
-| Dual-mode (human + `mode:agent` JSON) | [references/dual-mode-contract.md](references/dual-mode-contract.md) |
-| Design Lineage / provenance | [references/design-lineage.md](references/design-lineage.md) |
+| Dual-mode (human + `mode:agent` JSON) | [references/dual-mode-contract.md](references/dual-mode-contract.md) — only if invoked with `mode:agent` |
+| Design Lineage / provenance | [references/design-lineage.md](references/design-lineage.md) — only if a CONTEXT.md/ADR exists to check against |
 
 ## Setup: diff packaging and scratch workspace
 
@@ -87,10 +92,21 @@ rather than re-deriving diffs ad hoc:
    `wrote <path>: N commit(s), N bytes` stdout summary. This file is the ONE shared diff every seat
    in SPAWN reads — pass its path, not a re-derived `git diff` invocation, to each seat's dispatch
    prompt.
-4. If `scripts/workspace` or `scripts/review-package` are unavailable (non-bash environment, or
+4. **Do not `Read` this file into the orchestrator's own context.** The packaged diff can be large
+   (real panel runs have seen 100K+ characters), and the orchestrator's context has to survive the
+   whole loop, so it is the one context that must not hold full diff content. Capture only the
+   path plus a stat summary (`git diff --stat BASE..HEAD` or equivalent: file list + added/removed
+   line counts per file) directly into the orchestrator's context — that's enough to sanity-check
+   scope (e.g. flagging a 79-commit, 112-file diff before spending a full CAST pass on it) without
+   paying for full hunk content. Every stage that needs the diff's actual content — CAST's
+   dispatched subagent, each SPAWN seat, the FIX fixer, RE-REVIEW's re-cast seats — reads the file
+   itself in its own disposable context, never in the orchestrator's. See
+   `references/cast-and-spawn.md` for how CAST applies this.
+5. If `scripts/workspace` or `scripts/review-package` are unavailable (non-bash environment, or
    scripts missing from this plugin's install), fall back to running `git diff -U10 BASE..HEAD`
    directly and holding the result in-conversation as the shared diff; note this fallback in the
-   final report's coverage-honesty statement.
+   final report's coverage-honesty statement — this is the one path where the orchestrator ends up
+   holding full diff content, since there's no file to point subagents at instead.
 
 Every subsequent loop iteration (after FIX, before RE-REVIEW) re-runs `review-package` against
 the new `HEAD` (post-fix commit or working-tree state) so RE-REVIEW and any next SPAWN operate on

@@ -77,7 +77,12 @@ Every finding must cite the ACTUAL code text at its claimed file:line as part of
 not a paraphrase, not "the function doesn't handle nulls" without showing the line in question.
 Concretely: cross-reference each finding's cited file:line against the packaged diff (or the
 current file content) and confirm the quoted text is verbatim present at that location (allowing
-for the ±3 line tolerance in citation drift, same as fingerprinting).
+for the ±3 line tolerance in citation drift, same as fingerprinting). This is a targeted check —
+read just the few lines around each finding's claimed location (via `Read`/`Grep` on the current
+file, or the specific hunk in the packaged diff), not the whole packaged diff. MERGE runs in the
+orchestrator's own context, which per SKILL.md's Setup step 4 must never hold the diff's full
+content — a small per-finding read stays well within that budget across even a long findings list,
+which is what makes this check compatible with that discipline.
 
 - **Passes the gate**: finding includes a verbatim (or trivially-whitespace-normalized) quote of
   the code it's about, and that quote is actually found at or within 3 lines of the claimed

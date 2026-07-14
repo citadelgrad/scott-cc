@@ -40,8 +40,11 @@ findings, and do not dispatch fixers serially one-finding-at-a-time either.
 Give the fixer:
 1. The full validated findings list (fingerprint, severity, confidence, evidence quote, original
    recommendation, contributing seats) — the complete VALIDATE output, not a filtered subset.
-2. The packaged diff and read/write access to the actual codebase files (not just the diff text —
-   it needs to make real edits).
+2. The packaged diff's **path** (from Setup, or the freshly re-packaged one if this is a second+
+   loop iteration), not its content — the fixer reads it itself in its own disposable context, the
+   same discipline CAST and SPAWN use (see [cast-and-spawn.md](cast-and-spawn.md)'s "Why CAST is
+   delegated, not inline"). Plus read/write access to the actual codebase files — the fixer needs
+   more than the diff text, it needs to make real edits against the live tree.
 3. Explicit instruction to fix Critical findings first, then Important, then Minor, and to note in
    its own return report any finding it could NOT fix (with a reason: ambiguous requirement,
    requires a decision the fixer isn't positioned to make, conflicts with another finding's fix)
@@ -102,15 +105,23 @@ committed changes, or current working-tree state if uncommitted) per SKILL.md's 
 RE-REVIEW always operates on a freshly packaged diff reflecting FIX's actual output — never the
 pre-fix diff, and never a stale package from an earlier loop iteration.
 
+Same discipline as the first packaging in Setup (see SKILL.md's step 4): capture the new diff's
+path and a stat summary into the orchestrator's context and stop there — do not `Read` the
+repackaged diff itself. Every consumer below (the Axis (a) re-cast seats, the Domain-Intent seat
+for Axis (b)) reads it by path in its own disposable context.
+
 ### Axis (a) — Regression check
 
-Re-run a subset of the panel against the new diff, focused on catching regressions FIX itself
-introduced:
+Re-run a subset of the panel against the new diff, dispatched the same way as SPAWN — each
+re-cast seat gets the new diff's **path**, never its content, in its own disposable context (see
+[cast-and-spawn.md](cast-and-spawn.md)'s "Shared diff, not per-seat re-derivation") — focused on
+catching regressions FIX itself introduced:
 - Always re-cast **Correctness/Adversarial** (`adversarial-reviewer`) — fixes are exactly the kind
   of hand-written change most likely to introduce a new bug, and this seat's entire purpose is
   finding exactly that.
 - Re-cast any other seat whose prior-round finding was in the fixed set, scoped to just the files
-  that finding's fix touched — confirm the fix actually resolved what it claimed to, not just that
+  that finding's fix touched (per FIX's own return report — no need to re-read the diff to make
+  this scoping decision) — confirm the fix actually resolved what it claimed to, not just that
   something changed at that location.
 - Re-cast **Fresh-Eyes** if the fix touched a broad enough surface that a truly independent
   first-read of the new diff is warranted (judgment call — a one-line fix to a single validated
