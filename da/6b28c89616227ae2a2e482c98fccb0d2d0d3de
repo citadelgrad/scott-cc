@@ -1,0 +1,25 @@
+plugins/review-panel/skills/review-panel/SKILL.md
+  s_9177e8f6aea395::t_1cc70ccffb9907 79-87,94-97,99-100,104-110,113-116
+.claude-plugin/marketplace.json
+  s_9177e8f6aea395::t_cddaa3d9d984c4 86
+plugins/review-panel/scripts/review-package
+  s_9177e8f6aea395::t_1985cafbd5ff70 9,12-18,21,23,25,27-39,41-42,45-49,52-84,86-88
+plugins/review-panel/plugin.json
+  s_9177e8f6aea395::t_201158af146fdc 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "da6b28c89616227ae2a2e482c98fccb0d2d0d3de",
+  "prompts": {},
+  "sessions": {
+    "s_9177e8f6aea395": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dce8d7b1-f09c-4e9e-b9ee-ad890ef1e586",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
