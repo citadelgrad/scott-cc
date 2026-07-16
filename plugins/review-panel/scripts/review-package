@@ -6,40 +6,83 @@
 # tasks intact.
 #
 # Usage: review-package BASE HEAD [OUTFILE]
+#        review-package --worktree [OUTFILE]
 # Default OUTFILE: <repo-root>/.review-panel/workspace/review-<base7>..<head7>.diff
 # (named per range, so a re-review after fixes gets a distinct fresh file).
+#
+# --worktree diffs the current working tree (staged + unstaged changes to
+# tracked files) against HEAD instead of a committed BASE..HEAD range. It
+# exists so a bare, no-argument panel invocation never needs BASE
+# resolution (branch discovery, git merge-base) just to review whatever's
+# currently uncommitted — that lookup is real cost the common case
+# shouldn't pay.
 set -euo pipefail
 
-if [ $# -lt 2 ] || [ $# -gt 3 ]; then
+usage() {
   echo "usage: review-package BASE HEAD [OUTFILE]" >&2
+  echo "       review-package --worktree [OUTFILE]" >&2
   exit 2
+}
+
+if [ "${1:-}" = "--worktree" ]; then
+  worktree=1
+  shift
+  [ $# -le 1 ] || usage
+else
+  worktree=0
+  { [ $# -ge 2 ] && [ $# -le 3 ]; } || usage
+  base=$1
+  head=$2
+  shift 2
+  git rev-parse --verify --quiet "$base" >/dev/null || { echo "bad BASE: $base" >&2; exit 2; }
+  git rev-parse --verify --quiet "$head" >/dev/null || { echo "bad HEAD: $head" >&2; exit 2; }
 fi
 
-base=$1
-head=$2
-
-git rev-parse --verify --quiet "$base" >/dev/null || { echo "bad BASE: $base" >&2; exit 2; }
-git rev-parse --verify --quiet "$head" >/dev/null || { echo "bad HEAD: $head" >&2; exit 2; }
-
-if [ $# -eq 3 ]; then
-  out=$3
+if [ $# -eq 1 ]; then
+  out=$1
 else
   dir=$("$(cd "$(dirname "$0")" && pwd)/workspace")
-  out="$dir/review-$(git rev-parse --short "$base")..$(git rev-parse --short "$head").diff"
+  if [ "$worktree" -eq 1 ]; then
+    out="$dir/review-worktree-$(git rev-parse --short HEAD).diff"
+  else
+    out="$dir/review-$(git rev-parse --short "$base")..$(git rev-parse --short "$head").diff"
+  fi
 fi
 
-{
-  echo "# Review package: ${base}..${head}"
-  echo
-  echo "## Commits"
-  git log --oneline "${base}..${head}"
-  echo
-  echo "## Files changed"
-  git diff --stat "${base}..${head}"
-  echo
-  echo "## Diff"
-  git diff -U10 "${base}..${head}"
-} > "$out"
+if [ "$worktree" -eq 1 ]; then
+  {
+    echo "# Review package: working tree vs HEAD"
+    echo
+    echo "## Commits"
+    echo "(uncommitted working-tree changes — no new commits)"
+    echo
+    echo "## Files changed"
+    git diff --stat HEAD
+    echo
+    untracked=$(git ls-files --others --exclude-standard)
+    if [ -n "$untracked" ]; then
+      echo "## Untracked files (NOT included in diff below)"
+      echo "$untracked"
+      echo
+    fi
+    echo "## Diff"
+    git diff -U10 HEAD
+  } > "$out"
+  echo "wrote ${out}: working-tree diff, $(wc -c < "$out" | tr -d ' ') bytes"
+else
+  {
+    echo "# Review package: ${base}..${head}"
+    echo
+    echo "## Commits"
+    git log --oneline "${base}..${head}"
+    echo
+    echo "## Files changed"
+    git diff --stat "${base}..${head}"
+    echo
+    echo "## Diff"
+    git diff -U10 "${base}..${head}"
+  } > "$out"
 
-commits=$(git rev-list --count "${base}..${head}")
-echo "wrote ${out}: ${commits} commit(s), $(wc -c < "$out" | tr -d ' ') bytes"
+  commits=$(git rev-list --count "${base}..${head}")
+  echo "wrote ${out}: ${commits} commit(s), $(wc -c < "$out" | tr -d ' ') bytes"
+fi
