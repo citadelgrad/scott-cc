@@ -1,225 +1,194 @@
-# Investigation: scc-5hy — Phase 4: variant-explorer plugin (parallel blind-builder exploration)
+# Investigation: scc-tsa — Phase 5: triage spine plugin (System 2 v1, Foundry-resident)
 
 ## Task nature
 
 This is **greenfield plugin creation**, not a modification of existing code.
-`plugins/variant-explorer/` does not exist anywhere in the repo (confirmed: no matches for
-`variant-explorer` outside `.pas/current_task.md`, the epic spec doc, and beads). Every file this
-task needs is new; the only *existing* files that need touching are the three cross-cutting
-registration points every prior sub-plugin phase has had to update (`marketplace.json`,
-`scripts/verify_plugin.py`'s conventions — no code change needed there, just compliance —
-`README.md`).
+`plugins/triage/` does not exist anywhere in the repo. Every file this task needs is new; the only
+*existing* files that need touching are the same three cross-cutting registration points every
+prior sub-plugin phase has had to update (`marketplace.json`, `README.md`, and conformance-only
+with `scripts/verify_plugin.py`).
 
-All five of scc-5hy's dependencies (scc-cnx, scc-3x5, scc-da0, scc-4tt — Phase 3a–3d) are closed.
-The immediately preceding task, scc-d0u, retroactively fixed the plugin-registration gate
-(`scripts/verify_plugin.py` now walks *every* `marketplace.json.plugins[]` entry generically, not
-just index 0) and fixed `README.md`'s Sub-plugins count/section coverage — both directly relevant
-here, since this task adds the 8th sub-plugin and must not repeat the gaps scc-d0u just closed.
+This is the **final task in the epic** (scc-hzj). All three dependencies (scc-4xa Phase 1a security
+seat, scc-g12 Phase 1b plan-security pass, scc-bqp Phase 2c data-steward seat) are closed. Once this
+task closes, `check_remaining` should find no further work in the epic.
 
 ---
 
 ## Current behavior (the substrate this plugin builds on)
 
-Nothing in the repo currently does parallel blind-variant exploration. The task's design brief
-explicitly models three pieces of prior art, all confirmed by direct reading:
+Nothing in the repo currently runs an automated detect→bead→fix→gate loop. The task depends on and
+must exactly reuse (not reinvent) several pieces of prior art, all confirmed by direct reading:
 
-1. **Isolation contract** — `plugins/review-panel/skills/design-it-twice/SKILL.md`'s "Isolation
-   Mode" (lines 60-84) and its `agents/clean-room-alternative.md` (frontmatter `tools: Read, Grep,
-   Glob`, `model: opus`): a dispatched agent gets the problem statement and codebase access only —
-   never the first design, never conversation history, never a hint about approaches to avoid. This
-   is read-only and produces one design doc; it does not write code and does not use worktrees
-   (design-it-twice compares two *designs*, not two *implementations*).
+1. **`mode:agent` JSON contract** — `plugins/review-panel/skills/review-panel/references/
+   dual-mode-contract.md`: the full schema the gate step must consume — top-level `status:
+   converged|escalated|circuit_broken|error`, `findings[]`, `convergence.escalation.
+   sovereignty_finding_ids[]`, `coverage{}`. This file already contains a complete, copy-pasteable
+   `foundry.yaml` `post-feature` profile example: `claude -p ... --output-format json` → `jq -r
+   '.result'` unwrap → `jq -r '.status'` → branch on the four statuses. This is the direct template
+   for both the spine's own gate-invocation logic and for `docs/foundry-recipes.md`'s panel-gate
+   entry. It also notes a "trusted/internal branches only" security caveat worth carrying into the
+   new doc.
 
-2. **Worktree dispatch mechanics** — `plugins/beads-epic-builder/commands/epic-swarm.md`: spawns
-   workers via the `Task`/`Agent` tool with **`isolation: "worktree"`** (a first-class parameter of
-   this session's own `Agent` tool, confirmed directly from the tool's schema description: *"With
-   isolation: 'worktree', the worktree is automatically cleaned up if the agent makes no changes;
-   otherwise the path and branch are returned in the result."*). epic-swarm layers a checkpoint-file
-   (`.claude/epic-swarm/<epic-id>/`, root-`.gitignore`d) on top of this for resumability across a
-   long multi-wave epic, and reports failures as an explicit `tasks_failed: [{"id","reason"}]` list
-   — never silently shrinking the task count.
+2. **`escalated` vs `circuit_broken` semantics** — `.../references/converge-and-pipeline.md`'s
+   CONVERGE section: `escalated` is an intentional, by-design terminal state for sovereignty-marked
+   findings (never a loop failure) and must never block/park unattended automation; `circuit_broken`
+   (3-strikes or 8-round hard cap) and `error` are genuine failures. This distinction is exactly what
+   `current_task.md`'s "Status handling (resolved — OQ4)" section restates for triage — the spine
+   must not reinvent this, only consume it: `circuit_broken`/`error` → park the bead for a human;
+   `escalated` → do not block/park, but annotate the bead and PR with an unmissable sovereignty
+   marker; `converged` → ready-to-merge (auto-merge stays out of scope for v1).
 
-3. **TASTE.md-conditional judging** — `plugins/review-panel/formats/TASTE-FORMAT.md` already
-   contains a **binding, pre-existing spec commitment** (not a new decision this task gets to make):
-   *"No TASTE.md file: the taste review seat never casts (no generic fallback), and Phase 4 variant
-   scoring omits the taste axis. Both report the gap explicitly per Coverage Honesty rather than
-   silently skipping."* `plugins/review-panel/skills/taste-review/SKILL.md` is the seat that
-   implements this file-existence gate today (cast-when: `TASTE.md` exists at repo root; if absent,
-   stop and report no taste axis — no partial casting). `plugins/review-panel/skills/ponytail-review/
-   SKILL.md` is the simplicity lens the judge panel must reuse (format: `L<line>: <tag> <what>.
-   <replacement>.`, ending `net: -<N> lines possible.` or `Lean already. Ship.`).
+3. **Sovereignty marker mechanism** — `plugins/review-panel/skills/data-steward/SKILL.md` (Phase
+   2c): `sovereignty: human-required` is set only by the originating reviewer seat and never cleared
+   by FIX. Triage does not redefine this vocabulary — it only reads `convergence.escalation.
+   sovereignty_finding_ids[]` plus the corresponding `findings[]` entries to build a human-readable
+   annotation for the bead/PR (AC3 requires the annotation be "sourced from the panel finding
+   detail," not a bare status echo).
 
-4. **CAST/SPAWN dispatch shape** —
-   `plugins/review-panel/skills/review-panel/references/cast-and-spawn.md`: bounded-parallel `Task`
-   dispatch (≤5 concurrent per batch), each seat given a *path* to shared artifacts rather than
-   inline content, read-only tools unless a seat's own SKILL.md grants more, every seat's raw output
-   collected with provenance tagging, a seat that errors is "a coverage gap, not silently dropped."
-   This is the direct structural model for variant-explorer's judge panel (N variants scored by
-   independent judges who, unlike the builders, *do* get to see all N variants).
+4. **review-panel invocation contract** — `plugins/review-panel/commands/review-panel.md`: `/review-
+   panel [base..head|branch|PR] [--mode=agent]`, `allowed-tools: Task, Read, Grep, Glob, Bash`. This
+   is exactly what the spine's gate step dispatches against the fix diff/branch.
 
-5. **`skills/acceptance-criteria/SKILL.md`** (root `scott-cc` plugin, not review-panel) — the
-   Gherkin/checklist/rules-based AC generator with a testability gate. This is what variant-explorer
-   invokes "if AC absent," referenced across a plugin boundary the same way review-panel's own
-   SPAWN references skills/agents outside itself.
+5. **Detector-shaped precedent** — `plugins/security-suite/skills/plan-security-review/SKILL.md`:
+   the closest existing analog to a "detector" skill — frontmatter shape (`name`, `description`,
+   `argument-hint`, `allowed-tools`), a documented `CLEAR`/`TRIGGERED`/`N/A` output vocabulary, and
+   an explicit "Foundry note" section stating the pass is schedulable but that the skill itself
+   writes no `foundry.yaml` (prose only, wiring is a Foundry-side concern). v1 triage detectors
+   should follow the same frontmatter/Foundry-note pattern, but their actual output contract differs:
+   they emit the normalized triage-item shape (`{source, severity, evidence, affected-paths,
+   suggested-loop}`), not `CLEAR/TRIGGERED` lines, because findings feed a spine loop rather than
+   terminate in a standalone report.
 
-**Plugin registration convention** (confirmed via `security-suite`, `beads-epic-builder`, etc., and
-the scc-d0u fix): every sub-plugin lives at `plugins/<name>/.claude-plugin/plugin.json`
-(name/description/version/author/license/repository/homepage), gets one entry in root
-`.claude-plugin/marketplace.json` (name/source/description/version/author/tags matching the
-sub-plugin's own manifest), and one `### <name>` section in root `README.md` (one-line description
-+ `**Agents (N)**`/`**Commands (N)**`/`**Skills (N)**` tables), plus a bump to the "Sub-plugins"
-count in the `## At a Glance` table. `scripts/verify_plugin.py` (post scc-d0u) already generically
-enforces the marketplace/plugin.json name+version match for every entry — no script change needed,
-just conformance to the path convention.
+6. **Second Foundry schedulable-entry precedent** — `plugins/review-panel/skills/grill-my-taste/
+   SKILL.md` line 95: `--distill` is nudged via a scheduled Foundry profile as a **periodic
+   reminder-only prompt** (e.g. monthly), and the distillation conversation itself must never run
+   unattended (Invariant 5 — human artifacts are human-owned). The task explicitly requires `docs/
+   foundry-recipes.md` to list this entry alongside Phase 1b's plan-security pass and the triage
+   detectors/gate, "consolidating what Foundry runs in one place."
+
+7. **`skills/acceptance-criteria/SKILL.md`** (root `scott-cc`, not review-panel) — the Gherkin/
+   checklist/rules-based AC generator with a testability gate, invoked whenever the spine files a
+   bead ("spine files a bead (with AC per the acceptance-criteria rule)").
+
+8. **Structural precedent for a new orchestrator skill** — `plugins/variant-explorer/` (Phase 4,
+   most recent full scaffold): `skills/<name>/SKILL.md` as orchestrator + flat sibling agent `.md`
+   files (`blind-builder.md`, `variant-judge.md`) + `commands/<name>.md` thin entry point + `README.
+   md` + `tests/PRESSURE-TEST.md` fixture-per-scenario convention. This maps directly onto the
+   task's prescribed layout: `skills/triage-spine/SKILL.md` as orchestrator, `skills/detectors/{lib-
+   upgrades,prod-errors}/SKILL.md` as sibling *skills* (not `agents/`, since detectors — like plan-
+   security-review — are markdown-prompt skills, not `Task`-dispatched agents).
+
+9. **Plugin registration convention** — confirmed via `security-suite`/`variant-explorer`'s
+   `plugin.json` shape and `scripts/verify_plugin.py`: every sub-plugin lives at `plugins/<name>/.
+   claude-plugin/plugin.json` (`name`, `description`, `version`, `author: {"name": "Scott Nixon"}`,
+   `license: "MIT"`, `repository`/`homepage` URLs), gets one matching entry in root `.claude-plugin/
+   marketplace.json`, and one `### <name>` section plus an At-a-Glance count bump in root `README.
+   md`. `scripts/verify_plugin.py` already walks every `marketplace.json.plugins[]` entry
+   generically — no script change needed, just path/name/version conformance. Current state: 8 sub-
+   plugins registered (`README.md`'s "At a Glance" table, line 20); adding `triage` makes 9.
 
 ---
 
 ## Required changes
 
-### New files
+### New files (`plugins/triage/`)
 
-- **`plugins/variant-explorer/.claude-plugin/plugin.json`** — manifest, same shape as
-  `security-suite`'s (name, description, version `1.0.0`, author `{"name": "Scott Nixon"}`, license
-  MIT, repository/homepage URLs pointing at `plugins/variant-explorer`).
+- **`.claude-plugin/plugin.json`** — manifest, same shape as `security-suite`'s/`variant-explorer`'s
+  (name `triage`, version `1.0.0`, author, license MIT, repository/homepage pointing at
+  `plugins/triage`).
 
-- **`plugins/variant-explorer/skills/explore-variants/SKILL.md`** — the core deliverable. Procedure,
-  mapped directly to the five ACs:
-  - **Phase 1 — Gather input & validate N (AC5).** Accept spec/design question, AC (dispatch
-    `acceptance-criteria` skill if absent), and N (default 3). **N=1 refuses** with guidance to just
-    build directly (no exploration value in a single variant) rather than running a degenerate
-    1-worktree "panel." **N>6 clamps to 6** with an explicit note in the output — never silently
-    proceeds with the user's original N unclamped, never silently proceeds with N=1 unrefused.
-  - **Phase 2 — Spawn N blind builders (AC1, AC3).** Dispatch N `Agent` calls with
-    `isolation: "worktree"`, each running a new `variant-explorer:blind-builder` agent (new file,
-    below). Each dispatch prompt contains **only**: the spec + AC text (or file path) and one
-    distinct angle instruction (MVP-first / data-model-first / dependency-free, or others as the
-    spec suggests) — explicitly never another variant's angle, output, or existence, and never the
-    orchestrator's own preferences. This is the direct extension of design-it-twice's Isolation Mode
-    from "one alternative design doc" to "one alternative implementation in its own worktree." AC3's
-    verifiability ("no builder prompt contains another variant's content, verifiable from dispatch
-    logs") is satisfied structurally, the same way review-panel's PRESSURE-TEST.md verifies
-    markdown-prompt skills: by a human or `--mode=agent` harness inspecting the actual dispatch
-    prompts in the transcript — no new logging infrastructure is required, since `Agent`/`Task`
-    dispatch prompts are already visible in the session transcript.
-  - **Phase 3 — Collect results, handling failures explicitly (AC4).** A builder dispatch that
-    errors, times out, or returns "could not complete" is recorded as a **lost variant** with a
-    reason (mirrors epic-swarm's `tasks_failed: [{"id","reason"}]` shape) — the run continues with
-    the survivors, and the final report always states the original N, the lost count/reasons, and
-    the surviving count — N is never silently reduced/renumbered as if the run had only ever asked
-    for the smaller number.
-  - **Phase 4 — Judge panel (AC2).** Dispatch independent judges — modeled on CAST/SPAWN's
-    bounded-parallel, read-only-unless-noted pattern — each judge given the N surviving worktree
-    paths (not inline content) plus the spec/AC:
-    - **AC-conformance judge** (native to this plugin, no cross-plugin dependency): checks each
-      variant against every AC item, citing which item(s) it satisfies/fails.
-    - **Taste judge**: dispatches `review-panel`'s `skills/taste-review/SKILL.md` instructions
-      against each variant's diff, **only if `TASTE.md` exists at the repo root** — this is not a
-      new decision, it's `TASTE-FORMAT.md`'s existing binding commitment (see Current Behavior #3
-      above). If absent, every scorecard **omits the taste axis and says so explicitly** — Coverage
-      Honesty, not silent omission.
-    - **Simplicity judge**: dispatches `review-panel`'s `skills/ponytail-review/SKILL.md` lens
-      against each variant, reusing its exact `L<line>: <tag> <what>. <replacement>.` output shape.
-    Each judge scores every surviving variant along its one axis; the skill then assembles the
-    combined **ranked shortlist**, one scorecard per variant, each citing ≥1 AC item by ID (AC1's
-    concrete pass bar) and, when applicable, the taste clause text verbatim (AC2's concrete pass
-    bar, matching `taste-review`'s own "quote the clause, not a paraphrase" rule).
-  - **Phase 5 — Human pick & cleanup.** Present the ranked shortlist; the human picks a winner.
-    Because `isolation: "worktree"` only auto-cleans a worktree when the agent made **no** changes
-    (every surviving builder here, by definition, did make changes), losing worktrees are **not**
-    auto-removed — this skill must explicitly run `git worktree remove <path>` (+ delete the
-    variant's branch) for every non-winning worktree, **after** an explicit "harvest ideas from
-    runners-up?" prompt per the task brief, never before it and never silently.
-  - **Non-local execution note** (documented recipe only, not implemented in v1): describe how a
-    Foundry/Reck run would map Phase 2's N builder dispatches onto N PAS tasks in containers
-    instead of local `Agent` worktree dispatch — same pattern as CAST's/Fresh-Eyes' documented
-    no-`Task` fallback sections, i.e. prose only, no code.
+- **`skills/triage-spine/SKILL.md`** — the core deliverable, the one loop, mapped to the ACs:
+  - **Intake.** Accept one or more detector-emitted items. Validate each against the contract
+    `{source, severity, evidence, affected-paths, suggested-loop}` before doing anything else
+    (AC5): any item failing validation is rejected with a **named field error**, and the spine never
+    processes a malformed item further.
+  - **Zero-findings boundary (AC6).** A detector run that produces zero valid items short-circuits
+    here: emit a one-line "clean" log, file no bead, invoke no panel — no other side effect.
+  - **File bead.** For each valid item, `bd create` a bead, generating AC via the
+    `acceptance-criteria` skill per repo convention (AC1's concrete pass bar: "bead exists, AC
+    present, item validates against contract").
+  - **Reproduce E2E, before any fix.** Per CLAUDE.md's project-wide bug-fix rule and AC4's explicit
+    ordering requirement: for prod-errors items in particular (log line + stack trace in `evidence`),
+    the spine must attempt E2E reproduction and that step must precede the diagnose/fix step in the
+    transcript/bead trail — this is a hard ordering constraint, not just a recommendation.
+  - **Diagnose + fix via PAS.** Produce a fix diff (references `pas-pipeline` skill/launch
+    mechanics already documented elsewhere in the repo — not reinvented here).
+  - **Gate.** Dispatch `/review-panel <fix-branch> --mode=agent`, parse the returned JSON `status`.
+    Branch on all four values exactly per OQ4 (AC2): `converged` → report ready-to-merge;
+    `escalated` → do **not** block/park; build the sovereignty annotation from `convergence.
+    escalation.sovereignty_finding_ids[]` + matching `findings[]` detail and surface it in both the
+    bead and the PR body (AC3); `circuit_broken`/`error` → park the bead for a human.
 
-- **`plugins/variant-explorer/agents/blind-builder.md`** — new agent (cannot reuse
-  `clean-room-alternative` as-is: that agent's tool grant is `Read, Grep, Glob` only and it produces
-  a design doc, never code). Needs `Read, Write, Edit, Bash, Grep, Glob` (it must actually implement
-  a variant inside its assigned worktree) plus the same no-hedging/no-sibling-awareness isolation
-  rules as `clean-room-alternative`, adapted from "one complete independent design" to "one complete
-  independent implementation satisfying the given AC."
+- **`skills/detectors/lib-upgrades/SKILL.md`** — v1 detector #1: scans a manifest for
+  outdated/CVE-flagged dependencies, emits one triage item per finding (AC1's fixture target).
 
-- **`plugins/variant-explorer/agents/variant-judge.md`** (or three thin agent files if the AC/taste/
-  simplicity axes warrant separate frontmatter/tool grants — taste and simplicity axes are read-only
-  `Read, Grep, Glob` since they wrap existing review-panel skills; the AC-conformance axis may want
-  `Bash` if "does it pass" requires actually running anything the AC specifies, e.g. tests) — scores
-  variants, never edits them.
+- **`skills/detectors/prod-errors/SKILL.md`** — v1 detector #2: consumes log-source input
+  (Sentry-shaped; the integration itself is a config detail, not a code dependency), emits triage
+  item(s) whose `evidence` field carries the stack trace verbatim (AC4).
 
-- **`plugins/variant-explorer/commands/explore-variants.md`** — thin entry point mirroring
-  `plugins/review-panel/commands/review-panel.md`'s convention exactly: parse `$ARGUMENTS` into
-  spec/question + N (+ optional AC path), then hand off to the skill — implements none of the
-  procedure itself.
+- **Detector registry artifact.** The task states "the registry design (one spine, five detectors)
+  is the deliverable; filling all five is not" — this needs a concrete, small artifact (most likely
+  a `references/detector-registry.md` under `skills/triage-spine/`, or a table inside `triage-spine/
+  SKILL.md` itself) enumerating all five detector slots: `lib-upgrades` and `prod-errors`
+  implemented; `system-upgrades`, `iac-drift`, `security-advisory-sweeps` registered as explicit
+  stubs (one-line "not yet implemented" placeholder each, same shape so a future phase can fill
+  them in without restructuring the registry).
 
-- **`plugins/variant-explorer/README.md`** — sub-plugin readme, same shape as
-  `security-suite/README.md` (What's Included / When to Use / Common Use Cases / Quick Start).
+- **`docs/foundry-recipes.md`** — schedule-wiring documentation: each detector as a periodic
+  Foundry check, the panel gate as the mandatory post-fix step (adapting dual-mode-contract.md's
+  existing `foundry.yaml` example), **plus** Phase 1b's `plan-security-review` pre-build gate and
+  Phase 3c's `grill-my-taste --distill` reminder-only nudge, consolidating "what Foundry runs" in
+  one place as the task explicitly requires. No `foundry.yaml` file exists anywhere in this repo
+  yet, so this is pure documentation with no live file to wire against.
 
-- **`plugins/variant-explorer/tests/PRESSURE-TEST.md`** (+ a `tests/fixtures/<scenario>/` per AC,
-  mirroring review-panel's fixture-per-scenario convention) — since `explore-variants/SKILL.md` is a
-  non-executable markdown prompt file exactly like every review-panel skill, its "tests" are
-  documented live-dispatch demonstrations (a concrete spec+AC fixture, expected N worktrees/
-  scorecards/shortlist), not an automated pytest suite. **Exception**: if any actual helper script
-  gets introduced (e.g., a small worktree-cleanup bash/python helper), that piece is real code and
-  should get real `pytest`/bash test coverage the way `hooks/tests/test_data_layer_guard.py` did for
-  scc-d0u — but the current design above doesn't obviously need one, since `isolation: "worktree"`
-  and `git worktree remove` are used directly rather than wrapped.
+- **`README.md`** (plugin-level) — same shape as `security-suite/README.md` (What's Included / When
+  to Use / Common Use Cases / Quick Start).
+
+- **`tests/PRESSURE-TEST.md`** + **`tests/fixtures/<scenario>/`** — since every skill here is a
+  non-executable markdown-prompt file (same as review-panel/variant-explorer), tests are documented
+  live-dispatch demonstrations, not a pytest suite. One fixture per AC: AC1 (fixture repo with an
+  outdated dep), AC2 (four fixtures, one per forced status), AC3 (an escalated-status fixture with a
+  sovereignty finding), AC4 (a log line with a stack trace), AC5 (a malformed/contract-violating
+  item), AC6 (a zero-findings detector run).
 
 ### Existing files to modify
 
-- **`.claude-plugin/marketplace.json`** — add one new entry (`variant-explorer`) with
-  name/source/description/version `1.0.0`/author/tags matching the new plugin.json exactly (this is
-  exactly what `scripts/verify_plugin.py` checks post-scc-d0u).
-- **`README.md`** — bump `## At a Glance`'s "Sub-plugins" row 7 → 8 (current confirmed state: 7,
-  post-scc-d0u fix, includes review-panel); add a new `### variant-explorer` subsection after the
-  existing 7 (one-line description + Agents/Commands/Skills tables), following the exact structure
-  every sibling subsection uses.
-- **No change needed**: `scripts/verify_plugin.py` (already generically walks every marketplace
-  entry as of scc-d0u) — the new plugin just needs to *follow* the `.claude-plugin/plugin.json`
-  path convention, not be special-cased by the script.
-- **No change needed**: `.gitignore` — worktrees created via the `Agent` tool's
-  `isolation: "worktree"` parameter are a runtime-managed feature, not a repo-visible scratch
-  directory this plugin creates/tracks itself (unlike epic-swarm's own `.claude/epic-swarm/`
-  checkpoint directory, which exists for a different reason — cross-session resumability that
-  variant-explorer's single-shot run doesn't need). No new `.gitignore` entry appears necessary
-  unless implementation reveals a plugin-managed scratch path; confirm this during implementation
-  rather than pre-adding an unused ignore rule.
+- **`.claude-plugin/marketplace.json`** — add one new `triage` entry (name/source/description with
+  skill counts/version `1.0.0`/author/tags), matching the new `plugin.json` exactly (this is exactly
+  what `scripts/verify_plugin.py` checks).
+- **`README.md`** — bump `## At a Glance`'s "Sub-plugins" row 8 → 9, add `triage` to the names list,
+  and add a new `### triage` subsection after the existing 8 (one-line description + Skills table),
+  following the exact structure every sibling subsection uses.
+- **No change needed**: `scripts/verify_plugin.py` — already generic; the new plugin only needs to
+  follow the `.claude-plugin/plugin.json` path convention.
 
 ---
 
 ## Risks and dependencies
 
-- **Dependency direction compliance**: variant-explorer depends on review-panel (`taste-review`,
-  `ponytail-review`) — this is explicitly sanctioned by the task brief ("Depends on review-panel to
-  score its shortlist against TASTE.md; review-panel itself stays scoped to judgment-only
-  tooling"). The reverse must never happen: review-panel must not gain any worktree-spawning/
-  execution code — that machinery stays entirely inside `plugins/variant-explorer/`. This is the
-  task's own explicit Key Constraint and must be checked during implementation (no edits to any
-  `plugins/review-panel/` file beyond reading its skills as a judge-dispatch target).
-- **Worktree cleanup is not automatic for successful builders.** The `Agent` tool only
-  auto-cleans a worktree when the agent made no changes; every variant that actually built something
-  leaves a worktree/branch that must be explicitly removed post-harvest-prompt. Getting the ordering
-  wrong (deleting before the human is asked, or never deleting at all) directly breaks the task
-  brief's explicit requirement ("after an explicit 'harvest ideas from runners-up?' prompt").
-  Confirm during implementation whether harvesting itself needs a documented procedure (e.g., "read
-  runner-up worktree X, extract idea Y, note it in final report") or is left to human judgment once
-  the shortlist is presented.
-  the shortlist is presented.
-- **AC2's absent-TASTE.md behavior is not a new design decision** — it's a pre-existing, binding
-  line in `TASTE-FORMAT.md` (Phase 3a, already merged). Implementation must honor that text exactly
-  (omit the axis, state the gap) rather than inventing new behavior (e.g., a generic simplicity-only
-  fallback score standing in for taste) — that would violate Invariant 3 (Coverage Honesty) and
-  contradict a spec commitment made in a prior, closed phase.
-- **AC3 has no new tooling need**: it's verifiable the same way every review-panel markdown-prompt
-  skill's isolation guarantee is verified today — human/`--mode=agent` transcript inspection, per
-  `tests/PRESSURE-TEST.md`'s documented pattern. Do not over-build a dispatch-logging subsystem this
-  task doesn't need.
-- **Scope discipline vs. epic-swarm**: epic-swarm's checkpoint-file/resumability machinery exists
-  for long-running, multi-wave epics that might span sessions. variant-explorer's run (spawn N,
-  wait, judge, present shortlist, cleanup) is a single synchronous operation with no epic-scale wave
-  structure — pulling in epic-swarm's checkpoint complexity would be unwarranted scope creep; only
-  its `isolation: "worktree"` dispatch mechanic and explicit-failure-list convention are directly
-  reusable.
-- **This is the Investigate step only.** No `plugins/variant-explorer/` files, no
-  `marketplace.json`/`README.md` edits have been made in this step — all deferred to the next
-  pipeline (Implement) step.
+- **Dependency direction (Invariant 2) is the single highest-risk item.** `triage → review-panel`
+  only. Triage's `SKILL.md` may invoke `/review-panel ... --mode=agent` and read `dual-mode-
+  contract.md` for its schema, but nothing in `review-panel` may import, detect, or special-case
+  triage. No edits to any file under `plugins/review-panel/` are in scope for this task.
+- **OQ4 status handling must be reproduced exactly as already resolved**, not reinvented. In
+  particular, `escalated` is expected/by-design and must never halt unattended automation, while
+  `circuit_broken`/`error` are the only two statuses that park the bead — collapsing these
+  distinctions (e.g. treating `escalated` as a park condition) would directly violate the task's own
+  resolved OQ4 decision and AC3.
+- **Sovereignty annotation must be sourced from panel finding detail**, not a bare status string —
+  the spine needs to read `convergence.escalation.sovereignty_finding_ids[]` and cross-reference the
+  matching `findings[]` entries to build a meaningful human-readable annotation for the bead and PR
+  body.
+- **AC4's ordering requirement is transcript/bead-trail-verifiable** — the SKILL.md's documented
+  procedure must state E2E reproduction as an unconditional prerequisite gate before diagnose/fix
+  for the prod-errors path (and arguably spine-wide, consistent with the project's global
+  reproduce-before-fix rule in this repo's root CLAUDE.md).
+- **Detector registry scope discipline.** Only 2 of 5 detectors get real implementations; the other
+  3 are deliberately stubs. Risk of scope creep is building out logic for the stub detectors beyond
+  a registry placeholder entry — the task is explicit that filling all five is not the deliverable.
+- **No live `foundry.yaml` exists in this repo yet** — `docs/foundry-recipes.md` is pure
+  documentation with nothing to wire against; it must not fabricate a schema that diverges from the
+  global CLAUDE.md's `foundry.yaml` schema or `dual-mode-contract.md`'s existing example.
+- **This is the Investigate step only.** No `plugins/triage/` files, and no `marketplace.json`/
+  `README.md` edits, have been made in this step — all deferred to the next pipeline (Implement)
+  step, per `pipelines/two-system-architecture.dot`'s node scope boundaries.

@@ -1,0 +1,11 @@
+{
+  "name": "triage",
+  "description": "Foundry-resident triage spine: intake → reproduce → diagnose → fix → gate loop turning detector findings into beads, E2E-reproduced fixes, and review-panel --mode=agent gated PRs (2 v1 detectors: lib-upgrades, prod-errors; registry stubbed for 3 more)",
+  "version": "1.0.0",
+  "author": {
+    "name": "Scott Nixon"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/citadelgrad/scott-cc",
+  "homepage": "https://github.com/citadelgrad/scott-cc/tree/main/plugins/triage"
+}

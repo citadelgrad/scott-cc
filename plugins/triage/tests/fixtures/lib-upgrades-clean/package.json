@@ -1,0 +1,9 @@
+{
+  "name": "triage-fixture-clean",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fixture for AC6 — a manifest with no outdated or CVE-flagged dependencies.",
+  "dependencies": {
+    "lodash": "4.18.1"
+  }
+}

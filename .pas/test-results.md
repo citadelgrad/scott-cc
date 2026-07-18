@@ -1,81 +1,99 @@
-# Test Results: scc-5hy (Phase 4 — variant-explorer plugin)
+# Test Results: scc-tsa (Phase 5 — Triage spine plugin, System 2 v1, Foundry-resident)
 
 ## Summary
 
-`plugins/variant-explorer/` is a markdown-prompt plugin (a skill + two agent definitions), not
-executable code — there is no `pytest`/`npm test` suite to run. Per this repo's "reproduce/validate
-in as close to real conditions as possible" standard, validation here means: (1) seed concrete test
-fixtures, (2) live-dispatch real `Agent` calls that exercise the actual described procedure end to
-end, (3) run the plugin's own mechanical gates, (4) write up the results with fingerprints/evidence,
-not just a pass/fail assertion. All four are done. **All 5 acceptance criteria: PASS.**
+`plugins/triage/` is a markdown-prompt plugin (a triage-spine skill + two detector skills), not
+executable code — there is no `pytest`/`npm test` suite to run. Validation here means: (1) seed
+concrete test fixtures per acceptance criterion, (2) live-dispatch real `Agent` calls that exercise
+the actual described procedure end to end with genuine side effects (`bd` mutations, real `npm
+audit`/`npm outdated` runs, real Python reproduction), (3) independently re-verify every dispatch's
+claimed side effect via direct `bd show`/`bd list`/`bd human list` rather than trusting self-reports,
+(4) run the plugin's mechanical gates, (5) write up results with fingerprints/evidence. All five are
+done. **All 6 acceptance criteria: PASS.**
 
-Full methodology, live-dispatch prompts, and per-axis judge output are in the permanent test
-artifact this task also produced: `plugins/variant-explorer/tests/PRESSURE-TEST.md`. This file is
-the pipeline-required summary; see that file for the complete write-up.
+Full methodology, fixture descriptions, and per-AC dispatch evidence are in the permanent test
+artifact this task also produced: `plugins/triage/tests/PRESSURE-TEST.md`. This file is the
+pipeline-required summary; see that file for the complete write-up.
 
 ## Fixtures created
 
-- `plugins/variant-explorer/tests/fixtures/palindrome-checker/{spec.md,ac.md}` — a small, concrete
-  spec (`is_palindrome(s: str) -> bool`) with 5 testable AC, used for the main N=3-equivalent
-  builder+judge dispatch.
-- `plugins/variant-explorer/tests/fixtures/impossible-ac/{spec.md,ac.md}` — a single, deliberately
-  unsatisfiable AC (a "pure" `paradox()` function that must return different values across two
-  identical calls), used to force a genuine `blocked` builder result to validate AC4 without an
-  artificial timeout.
+- `plugins/triage/tests/fixtures/lib-upgrades-vulnerable/` — pins `lodash@4.17.11` (real,
+  multi-advisory-flagged version) — AC1.
+- `plugins/triage/tests/fixtures/lib-upgrades-clean/` — pins `lodash@4.18.1` (real current release,
+  0 findings) — AC6. **Corrected mid-test:** originally pinned `4.17.21`, which real `npm audit`
+  showed is *still* flagged under a newer advisory; fixed to the actual unaffected version before
+  use.
+- `plugins/triage/tests/fixtures/prod-errors-repro/` — a genuine null-guard bug (`checkout.py`) +
+  matching `error.log` (3 identical traces that must collapse to 1 triage item, plus 1 distinct
+  error) — AC4.
+- `plugins/triage/tests/fixtures/malformed-batch/` — a 5-item batch exercising all 6 of Phase 1's
+  ordered validation rules (3 real violations, 2 items that correctly survive) — AC5. **Corrected
+  mid-test:** the README originally mislabeled item 4 as a violation; a live dispatch caught the
+  error by re-deriving the rules independently, and the README was fixed.
+- `plugins/triage/tests/fixtures/panel-status/` — 4 hand-crafted JSON fixtures matching
+  `review-panel`'s `dual-mode-contract.md` schema, forcing each of `converged` / `escalated` /
+  `circuit_broken` / `error` — AC2/AC3.
 
 ## Live-dispatch validation
 
-7 live `Agent` dispatches were run (methodology note: `variant-explorer:blind-builder` /
-`variant-explorer:variant-judge` weren't yet registered as live `subagent_type`s mid-session, so
-`subagent_type: "general-purpose"` was used with an explicit instruction to read and follow the
-target `.md` file — the same substitution `review-panel/tests/PRESSURE-TEST.md` used for its own
-pressure test; disclosed, not silent):
+4 live `Agent` dispatches were run (methodology note: no `triage:*` `subagent_type` was registered
+mid-session, so `subagent_type: "general-purpose"` was used with an explicit instruction to read and
+follow the target `SKILL.md` — the same substitution `variant-explorer`'s and `review-panel`'s own
+pressure tests used; disclosed, not silent). Every dispatch's claimed `bd` mutation was
+independently re-verified by this session via direct `bd show`/`bd list`/`bd human list` calls
+after the dispatch completed.
 
-1. Blind-builder Variant A (`palindrome-checker`, angle: MVP-first) → `complete`
-2. Blind-builder Variant B (`palindrome-checker`, angle: dependency-free) → `complete`
-3. Blind-builder Variant C (`impossible-ac`, angle: MVP-first) → `blocked: paradox() is logically
-   unsatisfiable for a pure, argument-free function` (worktree auto-removed — zero file changes)
-4. AC-conformance judge → both A and B PASS all 5 AC; surfaced a real tooling-dependency asymmetry
-   (A's tests require an ambient `pytest`; B's `unittest` suite is fully self-contained)
-5. Simplicity judge (ponytail-review format) → A: "Lean already. Ship."; B: 4 findings, `net: -35
-   lines possible.`
-6. Taste judge, TASTE.md absent → both variants: `axis not applicable: no TASTE.md at repo root`
-   (explicit, not silent)
-7. Taste judge, TASTE.md present (fixture placed only in the two survivor worktrees, never at the
-   real repo root) → A: clean; B: 1 Minor finding, quoting the fixture's `weak`-strength Preference
-   clause verbatim against B's `Args:`/`Returns:` docstring (correct `weak` → `Minor` severity
-   mapping per `TASTE-FORMAT.md`)
+1. **AC1** — lib-upgrades detector vs. `lib-upgrades-vulnerable/`: real `npm audit` flagged
+   `lodash@4.17.11` (multiple advisories, critical). Filed `scc-9jx` (P0, AC present) — verified.
+2. **AC5** — Phase 1 validation vs. `malformed-batch/batch.json`'s 5 items: items 1-3 rejected with
+   named field errors; items 4-5 survive Phase 1; bead filed for item 5 (`scc-9lt`, P2) — verified.
+   Caught a fixture-labeling error on item 4 (see PRESSURE-TEST.md §3).
+3. **AC4** — prod-errors detector vs. `prod-errors-repro/`: 3 identical traces collapsed into 1 item
+   (`scc-9kx`, P0); real reproduction script confirmed an exact match to the log trace; reproduction
+   note recorded on the bead with no diagnose/fix note ever added (ordering constraint intact) —
+   verified.
+4. **AC2/AC3** — Phase 6 branching vs. all 4 `panel-status/*.json` fixtures: `converged` (`scc-aci`)
+   and `escalated` (`scc-g5m`) both correctly unparked; `circuit_broken` (`scc-9b9`) and `error`
+   (`scc-cis`) both correctly parked. `bd human list` returned exactly the 2 parked beads — verified.
+   Escalated bead's sovereignty annotation sourced verbatim from the finding, not a bare status
+   echo. Found a stale `bd human <id> --reason=...` command in `SKILL.md` that doesn't exist in the
+   installed `bd` CLI; the real mechanism (`--add-label=human --notes=...`) was used and the drift
+   disclosed.
+
+AC6 (zero-findings boundary) was additionally verified via a 5th dispatch plus this session's own
+direct `npm audit`/`npm outdated` execution against the corrected `lib-upgrades-clean/` fixture:
+`found 0 vulnerabilities`, clean-log line emitted, `bd list` identical before/after (no bead filed).
 
 ## Mechanical gates
 
 - `python3 scripts/verify_plugin.py` → `OK: plugin manifests parse cleanly; versions match; hook
-  file references exist` — exit 0 (covers `variant-explorer`'s `plugin.json`/`marketplace.json`
-  version match generically, same gate scc-d0u fixed).
-- `plugin.json` / `marketplace.json` — both valid JSON, name/version match (`variant-explorer`,
-  `1.0.0`).
-- `README.md` diff — Sub-plugins count correctly bumped 7→8 (both occurrences), new
-  `### variant-explorer` section's Commands(1)/Agents(2)/Skills(1) tables match the filesystem
-  exactly.
+  file references exist` — exit 0.
+- `plugin.json` / `marketplace.json` — both valid, name/version match (`triage`, `1.0.0`).
+- `README.md` diff — Sub-plugins count correctly bumped 8→9, new `### triage` section's 3-skill
+  table matches the filesystem.
 
-## AC1-AC5 results
+## AC1-AC6 results
 
 | AC | Requirement | Result |
 |---|---|---|
-| AC1 | N=3 → 3 worktrees, 3 scorecards, ranked shortlist, each scorecard cites ≥1 AC item | **PASS** — 3 worktrees spawned; A and B produced full scorecards citing all 5 AC items each plus Simplicity/Taste findings, ranked A > B; C's blocked outcome is itself an accounted-for result, not a missing scorecard |
-| AC2 | TASTE.md handling — present → clauses referenced; absent → axis omitted, explicitly | **PASS** — both branches live-dispatched: absent → explicit `axis not applicable` for both variants; present → verbatim-quoted clause + correctly severity-mapped Minor finding on B, clean on A |
-| AC3 | Builder isolation — no builder prompt contains another variant's content | **PASS** — all 3 dispatch prompts inspected directly; each contains only its own fixture + one angle, no cross-references to siblings |
-| AC4 | Error handling — failed builder reported as lost variant, run continues with survivors, N never silently reduced | **PASS** — Variant C's `blocked` status recorded with its reason; run proceeded to judge A/B; N=3, 1 lost, 2 survivors stated explicitly, never renumbered |
-| AC5 | N=1 refuses with guidance; N>6 clamps with a note | **PASS** — confirmed by direct citation of `SKILL.md` lines 49-55 (both are pre-Phase-2 checks with mandatory explicit-reporting language, no dispatch needed since this is deterministic boundary logic) |
+| AC1 | lib-upgrades detector emits a valid item, spine files a bead with AC | **PASS** — `scc-9jx`, P0, AC present, item validates. Disclosed gap: bead's own AC understates the real safe-version threshold (needs 4.18.1, not 4.17.21) |
+| AC2 | All 4 panel statuses produce their documented bead outcome | **PASS** — 2 unparked, 2 parked, verified via `bd show` + `bd human list` |
+| AC3 | Escalated bead unparked, pipeline continues, PR carries sovereignty annotation | **PASS** — `scc-g5m` never parked; annotation drafted verbatim from the finding |
+| AC4 | Prod-error detector + E2E reproduction precedes fix | **PASS** — `scc-9kx`, real repro matching the log exactly, no fix/diagnose note ever added |
+| AC5 | Malformed items rejected with named field errors; valid siblings unblocked | **PASS** — items 1-3 rejected, items 4-5 survive, bead filed for item 5 |
+| AC6 | Zero findings → no beads, one clean log line, no panel invocation | **PASS** — after fixing a genuine fixture defect; `bd list` identical before/after |
 
 ## Cleanup
 
-Both survivor worktrees and their branches (`agent-aca69458ab1e667ba`, `agent-a0ac67197c4938b31`)
-were removed after their contents were captured in `PRESSURE-TEST.md` — `git worktree remove` +
-`git branch -d`, both clean (no unmerged-work warnings, since the agents wrote directly to the
-worktree filesystem without committing). `git worktree list` / `git branch --list
-"worktree-agent-*"` are now empty. No `TASTE.md` fixture was ever created at the real repo root
-(confirmed absent both before and after) — the taste-axis presence test used copies placed only
-inside the two ephemeral test worktrees.
+7 real test-artifact beads were created during this pressure test (`scc-9jx`, `scc-9lt`, `scc-9kx`
+from real detector runs against fixtures; `scc-aci`, `scc-g5m`, `scc-9b9`, `scc-cis` synthetic, for
+Phase 6 branching only). None were closed by their dispatches (instructed not to); all 7 were closed
+by this session with `bd close scc-9jx scc-9lt scc-9kx scc-aci scc-g5m scc-9b9 scc-cis
+--reason="PRESSURE-TEST scc-tsa — test artifact, safe to ignore"`. `scc-tsa` itself remains
+`in_progress`, untouched — closing it belongs to a later pipeline node, per the established pattern
+from `scc-5hy`. Temporary files (`/tmp/repro_scc-9kx.py`, a stray `__pycache__/`) were removed.
+`bd list` now shows the same 3 pre-existing issues (`scc-hzj`, `scc-tsa`, `scc-6lj`) as before this
+pressure test began.
 
 ## Git status at handoff
 
@@ -85,12 +103,12 @@ inside the two ephemeral test worktrees.
  M .pas/investigation.md
  M .pas/logs/two-system-architecture-e64d8f93/checkpoint.json
  M README.md
-?? plugins/variant-explorer/
+?? plugins/triage/
 ```
 
-`plugins/variant-explorer/` now includes the plugin itself (from the prior Implement step) plus
-this step's additions: `tests/fixtures/palindrome-checker/`, `tests/fixtures/impossible-ac/`,
-`tests/PRESSURE-TEST.md`. No worktree/branch residue. Per the conservative git profile, no commit
-has been made — reporting status only.
+`plugins/triage/` includes the plugin itself (from the prior Implement step) plus this step's
+additions: `tests/fixtures/{lib-upgrades-vulnerable,lib-upgrades-clean,prod-errors-repro,
+malformed-batch,panel-status}/`, `tests/PRESSURE-TEST.md`. No beads/worktree residue. Per the
+conservative git profile, no commit has been made — reporting status only.
 
 No blocking issues. Ready for the Verify step.

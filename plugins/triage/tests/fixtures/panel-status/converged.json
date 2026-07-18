@@ -1,0 +1,59 @@
+{
+  "status": "converged",
+  "rounds": 1,
+  "cast": [
+    {
+      "seat": "Correctness/Adversarial",
+      "skill": "skills/adversarial-reviewer/SKILL.md",
+      "model_tier": "top",
+      "source": "catalog",
+      "cast_rationale": "core seat, always cast"
+    }
+  ],
+  "findings": [
+    {
+      "id": "f-001",
+      "fingerprint": {
+        "file": "app/checkout.py",
+        "line": 2,
+        "normalized_title": "missing null check on payment token"
+      },
+      "severity": "Critical",
+      "confidence": 95,
+      "contributing_seats": ["Correctness/Adversarial"],
+      "evidence_quote": "token = payment[\"token\"].strip()",
+      "recommendation": "guard payment[\"token\"] for None before calling .strip()",
+      "sovereignty": null,
+      "validation": {
+        "validator_count": 1,
+        "verdict": "survives",
+        "tally": "1-0"
+      },
+      "fix": {
+        "applied": true,
+        "skipped_reason": null
+      },
+      "re_review": {
+        "regression_clean": true,
+        "coherence_clean": true
+      }
+    }
+  ],
+  "convergence": {
+    "final_round_clean": true,
+    "circuit_breaker": {
+      "tripped": false,
+      "consecutive_no_progress_rounds": 0,
+      "diagnosis": null
+    },
+    "escalation": {
+      "pending": false,
+      "sovereignty_finding_ids": []
+    }
+  },
+  "coverage": {
+    "skipped_seats": [],
+    "fallbacks_used": [],
+    "notes": []
+  }
+}

@@ -17,7 +17,7 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 | Skills | 17 | `init`, `acceptance-criteria`, `cli-design`, `delegate-first`, `python-simplifier`, `typescript-simplifier`, `karpathy-guidelines`, `property-based-testing`, `verified-implementation`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory`, `thinking-in-systems` |
 | Hooks | 4 | `terminal-bell` (Stop), `toon-post-hook` (PostToolUse), `prefer-modern-tools` (PreToolUse), `data-layer-guard` (PreToolUse) |
 | Templates | 3 | `.pre-commit-config.yaml`, `CLAUDE.md`, `AGENTS.md` |
-| Sub-plugins | 8 | `beads-epic-builder`, `browser-automation`, `research-tools`, `security-suite`, `performance-optimization`, `mutation-testing`, `review-panel`, `variant-explorer` |
+| Sub-plugins | 9 | `beads-epic-builder`, `browser-automation`, `research-tools`, `security-suite`, `performance-optimization`, `mutation-testing`, `review-panel`, `variant-explorer`, `triage` |
 
 ---
 
@@ -350,6 +350,22 @@ Parallel blind-builder variant exploration: spawns N isolated implementations ag
 | Skill | Description |
 |-------|-------------|
 | `explore-variants` | Orchestrates the panel: gathers input, validates N (refuses N=1, clamps N>6), spawns blind builders, collects results with explicit failure reporting, runs the judge panel, and hands the human a ranked shortlist. |
+
+---
+
+### triage
+
+Foundry-resident triage spine: detect → bead → reproduce → fix → gate loop turning detector findings into beads, E2E-reproduced fixes, and `review-panel --mode=agent` gated PRs.
+
+**Skills (3)**
+
+| Skill | Description |
+|-------|-------------|
+| `triage-spine` | Consumes normalized triage items from any registered detector and runs the loop — intake → reproduce → diagnose → fix → gate — filing a bead per item, reproducing the issue E2E before any fix, producing a fix diff via `pas-pipeline`, and gating it through `review-panel --mode=agent`. |
+| `detectors/lib-upgrades` | Scans a project's dependency manifest/lockfile(s) for outdated or CVE-flagged libraries and emits normalized triage items. |
+| `detectors/prod-errors` | Consumes a log/Sentry-shaped production error source and emits one normalized triage item per distinct error, stack trace carried verbatim in evidence. |
+
+Two of five detector slots (`lib-upgrades`, `prod-errors`) are implemented in v1; three (`system-upgrades`, `iac-drift`, `security-advisory-sweeps`) are registered but stubbed.
 
 ---
 

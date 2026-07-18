@@ -1,0 +1,36 @@
+[
+  {
+    "source": "lib-upgrades",
+    "severity": "Critical",
+    "affected-paths": ["package-lock.json"],
+    "suggested-loop": "bump express to >=4.19.2"
+  },
+  {
+    "source": "prod-errors",
+    "severity": "urgent",
+    "evidence": "TypeError observed in checkout path",
+    "affected-paths": ["src/checkout.ts"],
+    "suggested-loop": "guard against null token"
+  },
+  {
+    "source": "prod-errors",
+    "severity": "Important",
+    "evidence": "KeyError: 'discount_code' at app/checkout.py:10",
+    "affected-paths": "app/checkout.py",
+    "suggested-loop": "guard missing discount_code key"
+  },
+  {
+    "source": "iac-drift",
+    "severity": "Minor",
+    "evidence": "terraform plan shows drift on aws_s3_bucket.logs",
+    "affected-paths": ["infra/main.tf"],
+    "suggested-loop": "reconcile bucket policy drift"
+  },
+  {
+    "source": "lib-upgrades",
+    "severity": "Minor",
+    "evidence": "lodash@4.17.20 is one minor version behind 4.17.21, no CVE",
+    "affected-paths": ["package.json", "package-lock.json"],
+    "suggested-loop": "bump lodash to 4.17.21 and re-run the dependent test suite"
+  }
+]

@@ -1,9 +1,9 @@
-# Current Task: scc-5hy
+# Current Task: scc-tsa
 
-## Phase 4 — variant-explorer plugin (parallel blind-builder exploration)
+## Phase 5 — Triage spine plugin (System 2 v1, Foundry-resident)
 
 ### Task ID
-scc-5hy
+scc-tsa
 
 ### Status
 in_progress (started 2026-07-18)
@@ -12,46 +12,62 @@ in_progress (started 2026-07-18)
 P2
 
 ### Summary
-New standalone plugin `plugins/variant-explorer/` that spawns N blind builders in isolated git worktrees against a spec + acceptance criteria, then judges the results against AC, TASTE.md, and simplicity, producing a ranked shortlist for the human to pick from.
+New standalone plugin `plugins/triage/` implementing the triage loop: intake → reproduce → diagnose → fix → gate. Two v1 detectors (library upgrades, prod errors) with registry stubbed for three more. Every detector emits a normalized triage item that the spine turns into a bead, reproduces E2E, fixes via PAS, and gates through review-panel --mode=agent.
 
 ### Description
-New standalone plugin `plugins/variant-explorer/` (resolved OQ2: standalone, not co-located in review-panel) that spawns N blind builders in isolated git worktrees against a spec + acceptance criteria, then judges the results against AC, TASTE.md, and simplicity, producing a ranked shortlist for the human to pick from. Depends on review-panel to score its shortlist against TASTE.md; review-panel itself stays scoped to judgment-only tooling.
+New standalone plugin `plugins/triage/`, kept separate from review-panel (invariant 2: dependency direction is triage → review-panel only, never the reverse). Implements the one loop — intake → reproduce → diagnose → fix → gate — with two v1 detectors (library upgrades, prod errors) and a detector registry stubbed for three more (system upgrades, IaC drift, security-advisory sweeps). Every detector emits a normalized triage item that the spine turns into a bead, reproduces E2E, fixes via PAS, and gates through review-panel --mode=agent.
 
 ### Design Details
 
-New skill: `plugins/variant-explorer/skills/explore-variants/SKILL.md`.
+Plugin layout:
+```
+plugins/triage/
+├── .claude-plugin/plugin.json
+├── skills/
+│   ├── triage-spine/SKILL.md        # the one loop: intake → reproduce → diagnose → fix → gate
+│   └── detectors/
+│       ├── lib-upgrades/SKILL.md    # v1 detector
+│       └── prod-errors/SKILL.md     # v1 detector (log/Sentry-shaped input)
+└── docs/foundry-recipes.md          # schedule wiring for Foundry
+```
 
-**Procedure:**
+**Spine contract:** Every detector emits a normalized triage item: `{source, severity, evidence, affected-paths, suggested-loop}` → spine files a bead (with AC per the acceptance-criteria rule), reproduces the issue E2E first (per CLAUDE.md's bug-fix rule), produces a fix diff via PAS, and gates it through review-panel --mode=agent.
 
-1. **Input:** a design question or feature spec + acceptance criteria (generate via the acceptance-criteria skill if absent) + N (default 3, cap 6).
-2. **Spawn N blind builders** — clean-room-alternative dispatch pattern, each in an isolated git worktree, each given the spec + AC only (no sibling output, no preferred approach), each with a distinct angle prompt (e.g., MVP-first, data-model-first, dependency-free).
-3. **Judge panel:** independent judges score each variant against (a) the AC, (b) TASTE.md when present, (c) simplicity (reuse ponytail-review lens). Judges see all variants; builders never do.
-4. **Output:** ranked shortlist with per-variant scorecard citing AC items and TASTE clauses; the human picks; losing worktrees are deleted after an explicit 'harvest ideas from runners-up?' prompt.
+**Status handling (resolved — OQ4):**
+- **circuit_broken / error** — the loop itself failed; park the bead for the human.
+- **escalated** — a sovereignty flag, not a loop failure. The gate must NOT block or park the run on this status; unattended runs stay unattended by default. The bead and its PR instead carry an unmissable 'sovereignty: human sign-off required' annotation, sourced from the panel finding detail, surfaced in both the PR description and the final mode:agent output.
+- **converged** — reported ready-to-merge (auto-merge remains out of scope for v1).
 
-**Execution note:** local interactive runs dispatch via Task; Foundry/Reck runs map step 2 onto PAS tasks in containers (one task per variant). The skill documents both paths; v1 implements the local path, PAS mapping is a documented recipe only.
+**v1 detectors:** library upgrades (outdated/CVE-flagged deps from manifest scan) and prod errors (pointed at a log source; Sentry integration is a config detail, not a dependency). System upgrades, IaC drift, and security-advisory sweeps are registered in the detector registry as stubs — the registry design (one spine, five detectors) is the deliverable; filling all five is not.
+
+**Foundry wiring:** `docs/foundry-recipes.md` documents scheduling each detector as a periodic Foundry check and the panel gate as the mandatory post-fix step. Also lists Phase 1b's plan-security pass and Phase 3c's distillation prompt as schedulable entries, consolidating 'what Foundry runs' in one place.
 
 ### Key Constraints
 
-- Blocked on Phase 3 in full (3a-3d) per the spec's decompose plan: "4 is blocked on 3 (taste is the scoring function)"
-- review-panel must never absorb the worktree-spawning/execution machinery — that stays in this standalone plugin, matching OQ2's resolution
+- Blocked on Phase 1 (security seat must exist before triage feeds it dependency diffs) and Phase 2 (data-steward seat + sovereignty escalation path must exist before triage-produced migrations/IaC diffs can ship). All dependencies now satisfied.
+- Invariant 2 (dependency direction) is critical: review-panel must never import from, detect, or special-case triage — the reference direction is triage → review-panel only.
 
 ### Acceptance Criteria
 
-1. **AC1 — N=3 baseline:** A run with N=3 produces 3 worktrees, 3 scorecards, and a ranked shortlist; each scorecard cites >=1 AC item. PASS/FAIL: counts and citations present.
+1. **AC1 — Lib-upgrade detector fixture:** Lib-upgrade detector on a fixture repo with an outdated dep emits a valid triage item and the spine files a bead with AC. PASS/FAIL: bead exists, AC present, item validates against contract.
 
-2. **AC2 — TASTE.md handling:** With TASTE.md present, at least the winning scorecard references taste clauses; without it, scorecards omit the taste axis and say so. PASS/FAIL: both modes.
+2. **AC2 — End-to-end status handling:** Detector → fix diff → mode:agent panel run returns JSON whose status is one of `converged | escalated | circuit_broken | error`; bead updated per the resolved status handling. PASS/FAIL: all four statuses produce their documented bead/PR outcome (fixtures may force each).
 
-3. **AC3 — Builder isolation:** no builder prompt contains another variant's content (verifiable from dispatch logs). PASS/FAIL: prompt inspection.
+3. **AC3 — Escalated status handling:** Given a panel run returning escalated, the bead is not parked and the pipeline does not halt; the produced PR carries an explicit 'sovereignty: human sign-off required' annotation. PASS/FAIL: bead unparked, annotation present in PR body.
 
-4. **AC4 — Error handling:** a builder that fails/times out is reported as a lost variant, run continues with survivors, never silently reduced N. PASS/FAIL: explicit note.
+4. **AC4 — Prod-error detector with E2E reproduction:** Prod-error detector given a log line with a stack trace produces a triage item whose evidence includes the trace and whose spine run attempts E2E reproduction before any fix. PASS/FAIL: reproduction step precedes fix in the transcript/bead trail.
 
-5. **AC5 — Boundary cases:** N=1 refuses with guidance to build directly; N>6 clamps with a note. PASS/FAIL: both behaviors.
+5. **AC5 — Contract validation:** Error state: detector output failing contract validation is rejected with a named field error; spine never processes a malformed item. PASS/FAIL: rejection path.
+
+6. **AC6 — Boundary: zero findings:** Zero findings from a detector run → no beads filed, one-line 'clean' log, no panel invocation. PASS/FAIL: no side effects.
 
 ### Dependencies (all satisfied)
-- ✓ scc-cnx: Phase 3a — TASTE.md format
-- ✓ scc-3x5: Phase 3b — grill-my-taste skill
-- ✓ scc-4tt: Phase 3d — Taste seat (review stage)
-- ✓ scc-da0: Phase 3c — Taste feedback loop (capture + --distill)
+- ✓ scc-4xa: Phase 1a — Security seat in the review panel
+- ✓ scc-g12: Phase 1b — Plan-security pass
+- ✓ scc-bqp: Phase 2c — data-steward seat
 
 ### Parent Epic
 scc-hzj: Two-System Architecture — Security, Data Stewardship, Taste, Variants, and Triage Spine
+
+### Notes
+This is the final (Phase 5) and only remaining task in the Two-System Architecture epic. All dependencies (Phases 1–2) are satisfied. Previous phases (3–4) are also complete. The triage spine completes the architecture by consolidating automated defect detection/triage and feeding fixes through review-panel for human verification before merge.

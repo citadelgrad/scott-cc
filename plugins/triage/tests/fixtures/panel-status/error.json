@@ -1,0 +1,23 @@
+{
+  "status": "error",
+  "rounds": 0,
+  "cast": [],
+  "findings": [],
+  "convergence": {
+    "final_round_clean": false,
+    "circuit_breaker": {
+      "tripped": false,
+      "consecutive_no_progress_rounds": 0,
+      "diagnosis": null
+    },
+    "escalation": {
+      "pending": false,
+      "sovereignty_finding_ids": []
+    }
+  },
+  "coverage": {
+    "skipped_seats": [],
+    "fallbacks_used": [],
+    "notes": ["scripts/workspace unavailable and no fallback worktree mechanism succeeded — no seats could be cast, run aborted before Cast"]
+  }
+}
