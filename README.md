@@ -15,7 +15,7 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 | Commands | 4 | `delegate-first`, `gha`, `handoff`, `security-cheatsheet` |
 | Agents | 8 | `api-debugger`, `backend-architect`, `deep-research-agent`, `find-emergent-behavior`, `frontend-architect`, `refactoring-expert`, `requirements-analyst`, `system-architect` |
 | Skills | 17 | `init`, `acceptance-criteria`, `cli-design`, `delegate-first`, `python-simplifier`, `typescript-simplifier`, `karpathy-guidelines`, `property-based-testing`, `verified-implementation`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory`, `thinking-in-systems` |
-| Hooks | 3 | `terminal-bell` (Stop), `toon-post-hook` (PostToolUse), `prefer-modern-tools` (PreToolUse) |
+| Hooks | 4 | `terminal-bell` (Stop), `toon-post-hook` (PostToolUse), `prefer-modern-tools` (PreToolUse), `data-layer-guard` (PreToolUse) |
 | Templates | 3 | `.pre-commit-config.yaml`, `CLAUDE.md`, `AGENTS.md` |
 | Sub-plugins | 6 | `beads-epic-builder`, `browser-automation`, `research-tools`, `security-suite`, `performance-optimization`, `mutation-testing` |
 
@@ -110,13 +110,14 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 
 ---
 
-## Hooks (3)
+## Hooks (4)
 
 | Hook | Event | Description |
 |------|-------|-------------|
 | `terminal-bell` | `Stop` | Terminal tab indicator when Claude finishes responding. Sends a BEL character for tab/dock notification, a desktop notification with a brief summary, and supports Ghostty/iTerm2 (OSC 9) and WezTerm (OSC 777). |
 | `toon-post-hook` | `PostToolUse` | Encodes large tool responses to TOON format (a compact alternative to JSON) before they enter the context window. Reduces token consumption on verbose MCP and built-in tool outputs. No-op if `toon` is not installed. |
 | `prefer-modern-tools` | `PreToolUse` | Rewrites legacy CLI commands to faster modern equivalents at runtime: `grep`/`egrep` → `rg`, `cat` → `bat --style=plain --paging=never`, `ls` → `lsd`, `ps aux`/`ps -ef` → `procs`. Safe near-drop-ins only — tools with incompatible flag syntax (`fd`, `dust`, `choose`) are excluded and documented in CLAUDE.md for native use. |
+| `data-layer-guard` | `PreToolUse` | Warns and asks for confirmation before an Edit/Write/NotebookEdit touches a data-layer path (migrations, schemas, ORM models — default globs overridable via `.data-guard.json`) without a same-day `DATA-MODEL.md` change-log entry. Interactive/planning-time only: silently no-ops in unattended contexts (`--dangerously-skip-permissions`/`mode:agent`), deferring to the data-steward review seat for unattended enforcement. |
 
 ---
 

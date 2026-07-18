@@ -1,94 +1,99 @@
-# Test Results: scc-b56 (Phase 2b — grill-the-schema skill)
+# Test Results: scc-4rj (Phase 2d — Data-layer guard hook)
 
 ## Scope
 
-Task added one file: `plugins/review-panel/skills/grill-the-schema/SKILL.md`. No code, no
-test harness, no `package.json`/`pyproject.toml`/lint config exists anywhere under
-`plugins/review-panel/` (confirmed via directory listing) — this is a markdown skill
-definition consumed by a human/agent conversation, not executable code. The project's
-established validation convention for this plugin is live sub-agent dispatch against a
-fixture (`plugins/review-panel/tests/PRESSURE-TEST.md`, and precedent from scc-bqp's
-`.pas/test-results.md`), not an automated test suite.
+Task added `hooks/data_layer_guard.py` (PreToolUse hook) and registered it in `hooks/hooks.json`.
+No test harness exists anywhere in the repo for hooks (`tests/`, `tests/e2e/` are empty; no test
+references the sibling `prefer_modern_tools.py` either — confirmed in `.pas/investigation.md`).
+Per investigation's plan, verification is a live/manual dispatch: pipe crafted PreToolUse JSON
+payloads into the script and assert on its stdout/exit-code contract, which is the same contract
+Claude Code itself parses to decide whether to prompt — the correct, documented proxy for "would a
+confirm prompt appear," since no interactive session can be scripted here.
 
-## AC1 — Grilling session produces complete DATA-MODEL.md
+All tests ran against an isolated scratch git repo (`/tmp/data-guard-test.XXXXXX`, `git init`'d so
+`find_repo_root` resolves correctly) rather than this repo's own root, since this repo has no
+root-level `DATA-MODEL.md`/data-layer paths of its own and a real one shouldn't be fabricated at
+the repo root just to test a hook.
 
-**Fixture note:** `plugins/review-panel/tests/fixtures/orders-schema/` already contains a
-`DATA-MODEL.md`, but it predates this skill — it was produced during scc-f9k's (Phase 2a) Run
-Tests step to prove the *format doc alone* was sufficient, before `grill-the-schema` existed
-(the fixture's own `README.md` says so explicitly: "no skill yet exists — that's task 2b").
-Reusing that file would not test the skill under review. Instead, this test ran a live dispatch
-against a clean scratch copy of the fixture (`schema.sql` + `README.md` only, no
-`DATA-MODEL.md`, copied to `/tmp/grill-the-schema-test/orders-schema/` — outside the repo, not
-committed) so the produced artifact is actually attributable to the skill's instructions. The
-committed fixture's pre-existing `DATA-MODEL.md` was left untouched.
+## AC1 — Interactive session, no change-log entry → confirm prompt
 
-**Method:** Live dispatch (general-purpose sub-agent) given the actual `SKILL.md` content and
-`DATA-MODEL-FORMAT.md`, instructed to play both interviewer and human-answering roles (using
-the fixture README's two team-knowledge business rules as the "human's" ground-truth answers,
-since no live human is available in an automated test), and to produce
-`/tmp/grill-the-schema-test/orders-schema/DATA-MODEL.md`.
+**Setup:** scratch repo, no `DATA-MODEL.md`. Payload: `tool_name: Edit`, `permission_mode: default`,
+`file_path: <scratch>/migrations/0002_x.py`.
 
-**Transcript evidence the skill's actual mechanics were exercised** (not just file production):
-- Explored `schema.sql` before asking, per "if a question can be answered by exploring the
-  codebase, explore the codebase instead" — derived the three entities and translated the two
-  SQL `CHECK` constraints into testable invariants directly, without prompting the human for
-  facts already visible in the schema.
-- Cross-referenced the README's stated business rules against `schema.sql` and explicitly
-  flagged the contradiction/gap: no trigger or constraint enforces "no writes to `orders` after
-  `delivered_at`" — surfaced as the exact SQL-invisible team-knowledge invariant the skill
-  exists to catch.
-- Ran two concrete-scenario stress tests ("shipment delivered, then customer disputes the
-  charge — who writes the correction?"; "customer wants to add a unit to an already-placed
-  order — is that an UPDATE?"), each forcing a precise ownership/boundary answer rather than a
-  vague one.
-- Asked about volume/access patterns, got no signal from the fixture, and explicitly noted it
-  out of scope rather than fabricating an answer.
-- Converted every surfaced invariant into Agent-boundary language phrased as an escalation
-  trigger ("do not add an UPDATE path... without escalation"), not a design note.
+**Result:** stdout emitted
+`{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "ask", "permissionDecisionReason": "migrations/0002_x.py matches data-layer pattern '**/migrations/**' but DATA-MODEL.md has no dated Change log entry for today. ..."}}`,
+exit 0.
 
-**Resulting `DATA-MODEL.md` — section-by-section check against AC1's three required sections
-(plus the format's other required sections, which the skill also produced):**
+**PASS** — confirm prompt observed via the documented `permissionDecision: "ask"` contract.
 
-| Required section | Present | Detail |
+## AC2 — Interactive session, with today's change-log entry → silent pass
+
+**Setup:** same scratch repo, added `DATA-MODEL.md` with a `## Change log` section containing
+`- 2026-07-17 SN: added widget migration` (today's date, confirmed via `date +%Y-%m-%d`). Same
+payload as AC1 re-run.
+
+**Result:** empty stdout, exit 0.
+
+**PASS** — no prompt triggered; edit proceeds silently.
+
+## AC3 — Unattended/mode:agent context (R1) → no-op regardless of change-log state
+
+**Setup:** removed `DATA-MODEL.md` again (back to AC1's "would prompt" state), payload identical
+except `permission_mode: bypassPermissions` (the documented signal `--dangerously-skip-permissions`
+sets, per `dual-mode-contract.md`'s `mode:agent` invocation).
+
+**Result:** empty stdout, exit 0 — same as AC2, but this time despite no change-log entry existing.
+
+**PASS** — hook no-ops silently in unattended contexts; enforcement correctly deferred to the
+data-steward review seat (2c) rather than this hook, per the R1 scope resolution.
+
+## Supplementary edge-case coverage (fail-open design, glob matching, overrides)
+
+All non-blocking, all exit 0:
+
+| Case | Input | Result |
 |---|---|---|
-| Entities & relationships | ✅ | Order, Line Item, Shipment — each with Storage/Key fields/Relationships |
-| Invariants (≥1) | ✅ | 4 entries: 2 derived from SQL `CHECK` constraints, 2 derived from README team-knowledge rules, explicitly marked "Not enforced in SQL" |
-| Agent boundary | ✅ | 3 escalation-trigger rules, phrased as "do not... without escalation/sign-off" |
-| Ownership & routing (format requirement, not AC1-listed but produced) | ✅ | 5 rows, every row has both a writer and a System 1/System 2 designation |
-| Change log (format requirement) | ✅ | 3 dated, initialed (SN) entries |
+| Malformed JSON stdin | `not-json{{{` | empty stdout — fails open |
+| Irrelevant tool (`Bash`) | `tool_name: Bash` | empty stdout — ignored |
+| Non-data-layer path | `src/app.py` | empty stdout — no match |
+| `*.sql` basename match at depth | `db/create.sql` | `ask` — basename glob matches at any depth |
+| `**/schema.*` vs. explicit `prisma/schema.prisma` | `prisma/schema.prisma` | `ask`, matched under `**/schema.*` (first list match — see note below) |
+| `NotebookEdit` via `notebook_path` field | `models/explore.ipynb` | `ask` — `**/models/**` matches |
+| `.data-guard.json` override replaces defaults | `{"globs": ["*.proto"]}`, then edit `migrations/0002_x.py` | empty stdout — no longer matched |
+| `.data-guard.json` override, new pattern | same override, edit `api.proto` | `ask` — override applied |
+| `cwd` in nested subdirectory | `cwd: <scratch>/nested/deep`, edit `migrations/0002_x.py` | `ask` — repo root correctly found by walking up from `cwd` |
+| `file_path` outside repo tree | `/tmp/migrations/outside.py` (repo root = scratch dir) | empty stdout — `ValueError` on `relative_to` handled, fails open |
+| Stale (yesterday-dated) change-log entry | `- 2026-07-16 SN: ...` present, edit today | `ask` — confirms the documented "today only" recency rule (investigation.md's noted judgment call) is implemented as designed, not accidentally lenient |
 
-**AC1: PASS** — file exists with all three AC1-required sections (Entities, ≥1 Invariant, Agent
-boundary), plus the format's other required sections (Ownership & routing, Change log), all
-correctly structured per `DATA-MODEL-FORMAT.md`.
+**Informational, non-blocking:** `prisma/schema.prisma` is listed as its own glob in
+`DEFAULT_GLOBS`, but `**/schema.*` (listed earlier in the list) already matches it first, since
+`matches_data_layer` returns on first match. The explicit entry is currently dead — harmless (the
+path still correctly triggers `ask`), but worth a human's attention if the glob list is ever
+revisited; not a correctness bug so not fixed out-of-scope here.
 
-## Skill-clarity findings (informational, not blocking)
+## Static checks
 
-The dispatch flagged two points worth a human's attention, neither of which is an AC1 defect:
+- `python3 -m py_compile hooks/data_layer_guard.py` — OK.
+- `uv run ruff check hooks/data_layer_guard.py` — all checks passed.
+- `ty check hooks/data_layer_guard.py` (repo's `pyproject.toml` pins `[tool.ty.environment]
+  python-version = "3.12"`) — all checks passed.
 
-1. The skill's "one question at a time, wait for feedback" and "update inline, don't batch"
-   instructions assume a live interactive session; they don't define a fallback for
-   non-interactive/scripted validation. This is correct behavior for the skill's real use case
-   (a human-driven grilling session) — the ambiguity only surfaced because this test dispatch
-   had to simulate both sides of a conversation that normally has two participants.
-2. `plugins/review-panel/tests/fixtures/orders-schema/README.md` is now stale: it says "no
-   skill yet exists — that's task 2b," which was true when written (during scc-f9k) but is no
-   longer true now that `grill-the-schema/SKILL.md` exists. Not part of this task's Files to
-   Create list and not required by AC1 — flagged here for a human to decide whether to update it
-   in a future pass, per this task's scope-discipline note in `.pas/investigation.md` (only the
-   one new SKILL.md file is in scope).
+## Cleanup note
 
-## Security scan
+The scratch git repo lived entirely under `/tmp/data-guard-test.*`, outside this repository, and
+was left for the OS to reclaim — this session's destructive-command guard (`dcg`) blocks `rm -rf`
+unconditionally pending human approval, including for that out-of-repo temp path. Running
+`py_compile` also produced `hooks/__pycache__/` (untracked, not `.gitignore`d, blocked from
+removal by the same guard). Neither affects the diff being reviewed (both are untracked/outside the
+repo), but flagging so a human can run `rm -rf hooks/__pycache__` and clear the `/tmp` scratch dir
+if desired.
 
-`gitleaks detect --no-git` run against the scratch dispatch output
-(`/tmp/grill-the-schema-test/`, ~5.4 KB): **no leaks found**. This scratch directory is outside
-the repo and was not committed; it was deleted after this write-up was authored.
+## Acceptance criteria summary
 
-## Fixture/artifact summary
+| AC | Description | Result |
+|---|---|---|
+| 1 | Interactive, no change-log entry → confirm prompt | PASS |
+| 2 | Interactive, with today's change-log entry → silent | PASS |
+| 3 | Unattended (`bypassPermissions`) → no-op regardless | PASS |
 
-- No new fixture files added to the repo — the existing `orders-schema` fixture
-  (`schema.sql` + `README.md`) was reused as-is, per `.pas/investigation.md`'s assessment.
-  Confirmed via `git status --porcelain` on the fixture directory: no changes.
-- One scratch artifact produced and reviewed outside the repo
-  (`/tmp/grill-the-schema-test/orders-schema/DATA-MODEL.md`), then discarded — not committed,
-  matching the task's Invariant-5-adjacent scope discipline (this Run Tests step should not add
-  a second `DATA-MODEL.md` to the committed fixture).
+All 3 acceptance criteria PASS. No blocking issues found.
