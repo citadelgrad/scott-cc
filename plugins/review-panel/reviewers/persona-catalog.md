@@ -260,6 +260,45 @@ ambiguous whether the signal is present, cast the seat.
   will false-positive-fail on the next refactor). Scoped narrowly to diffs that actually touch
   test files, since the seat has nothing to evaluate otherwise.
 
+### Data Steward
+
+- **Casts:** `skills/data-steward/SKILL.md`
+- **Cast-when (fail-closed):** the diff touches migration files, ORM/model definitions, schema
+  files (`*.sql`, `schema.*`, `prisma/`, `alembic/`, `migrations/`, etc.), serialization formats,
+  or any file `DATA-MODEL.md` maps an entity to (see `formats/DATA-MODEL-FORMAT.md`'s "Entities &
+  relationships" / "Ownership & routing" sections). Per the catalog's global fail-closed rule,
+  ambiguity about whether a file is data-layer resolves to casting.
+- **Model tier:** Top-tier — a deviation from the "mid-tier unless a specific seat's entry explains
+  a deviation" default. Justification: migration and schema mistakes are high-blast-radius and
+  often irreversible (data loss/corruption, outage-causing locks), the same asymmetric-cost
+  judgment that already justifies top-tier for Security/Correctness/Fresh-Eyes above — a weaker
+  model is more likely to miss a destructive migration or a subtle Agent-boundary crossing than to
+  miss a style nit.
+- **Notes:**
+  - Read-only, like `domain-modeling` — reports findings, does not edit `DATA-MODEL.md` or the
+    diff itself. `DATA-MODEL.md` is a human-owned artifact (see its format doc); this seat may
+    recommend edits but never makes them.
+  - **Sovereignty marker:** findings may carry an optional `sovereignty: human-required` field (a
+    contract extension beyond the standard Critical/Important/Minor shape, documented in
+    `skills/data-steward/SKILL.md`'s Output Contract) when the diff crosses a `DATA-MODEL.md` Agent
+    boundary entry, or when `DATA-MODEL.md` is absent while the diff changes schema semantics. The
+    orchestrator's FIX stage must never auto-resolve a sovereignty-marked finding (see
+    `references/fix-and-rereview.md`'s "Sovereignty guard"), and CONVERGE cannot report a clean
+    round while one remains unresolved (see `references/converge-and-pipeline.md`'s `escalated`
+    status).
+  - **Missing-`DATA-MODEL.md` fallback:** the seat still casts on schema/migration diffs even when
+    no `DATA-MODEL.md` exists in the repo — its file-pattern triggers don't depend on the file's
+    presence. When absent, it emits a sovereignty-marked finding recommending the user run
+    `grill-the-schema` to create one, phrased as a documentation pointer (mirroring the Security
+    seat's missing-plugin fallback template above), and states explicitly that `grill-the-schema`
+    (`skills/grill-the-schema/SKILL.md`) may not be installed in this session rather than silently
+    assuming it ran — coverage honesty, same rule as every other seat in this catalog.
+  - This seat is a hard prerequisite for Phase 5 (the Foundry-resident triage spine): triage-
+    produced migrations must never ship with no data-steward seat and no sovereignty escalation
+    path. It does not replace the data-layer guard hook (a separate, interactive-only pre-write
+    mechanism, out of this seat's scope) — this seat is the sole mechanism for *unattended*
+    sovereignty enforcement, since the hook no-ops in unattended runs.
+
 ---
 
 ## Excluded from Individual Casting (left to `design-review` funnel or live-scan)
@@ -315,6 +354,7 @@ is allowed to add.
 | Change-Trajectory | `code-evolution` | Diff modifies pre-existing code | Mid-tier |
 | Design-Alternatives | `design-it-twice` | New class/module/API/architecture with no alternatives-considered evidence | Mid-tier (top-tier for its internal fresh-design dispatch) |
 | Test-Design Quality | `tdd` (Philosophy section only) | Diff adds or modifies test files | Mid-tier |
+| Data Steward | `data-steward` | Diff touches migrations/ORM/schema/serialization files or a DATA-MODEL.md-mapped path | Top-tier |
 
 **Fail-closed reminder:** any ambiguity in the "Cast-when" column above resolves to casting the
 seat, not skipping it.

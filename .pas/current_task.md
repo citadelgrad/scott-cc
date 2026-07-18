@@ -1,49 +1,102 @@
-# Current Task: scc-f9k
+# Current Task: scc-bqp
 
-## Phase 2a — DATA-MODEL.md format (shared contract)
+## Phase 2c — data-steward seat (review stage, blocking, with sovereignty escalation)
 
 ### Task ID
-scc-f9k
+scc-bqp
 
 ### Status
-IN_PROGRESS
+in_progress
+
+### Priority
+P1
 
 ### Summary
-Define the shared format for DATA-MODEL.md, sibling of CONTEXT-FORMAT.md, establishing it as the implementation-detail record for data — in explicit contrast to CONTEXT.md, which is a glossary that forbids implementation detail. This format is the foundation the grill-the-schema skill (2b), the data-steward seat (2c), and the data-layer guard hook (2d) all read from or write to.
+New risk-triggered, read-only review seat (like domain-modeling) that checks diffs touching migrations, ORM/schema files, or serialization formats against DATA-MODEL.md's invariants and Agent boundary, plus a migration-safety checklist. Extends the reviewer-output contract with an optional sovereignty marker that FIX must never auto-resolve, mechanically enforced by a post-FIX assertion step.
 
 ### Description
-New file: `plugins/review-panel/formats/DATA-MODEL-FORMAT.md`
 
-**Required Sections:**
-- Entities & relationships (with storage mapping)
-- Invariants (what must never be violated)
-- Ownership & routing (which system writes what)
-- Agent boundary (decisions agents may not revisit without escalation)
-- Change log (dated, human-initialed)
+#### New Seat Entry
+- Add to `plugins/review-panel/reviewers/persona-catalog.md` under Risk-Triggered Seats
+- Casts: new skill `plugins/review-panel/skills/data-steward/SKILL.md` (read-only, like domain-modeling)
 
-**Key Requirements:**
-- **Explicit contrast with CONTEXT.md**: must be documented in the format file. CONTEXT.md is a glossary and forbids implementation detail; DATA-MODEL.md is exactly the implementation-detail record for data. Cross-link both files' formats to each other with this distinction.
-- **Cross-system contract declaration**: Explicitly declare DATA-MODEL.md as a cross-system contract: System 2 fixes (migrations in a library upgrade, IaC data-store changes) are bound by it identically to System 1 changes.
+#### Cast-When (fail-closed)
+Triggered when diff touches:
+- Migration files
+- ORM/model definitions
+- Schema files (*.sql, schema.*, prisma/, alembic/, migrations/, etc.)
+- Serialization formats
+- Any file DATA-MODEL.md maps an entity to
 
-### Design Notes
-This format establishes the contract that three downstream tasks depend on:
-- grill-the-schema skill (2b) uses it to elicit schema details from the human
-- data-steward seat (2c) uses it to block/escalate sovereignty violations
-- data-layer guard hook (2d) uses it to enforce integrity across upgrades
+#### Model Tier
+top-tier
 
-Invariant 5 (human artifacts are human-owned) applies: DATA-MODEL.md is written through grilling sessions with the human; agents may propose edits but FIX never auto-modifies it (enforced mechanically in task 2c via the post-FIX assertion step).
+#### Skill Procedure
+1. Check the diff against DATA-MODEL.md (invariants, agent boundary)
+2. Check against migration-safety checklist:
+   - Reversibility/down-path
+   - Expand→migrate→contract sequencing
+   - Backfill strategy and volume
+   - Lock behavior
+   - Index-creation strategy
+   - Nullable-then-tighten
+   - Dual-write windows
+
+#### Sovereignty Escalation (Contract Extension)
+Findings keep the standard Critical/Important/Minor shape, plus optional marker `sovereignty: human-required` when:
+- Diff crosses the Agent boundary section of DATA-MODEL.md
+- DATA-MODEL.md is absent while the diff changes schema semantics
+
+#### Orchestrator Handling
+**FIX stage**: Never auto-fixes sovereignty-marked findings (R2, mechanically enforced)
+- Add post-FIX assertion step checking every sovereignty-marked finding's target file
+- Fails the round loudly if file changed anyway (rather than proceeding silently)
+- Lives alongside FIX stage in `fix-and-rereview.md`
+
+**CONVERGE**: Cannot report clean round while unresolved sovereignty findings exist
+- Interactive mode: explicit human sign-off request
+- mode:agent: emits top-level status `escalated` (extends converged|circuit_broken|error status)
+
+**Unattended consumption (OQ4)**: `escalated` must never block/park consuming automation (Phase 5 Foundry gate)
+- Unattended runs stay unattended by default
+- Gate's job is to make flag impossible to miss (surfaced in PR description + final mode:agent output)
+- Data-layer guard hook (2d) out of scope per R1
+
+#### Files to Edit
+- `skills/review-panel/references/fix-and-rereview.md`
+- `references/converge-and-pipeline.md`
+- `references/dual-mode-contract.md`
+- `references/merge-and-validate.md` (marker passes through dedupe untouched)
 
 ### Acceptance Criteria
-Grilling session on a fixture repo with an orders schema produces a DATA-MODEL.md containing at least entities, one invariant, and an Agent boundary section. PASS/FAIL: file exists with all required sections (verified indirectly via task 2b's grilling flow, but the format itself must define and require these sections).
 
-### Blocking
-- scc-bqp (Phase 2c — data-steward seat)
-- scc-b56 (Phase 2b — grill-the-schema skill)
-- scc-4rj (Phase 2d — Data-layer guard hook)
+1. **Destructive migration test**: Panel run on diff adding destructive migration (drop column with data) yields data-steward finding at Critical with migration-safety principle named
+   - PASS/FAIL: finding present, severity Critical
 
-### Files to Create/Modify
-- `plugins/review-panel/formats/DATA-MODEL-FORMAT.md` (new)
-- Cross-link to CONTEXT-FORMAT.md with explicit contrast
+2. **Agent boundary violation test**: Panel run on diff violating DATA-MODEL.md Agent-boundary entry ends 'escalated' (agent mode) / explicit sign-off request (interactive); FIX did not modify the migration
+   - PASS/FAIL: status + untouched file
 
-### Applicable Invariants
-- Invariant 5: Human artifacts are human-owned (grilled, never auto-modified)
+3. **Fault injection test**: FIX's underlying model attempts to touch sovereignty-marked finding's target file anyway; post-FIX assertion step fails round loudly with explicit sovereignty-violation message
+   - PASS/FAIL: round fails, message names violated finding
+
+4. **Non-data-layer diff test**: Diff not touching data-layer paths; seat not cast
+   - PASS/FAIL: absent from Cast
+
+5. **Missing DATA-MODEL.md boundary test**: Repo with no DATA-MODEL.md at all; seat still casts on schema diffs and emits sovereignty finding recommending grill-the-schema
+   - PASS/FAIL: finding present
+
+### Dependencies
+- Depends on: ✓ scc-f9k (Phase 2a — DATA-MODEL.md format)
+- Blocks: ← scc-tsa (Phase 5 — Triage spine plugin)
+
+### Key Constraints
+- This is the sole mechanism for unattended sovereignty enforcement (per R1 — 2d hook no-ops unattended)
+- Hard prerequisite for Phase 5 (R3: Phase 5 is blocked on Phase 2)
+- No window where triage-produced migrations ship with no data-steward seat and no sovereignty escalation path
+- R2 (mechanical post-FIX assertion) is different concern from OQ4 (giving humans room to judge legitimate escalation) — R2 catches FIX doing something it was never allowed to do at all
+
+### Phase
+Phase 2c of the Two-System Architecture (Phase 1 → 2 → 3 → 4 → 5 build order)
+
+### Parent Epic
+scc-hzj: Two-System Architecture — Security, Data Stewardship, Taste, Variants, and Triage Spine

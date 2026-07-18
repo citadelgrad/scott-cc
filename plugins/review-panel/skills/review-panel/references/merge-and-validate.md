@@ -103,6 +103,15 @@ contributing seat assigned if they disagree), the evidence quote, and the origin
 text. Findings at confidence 0 are excluded from what VALIDATE receives (per Step 2) but retained
 in the run's internal record.
 
+**Sovereignty marker passes through untouched.** A finding carrying `sovereignty: human-required`
+(currently emitted by the data-steward seat, see `skills/data-steward/SKILL.md`'s Output Contract)
+keeps that marker through fingerprinting and dedup exactly as-is — it is not part of the fingerprint
+key `(file_path, line_bucket, normalized_title)` and never influences fingerprint matching. If two
+or more seats report fingerprint-matching findings and any one of them carries the marker, the
+merged finding keeps it (the marker is a logical OR across contributing seats, not something that
+needs unanimous agreement — a single seat correctly identifying a sovereignty boundary is enough).
+MERGE must not strip, downgrade, or silently drop this field while deduplicating.
+
 ---
 
 ## VALIDATE
@@ -179,3 +188,11 @@ VALIDATE emits the final validated findings list — every finding that survived
 challenge(s) — annotated with its confidence anchor, severity, evidence quote, and (for
 transparency in the final report) how many validators checked it and the verdict tally. This list
 is FIX's entire input.
+
+The `sovereignty` marker (see MERGE Step 5) carries through VALIDATE unchanged as well — a
+validator judges whether the finding's underlying claim is real (survives/refuted), not whether the
+sovereignty marker is warranted; VALIDATE has no authority to add, remove, or reinterpret that
+field. A sovereignty-marked finding that is REFUTED is dropped like any other refuted finding (the
+marker doesn't grant immunity from validation); one that SURVIVES keeps the marker into FIX, where
+[fix-and-rereview.md](fix-and-rereview.md)'s dispatch contract and post-FIX sovereignty guard take
+over.
