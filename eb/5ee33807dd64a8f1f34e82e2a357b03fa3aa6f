@@ -1,0 +1,82 @@
+.pas/investigation.md
+  s_11b462e7a44c0c::t_65e500d0aea45c 1-177
+plugins/review-panel/tests/fixtures/auth-token-service/after.ts
+  s_969bfc5d3019e2::t_1469b3096d1b0a 1-28
+plugins/review-panel/tests/fixtures/auth-token-service/auth-clients.ts
+  s_969bfc5d3019e2::t_3d90bb257cbe80 1-23
+.pas/test-results.md
+  s_b06610723ae4b0::t_49e4ede30121aa 1-414
+.pas/current_task.md
+  s_68931c0cbef9ac::t_b0653b47e6a122 1-41
+plugins/review-panel/tests/fixtures/auth-token-service/before.ts
+  s_194d89e3234cef::t_2d22fad1822109 27-29
+  s_969bfc5d3019e2::t_70850550c2eac2 1-26,30-31
+plugins/review-panel/tests/fixtures/auth-token-service/diff.patch
+  s_194d89e3234cef::t_e88639b8080122 1,15,35-37
+  s_969bfc5d3019e2::t_901915bd1c8922 2-6,8,10-11,13-14,16,18-33,38-42
+  s_18494144f76fd8::t_43b005cb3e8955 7,9,12,17,34
+plugins/review-panel/reviewers/persona-catalog.md
+  s_969bfc5d3019e2::t_05c0513f4074e6 312
+  s_969bfc5d3019e2::t_6963183b753424 133-175
+  s_969bfc5d3019e2::t_7cee958b81e7aa 61-67
+plugins/review-panel/skills/review-panel/references/cast-and-spawn.md
+  s_969bfc5d3019e2::t_247f497eccaa04 87-89
+  s_969bfc5d3019e2::t_8cd4ade4a02508 166-168
+  s_969bfc5d3019e2::t_2e0b881202f287 50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "eb5ee33807dd64a8f1f34e82e2a357b03fa3aa6f",
+  "prompts": {},
+  "sessions": {
+    "s_11b462e7a44c0c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f23cdd7d-1d33-4c89-a2a2-cd46eb591186",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_18494144f76fd8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "026a869a-dcc5-4491-b6de-ec22dc226e46",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_194d89e3234cef": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4f0476ae-587c-404d-ae64-d07e8cbd06e2",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_68931c0cbef9ac": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f222cd41-f520-40af-a04e-37a06c9a438b",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_969bfc5d3019e2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "006bf891-1676-42c1-b80f-3f103ca30781",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_b06610723ae4b0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "deaf37be-5c25-483b-9e56-a2e000559869",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
