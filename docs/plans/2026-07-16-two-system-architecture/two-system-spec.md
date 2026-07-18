@@ -1,6 +1,6 @@
 # Two-System Architecture — SPEC
 
-**Status:** Draft — pending agreement, then decompose to beads, then Reck/PAS build
+**Status:** All decisions recorded (2026-07-17) — ready to decompose to beads, then Reck/PAS build
 **Date:** 2026-07-16
 **Owner:** Scott
 **Pairs with:** [two-system-prd.md](./two-system-prd.md)
@@ -57,8 +57,9 @@ this repo. The catalog documents a gap that is already filled.
     (adversarial-reviewer Scope item 2 + explicit coverage-gap note) — verbatim reuse
     of the existing fallback text.
   - Update the Seat Summary Table row accordingly.
-- `plugins/review-panel/agents/` — **no vendoring in this phase** unless Open Question
-  OQ1 resolves to "vendor" (air-gap constraint).
+- `plugins/review-panel/agents/` — **no vendoring.** OQ1 resolved to keep this a
+  cross-plugin reference (see Decisions on open questions, below) — revisit only if
+  an air-gapped deploy actually materializes.
 - Seat output must conform to the Critical/Important/Minor + verdict shape in
   `contracts/reviewer-output.md` so MERGE/VALIDATE consume it with zero special-casing.
   If `security-engineer.md`'s output section needs a conformance note, add it there.
@@ -158,17 +159,27 @@ flows? authn/authz surface changed? secrets introduced? third-party deps added?
   `sovereignty: human-required` on a finding when the diff crosses the Agent boundary
   section of `DATA-MODEL.md` or `DATA-MODEL.md` is absent while the diff changes
   schema semantics. Orchestrator handling:
-  - FIX stage **never auto-fixes** sovereignty-marked findings.
+  - FIX stage **never auto-fixes** sovereignty-marked findings. **Mechanically
+    enforced, not just documented (resolved — R2):** a post-FIX assertion step checks
+    every sovereignty-marked finding's target file and fails the round loudly if it
+    changed anyway, rather than proceeding silently. Lives alongside the FIX stage in
+    `fix-and-rereview.md`.
   - CONVERGE cannot report a clean round while unresolved sovereignty findings exist;
     interactive mode surfaces them as an explicit human sign-off request;
     `mode:agent` emits top-level status `escalated` (extends the
-    `converged | circuit_broken` status set in
+    `converged | circuit_broken | error` status set in
     `references/dual-mode-contract.md`).
+  - **Unattended consumption (resolved — OQ4).** `escalated` must never cause a
+    consuming automation (the Foundry gate, Phase 5) to block or park the run —
+    unattended runs stay unattended by default. The gate's job is to make the flag
+    impossible to miss: surfaced in the PR description and the final `mode:agent`
+    output, not used to stop the pipeline. The data-layer guard hook (2d) is out of
+    scope for this entirely — see 2d's resolved scope (R1).
   - Files to edit: `skills/review-panel/references/fix-and-rereview.md`,
     `references/converge-and-pipeline.md`, `references/dual-mode-contract.md`,
     `references/merge-and-validate.md` (marker passes through dedupe untouched).
 
-### 2d. Data-layer guard hook (mechanical negation)
+### 2d. Data-layer guard hook (mechanical negation, interactive-only)
 
 - New `hooks/data_layer_guard.py` registered as a PreToolUse hook in `hooks/hooks.json`
   (core plugin, alongside `prefer_modern_tools.py`).
@@ -178,6 +189,14 @@ flows? authn/authz surface changed? secrets introduced? third-party deps added?
   `.data-guard.json` in the repo root). On match: warn-and-confirm (hook exit code
   prompting), with an allow flag once a `DATA-MODEL.md` change-log entry for the
   current work exists. Never hard-fail CI — this is a developer-loop guard.
+- **Scope (resolved — R1): interactive/planning-time only, not an unattended
+  enforcement point.** A warn-and-confirm hook needs a human to answer it, so it makes
+  no sense as an enforcement mechanism for unattended PAS/Foundry runs. The hook
+  detects an unattended/no-TTY (or `mode:agent`) context and no-ops — documented
+  behavior, not a silent accident — deferring entirely to the data-steward review seat
+  (2c) for sovereignty enforcement in that context. This makes the review seat's
+  `escalated` status, and Phase 5's Foundry consumption of it (OQ4), the sole
+  mechanism for unattended sovereignty enforcement — not one of two.
 
 **Acceptance criteria (phase 2).**
 
@@ -189,11 +208,20 @@ flows? authn/authz surface changed? secrets introduced? third-party deps added?
   **PASS/FAIL:** finding present, severity Critical.
 - Panel run on a diff violating a `DATA-MODEL.md` Agent-boundary entry ends
   `escalated` (agent mode) / explicit sign-off request (interactive); FIX did not
-  modify the migration. **PASS/FAIL:** status + untouched file.
+  modify the migration, verified by the post-FIX assertion step (R2). **PASS/FAIL:**
+  status + untouched file.
+- Fault injection: FIX's underlying model attempts to touch a sovereignty-marked
+  finding's target file anyway. The post-FIX assertion step fails the round loudly
+  with an explicit sovereignty-violation message rather than proceeding.
+  **PASS/FAIL:** round fails, message names the violated finding.
 - Diff not touching data-layer paths: seat not cast. **PASS/FAIL:** absent from Cast.
-- Hook: an Edit to `migrations/0002_x.py` without a DATA-MODEL change-log entry
-  triggers the confirm prompt; the same edit after adding the entry passes silently.
-  **PASS/FAIL:** both behaviors observed.
+- Hook, interactive session: an Edit to `migrations/0002_x.py` without a DATA-MODEL
+  change-log entry triggers the confirm prompt; the same edit after adding the entry
+  passes silently. **PASS/FAIL:** both behaviors observed.
+- Hook, unattended/`mode:agent` context (R1): the same Edit does not trigger a confirm
+  prompt — the hook no-ops and the round proceeds to the data-steward review seat for
+  enforcement instead. **PASS/FAIL:** no prompt triggered; seat cast as normal on the
+  resulting diff.
 - Boundary: repo with no `DATA-MODEL.md` at all — seat still casts on schema diffs and
   emits a sovereignty finding recommending `grill-the-schema`. **PASS/FAIL:** finding
   present.
@@ -263,9 +291,10 @@ flows? authn/authz surface changed? secrets introduced? third-party deps added?
 
 ## Phase 4 — Variants (parallel exploration)
 
-- New skill `plugins/review-panel/skills/explore-variants/SKILL.md` *or* standalone
-  plugin — see OQ2. Spec assumes a skill co-located with the other plan-stage tooling;
-  moving it is a packaging decision, not a design change.
+- New standalone plugin `plugins/variant-explorer/` with skill
+  `skills/explore-variants/SKILL.md` (resolved — OQ2: standalone, not co-located in
+  review-panel). Depends on review-panel to score its shortlist against `TASTE.md`;
+  review-panel stays scoped to judgment-only tooling.
 - Procedure:
   1. Input: a design question or feature spec + acceptance criteria (generate via
      `acceptance-criteria` skill if absent) + N (default 3, cap 6).
@@ -317,9 +346,20 @@ plugins/triage/
   `{source, severity, evidence, affected-paths, suggested-loop}` → spine files a bead
   (with AC per the acceptance-criteria rule), reproduces the issue E2E first (per
   CLAUDE.md bug-fix rule), produces a fix diff via PAS, and gates it through
-  `review-panel --mode=agent`. `escalated` or `circuit_broken` panel results park the
-  bead for the human; `converged` results are reported ready-to-merge (auto-merge is
-  out of scope for v1).
+  `review-panel --mode=agent`.
+  - **Status handling (resolved — OQ4):**
+    - `circuit_broken` / `error` — the loop itself failed; park the bead for the human.
+    - `escalated` — a sovereignty flag, not a loop failure. The gate must **not** block
+      or park the run on this status; unattended runs stay unattended by default. The
+      bead and its PR instead carry an unmissable "sovereignty: human sign-off
+      required" annotation, sourced from the panel finding detail, surfaced in both
+      the PR description and the final `mode:agent` output — so a human catches it
+      during normal review rather than the pipeline silently gating (or silently
+      passing) on it.
+    - `converged` — reported ready-to-merge (auto-merge remains out of scope for v1).
+    - Any gate script consuming this status must allow-list on `converged` (fail/park
+      on everything else) rather than deny-list on failure statuses, so a future
+      status can never silently pass by default.
 - **v1 detectors:** library upgrades (outdated/CVE-flagged deps from manifest scan)
   and prod errors (pointed at a log source; Sentry integration is a config detail,
   not a dependency). System upgrades, IaC drift, and security-advisory sweeps are
@@ -338,8 +378,12 @@ plugins/triage/
   item and the spine files a bead with AC. **PASS/FAIL:** bead exists, AC present,
   item validates against contract.
 - End-to-end: detector → fix diff → `mode:agent` panel run returns JSON whose status
-  is one of `converged | escalated | circuit_broken`; bead updated accordingly.
-  **PASS/FAIL:** status handled in all three branches (fixtures may force each).
+  is one of `converged | escalated | circuit_broken | error`; bead updated per the
+  resolved status handling above. **PASS/FAIL:** all four statuses produce their
+  documented bead/PR outcome (fixtures may force each).
+- Given a panel run returning `escalated`, the bead is not parked and the pipeline
+  does not halt; the produced PR carries an explicit "sovereignty: human sign-off
+  required" annotation. **PASS/FAIL:** bead unparked, annotation present in PR body.
 - Prod-error detector given a log line with a stack trace produces a triage item whose
   evidence includes the trace and whose spine run attempts E2E reproduction before any
   fix. **PASS/FAIL:** reproduction step precedes fix in the transcript/bead trail.
@@ -367,30 +411,53 @@ plugins/triage/
 2. AC for each bead seeded from this spec's acceptance criteria via the
    `acceptance-criteria` skill (`--acceptance=...` per CLAUDE.md).
 3. Build order strictly 1 → 2 → 3 → 4 → 5; 4 is blocked on 3 (taste is the scoring
-   function); 5 is blocked on 1 (security seat should exist before triage feeds it
-   dependency diffs).
+   function); 5 is blocked on **1 and 2** (security seat should exist before triage
+   feeds it dependency diffs; data-steward seat + sovereignty escalation path must
+   exist before triage-produced migrations/IaC diffs can ship with no coverage gap —
+   resolved, R3).
 4. Execution via Reck/PAS per epic (`pas scaffold` from the epic, run in containers).
 
-## Open questions (resolve before decompose)
+## Decisions on open questions (resolved 2026-07-17, prior to decompose)
 
-- **OQ1 — Vendor vs. reference security.** Review-panel's original constraint is
-  air-gapped self-containment; casting `security-suite`'s agent is a cross-plugin
-  reference. Options: (a) reference with graceful degradation (spec'd above; both
-  plugins ship in scott-cc, so co-install is the norm), (b) vendor a seat-shaped
-  security skill into review-panel and have security-suite own only the
-  advisory/planning side. Recommendation: (a) now, revisit (b) if an air-gapped
-  deploy actually materializes.
-- **OQ2 — Variants packaging.** Co-locate in review-panel (plan-stage tooling already
-  lives there) vs. standalone plugin (keeps panel lean; variants has different
-  runtime needs — worktrees, PAS mapping). Recommendation: standalone
-  `plugins/variant-explorer/` to avoid growing the panel beyond plan/review-stage
-  *judgment* tooling; costs one more manifest.
-- **OQ3 — Naming.** review-panel now demonstrably hosts planning-stage skills
-  (grill-with-docs, and per this spec grill-the-schema, grill-my-taste, plan-security
-  wiring). Rename/re-describe (e.g., description covering "plan + review stages of
-  System 1") or split a `planning` plugin later? Recommendation: re-describe only, no
-  rename — churn outweighs clarity gain today.
-- **OQ4 — Escalated status consumers.** `mode:agent` gains status `escalated`
-  (Phase 2c). Confirm Foundry's gate handling treats it as "park for human," distinct
-  from `circuit_broken` ("loop failed"). Needs a matching Foundry-side change if its
-  gate currently binary-switches on `converged`.
+- **OQ1 — Vendor vs. reference security. Decided: reference.** Cast `security-suite`'s
+  agent as a cross-plugin reference (Phase 1a); no vendoring into review-panel. Both
+  plugins ship together in scott-cc, so co-install is the norm and vendoring would
+  duplicate a skill that already exists elsewhere in the repo. Revisit only if an
+  air-gapped deploy actually materializes.
+- **OQ2 — Variants packaging. Decided: standalone plugin.** `plugins/variant-explorer/`
+  (Phase 4), not co-located in review-panel. Review-panel stays scoped to
+  plan/review-stage *judgment* tooling; variants gets its own home for the
+  worktree-spawning/execution machinery and depends on review-panel to score its
+  shortlist, rather than living inside it.
+- **OQ3 — Naming. Decided: no rename.** Re-describe review-panel's scope only (it
+  demonstrably hosts planning-stage skills — grill-with-docs, grill-the-schema,
+  grill-my-taste, plan-security wiring — alongside the review stage); no rename, no
+  split-off `planning` plugin for now. Revisit only if the plan-stage skill count
+  grows enough to justify the churn.
+- **OQ4 — Escalated status consumers. Decided: surface, never block.** The Foundry
+  gate must never stop or park an unattended run on `escalated` (Phase 5) —
+  automation stays unattended by default. Instead the gate must surface the flag
+  unmissably in the PR description and the final `mode:agent` output (Phase 2c,
+  Phase 5). Any gate script consuming this status must allow-list on `converged`
+  rather than deny-list on failure statuses, so a future status can never silently
+  pass by default.
+
+## Decisions from architecture review (resolved 2026-07-17, prior to decompose)
+
+- **R1 — Guard hook's unattended behavior. Decided: interactive/planning-time only.**
+  `data_layer_guard.py` (Phase 2d) is a developer-loop convenience, not an enforcement
+  mechanism — it does not fire (documented no-op) in unattended/`mode:agent` runs,
+  where no human exists to answer its confirm prompt. Unattended sovereignty
+  enforcement is entirely the data-steward review seat's job (Phase 2c), gated
+  downstream by Phase 5's Foundry consumption of `escalated` (OQ4) — not one of two
+  mechanisms.
+- **R2 — Mechanical enforcement of sovereignty blocking. Decided: mechanical.** Add an
+  explicit post-FIX assertion step (Phase 2c) that fails loudly if a
+  sovereignty-marked finding's target file changed anyway. Not in tension with OQ4:
+  OQ4 is about giving a human room to judge a legitimate escalation; this catches FIX
+  doing something it was never allowed to do in the first place — a different case
+  from a judgment call getting flagged.
+- **R3 — Build order dependency. Decided: add 5→2.** Build order gains an explicit
+  "5 is blocked on 2" alongside the existing "5 is blocked on 1" (Decompose plan,
+  above). No window where triage-produced migrations ship with no data-steward seat
+  and no sovereignty escalation path defined.

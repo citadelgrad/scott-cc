@@ -1,9 +1,9 @@
-# Current Task: scc-3x5
+# Current Task: scc-da0
 
-## Phase 3b — grill-my-taste skill (choice-based preference elicitation)
+## Phase 3c — Taste feedback loop (capture + --distill)
 
 ### Task ID
-scc-3x5
+scc-da0
 
 ### Status
 in_progress (claimed 2026-07-18)
@@ -12,53 +12,36 @@ in_progress (claimed 2026-07-18)
 P2
 
 ### Summary
-New grill-family skill that elicits taste via forced choices between realistic alternatives rather than introspective questions, distilling each choice into a candidate rule written to TASTE.md. Includes an evidence-mining mode that mines repo/PR history for places the human rewrote agent or contributor output.
+Close the loop between human overrides/rejections during review and TASTE.md's Candidate rules section, plus a distillation mode that periodically promotes, merges, or rejects candidates with the human.
 
 ### Description
-New grill-family skill that elicits taste via forced choices between realistic alternatives rather than introspective questions, distilling each choice into a candidate rule written to TASTE.md. Includes an evidence-mining mode that mines repo/PR history for places the human rewrote agent or contributor output.
+Close the loop between human overrides/rejections during review and TASTE.md's Candidate rules section, plus a distillation mode that periodically promotes, merges, or rejects candidates with the human.
 
 ### Design Details
 
-#### Deliverable
-New file: `plugins/review-panel/skills/grill-my-taste/SKILL.md`
+#### Capture
+Convention + bd remember — whenever the human overrides a panel finding or rejects agent output with a reason, record it as a taste candidate. This is documented in the skill; no new tooling is required in v1.
 
-#### Grill-Family Mechanics
-
-**Elicitation is choice-based, not introspective:**
-- Present pairs of realistic alternatives (two API shapes, two error-message styles, two module layouts — generated from the user's actual codebase where available)
-- User picks
-- Agent asks why
-- Distills a candidate rule
-- Confirms wording
-- Writes to TASTE.md inline
-
-**Evidence mining mode:**
-- When pointed at a repo/PR history, find places the human rewrote agent or contributor output
-- Turn each rewrite into a forced-choice question (before vs after)
-
-### Files to Create
-- `plugins/review-panel/skills/grill-my-taste/SKILL.md` — grill-family mechanics specification
+#### Distillation
+A mode of grill-my-taste (--distill) that walks Candidate rules, promotes/merges/rejects each, and prunes stale preferences. Foundry-schedulable (e.g., monthly) as a prompt to run the session — the session itself stays interactive (human-owned artifact, invariant 5).
 
 ### Acceptance Criteria
 
-A grill-my-taste session of >=5 forced choices produces a TASTE.md where every preference has rule + rationale + strength + provenance.
-
-**PASS/FAIL**: All fields (rule, rationale, strength, provenance) present for all preference entries.
+--distill on a TASTE.md with >=3 candidate rules ends with zero remaining candidates (each promoted, merged, or rejected with the human). PASS/FAIL: Candidate section empty after session.
 
 ### Dependencies
+- Depends on: ✓ scc-3x5 (Phase 3b — grill-my-taste skill)
 - Depends on: ✓ scc-cnx (Phase 3a — TASTE.md format)
-- Blocks: scc-da0 (Phase 3c — taste feedback loop)
 - Blocks: scc-5hy (Phase 4 — variant-explorer plugin)
 
 ### Key Constraints
-- This is Phase 3b (second Phase 3 task) in the strict Phase 1 → 2 → 3 → 4 → 5 build order
-- Phase 3a (TASTE-FORMAT.md) is now complete; Phase 3b is the next sequential task
-- Depends on TASTE-FORMAT.md for target sections
-- The --distill mode used in 3c is a mode of this same skill, not a separate skill
-- Human-owned artifact (Invariant 5) — the TASTE.md file is human-owned, agents produce it via interview
+- This is Phase 3c (third Phase 3 task) in the strict Phase 1 → 2 → 3 → 4 → 5 build order
+- Phase 3a and 3b are now complete; Phase 3c is the next sequential task
+- Foundry only schedules the *prompt* to run the session — the distillation conversation itself must remain interactive per invariant 5
+- Human-owned artifact (Invariant 5) — TASTE.md is human-owned, maintained via interactive sessions
 
 ### Phase
-Phase 3b of the Two-System Architecture (Phase 1 → 2 → 3 → 4 → 5 build order)
+Phase 3c of the Two-System Architecture (Phase 1 → 2 → 3 → 4 → 5 build order)
 
 ### Parent Epic
 scc-hzj: Two-System Architecture — Security, Data Stewardship, Taste, Variants, and Triage Spine
@@ -71,4 +54,5 @@ scc-hzj: Two-System Architecture — Security, Data Stewardship, Taste, Variants
 - Phase 2c (scc-bqp): data-steward seat — COMPLETE
 - Phase 2d (scc-4rj): data-layer guard hook — COMPLETE
 - Phase 3a (scc-cnx): TASTE.md format — COMPLETE
-- Phase 3b (scc-3x5): grill-my-taste skill — THIS TASK
+- Phase 3b (scc-3x5): grill-my-taste skill — COMPLETE
+- Phase 3c (scc-da0): Taste feedback loop — THIS TASK

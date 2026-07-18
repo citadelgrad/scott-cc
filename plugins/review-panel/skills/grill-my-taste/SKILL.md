@@ -72,8 +72,27 @@ For each rewrite found, turn it into a forced-choice question: presented as "bef
 
 If no qualifying rewrites are found in the available history, say so explicitly and offer to fall back to live-generated pairs, rather than silently producing nothing.
 
+## Capturing overrides as Candidate rules
+
+Outside of a live grilling session, taste signal also shows up in the moment: a human overrides a review-panel finding, or rejects agent-produced output and says (or doesn't say) why. Capture that moment rather than letting it evaporate:
+
+1. Call `bd remember` with the raw observation — what was proposed, what the human did instead, and any stated reason. This is the durable side-channel; it survives independently of whatever happens to `TASTE.md`, and needs no new tooling since `bd remember` is already this project's cross-session memory primitive.
+2. Propose a `Candidate rules` entry in `TASTE.md`, using the exact shape from [TASTE-FORMAT.md](../../formats/TASTE-FORMAT.md) (`Candidate` / `Rationale (tentative)` / `Provenance` / `Status: awaiting --distill pass`). Ask a single lightweight yes/no — "capture this as a taste candidate?" — before writing. This is not a grilling session, but Invariant 5 draws no exception for Candidates: propose, don't auto-write, even for this low-friction path.
+3. If no reason was given, capture anyway with "no reason given yet" rather than skipping the capture or interrupting flow to ask why — following up on a thin reason is `--distill`'s job later, not capture's.
+4. This applies whether or not `TASTE.md` exists yet. A confirmed capture can be the file's lazy-creation trigger, same as a confirmed forced choice.
+
 ## `--distill` mode
 
-`--distill` is a mode of this same skill, not a separate skill — it walks the `Candidate rules` section of `TASTE.md` and, for each entry, promotes it into a full Preference (assigning the `strength` it doesn't yet have), merges it into an existing Preference, or rejects it. Its full promote/merge/reject logic belongs to Phase 3c (`scc-da0`); this file only establishes that `--distill` is invoked through `grill-my-taste`, not a distinct tool.
+`--distill` is a mode of this same skill, not a separate skill. It walks the `Candidate rules` section of `TASTE.md` and resolves each entry into a full Preference, Weighting, or Anti-preference, a merge into an existing one, or a rejection — ending with the section empty.
+
+1. Read `TASTE.md`. If it's missing, or `Candidate rules` is absent or already empty, say so explicitly and stop — there is nothing to distill (Coverage Honesty).
+2. Walk the `Candidate rules` entries one at a time, not batched — same discipline as the main mode's one-forced-choice-at-a-time pacing. For each entry, present its tentative rule, rationale, and provenance to the human and ask for one outcome:
+   - **Promote** — turn it into a full Preference, Weighting, or Anti-preference. Use the same section-routing rules already defined above under "Distilling the choice" to pick the section. A Candidate never carries `strength`, so promotion is where it must be assigned. Confirm the wording before writing, per "Confirm before writing" above — that discipline applies identically here.
+   - **Merge** — fold it into an existing Preference, Weighting, or Anti-preference. Locate the target entry and update its rationale or provenance to note the merge (for example, "... reinforced by override captured {date}").
+   - **Reject** — remove the candidate outright. No residue needs to survive in `TASTE.md`, since the raw observation already lives durably in `bd remember` from capture time.
+   Remove the Candidate entry from `TASTE.md` the moment its outcome is written, before moving to the next one — the section only reaches empty once every entry has been individually resolved.
+3. Once every Candidate is resolved, ask the human once, lightly, whether any existing Preferences, Weightings, or Anti-preferences no longer apply, and prune the ones they flag. This is a bounded final question, not a re-litigation of the whole file — leave anything the human doesn't flag alone.
+4. `--distill` can be nudged via a scheduled Foundry profile (per this repo's `foundry.yaml` convention) as a periodic reminder prompt only — e.g., a monthly nudge like "N candidate rules pending, run `grill-my-taste --distill`." The distillation conversation itself must never run unattended (Invariant 5); Foundry may only schedule the prompt to start the session, never the session.
+5. The session is complete once `Candidate rules` is empty. If the human stops early with candidates still pending, say so explicitly in the session summary rather than implying completion.
 
 </supporting-info>

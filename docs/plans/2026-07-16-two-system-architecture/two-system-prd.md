@@ -1,6 +1,6 @@
 # Two-System Architecture — PRD
 
-**Status:** Draft — pending agreement, then decompose to beads (`pas decompose` / beads-epic-builder)
+**Status:** All decisions recorded (2026-07-17) — ready to decompose to beads (`pas decompose` / beads-epic-builder)
 **Date:** 2026-07-16
 **Owner:** Scott
 **Pairs with:** [two-system-spec.md](./two-system-spec.md)
@@ -132,8 +132,10 @@ Listed in priority order. Each maps to a phase in the spec.
   security seat, with zero manual invocation (Foundry schedule → detector → fix →
   `mode:agent` panel gate).
 - No agent-authored change to migrations/schema/models ships without either the
-  data-steward seat passing it or explicit human sign-off; the guard hook makes
-  silent data-layer edits impossible.
+  data-steward seat passing it, explicit human sign-off, or — for unattended runs —
+  an unmissable sovereignty flag surfaced in the PR description and final output
+  (D10–D11). The guard hook makes silent data-layer edits impossible in interactive
+  sessions; unattended enforcement is the review seat's job alone.
 - A grilling session produces/updates `TASTE.md`, and a subsequent panel run
   demonstrably flags a taste violation a generic reviewer would not.
 - A variants run returns a ranked shortlist where the ranking rationale cites AC and
@@ -150,11 +152,17 @@ Listed in priority order. Each maps to a phase in the spec.
 | D3 | Where does System 2 live? | **Foundry** (developer-local scheduled checks); org-wide later |
 | D4 | Security in panel or ops? | **Both, split by activity**: per-diff review seat + plan pass now (panel/planning); comprehensive process later (Foundry) |
 | D5 | Is triage tied to review-panel? | **No** — dependency (calls the substrate), never coupling; separate plugin |
-| D6 | Where do planning-stage artifacts live? | With the existing planning skills (review-panel plugin hosts plan+review stage tooling; name notwithstanding) — see spec Open Questions for the rename discussion |
+| D6 | Where do planning-stage artifacts live? | With the existing planning skills (review-panel plugin hosts plan+review stage tooling; name notwithstanding) — see D9 below for the rename decision |
+| D7 | Security-suite vendor or reference? | **Reference**; no vendoring — revisit only if an air-gapped deploy actually materializes |
+| D8 | Variants co-located skill or standalone plugin? | **Standalone plugin** `plugins/variant-explorer/`; review-panel stays scoped to judgment-only tooling |
+| D9 | Does review-panel get renamed? | **No** — re-describe scope only; revisit if the plan-stage skill count grows |
+| D10 | Does Foundry's gate block unattended runs on `escalated`? | **No** — it must never block; instead it surfaces the flag unmissably in the PR description and the final `mode:agent` output |
+| D11 | Does the data-layer guard hook (2d) enforce anything unattended? | **No** — interactive/planning-time convenience only; unattended sovereignty enforcement is entirely the data-steward review seat's job |
+| D12 | Is sovereignty-marked blocking mechanically enforced, not just documented? | **Yes** — an explicit post-FIX assertion step fails the round loudly if a sovereignty-marked file changed anyway |
+| D13 | Does Phase 5's build order depend on Phase 2? | **Yes** — added explicitly, alongside the existing dependency on Phase 1 |
 
 ## 9. Open questions for agreement
 
-Carried in detail in the spec (§Open Questions). Headlines: (a) vendor vs. reference
-`security-suite` from the panel catalog given review-panel's air-gap constraint; (b)
-whether variants is a plugin or a core skill; (c) whether review-panel should be
-renamed/re-described to acknowledge it hosts planning-stage skills too.
+**Resolved 2026-07-17** — see Decisions log (D7–D13) above, and the spec's "Decisions on
+open questions" and "Decisions from architecture review" sections for full rationale.
+Ready to decompose.

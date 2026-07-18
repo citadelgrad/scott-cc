@@ -1,156 +1,181 @@
-# Investigation: scc-3x5 (Phase 3b — grill-my-taste skill)
+# Investigation: scc-da0 (Phase 3c — Taste feedback loop)
 
 ## Task
 
-Create `plugins/review-panel/skills/grill-my-taste/SKILL.md` — a new grill-family skill
-that elicits taste via **forced choices** between realistic alternatives (not
-introspective questions), distills each choice into a candidate rule, and writes it to
-`TASTE.md` inline. Includes an **evidence-mining mode** that mines repo/PR history for
-places the human rewrote agent/contributor output, turning each rewrite into a
-before/after forced-choice question.
+Close the loop between human overrides/rejections during review and `TASTE.md`'s
+`Candidate rules` section, plus flesh out the `--distill` mode of `grill-my-taste` that
+periodically promotes/merges/rejects candidates with the human.
 
-Per the task notes, the `--distill` mode used by Phase 3c (`scc-da0`) is a **mode of this
-same skill**, not a separate skill — so this SKILL.md needs to at least stub/describe that
-mode's existence even though its full behavior is 3c's job to flesh out. (Checked: 3c is
-not yet implemented — `scc-da0` is still open, blocked on this task.)
+Two deliverables per the task design and spec §3c:
 
-## Files to create
+1. **Capture** — convention + `bd remember`: whenever a human overrides a panel finding
+   or rejects agent output with a reason, record it as a taste candidate. "Documented in
+   the skill; no new tooling required in v1."
+2. **Distillation** — a full `--distill` mode implementation (currently stubbed) that
+   walks `Candidate rules`, promotes/merges/rejects each, and prunes stale preferences.
+   Foundry-schedulable as a *prompt* only; the session itself stays interactive
+   (Invariant 5).
 
-- `plugins/review-panel/skills/grill-my-taste/SKILL.md` (only file — matches the
-  single-file pattern used by `grill-the-schema` and `grill-with-docs`, no `references/`
-  subdirectory needed since there's no long reference material to externalize).
+AC (verbatim from `bd show scc-da0` / spec.md line 284-286): `--distill` on a `TASTE.md`
+with ≥3 candidate rules ends with zero remaining candidates (each promoted, merged, or
+rejected with the human). PASS/FAIL: Candidate section empty after session.
 
-No other files need to change. `TASTE-FORMAT.md` (3a) already exists and is the
-target format this skill writes to — nothing there needs modification.
+## File to modify
 
-## Precedent: two existing grill-family skills
+**`plugins/review-panel/skills/grill-my-taste/SKILL.md`** — the sole file. This is a
+docs-only skill, same as Phase 3a/3b; no new files, no new tooling (per the task's own
+design note). Two edits to this one file:
 
-Both are single-file `SKILL.md`s with the same two-part shape: a short imperative
-`<what-to-do>` block, then a `<supporting-info>` block with domain awareness + session
-mechanics. I'll follow this shape exactly for consistency:
+1. Add a new "Capturing overrides as Candidate rules" section (currently absent).
+2. Replace the `--distill` stub (current lines 75-78) with the full promote/merge/reject
+   procedure.
 
-1. **`plugins/review-panel/skills/grill-the-schema/SKILL.md`** (Phase 2b, closest
-   precedent — same author, same target pattern of "interview → write structured file
-   inline → cite the format spec"). Sections: Domain awareness (where to look, lazy
-   creation), During the session (interview topics, concrete scenarios, cross-reference
-   with code, update file inline, offer ADRs sparingly).
-2. **`plugins/review-panel/skills/grill-with-docs/SKILL.md`** (glossary/CONTEXT.md
-   version, also ends with an "offer the plan-security pass" cross-plugin pointer —
-   relevant precedent for how to write a "point at another skill/plugin without coupling
-   to it" note, per Invariant 4).
+No other file needs to change:
+- `formats/TASTE-FORMAT.md` (Phase 3a) already defines the `Candidate rules` section
+  shape and its four sub-fields (`Candidate`, `Rationale (tentative)`, `Provenance`,
+  `Status`) — this task consumes that contract, doesn't extend it.
+- `review-panel/references/dual-mode-contract.md`'s "Interactive apply loop" (lines
+  64-78) is where a human currently rejects/directs a manual edit that diverges from a
+  panel finding — the exact "override a panel finding" moment the capture convention
+  hooks into conceptually. Per the task's explicit scope ("documented in the skill; no
+  new tooling required"), this task does **not** edit that file — capture stays a
+  documented convention inside `grill-my-taste`, not a special-cased wire-in to
+  review-panel's core substrate. This mirrors how Phase 3d (not yet built) will be the
+  thing that actually casts during review runs, not a hook into the core loop.
+- `docs/foundry-recipes.md` (referenced in spec.md line 342, 368-371 as consolidating
+  "what Foundry runs," explicitly listing "Phase 3c's distillation prompt") does not
+  exist yet — confirmed via `fd -H "foundry-recipes"` (no hits). That file is Phase 5
+  territory (scc-tsa, still open). This task only needs to *note*, inside
+  `grill-my-taste/SKILL.md`, that `--distill` is Foundry-schedulable as a reminder
+  prompt — not author the recipes doc itself.
 
-**Key difference this skill must diverge on:** both precedents are *introspective*
-interviews ("what's the invariant here?", "which term do you mean?"). `grill-my-taste`
-is explicitly **choice-based, not introspective** per the spec — present two concrete
-alternatives, user picks, agent asks why. This is a different interaction pattern from
-the precedents and needs its own `<what-to-do>` framing rather than copying
-grill-the-schema's "interview me relentlessly" opener verbatim.
+## Current state of the stub (what exists today)
 
-## Target format: TASTE-FORMAT.md (already exists, Phase 3a — verified complete)
+`grill-my-taste/SKILL.md` lines 75-78:
 
-`plugins/review-panel/formats/TASTE-FORMAT.md` defines what this skill must produce:
+```
+## `--distill` mode
 
-- **Preferences**: rule, rationale, strength (`weak|strong|absolute`, exact word, no
-  synonyms), provenance. Format's own worked example shows provenance written as
-  `"grill-my-taste session {date}, forced choice #{n} ({short description})"` — this
-  skill must number its forced choices within a session so provenance can cite them.
-- **Weightings**: relative priority between two independently-legitimate things (e.g.
-  "locality beats DRY") — distinct from a Preference, which needs two legitimate sides.
-- **Anti-preferences**: patterns to flag even when individually defensible.
-- **Candidate rules**: staging area, no `strength` yet, populated by captured overrides
-  (3c's job) and awaiting `--distill`. This skill's mechanics don't need to fully
-  implement `--distill`'s distillation logic (that's 3c/scc-da0), but must house the
-  `--distill` mode entry point since the task explicitly says it's "a mode of this same
-  skill, not a separate skill."
-- **Human-owned artifact rule** (Invariant 5): "FIX never writes to this file directly" —
-  same rule `grill-the-schema` states for `DATA-MODEL.md`. This skill is the *human
-  grilling session* that legitimately writes the file — that's the mechanism Invariant 5
-  carves out.
-- **Lazy creation**: `TASTE.md` created only on first real `grill-my-taste` session, not
-  pre-scaffolded.
-- **Malformed/missing file section**: not this skill's concern directly (that's the 3d
-  taste-review seat's read path), but worth a one-line acknowledgment that a session
-  always produces well-formed entries (all four fields) so 3d never encounters a partial
-  Preference this skill wrote.
+`--distill` is a mode of this same skill, not a separate skill — it walks the `Candidate
+rules` section of `TASTE.md` and, for each entry, promotes it into a full Preference
+(assigning the `strength` it doesn't yet have), merges it into an existing Preference, or
+rejects it. Its full promote/merge/reject logic belongs to Phase 3c (`scc-da0`); this file
+only establishes that `--distill` is invoked through `grill-my-taste`, not a distinct tool.
+```
 
-## Required mechanics (from task description + spec §3b, both in exact agreement)
+This explicitly defers its own logic to this task. Nothing else in the skill references
+`--distill` except the one-line dispatch note in `<what-to-do>` ("If invoked with
+`--distill`, run the distill pass over Candidate rules instead of eliciting new choices").
 
-1. **Forced-choice elicitation loop:**
-   - Present pairs of realistic alternatives — two API shapes, two error-message styles,
-     two module layouts — **generated from the user's actual codebase where available**
-     (i.e., don't always use generic canned examples; pull real patterns via codebase
-     exploration when possible, falling back to representative synthetic examples when
-     the codebase doesn't have enough signal).
-   - User picks one.
-   - Agent asks why.
-   - Agent distills a candidate rule (rule + rationale + strength + provenance).
-   - Agent confirms wording with the user.
-   - Writes to `TASTE.md` inline (not batched — same "update inline" convention as
-     `grill-the-schema`).
+There is currently **no** "capture" section anywhere in the skill — the only mention of
+overrides is inside `TASTE-FORMAT.md`'s worked example (`Candidate rules` sample entry,
+provenance: "Override captured 2026-07-19 — human rewrote agent output... no reason given
+yet") and in `TASTE-FORMAT.md`'s Rules section ("`provenance` ... the grill-my-taste
+session/forced-choice, **or captured-override**, that produced it").
 
-2. **Evidence-mining mode:**
-   - Given a repo/PR history, find diffs where the human rewrote agent or contributor
-     output.
-   - Turn each rewrite into a forced-choice question: "before" (original/agent output)
-     vs "after" (human's rewrite) — same choice mechanics as mode 1, just sourced from
-     history instead of live-generated pairs.
-   - This is a *mode* of eliciting the forced choices, not a different output format —
-     still funnels into the same distill-rule → confirm → write-inline pipeline.
+## Required changes, in detail
 
-3. **`--distill` mode (housed here, fleshed out by 3c/scc-da0):**
-   - Since 3c is not yet built, describe this as an existing mode/entry point of the
-     skill (so the file structurally supports it and 3c's task doesn't need to
-     restructure this file, only extend its logic) without inventing 3c's full
-     promote/merge/reject mechanics prematurely. A short pointer paragraph, not a full
-     spec, avoids scope creep into scc-da0's job while satisfying "not a separate skill."
+### 1. Capture section (new)
 
-4. **Session must support ≥5 forced choices** producing full 4-field entries — this is
-   the Phase 3 acceptance criterion (`scc-3x5`'s own AC): "A grill-my-taste session of
-   ≥5 forced choices produces a TASTE.md where every preference has rule + rationale +
-   strength + provenance." The skill's mechanics section should make clear that each
-   completed choice becomes one fully-formed Preference (or Weighting/Anti-preference
-   where the choice reveals a relative-priority or flag-anyway pattern instead of a
-   straightforward rule) — never a partial entry.
+Document, as a convention (not new tooling), that whenever a human overrides a
+review-panel finding or rejects agent-produced output and states (or doesn't state) a
+reason, the agent should:
 
-## Cross-plugin / dependency-direction considerations
+- Call `bd remember` to durably persist the raw observation (what was proposed, what the
+  human did instead, any stated reason) — this survives past the current session even
+  before anything lands in `TASTE.md`, and is a "no new tooling" fit since `bd remember`
+  already exists as this project's cross-session memory primitive (see root `CLAUDE.md`:
+  "Use `bd remember` for persistent knowledge").
+- Propose — never silently write — a `Candidate rules` entry in `TASTE.md`, using
+  `TASTE-FORMAT.md`'s exact shape (`Candidate` / `Rationale (tentative)` / `Provenance` /
+  `Status: awaiting --distill pass`). This must stay a lightweight one-line confirmation
+  ("capture this as a taste candidate?"), not a full grilling session — but it still
+  requires the human's go-ahead before the write happens, because Invariant 5 draws no
+  exception for Candidates: `TASTE.md` is proposed-by-agent/confirmed-by-human, never
+  auto-modified, at every tier including this low-friction one.
+  - Note the tension to resolve explicitly in the write-up: Invariant 5 says "written via
+    human grilling sessions" — a captured-override confirmation is not a grilling
+    session, but it's still human-confirmed-before-write, which is the load-bearing part
+    of the invariant ("FIX never auto-modifies them"). The confirmation step is what
+    keeps this consistent.
+- If no reason was given, capture anyway with "no reason given yet" (matches
+  `TASTE-FORMAT.md`'s own worked example verbatim) rather than skipping the capture —
+  asking "why" in the moment interrupts flow; that follow-up is `--distill`'s job later,
+  not capture's.
+- Applies whether or not `TASTE.md` exists yet — a confirmed capture can be the file's
+  lazy-creation trigger, consistent with `TASTE-FORMAT.md`'s "Lazy creation" rule.
 
-- This skill lives entirely inside `plugins/review-panel/` — no new plugin, no
-  cross-plugin imports. Consistent with Invariant 2 (dependency direction) since
-  review-panel doesn't reference triage or variant-explorer.
-- `plugins/variant-explorer` (Phase 4, scc-5hy) is *blocked on* this task per `bd show`,
-  because Phase 4's scoring function needs `TASTE.md` to exist — but this skill itself
-  doesn't need to reference variant-explorer at all. No forward-reference needed (Phase 4
-  doesn't exist yet).
-- Taste-review seat (Phase 3d, scc-4tt) reads `TASTE.md` this skill produces — again no
-  direct coupling needed in this file; the format contract (TASTE-FORMAT.md) is the
-  interface.
+### 2. `--distill` mode (replace stub)
+
+Full procedure to add, mirroring the level of detail the main forced-choice mode already
+has:
+
+1. Read `TASTE.md`. If missing, or `Candidate rules` is absent/empty, say so explicitly
+   and stop — nothing to distill (Coverage Honesty; matches the "malformed or missing"
+   handling `TASTE-FORMAT.md` already defines).
+2. Walk `Candidate rules` entries **one at a time**, not batched (same discipline as the
+   main mode's "one forced choice at a time"). For each:
+   - Present the candidate (its tentative rule, rationale, provenance) to the human.
+   - Ask for one of three outcomes:
+     - **Promote** — turn it into a full Preference/Weighting/Anti-preference. Reuse the
+       existing "Distilling the choice" section-routing rules (already in the skill,
+       lines 45-49) to pick the section. Since Candidates never carry `strength`, this is
+       exactly where it must be assigned (per the existing stub's own note). Confirm
+       wording before writing — same "Confirm before writing" discipline already
+       documented for the main mode (lines 53-55) applies identically here.
+     - **Merge** — fold into an existing Preference/Weighting/Anti-preference; locate the
+       target entry and update its rationale/provenance to note the merge (e.g. "...
+       reinforced by override captured {date}").
+     - **Reject** — remove the candidate; no residue needs to survive in `TASTE.md` since
+       the raw observation already durably lives in `bd remember` from capture-time.
+   - Remove the Candidate entry from `TASTE.md` the moment its outcome is written —
+     the section only reaches empty once every entry has been individually resolved,
+     which is exactly what the AC checks.
+3. **Prune stale preferences** — after all Candidates are resolved, ask the human
+   (once, lightweight) whether any existing Preferences/Weightings/Anti-preferences no
+   longer apply. This is explicitly in the task's design line ("...and prunes stale
+   preferences") but is not part of the AC's pass/fail check — scope it as a bounded
+   final question, not a full re-litigation of the file (the main mode already says not
+   to re-litigate settled Preferences; the same restraint applies here for anything the
+   human doesn't flag).
+4. **Foundry-schedulable note** — state plainly that `--distill` can be nudged via a
+   scheduled Foundry profile (per this repo's `foundry.yaml` convention) as a periodic
+   *prompt* only (e.g., monthly reminder: "N candidate rules pending, run `grill-my-taste
+   --distill`") — the distillation conversation itself must never run unattended
+   (Invariant 5). Do not author a `foundry.yaml` stanza or `docs/foundry-recipes.md`
+   entry here — that belongs to Phase 5 (scc-tsa), which explicitly lists "Phase 3c's
+   distillation prompt" as something it will wire in.
+5. **End state** — session is complete once `Candidate rules` is empty. If the human
+   stops early with candidates still pending, say so explicitly in the session summary
+   (Coverage Honesty) rather than implying completion.
 
 ## Risks / things to get right
 
-1. **Don't accidentally make this introspective.** The single biggest divergence from the
-   grill-the-schema/grill-with-docs precedent is the choice-based mechanic. Must resist
-   copying "ask them what their invariants are" style questions.
-2. **Don't let this skill silently write partial entries.** Per TASTE-FORMAT.md's own
-   rule ("A Preference missing any field is not a valid entry — grill-my-taste must not
-   write one"), the skill's inline-write step must always have all four fields before
-   writing, or defer the item to Candidate rules if strength/wording isn't resolved yet.
-3. **Distinguish Preference vs. Weighting vs. Anti-preference at write time.** A forced
-   choice might reveal any of the three depending on how the user answers "why" — the
-   skill needs a decision rule for which section a given confirmed choice lands in,
-   mirroring TASTE-FORMAT.md's own "Rules" section distinctions.
-4. **Codebase-sourced alternatives require exploration, with a fallback.** Should state
-   what to do when the codebase doesn't have enough real examples for a topic (fall back
-   to realistic synthetic pairs) — Coverage Honesty spirit (don't fake "found in your
-   codebase" provenance for synthetic examples).
-5. **Session-level forced-choice numbering** needed so provenance strings
-   ("...forced choice #4") are meaningful and citable, matching the TASTE-FORMAT.md
-   worked example exactly.
-6. **`--distill` scope discipline** — must not pre-implement scc-da0's full logic; only
-   establish that it's a mode of this skill per task constraint, leaving depth to 3c.
+- **Don't violate Invariant 5.** Every write path here — capture-time proposal and
+  distill-time promote/merge/reject — must stay confirm-before-write. This is the
+  primary risk: "convention + bd remember, no new tooling" could be misread as license
+  for a silent auto-append. It is not; `bd remember` is the durable side-channel, the
+  `TASTE.md` write itself always needs a human nod.
+- **Don't scope-creep into review-panel's core files.** The design explicitly limits
+  this to "documented in the skill" — resist the temptation to also wire a hook into
+  `dual-mode-contract.md`'s interactive apply loop; that would be new tooling, not
+  convention, and isn't what the task asks for.
+- **Reuse existing section-routing logic rather than re-deriving it.** The
+  Preference/Weighting/Anti-preference distinction is already spelled out once in the
+  skill (lines 45-49) for the main mode — `--distill`'s promote path should reference it,
+  not restate a divergent version.
+- **Match `TASTE-FORMAT.md`'s Candidate shape exactly** (`Candidate` /
+  `Rationale (tentative)` / `Provenance` / `Status`) since that format file is the single
+  source of truth and is out of scope to edit here.
+- **AC is mechanically checkable** ("Candidate section empty after session") — make sure
+  the procedure has an unambiguous loop-until-empty structure, not just a general
+  "process the candidates" instruction, so a hand-worked test (same style as Phase
+  3a/3b's `.pas/test-results.md`) can simulate ≥3 candidates and verify zero remain.
 
-## No test/lint surface
+## Testing approach (for later Run Tests step)
 
-Pure markdown skill file, same as Phase 3a. No code changes, no automated test suite
-applies. Verification will be a hand-worked simulated session (as was done for 3a),
-checked against TASTE-FORMAT.md's own rules — consistent with how 3a's Run Tests step
-was conducted, since no live orchestrator exists yet to run a real session against.
+No live orchestrator exists yet (same situation as 3a/3b). Verification will again be a
+hand-worked conformance test: simulate a `TASTE.md` with ≥3 Candidate rules, walk the
+documented `--distill` procedure by hand (one promoted, one merged, one rejected), and
+confirm the resulting file has an empty `Candidate rules` section and that the promoted/
+merged entries retain full required fields per `TASTE-FORMAT.md`'s Rules section.
