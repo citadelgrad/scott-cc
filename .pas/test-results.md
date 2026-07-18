@@ -1,140 +1,155 @@
-# Test Results: scc-da0 (Phase 3c — Taste feedback loop)
+# Test Results: scc-4tt (Phase 3d — Taste seat)
 
 ## Scope
 
-Pure markdown skill file (`plugins/review-panel/skills/grill-my-taste/SKILL.md`) — two
-edits (new "Capturing overrides as Candidate rules" section, `--distill` stub replaced
-with the full promote/merge/reject procedure). No code, no automated test suite applies.
-Same verification shape used for Phase 3a/3b: structural validation against precedent +
-a hand-worked conformance test, since no live orchestrator exists yet to run a real
-`--distill` session end-to-end.
+Two new files (`plugins/review-panel/skills/taste-review/SKILL.md`, new) and one edit
+(`plugins/review-panel/reviewers/persona-catalog.md`, new "Taste" entry + Seat Summary
+Table row). No code changed — same verification shape used throughout Phase 2/3: no
+live orchestrator exists yet to run the panel end-to-end, so I built fixtures and a
+hand-worked conformance test, per the investigation's stated plan.
 
-## 1. Structural validation
+## 1. Fixtures built
 
-- **Single file changed**, no new files — matches the task's own scope note ("docs-only,
-  no new tooling").
-- **Frontmatter unchanged and still valid**: `grep -c '^---$'` returns `2`.
-- **Capture section present** (`## Capturing overrides as Candidate rules`): documents
-  `bd remember` for the durable side-channel, a lightweight yes/no confirm before writing
-  a `Candidate rules` entry (never auto-write), the "no reason given yet" fallback, and
-  applies whether or not `TASTE.md` exists yet (lazy-creation trigger) — matches the
-  investigation's required-changes list item-for-item.
-- **`--distill` stub fully replaced** with a 5-step procedure: (1) missing/empty-Candidates
-  stop condition (Coverage Honesty), (2) one-at-a-time walk with Promote/Merge/Reject
-  outcomes, reusing the existing "Distilling the choice" section-routing rules rather than
-  restating them, (3) bounded stale-preference prune question, (4) Foundry-schedulable-
-  as-prompt-only note (explicitly not authoring `foundry.yaml`/`docs/foundry-recipes.md`,
-  correctly deferred to Phase 5/scc-tsa), (5) explicit incomplete-session reporting rather
-  than implying completion.
-- **Invariant 5 preserved at every write path**: capture-time proposal ("Propose... Ask a
-  single lightweight yes/no... before writing") and distill-time promote/merge ("Confirm
-  the wording before writing, per 'Confirm before writing' above") both stay
-  confirm-before-write — no silent auto-append introduced anywhere in the new text.
-- **No scope creep**: `dual-mode-contract.md`, `TASTE-FORMAT.md`, and
-  `docs/foundry-recipes.md` are untouched, consistent with the investigation's explicit
-  boundary.
+No `TASTE.md` fixtures existed before this task (unlike `DATA-MODEL.md`, which has
+`tests/fixtures/orders-schema/`). Built three, modeled on the `orders-schema` /
+`no-data-model-inventory` fixture pattern:
+
+- **`tests/fixtures/taste-preferences/`** — a well-formed `TASTE.md` with three
+  Preferences spanning all three `strength` values (`strong`, `absolute`, `weak`), plus
+  `diff.patch` (`before.ts` → `after.ts`) that violates all three in one change:
+  `export default` (weak), in-place argument mutation `order.status = "processing"`
+  (absolute), and three levels of nested `try`/`catch` (strong — the same shape as
+  `TASTE-FORMAT.md`'s own worked example and the example finding line in
+  `taste-review/SKILL.md` itself). Targets **AC1** and the absolute-strength
+  severity-mapping design decision flagged in the investigation.
+- **`tests/fixtures/taste-malformed/`** — a `TASTE.md` with one well-formed Preference
+  (`strong`) and one missing its `Strength` field entirely, reusing the same diff.
+  Targets **AC3**.
+- **`tests/fixtures/no-taste-file/`** — reuses the same diff/before/after, but has no
+  `TASTE.md` at all in the fixture directory. Targets **AC2**.
+
+Each fixture has a `README.md` stating which AC it targets, matching the convention of
+every prior-phase fixture directory.
 
 ## 2. Hand-worked conformance test
 
-No live orchestrator exists to run a real `--distill` session, so I built fixtures and a
-Python validator (`/tmp/grill-my-taste-distill-test/`) that mechanically walks the
-documented procedure by hand and checks the result against TASTE-FORMAT.md's own rules
-and the task's AC.
-
-**Fixtures:**
-- `TASTE-before.md` — a `TASTE.md` with 2 existing Preferences, 1 Weighting, 1
-  Anti-preference, and **3 Candidate rules** (satisfies the AC's "≥3 candidate rules"
-  precondition).
-- `TASTE-after.md` — the hand-worked result of resolving all 3 candidates per the
-  skill's step 2 outcomes:
-  - **Promote**: "Prefer early returns over wrapping a function body in an `if` block"
-    → new Preference, `strength: strong` assigned at promotion time (Candidates never
-    carry strength, per TASTE-FORMAT.md).
-  - **Merge**: "Avoid nested try/catch even for async error paths" → folded into the
-    existing "Prefer flat error handling over nested try/catch" Preference, with its
-    rationale/provenance updated to note the reinforcement (matches the skill's own
-    example wording, "... reinforced by override captured {date}").
-  - **Reject**: "Use tabs instead of spaces for indentation" → removed outright, no
-    residue (the raw observation already lives in `bd remember` from capture time).
-- `TASTE-partial.md` — negative control: only 2 of 3 candidates resolved (human stops
-  early), 1 candidate still pending.
-- `TASTE-no-candidates.md` — edge case: `## Candidate rules` section present but empty
-  (the "nothing to distill" stop condition).
-- `TASTE-after-malformed.md` — negative control: a promoted entry missing `Strength`,
-  to confirm the validator isn't trivially passing.
+Built a Python parser + validator at `/tmp/taste-review-test/` (`fixtures.py`,
+`validate.py`) that mechanically parses each `TASTE.md` fixture's `## Preferences`
+section (mirroring `taste-review/SKILL.md` step 3's field-presence check) and validates
+a hand-worked set of findings — what the seat should produce reviewing
+`taste-preferences/diff.patch` by hand, per the skill's documented "How to Review" and
+"Output Contract" sections — against the contract's rules.
 
 **Validator run:**
 
 ```
 $ python3 validate.py
-== Scenario 1: full distill session (3 candidates: promote/merge/reject) ==
-TASTE-after.md: candidates before=3, after=0
-  Candidate rules empty: True (expected True) -> PASS
-  All 3 Preference entries have rule+rationale+strength+provenance, strength in {weak,strong,absolute}. PASS
+== Scenario 1: taste-preferences (AC1 happy path + severity mapping) ==
+  [PASS] strength=absolute severity=Important verbatim=True absolute_note=True sovereignty=False
+  [PASS] strength=strong   severity=Important verbatim=True absolute_note=False sovereignty=False
+  [PASS] strength=weak     severity=Minor     verbatim=True absolute_note=False sovereignty=False
+  Important-band ordering (absolute-derived first): PASS
+  No Critical findings anywhere: PASS
 
-== Scenario 2: partial session, human stops early (1 of 3 candidates left) ==
-TASTE-partial.md: candidates before=3, after=1
-  Candidate rules empty: False (expected False) -> PASS
-  All 3 Preference entries have rule+rationale+strength+provenance, strength in {weak,strong,absolute}. PASS
+== Scenario 2: taste-malformed (AC3 error state) ==
+  Preferences found: 2 (usable=1, malformed=1)
+  'Prefer named exports over default exports' correctly flagged as malformed (missing strength): PASS
+  Missing field correctly identified as exactly ['strength']: PASS (got ['strength'])
+  Well-formed 'Prefer flat error handling over nested try/catch' still reviewed normally (not dropped alongside the malformed entry): PASS
+  Coverage Honesty report line present and explicit: PASS
 
-== Scenario 3: nothing to distill (empty Candidate rules section) ==
-TASTE-no-candidates.md: candidates=0
-  Correctly identified as 'nothing to distill' (Coverage Honesty stop case). PASS
+== Scenario 3: no-taste-file (AC2 absent-from-Cast) ==
+  TASTE.md absent from fixture dir: PASS
+  Diff still present (seat would have content to review, if cast): PASS
+  taste-review absent from simulated Cast list: PASS
 
 3/3 scenarios behaved as expected
 exit code: 0
 ```
 
-```
-$ python3 -c "... validate TASTE-after-malformed.md ..."
-Checked 2 Preference entries.
-FAIL:
- - 'Prefer early returns over wrapping a function body in an `if` block' missing field(s): strength
-exit code: 1
-```
+**Negative controls** (confirming the checks actually discriminate, not vacuously
+passing):
+- A `severity: Critical` finding fails the "never Critical" check (`severity !=
+  'Critical'` evaluates `False` for a Critical finding).
+- A paraphrased clause ("Avoid nesting try/catch blocks.") fails the verbatim-quote
+  check (not found in the set of exact `rule` strings parsed from `TASTE.md`) — proving
+  AC1's "clause quoted in finding" requirement is a real discriminator, not
+  trivially satisfied by any finding text that merely references the topic.
 
-**Result: PASS** on scenarios 1–3, and the malformed negative control is correctly
-flagged rather than passing trivially — confirming the validator actually discriminates
-well-formed from malformed `--distill` output, mirroring the skill's own guard ("Confirm
-before writing... reuse... Confirm before writing discipline applies identically here")
-and TASTE-FORMAT.md's "Every Preference needs all four fields" rule.
-
-Scenario 2 (partial session) intentionally does **not** satisfy the AC's checkable
-state — this proves the AC ("Candidate rules empty") is a real discriminator, not
-vacuously true, and cross-checks that the skill's step 5 ("say so explicitly in the
-session summary rather than implying completion") is the correct mitigation for exactly
-this case.
+**Result: PASS** on all three scenarios, and both negative controls are correctly
+rejected rather than passing trivially.
 
 ## 3. Acceptance criteria
 
-**AC**: "`--distill` on a `TASTE.md` with ≥3 candidate rules ends with zero remaining
-candidates (each promoted, merged, or rejected with the human). PASS/FAIL: Candidate
-section empty after session."
+1. **Happy path** — "Panel run on a diff violating a strong preference yields a taste
+   finding citing the clause verbatim." **PASS.** The hand-worked finding for the
+   `strong` Preference ("Prefer flat error handling over nested try/catch") quotes
+   `pref["fields"]["rule"]` verbatim (`verbatim=True`), and additionally the same
+   verification covers `absolute` and `weak` severities in one pass, confirming the
+   severity-mapping design decision from the investigation: `absolute` → `Important`
+   with an `(absolute preference)` note (never a fourth `Important+` enum value),
+   `strong` → `Important`, `weak` → `Minor`, and `absolute`-derived findings sort first
+   within the Important band, exactly as `taste-review/SKILL.md`'s "Absolute-strength
+   note" section specifies.
+2. **No TASTE.md** — "Repo without TASTE.md → taste seat absent from Cast; no taste
+   findings." **PASS.** `no-taste-file/` mechanically confirms no `TASTE.md` exists in
+   the fixture dir; the simulated Cast-list check confirms `taste-review` is excluded
+   from casting entirely (not a "ran, found nothing" seat) — matching
+   `persona-catalog.md`'s new Taste entry ("file-existence gate... no generic
+   fallback") and the skill's own "When to Apply" section.
+3. **Error state** — "Malformed TASTE.md (missing strength) — seat reports the file as
+   unusable in Coverage Honesty rather than guessing." **PASS.** `taste-malformed/`'s
+   Preference missing `Strength` is correctly identified as malformed with exactly
+   `['strength']` as the missing-field set; the well-formed sibling Preference in the
+   same file is still parsed as usable (confirming the seat's "still reviews valid
+   entries normally" behavior, not an all-or-nothing failure); and the Coverage Honesty
+   report line format matches the skill's own example text verbatim ("is missing
+   `strength`; skipped, not guessed").
 
-**Status: PASS.** The skill's mechanics (one-at-a-time walk with three exhaustive
-outcomes per candidate, entry removed from `TASTE.md` "the moment its outcome is
-written," missing/empty stop condition, explicit incomplete-session reporting)
-structurally guarantee the checkable end state, and the hand-worked simulation confirms
-a session following those mechanics — starting from 3 candidates — produces a `TASTE.md`
-with an empty `Candidate rules` section and all promoted/merged Preferences retaining
-full required fields (rule, rationale, strength, provenance).
+## 4. Structural validation
 
-## 4. Lint / build
+- **Files changed match investigation's scope exactly**: new
+  `plugins/review-panel/skills/taste-review/SKILL.md`, edited
+  `plugins/review-panel/reviewers/persona-catalog.md`. No other plugin file touched.
+- **Frontmatter valid**: `grep -c '^---$' taste-review/SKILL.md` → `2`.
+- **Never Critical, never sovereignty-marked**: confirmed structurally in the skill text
+  (`SKILL.md`'s Output Contract and "Never sovereignty-marked" section) and confirmed
+  behaviorally in the hand-worked findings (no finding in the validated set carries
+  either).
+- **Candidate rules excluded**: `taste-preferences/TASTE.md` includes an empty
+  `## Candidate rules` section (present, per `TASTE-FORMAT.md`'s structure, but with no
+  entries) — the parser only ever reads `## Preferences`, matching the skill's step 2
+  ("Do not read `## Candidate rules`").
+- **Dependency direction (Invariant 2)**: the skill only reads `TASTE.md` and diff
+  content; no reference to `triage` or `foundry` anywhere in the new file.
 
-No code changed — docs-only skill file. No markdown linter configured in this repo
-(same finding as Phase 3a/3b: no `.markdownlint*` config, no `markdownlint` reference in
-`package.json`).
+## 5. Lint / build
 
-## 5. Working tree check
+No code changed — two markdown files plus markdown fixtures. No markdown linter
+configured in this repo (`.markdownlint*` absent, no `markdownlint` reference in
+`package.json`) — same finding as every prior Phase 2/3 Run Tests step.
 
-`git status --short` shows only this task's modified file
-(`plugins/review-panel/skills/grill-my-taste/SKILL.md`) plus the same pre-existing
-session-state diffs flagged in every prior pipeline step in this session (`.pas/*`,
-PRD/SPEC docs, `.claude/settings.json`, `.pas/logs/`, `hooks/__pycache__/`,
-`pipelines/`). No unexpected changes. Scratch validation artifacts live under
-`/tmp/grill-my-taste-distill-test/` (outside the repo, untracked, no cleanup needed).
+## 6. Working tree check
+
+`git status --short`:
+
+```
+ M .pas/current_task.md
+ M .pas/investigation.md
+ M .pas/logs/two-system-architecture-e64d8f93/checkpoint.json
+ M plugins/review-panel/reviewers/persona-catalog.md
+?? plugins/review-panel/skills/taste-review/
+?? plugins/review-panel/tests/fixtures/no-taste-file/
+?? plugins/review-panel/tests/fixtures/taste-malformed/
+?? plugins/review-panel/tests/fixtures/taste-preferences/
+```
+
+Only this task's implementation plus the three new fixture directories created in this
+step, plus the same pre-existing session-state diffs (`.pas/*`) flagged in every prior
+pipeline step in this session. No unexpected changes. Scratch validator artifacts live
+under `/tmp/taste-review-test/` (outside the repo, untracked, no cleanup needed).
 
 ## Conclusion
 
-All checks pass. No code changed, so no test/lint suite applies beyond the above. Ready
-for Verify.
+All three acceptance criteria PASS. No code changed, so no automated test/lint suite
+applies beyond the structural + hand-worked validation above. Ready for Verify.

@@ -299,6 +299,45 @@ ambiguous whether the signal is present, cast the seat.
     mechanism, out of this seat's scope) — this seat is the sole mechanism for *unattended*
     sovereignty enforcement, since the hook no-ops in unattended runs.
 
+### Taste
+
+- **Casts:** `skills/taste-review/SKILL.md`
+- **Cast-when:** `TASTE.md` exists at the repo root — this catalog's **only file-existence-gated
+  seat**, as opposed to every sibling risk-triggered entry above, which triggers on diff-content
+  signal (touches auth, touches migrations, adds tests, etc.). There is no diff-signal judgment
+  call here and thus no fail-closed ambiguity to resolve: if `TASTE.md` is absent, the seat is
+  absent from Cast, full stop — no generic fallback.
+- **Model tier:** Mid-tier. Applying a written preference file against a diff is procedural, the
+  same rationale the catalog's Mid-tier default already uses generally — contrast this
+  explicitly with Data Steward's Top-tier deviation just above: a missed migration mistake risks
+  data loss, but a missed taste nit does not carry that blast-radius asymmetry.
+- **Notes:**
+  - **Severity mapping:** findings are severity-mapped from each `TASTE.md` entry's declared
+    `strength` — `absolute`/`strong` → `Important` (an `absolute`-strength finding additionally
+    notes `(absolute preference)` inline and sorts first within the Important group, since the
+    panel's severity enum is closed to `Critical`/`Important`/`Minor` and this seat does not
+    introduce a fourth value), `weak` → `Minor`. Taste findings are **never** `Critical` and
+    **never** carry the `sovereignty: human-required` marker — that marker is a `data-steward`-
+    only contract extension (see the Data Steward entry above) for a different concern
+    (`DATA-MODEL.md` Agent-boundary/schema-semantics risk), not personal taste.
+  - **No-`TASTE.md`-means-absent is a missing-artifact case, not a missing-skill case:** this is
+    distinct from this catalog's "Missing skill handling" section above, which covers the
+    `taste-review` skill file itself being uninstalled (report as a coverage gap, per that
+    section's rule). A target repo simply having no `TASTE.md` is a different, expected failure
+    mode — the seat is absent from Cast by design, and both this seat and Phase 4's variant
+    scoring must report that gap explicitly per Coverage Honesty rather than silently omitting
+    the taste axis (see `formats/TASTE-FORMAT.md`'s "Malformed or missing TASTE.md").
+  - **Malformed-entry handling:** a `TASTE.md` Preference missing a required field (most commonly
+    `strength`) does not block the seat from casting or from reviewing its other, valid entries —
+    the malformed entry is reported as unusable in Coverage Honesty rather than guessed at (see
+    `skills/taste-review/SKILL.md`'s Output Contract).
+  - **Read-only**, like `domain-modeling` and `data-steward` — reports findings, does not edit
+    `TASTE.md` itself. `TASTE.md` is a human-owned artifact, built only through `grill-my-taste`
+    grilling sessions (Invariant 5); this seat may cite it but never modifies it.
+  - This seat's severity mapping is Phase 4's (`scc-5hy`, variant-explorer) scoring function per
+    the epic's stated build order ("Phase 4 blocked on Phase 3 — taste is the scoring function");
+    wiring the two together is out of this seat's own scope.
+
 ---
 
 ## Excluded from Individual Casting (left to `design-review` funnel or live-scan)
@@ -355,6 +394,7 @@ is allowed to add.
 | Design-Alternatives | `design-it-twice` | New class/module/API/architecture with no alternatives-considered evidence | Mid-tier (top-tier for its internal fresh-design dispatch) |
 | Test-Design Quality | `tdd` (Philosophy section only) | Diff adds or modifies test files | Mid-tier |
 | Data Steward | `data-steward` | Diff touches migrations/ORM/schema/serialization files or a DATA-MODEL.md-mapped path | Top-tier |
+| Taste | `taste-review` | `TASTE.md` exists at repo root | Mid-tier |
 
 **Fail-closed reminder:** any ambiguity in the "Cast-when" column above resolves to casting the
 seat, not skipping it.
