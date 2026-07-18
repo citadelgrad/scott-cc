@@ -1,99 +1,103 @@
-# Test Results: scc-4rj (Phase 2d — Data-layer guard hook)
+# Test Results: scc-cnx (Phase 3a — TASTE.md format)
 
-## Scope
+## Nature of this deliverable
 
-Task added `hooks/data_layer_guard.py` (PreToolUse hook) and registered it in `hooks/hooks.json`.
-No test harness exists anywhere in the repo for hooks (`tests/`, `tests/e2e/` are empty; no test
-references the sibling `prefer_modern_tools.py` either — confirmed in `.pas/investigation.md`).
-Per investigation's plan, verification is a live/manual dispatch: pipe crafted PreToolUse JSON
-payloads into the script and assert on its stdout/exit-code contract, which is the same contract
-Claude Code itself parses to decide whether to prompt — the correct, documented proxy for "would a
-confirm prompt appear," since no interactive session can be scripted here.
+`plugins/review-panel/formats/TASTE-FORMAT.md` is a pure documentation deliverable — a
+format specification with no code, hooks, or skill logic (consumer skills `grill-my-taste`
+3b, `--distill` 3c, and `taste-review` 3d don't exist yet). There is no test suite or
+lint surface to run against a markdown format spec. Per the task's own Acceptance
+Criteria note, live behavioral verification (an actual `grill-my-taste` session producing
+a conforming `TASTE.md`) is deferred to Phase 3b. This session instead did two things a
+format spec *can* be checked for now: (1) structural/cross-reference validation of the
+file itself, and (2) a hand-worked conformance test — simulating the Phase 3 acceptance
+criteria against the format's own stated rules, to prove the format is capable of
+satisfying them before 3b/3c/3d are built on top of it.
 
-All tests ran against an isolated scratch git repo (`/tmp/data-guard-test.XXXXXX`, `git init`'d so
-`find_repo_root` resolves correctly) rather than this repo's own root, since this repo has no
-root-level `DATA-MODEL.md`/data-layer paths of its own and a real one shouldn't be fabricated at
-the repo root just to test a hook.
+## 1. Structural validation of `TASTE-FORMAT.md`
 
-## AC1 — Interactive session, no change-log entry → confirm prompt
+- **Fenced code block balance:** 1 fenced block (2 backtick markers) — balanced, matches
+  precedent (`DATA-MODEL-FORMAT.md` also has exactly one `## Structure` example block).
+- **Header hierarchy:** no level-skips outside the fenced example (checked
+  programmatically). Section order (`Scope note` → `Structure` → `Rules` →
+  `Malformed or missing TASTE.md` → `Lazy creation`) mirrors the precedent files'
+  intro → structure → rules → disambiguation → lazy-creation shape.
+- **Cross-referenced paths all exist in the repo** (checked directly, not assumed):
+  `plugins/review-panel/skills/{deep-modules,complexity-recognition,naming-obviousness,
+  general-vs-special,strategic-mindset,code-evolution,comments-docs}`,
+  `skills/karpathy-guidelines/SKILL.md`, `plugins/review-panel/formats/{DATA-MODEL-FORMAT,
+  ADR-FORMAT}.md`, `plugins/review-panel/skills/grill-the-schema/SKILL.md`. All present.
+- **Spec conformance:** compared section-by-section against
+  `docs/plans/2026-07-16-two-system-architecture/two-system-spec.md` §3a (lines 233–241)
+  and Phase 3 acceptance criteria (lines 275–288) — exact match on required sections,
+  field names (`rule`, `rationale`, `strength`, `provenance`), and the `weak/strong/
+  absolute` enum. No other file in the repo yet references `TASTE-FORMAT.md` or
+  `TASTE.md` besides the PRD/SPEC/`.pas` docs — confirms the investigation's finding that
+  no other files need to change in this phase.
 
-**Setup:** scratch repo, no `DATA-MODEL.md`. Payload: `tool_name: Edit`, `permission_mode: default`,
-`file_path: <scratch>/migrations/0002_x.py`.
+## 2. Hand-worked conformance test (simulated Phase 3 ACs against the format's rules)
 
-**Result:** stdout emitted
-`{"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "ask", "permissionDecisionReason": "migrations/0002_x.py matches data-layer pattern '**/migrations/**' but DATA-MODEL.md has no dated Change log entry for today. ..."}}`,
-exit 0.
+Since `grill-my-taste` doesn't exist yet, I hand-constructed three sample `TASTE.md`
+files that a real session would plausibly produce, and wrote a small mechanical
+validator (`/tmp/taste-format-test/validate.py`, scratch — not committed) that parses
+`## Preferences` entries against exactly the rules stated in `TASTE-FORMAT.md`'s own
+"Rules" and "Malformed or missing TASTE.md" sections: every Preference needs
+`Rule`/`Rationale`/`Strength`/`Provenance`, and `Strength` must be one of
+`weak|strong|absolute`.
 
-**PASS** — confirm prompt observed via the documented `permissionDecision: "ask"` contract.
+| Scenario | File | Simulates | Result |
+|---|---|---|---|
+| ≥5 forced choices, all fields present | `valid_taste.md` | Phase 3 AC1 (grill-my-taste session ≥5 forced choices) | **PASS** — 5/5 Preferences parsed, all 4 fields present, all `Strength` values valid enum members, `Candidate rules` section empty |
+| One Preference missing `Strength` | `malformed_taste.md` | Phase 3 AC5 (malformed TASTE.md, missing strength) | **PASS** — validator correctly flags the entry `UNUSABLE (missing: Strength)` rather than guessing a default, matching the format's "Malformed or missing TASTE.md" rule |
+| Post-`--distill` state, one promoted entry, empty Candidate section | `distilled_taste.md` | Phase 3 AC4 (`--distill` ends with zero remaining candidates) | **PASS** — promoted entry has all 4 fields (provenance recorded as "Promoted via --distill"), `Candidate rules` section is empty and mechanically detected as such |
 
-## AC2 — Interactive session, with today's change-log entry → silent pass
+Full validator output:
 
-**Setup:** same scratch repo, added `DATA-MODEL.md` with a `## Change log` section containing
-`- 2026-07-17 SN: added widget migration` (today's date, confirmed via `date +%Y-%m-%d`). Same
-payload as AC1 re-run.
+```
+=== valid_taste.md ===
+Preferences found: 5
+  - Prefer flat error handling over nested try/catch: OK
+  - Prefer named exports over default exports: OK
+  - Prefer composition over inheritance for shared behavior: OK
+  - Prefer explicit null checks over optional chaining chains: OK
+  - Prefer table-driven tests over repeated assertions: OK
+Candidate rules section empty: True
+Expected all-valid=True, got all-valid=True -> PASS
 
-**Result:** empty stdout, exit 0.
+=== malformed_taste.md ===
+Preferences found: 2
+  - Prefer flat error handling over nested try/catch: OK
+  - Prefer named exports over default exports: UNUSABLE (missing: Strength)
+Candidate rules section empty: True
+Expected all-valid=False, got all-valid=False -> PASS
 
-**PASS** — no prompt triggered; edit proceeds silently.
+=== distilled_taste.md ===
+Preferences found: 1
+  - Prefer early returns over wrapping a function body in an if block: OK
+Candidate rules section empty: True
+Expected all-valid=True, got all-valid=True -> PASS
 
-## AC3 — Unattended/mode:agent context (R1) → no-op regardless of change-log state
+OVERALL: PASS
+```
 
-**Setup:** removed `DATA-MODEL.md` again (back to AC1's "would prompt" state), payload identical
-except `permission_mode: bypassPermissions` (the documented signal `--dangerously-skip-permissions`
-sets, per `dual-mode-contract.md`'s `mode:agent` invocation).
+## Acceptance criteria (scc-cnx)
 
-**Result:** empty stdout, exit 0 — same as AC2, but this time despite no change-log entry existing.
+> A grill-my-taste session of >=5 forced choices produces a TASTE.md where every
+> preference has rule + rationale + strength + provenance.
 
-**PASS** — hook no-ops silently in unattended contexts; enforcement correctly deferred to the
-data-steward review seat (2c) rather than this hook, per the R1 scope resolution.
+**PASS** (format-level verification, as the task's own AC note anticipates — full
+behavioral verification is 3b's responsibility): `TASTE-FORMAT.md` defines and requires
+all four fields per Preference (`## Rules`, first bullet), constrains `strength` to
+exactly `weak|strong|absolute` with no synonyms, and — demonstrated above — a
+5-preference sample conforming to the format's `## Structure` template parses cleanly
+with all fields present. The format also explicitly requires the "missing field →
+unusable, not guessed" behavior needed by Phase 3's error-state AC, and defines
+"Candidate rules empty" as a clean, greppable state needed by Phase 3's `--distill` AC —
+both confirmed above.
 
-## Supplementary edge-case coverage (fail-open design, glob matching, overrides)
+## Scope check
 
-All non-blocking, all exit 0:
-
-| Case | Input | Result |
-|---|---|---|
-| Malformed JSON stdin | `not-json{{{` | empty stdout — fails open |
-| Irrelevant tool (`Bash`) | `tool_name: Bash` | empty stdout — ignored |
-| Non-data-layer path | `src/app.py` | empty stdout — no match |
-| `*.sql` basename match at depth | `db/create.sql` | `ask` — basename glob matches at any depth |
-| `**/schema.*` vs. explicit `prisma/schema.prisma` | `prisma/schema.prisma` | `ask`, matched under `**/schema.*` (first list match — see note below) |
-| `NotebookEdit` via `notebook_path` field | `models/explore.ipynb` | `ask` — `**/models/**` matches |
-| `.data-guard.json` override replaces defaults | `{"globs": ["*.proto"]}`, then edit `migrations/0002_x.py` | empty stdout — no longer matched |
-| `.data-guard.json` override, new pattern | same override, edit `api.proto` | `ask` — override applied |
-| `cwd` in nested subdirectory | `cwd: <scratch>/nested/deep`, edit `migrations/0002_x.py` | `ask` — repo root correctly found by walking up from `cwd` |
-| `file_path` outside repo tree | `/tmp/migrations/outside.py` (repo root = scratch dir) | empty stdout — `ValueError` on `relative_to` handled, fails open |
-| Stale (yesterday-dated) change-log entry | `- 2026-07-16 SN: ...` present, edit today | `ask` — confirms the documented "today only" recency rule (investigation.md's noted judgment call) is implemented as designed, not accidentally lenient |
-
-**Informational, non-blocking:** `prisma/schema.prisma` is listed as its own glob in
-`DEFAULT_GLOBS`, but `**/schema.*` (listed earlier in the list) already matches it first, since
-`matches_data_layer` returns on first match. The explicit entry is currently dead — harmless (the
-path still correctly triggers `ask`), but worth a human's attention if the glob list is ever
-revisited; not a correctness bug so not fixed out-of-scope here.
-
-## Static checks
-
-- `python3 -m py_compile hooks/data_layer_guard.py` — OK.
-- `uv run ruff check hooks/data_layer_guard.py` — all checks passed.
-- `ty check hooks/data_layer_guard.py` (repo's `pyproject.toml` pins `[tool.ty.environment]
-  python-version = "3.12"`) — all checks passed.
-
-## Cleanup note
-
-The scratch git repo lived entirely under `/tmp/data-guard-test.*`, outside this repository, and
-was left for the OS to reclaim — this session's destructive-command guard (`dcg`) blocks `rm -rf`
-unconditionally pending human approval, including for that out-of-repo temp path. Running
-`py_compile` also produced `hooks/__pycache__/` (untracked, not `.gitignore`d, blocked from
-removal by the same guard). Neither affects the diff being reviewed (both are untracked/outside the
-repo), but flagging so a human can run `rm -rf hooks/__pycache__` and clear the `/tmp` scratch dir
-if desired.
-
-## Acceptance criteria summary
-
-| AC | Description | Result |
-|---|---|---|
-| 1 | Interactive, no change-log entry → confirm prompt | PASS |
-| 2 | Interactive, with today's change-log entry → silent | PASS |
-| 3 | Unattended (`bypassPermissions`) → no-op regardless | PASS |
-
-All 3 acceptance criteria PASS. No blocking issues found.
+No code changed, so no `ruff`/`ty`/test-suite run applies. Working tree for this task is
+limited to the new `plugins/review-panel/formats/TASTE-FORMAT.md` file plus `.pas/`
+tracking docs, consistent with the investigation and implementation summaries. Scratch
+validation artifacts (`/tmp/taste-format-test/`) are outside the repo and were not
+committed.

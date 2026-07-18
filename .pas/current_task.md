@@ -1,9 +1,9 @@
-# Current Task: scc-4rj
+# Current Task: scc-cnx
 
-## Phase 2d — Data-layer guard hook (interactive-only mechanical negation)
+## Phase 3a — TASTE.md format
 
 ### Task ID
-scc-4rj
+scc-cnx
 
 ### Status
 in_progress (claimed 2026-07-18)
@@ -12,64 +12,63 @@ in_progress (claimed 2026-07-18)
 P2
 
 ### Summary
-New PreToolUse hook that warns-and-confirms when an Edit/Write/NotebookEdit targets data-layer paths without a corresponding DATA-MODEL.md change-log entry. Explicitly scoped to interactive/planning-time use only — it is a developer-loop convenience, not an enforcement mechanism, and must no-op in unattended contexts since a confirm prompt needs a human to answer it.
+Define the shared format for TASTE.md, capturing personal, contested preference — explicitly distinct from universal quality (which belongs in the Ousterhout lens set / Karpathy guidelines, not here). This format underlies grill-my-taste (3b), the taste feedback loop / --distill mode (3c), and the taste review seat (3d).
 
 ### Description
-New PreToolUse hook that warns-and-confirms when an Edit/Write/NotebookEdit targets data-layer paths without a corresponding DATA-MODEL.md change-log entry. Explicitly scoped to interactive/planning-time use only — it is a developer-loop convenience, not an enforcement mechanism, and must no-op in unattended contexts since a confirm prompt needs a human to answer it.
+Define the shared format for TASTE.md, capturing personal, contested preference — explicitly distinct from universal quality (which belongs in the Ousterhout lens set / Karpathy guidelines, not here). This format underlies grill-my-taste (3b), the taste feedback loop / --distill mode (3c), and the taste review seat (3d).
 
 ### Design Details
 
-#### Implementation
-- **New file:** `hooks/data_layer_guard.py`, registered as a PreToolUse hook in `hooks/hooks.json` (core plugin, alongside `prefer_modern_tools.py`)
-- **Behavior:** Intercept Edit/Write/NotebookEdit targeting data-layer paths
-  - Default glob set: `**/migrations/**`, `**/models/**` (for known ORMs), `*.sql`, `**/schema.*`, `prisma/schema.prisma`, `**/alembic/**`
-  - Overridable via `.data-guard.json` in repo root
-- **On match:** warn-and-confirm (hook exit code prompting), with an allow flag once a DATA-MODEL.md change-log entry for the current work exists
-- **CI behavior:** Never hard-fail CI — this is a developer-loop guard only
+#### Deliverable
+New file: `plugins/review-panel/formats/TASTE-FORMAT.md`
 
-#### Scope (R1 — Resolved)
-- Interactive/planning-time only, not an unattended enforcement point
-- A warn-and-confirm hook needs a human to answer it, so it makes no sense as an enforcement mechanism for unattended PAS/Foundry runs
-- The hook detects an unattended/no-TTY (or mode:agent) context and no-ops — documented behavior, not a silent accident
-- Defers entirely to the data-steward review seat (2c) for sovereignty enforcement in unattended contexts
+#### Required Sections
+- **Preferences**: Each entry must have rule, rationale, strength (weak/strong/absolute), and provenance (which choice or override produced it)
+- **Weightings**: Personal calibrations of universal principles (e.g., 'locality beats DRY')
+- **Anti-preferences**: Patterns to flag even when defensible
+- **Candidate rules**: Captured overrides awaiting distillation (see Phase 3c)
+- **Scope note**: Clearly state that universal quality does NOT belong here (that is the Ousterhout lens set / Karpathy guidelines); only personal, contested preference belongs in TASTE.md
 
 #### Design Rationale
-- Makes the review seat's escalated status (2c) and Phase 5's Foundry consumption of it (OQ4) the sole mechanism for unattended sovereignty enforcement — not one of two
-- Depends on 2a for the change-log entry format the hook checks for
+- Invariant 5 (human artifacts are human-owned) applies directly — TASTE.md is a human-owned artifact
+- Blocks Phase 3b, 3c, 3d, and Phase 4 (variant scoring reads TASTE.md)
+- Depends on Phase 2a/2b for the DATA-MODEL.md format context
 
 ### Files to Create
-- `hooks/data_layer_guard.py` — the PreToolUse hook implementation
-- Modify `hooks/hooks.json` — register the new hook (alongside prefer_modern_tools.py)
+- `plugins/review-panel/formats/TASTE-FORMAT.md` — the TASTE.md format specification
 
 ### Acceptance Criteria
 
-1. **Interactive session without change-log entry:** An Edit to `migrations/0002_x.py` without a DATA-MODEL change-log entry triggers the confirm prompt.
-   - PASS/FAIL: confirm prompt observed
+A grill-my-taste session of >=5 forced choices produces a TASTE.md where every preference has rule + rationale + strength + provenance.
 
-2. **Interactive session with change-log entry:** The same edit after adding a DATA-MODEL.md change-log entry passes silently.
-   - PASS/FAIL: no prompt triggered; edit proceeds
-
-3. **Unattended/mode:agent context (R1):** The same Edit does not trigger a confirm prompt — the hook no-ops and the round proceeds to the data-steward review seat for enforcement instead.
-   - PASS/FAIL: no prompt triggered; seat cast as normal on the resulting diff
+**PASS/FAIL**: All fields (rule, rationale, strength, provenance) present for all preference entries. This will be verified via task 3b's flow, but the format itself must define and require these fields.
 
 ### Dependencies
-- Depends on: ✓ scc-f9k (Phase 2a — DATA-MODEL.md format, for change-log entry format)
-- Related: scc-bqp (Phase 2c — data-steward seat with sovereignty escalation, unattended enforcement)
+- Depends on: ✓ scc-f9k (Phase 2a — DATA-MODEL.md format)
+- Depends on: ✓ scc-b56 (Phase 2b — grill-the-schema skill)
+- Depends on: ✓ scc-4rj (Phase 2d — data-layer guard hook, Phase 2 completion)
+- Blocks: scc-3x5 (Phase 3b — grill-my-taste skill)
+- Blocks: scc-da0 (Phase 3c — taste feedback loop)
+- Blocks: scc-4tt (Phase 3d — taste seat)
+- Blocks: scc-5hy (Phase 4 — variant-explorer plugin)
 
 ### Key Constraints
-- This is Phase 2d (final Phase 2 task) in the strict Phase 1 → 2 → 3 → 4 → 5 build order
-- Phase 2 completion is required before Phase 3, 4, and 5 can begin
-- Must be interactive-only; unattended contexts must no-op, not prompt
-- Hook exit code can prompt; never hard-fail CI
+- This is Phase 3a (first Phase 3 task) in the strict Phase 1 → 2 → 3 → 4 → 5 build order
+- Phase 2 is now fully complete; Phase 3a is the next sequential task
+- Must distinguish personal, contested preference from universal quality
+- Human-owned artifact (Invariant 5) — agents may propose edits but must not auto-modify
 
 ### Phase
-Phase 2d of the Two-System Architecture (Phase 1 → 2 → 3 → 4 → 5 build order)
+Phase 3a of the Two-System Architecture (Phase 1 → 2 → 3 → 4 → 5 build order)
 
 ### Parent Epic
 scc-hzj: Two-System Architecture — Security, Data Stewardship, Taste, Variants, and Triage Spine
 
 ### Related Work
-- Phase 2a (scc-f9k): DATA-MODEL.md format specification — COMPLETE
+- Phase 1a (scc-4xa): Security seat — COMPLETE
+- Phase 1b (scc-g12): Plan-security pass — COMPLETE
+- Phase 2a (scc-f9k): DATA-MODEL.md format — COMPLETE
 - Phase 2b (scc-b56): grill-the-schema skill — COMPLETE
-- Phase 2c (scc-bqp): data-steward seat with sovereignty escalation — COMPLETE
-- Phase 2d (scc-4rj): data-layer guard hook — THIS TASK (FINAL PHASE 2)
+- Phase 2c (scc-bqp): data-steward seat — COMPLETE
+- Phase 2d (scc-4rj): data-layer guard hook — COMPLETE
+- Phase 3a (scc-cnx): TASTE.md format — THIS TASK
