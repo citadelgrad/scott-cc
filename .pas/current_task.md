@@ -1,102 +1,68 @@
-# Current Task: scc-bqp
+# Current Task: scc-b56
 
-## Phase 2c — data-steward seat (review stage, blocking, with sovereignty escalation)
+## Phase 2b — grill-the-schema skill (planning-stage DATA-MODEL.md interview)
 
 ### Task ID
-scc-bqp
+scc-b56
 
 ### Status
 in_progress
 
 ### Priority
-P1
+P2
 
 ### Summary
-New risk-triggered, read-only review seat (like domain-modeling) that checks diffs touching migrations, ORM/schema files, or serialization formats against DATA-MODEL.md's invariants and Agent boundary, plus a migration-safety checklist. Extends the reviewer-output contract with an optional sovereignty marker that FIX must never auto-resolve, mechanically enforced by a post-FIX assertion step.
+Create a new planning-stage skill (`grill-the-schema`) that interviews the human to build DATA-MODEL.md. This skill mirrors the existing `grill-with-docs` skill but targets DATA-MODEL.md instead of CONTEXT.md, covering entities, invariants, lifecycle decisions (soft-delete? audit? retention?), volume/access patterns, and boundaries.
 
 ### Description
+New planning-stage skill, modeled on grill-with-docs, that interviews the human to build DATA-MODEL.md instead of CONTEXT.md — covering entities, invariants, lifecycle (soft-delete? audit? retention?), volume/access patterns, and boundaries.
 
-#### New Seat Entry
-- Add to `plugins/review-panel/reviewers/persona-catalog.md` under Risk-Triggered Seats
-- Casts: new skill `plugins/review-panel/skills/data-steward/SKILL.md` (read-only, like domain-modeling)
+### Design Details
 
-#### Cast-When (fail-closed)
-Triggered when diff touches:
-- Migration files
-- ORM/model definitions
-- Schema files (*.sql, schema.*, prisma/, alembic/, migrations/, etc.)
-- Serialization formats
-- Any file DATA-MODEL.md maps an entity to
+#### Mechanics
+- Mirror grill-with-docs: one question at a time, recommended answers, explore the codebase instead of asking when possible, update artifacts inline
+- Target DATA-MODEL.md (from Phase 2a) instead of CONTEXT.md
+- Interview topics: entities, invariants, lifecycle (soft-delete? audit? retention?), volume/access patterns, and boundaries
+- Stress-test with concrete scenarios
+- Cross-reference actual schema/migration files for contradictions
+- Create DATA-MODEL.md lazily on first resolved decision
 
-#### Model Tier
-top-tier
+#### ADR Gate
+- ADR offers follow the same 3-part gate as grill-with-docs (hard to reverse, surprising, real trade-off)
+- Schema decisions frequently clear this gate
 
-#### Skill Procedure
-1. Check the diff against DATA-MODEL.md (invariants, agent boundary)
-2. Check against migration-safety checklist:
-   - Reversibility/down-path
-   - Expand→migrate→contract sequencing
-   - Backfill strategy and volume
-   - Lock behavior
-   - Index-creation strategy
-   - Nullable-then-tighten
-   - Dual-write windows
+#### Invariant 5 Compliance
+- This skill proposes/drafts but the resulting file is a human-owned artifact produced through the grilling conversation, not silently generated
+- Agents may propose edits but FIX never auto-modifies DATA-MODEL.md
 
-#### Sovereignty Escalation (Contract Extension)
-Findings keep the standard Critical/Important/Minor shape, plus optional marker `sovereignty: human-required` when:
-- Diff crosses the Agent boundary section of DATA-MODEL.md
-- DATA-MODEL.md is absent while the diff changes schema semantics
-
-#### Orchestrator Handling
-**FIX stage**: Never auto-fixes sovereignty-marked findings (R2, mechanically enforced)
-- Add post-FIX assertion step checking every sovereignty-marked finding's target file
-- Fails the round loudly if file changed anyway (rather than proceeding silently)
-- Lives alongside FIX stage in `fix-and-rereview.md`
-
-**CONVERGE**: Cannot report clean round while unresolved sovereignty findings exist
-- Interactive mode: explicit human sign-off request
-- mode:agent: emits top-level status `escalated` (extends converged|circuit_broken|error status)
-
-**Unattended consumption (OQ4)**: `escalated` must never block/park consuming automation (Phase 5 Foundry gate)
-- Unattended runs stay unattended by default
-- Gate's job is to make flag impossible to miss (surfaced in PR description + final mode:agent output)
-- Data-layer guard hook (2d) out of scope per R1
-
-#### Files to Edit
-- `skills/review-panel/references/fix-and-rereview.md`
-- `references/converge-and-pipeline.md`
-- `references/dual-mode-contract.md`
-- `references/merge-and-validate.md` (marker passes through dedupe untouched)
+### Files to Create
+- `plugins/review-panel/skills/grill-the-schema/SKILL.md` — new skill definition file (modeled on existing grill-with-docs)
 
 ### Acceptance Criteria
 
-1. **Destructive migration test**: Panel run on diff adding destructive migration (drop column with data) yields data-steward finding at Critical with migration-safety principle named
-   - PASS/FAIL: finding present, severity Critical
-
-2. **Agent boundary violation test**: Panel run on diff violating DATA-MODEL.md Agent-boundary entry ends 'escalated' (agent mode) / explicit sign-off request (interactive); FIX did not modify the migration
-   - PASS/FAIL: status + untouched file
-
-3. **Fault injection test**: FIX's underlying model attempts to touch sovereignty-marked finding's target file anyway; post-FIX assertion step fails round loudly with explicit sovereignty-violation message
-   - PASS/FAIL: round fails, message names violated finding
-
-4. **Non-data-layer diff test**: Diff not touching data-layer paths; seat not cast
-   - PASS/FAIL: absent from Cast
-
-5. **Missing DATA-MODEL.md boundary test**: Repo with no DATA-MODEL.md at all; seat still casts on schema diffs and emits sovereignty finding recommending grill-the-schema
-   - PASS/FAIL: finding present
+1. **Grilling session produces complete DATA-MODEL.md**: Grilling session on a fixture repo with an orders schema produces a DATA-MODEL.md containing at least:
+   - Entities section
+   - One invariant
+   - An Agent boundary section
+   - PASS/FAIL: file exists with all required sections
 
 ### Dependencies
 - Depends on: ✓ scc-f9k (Phase 2a — DATA-MODEL.md format)
-- Blocks: ← scc-tsa (Phase 5 — Triage spine plugin)
+- Blocks: ← Phase 3 tasks (taste system), Phase 5 (triage spine plugin)
 
 ### Key Constraints
-- This is the sole mechanism for unattended sovereignty enforcement (per R1 — 2d hook no-ops unattended)
-- Hard prerequisite for Phase 5 (R3: Phase 5 is blocked on Phase 2)
-- No window where triage-produced migrations ship with no data-steward seat and no sovereignty escalation path
-- R2 (mechanical post-FIX assertion) is different concern from OQ4 (giving humans room to judge legitimate escalation) — R2 catches FIX doing something it was never allowed to do at all
+- Invariant 5 applies: human-owned artifacts must be produced through grilling conversation, not silently generated
+- This is Phase 2b in the strict Phase 1 → 2 → 3 → 4 → 5 build order
+- Phase 2 completion is blocking Phase 3 (taste system), Phase 4 (variants), and Phase 5 (triage)
+- Skill should follow the same 3-part ADR gate as grill-with-docs (hard to reverse, surprising, real trade-off)
 
 ### Phase
-Phase 2c of the Two-System Architecture (Phase 1 → 2 → 3 → 4 → 5 build order)
+Phase 2b of the Two-System Architecture (Phase 1 → 2 → 3 → 4 → 5 build order)
 
 ### Parent Epic
 scc-hzj: Two-System Architecture — Security, Data Stewardship, Taste, Variants, and Triage Spine
+
+### Related Work
+- Phase 2a (scc-f9k): DATA-MODEL.md format specification — COMPLETE
+- Phase 2c (scc-bqp): data-steward seat with sovereignty escalation — COMPLETE
+- Phase 2d (scc-4rj): data-layer guard hook (next Phase 2 task after this one)
