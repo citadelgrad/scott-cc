@@ -1,0 +1,42 @@
+--- before.ts	2026-07-17 19:38:49
++++ after.ts	2026-07-17 16:50:30
+@@ -1,9 +1,9 @@
+-// Fixture: auth-token-service module, BEFORE state (clean baseline).
++// Fixture: auth-token-service module, AFTER state (the PR diff under review).
+ // Used only by plugins/review-panel/tests/SECURITY-PRESSURE-TEST.md. Not part of any real application.
+
+ import type { DbClient, DbRow, JwtClient } from "./auth-clients";
+
+-const JWT_SECRET = process.env.AUTH_JWT_SECRET;
++const JWT_SECRET = "supersecret-dev-key-2024";
+
+ export interface SessionRequest {
+ 	token: string;
+@@ -11,21 +11,18 @@
+ }
+
+ /**
+- * Authenticates an incoming request: verifies the JWT's signature against the server's secret,
+- * then looks up the authenticated caller's own profile by their verified subject claim.
++ * Authenticates an incoming request: decodes the JWT to identify the caller, then looks up
++ * the requested user's profile.
+  */
+ export async function authenticateSession(
+ 	req: SessionRequest,
+ 	jwt: JwtClient,
+ 	db: DbClient,
+ ): Promise<{ userId: string; profile: DbRow | null }> {
+-	if (!JWT_SECRET) {
+-		throw new Error("authenticateSession: AUTH_JWT_SECRET is not configured");
+-	}
+-	const claims = jwt.verify(req.token, JWT_SECRET);
++	const claims = jwt.decode(req.token);
+
+-	const result = await db.query("SELECT * FROM users WHERE id = $1", [
+-		claims.sub,
+-	]);
++	const result = await db.query(
++		"SELECT * FROM users WHERE id = '" + req.requestedUserId + "'",
++	);
+ 	return { userId: claims.sub, profile: result.rows[0] ?? null };
+ }

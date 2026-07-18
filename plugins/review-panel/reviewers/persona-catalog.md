@@ -58,12 +58,13 @@ installed/available in the current session:
   operation they are always available. If one is somehow missing (a broken install), report it
   as a coverage gap in the panel's final output rather than silently skipping — per the plan's
   "coverage honesty" rule (state what was skipped and why).
-- **Security seat**: no security-specific skill is vendored in this plugin (see the Security row
-  below for why). This seat is conditional on live-scan enrichment finding a security skill
-  installed. If none is found, the orchestrator must still apply baseline security attention via
-  `adversarial-reviewer`'s Scope item 2 (security holes) and say explicitly in the report that no
-  dedicated security-specialist seat was cast and why — do not silently drop security coverage
-  without comment.
+- **Security seat**: this plugin casts `security-suite`'s `agents/security-engineer.md` directly
+  (see the Security row below) — a primary catalog cast, not a live-scan-conditional one. If
+  `security-suite:security-engineer` is not present in the current session's available
+  Task/Agent-tool agent-type list (the plugin is not installed/enabled this session), the
+  orchestrator must still apply baseline security attention via `adversarial-reviewer`'s Scope
+  item 2 (security holes) and say explicitly in the report that no dedicated security-specialist
+  seat was cast and why — do not silently drop security coverage without comment.
 - **Risk-triggered seats whose skill is missing**: same coverage-honesty rule — note the gap,
   don't fail silently.
 
@@ -129,24 +130,49 @@ the risk of missing what they catch, and each covers a review angle none of the 
   coverage. Do not additionally cast the individual lenses it subsumes as separate seats — that
   would duplicate work `design-review` already does internally.
 
-### Security (conditional)
+### Security
 
-- **Casts:** No security-specific skill is vendored in this plugin. This is a deliberate scope
-  decision, not an oversight — none of the vendored sources (clairvoyance, ponytail, superpowers,
-  mattpocock) ship a dedicated security-review skill, and authoring one from scratch was out of
-  scope for this plugin's initial build.
-- **Cast-when:** Cast if and only if the live-scan secondary-enrichment layer finds a
-  security-specific skill installed in the current session (project-level, plugin-level, or
-  user-level under `~/.claude/skills`). If diff content touches auth, crypto, secrets handling,
-  input validation at a trust boundary, deserialization, or dependency/supply-chain changes, and
-  no dedicated security skill is found, the orchestrator must say so explicitly in its report
-  (see "Missing skill handling" above) rather than silently treating `adversarial-reviewer`'s
-  Scope item 2 as equivalent full coverage.
-- **Model tier:** Top-tier, if cast. Security review has the same asymmetric-cost profile as
-  adversarial review — a missed vulnerability is far more expensive than an extra review pass.
-- **Notes:** `adversarial-reviewer` Scope item 2 (security holes) provides baseline security
-  attention on every run even when this seat isn't cast, but it is a general adversarial pass,
-  not a specialist security review — don't conflate the two in reporting.
+- **Casts:** `security-suite`'s `agents/security-engineer.md`, dispatched via `Task` as agent type
+  `security-suite:security-engineer` — the same cross-plugin agent-dispatch pattern this catalog
+  already uses for its own Fresh-Eyes seat (`agents/clean-room-alternative.md`, exposed as
+  `review-panel:clean-room-alternative`). This is a live cross-plugin reference, not a vendored
+  copy: `security-suite` ships alongside `review-panel` in this repo, and no dedicated
+  security-review skill is authored inside this plugin.
+- **Cast-when (risk-triggered, fail-closed):** diff content touches auth, crypto, secrets
+  handling, input validation at a trust boundary, deserialization, dependency manifests/lockfiles,
+  IaC, or CI config. Ambiguity resolves to casting, per the catalog's global fail-closed rule
+  above.
+- **Model tier:** Top-tier. Security review has the same asymmetric-cost profile as adversarial
+  review — a missed vulnerability is far more expensive than an extra review pass.
+- **Missing-plugin fallback:** if `security-suite:security-engineer` is not present in the current
+  session's available Task/Agent-tool agent-type list (i.e. `security-suite` is not
+  installed/enabled this session — a concrete, mechanically checkable condition, since CAST's
+  dispatch prompt already receives this list per `references/cast-and-spawn.md` Step 4 item 1(b)),
+  the seat cannot be cast. The orchestrator must say so explicitly in its report (see "Missing
+  skill handling" above) rather than silently treating `adversarial-reviewer`'s Scope item 2 as
+  equivalent full coverage.
+- **Notes:**
+  - **Tool-grant caveat:** `security-engineer.md`'s frontmatter declares no `tools:` restriction
+    (unlike `clean-room-alternative.md`'s explicit `Read, Grep, Glob`). Per
+    `references/cast-and-spawn.md`'s SPAWN "Read-only tool access" section, the orchestrator
+    cannot force this externally-defined agent-type dispatch to read-only from the outside — check
+    its actual tool grant (visible in the Task/Agent-tool agent-type listing) and note any
+    `Edit`/`Write`/mutating-`Bash` deviation in the coverage-honesty statement rather than
+    silently assuming compliance.
+  - **Model-pin caveat:** `security-engineer.md` also declares no `model:` field, so this entry's
+    "top-tier" designation is a request the dispatching `Task` call should honor if it can pin a
+    model for a named agent-type; if it can't, that's a coverage-honesty-worthy deviation too, not
+    a blocker.
+  - **Output-shape caveat:** `security-engineer.md`'s own `## Outputs` section (Security Audit
+    Reports, Threat Models, Compliance Reports, Vulnerability Assessments, Security Guidelines)
+    does not natively use this plugin's Critical/Important/Minor + verdict shape. SPAWN's dispatch
+    prompt must explicitly instruct this seat to render its findings in
+    `contracts/reviewer-output.md`'s structure — the same generic instruction SPAWN already gives
+    every seat regardless of source (see "Collect raw output" in `references/cast-and-spawn.md`),
+    not a change to `security-engineer.md` itself.
+  - `adversarial-reviewer` Scope item 2 (security holes) provides baseline security attention on
+    every run even when this seat isn't cast, but it is a general adversarial pass, not a
+    specialist security review — don't conflate the two in reporting.
 
 ### Domain-Intent
 
@@ -283,7 +309,7 @@ is allowed to add.
 | Correctness/Adversarial | `adversarial-reviewer` | Always | Top-tier |
 | Simplicity | `ponytail-review` (diff) / `ponytail-audit` (repo) | Always | Mid-tier |
 | Structural | `design-review` | Always | Mid-tier |
-| Security | *(none vendored — live-scan conditional)* | Diff touches auth/crypto/secrets/input-validation/deserialization/deps, AND live-scan finds a security skill | Top-tier |
+| Security | `security-suite:security-engineer` | Diff touches auth/crypto/secrets/input-validation/deserialization/dependency-manifests/IaC/CI-config | Top-tier |
 | Domain-Intent | `domain-modeling` | Diff touches types/schemas/validation/workflows or CONTEXT.md-documented domain code | Mid-tier |
 | Fresh-Eyes | `clean-room-alternative` | Always | Top-tier |
 | Change-Trajectory | `code-evolution` | Diff modifies pre-existing code | Mid-tier |
