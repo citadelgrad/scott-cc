@@ -1,0 +1,93 @@
+.pas/investigation.md
+  s_c84ca2a3580795::t_103c6cd220d5ed 1,5-175
+plugins/review-panel/tests/fixtures/taste-preferences/README.md
+  s_547400aebeb2e4::t_96043532135083 1-17
+plugins/review-panel/tests/fixtures/taste-malformed/before.ts
+  s_547400aebeb2e4::t_75784acc0df4e0 1-3
+plugins/review-panel/reviewers/persona-catalog.md
+  s_5d5b33fd33641e::t_1521f60af0417a 302-340
+  s_5d5b33fd33641e::t_9c12b5da78e6e1 397
+plugins/review-panel/tests/fixtures/no-taste-file/after.ts
+  s_547400aebeb2e4::t_3b3b85849464f0 1-17
+plugins/review-panel/tests/fixtures/taste-preferences/after.ts
+  s_547400aebeb2e4::t_d076c565fe4068 1-17
+plugins/review-panel/tests/fixtures/no-taste-file/diff.patch
+  s_547400aebeb2e4::t_3b3b85849464f0 3-4,6,22
+  s_bc04cc3aeacdbc::t_f60ccc1b2e8f75 1-2,5,7-21
+plugins/review-panel/tests/fixtures/taste-preferences/TASTE.md
+  s_547400aebeb2e4::t_a4c34201122494 1-44
+plugins/review-panel/tests/fixtures/taste-malformed/diff.patch
+  s_547400aebeb2e4::t_75784acc0df4e0 3-4,6,22
+  s_bc04cc3aeacdbc::t_f60ccc1b2e8f75 1-2,5,7-21
+plugins/review-panel/tests/fixtures/taste-preferences/before.ts
+  s_547400aebeb2e4::t_c7efe0f8d95c4d 1-3
+plugins/review-panel/tests/fixtures/taste-malformed/TASTE.md
+  s_547400aebeb2e4::t_4bc3a297a1a7d4 1-28
+plugins/review-panel/tests/fixtures/no-taste-file/README.md
+  s_547400aebeb2e4::t_6bfb7922ad4cd8 1-11
+plugins/review-panel/tests/fixtures/taste-malformed/after.ts
+  s_547400aebeb2e4::t_75784acc0df4e0 1-17
+.pas/current_task.md
+  s_4ac3700100076a::t_6614403f4c1125 1,3,6,9,15,18,22-31,35-37,41,44-48,51,65-66
+plugins/review-panel/skills/taste-review/SKILL.md
+  s_5d5b33fd33641e::t_75d7498d0830b3 1-115
+plugins/review-panel/tests/fixtures/no-taste-file/before.ts
+  s_547400aebeb2e4::t_3b3b85849464f0 1-3
+plugins/review-panel/tests/fixtures/taste-preferences/diff.patch
+  s_547400aebeb2e4::t_6fd3fc4455f5b0 3-4,6,22
+  s_bc04cc3aeacdbc::t_f60ccc1b2e8f75 1-2,5,7-21
+plugins/review-panel/tests/fixtures/taste-malformed/README.md
+  s_547400aebeb2e4::t_6a7d3a7ffae88a 1-11
+.pas/test-results.md
+  s_547400aebeb2e4::t_77b82d843bab8c 1,5-32,36-41,47-64,70-77,79-80,84-134,136-145,147-150,154-155
+.pas/logs/two-system-architecture-e64d8f93/checkpoint.json
+  s_bc04cc3aeacdbc::t_c136909dbb4097 16,18-21,23,31-32,34-35,37,46-49,51,59,62-64,66,74,76-78,80,85,87-88,96-100,102,104,108,111,116,118,124-126,128-130,133-135
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "72d50da0944c5ae1ca9842827846038bf230039c",
+  "prompts": {},
+  "sessions": {
+    "s_4ac3700100076a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9c6a0c10-9c49-4180-b3b4-547ef24cd705",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_547400aebeb2e4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d873247c-8bfb-489e-be0f-344a32c325a4",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_5d5b33fd33641e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9a99da84-6ea0-4e0a-acd0-dad49b1180ca",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_bc04cc3aeacdbc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "77c9e108-7a47-4996-8378-d4dbf178fa78",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_c84ca2a3580795": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e273aefb-10c4-4d73-82fc-894c8b45796a",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
