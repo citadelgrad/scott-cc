@@ -1,9 +1,9 @@
-# Current Task: scc-4tt
+# Current Task: scc-d0u
 
-## Phase 3d — Taste seat (review stage)
+## Verification & tooling gates (all phases)
 
 ### Task ID
-scc-4tt
+scc-d0u
 
 ### Status
 in_progress (started 2026-07-18)
@@ -12,48 +12,41 @@ in_progress (started 2026-07-18)
 P2
 
 ### Summary
-New risk-triggered, read-only, mid-tier review seat that applies TASTE.md as a review lens, citing specific clauses and mapping severity from each preference's declared strength.
+Cross-cutting quality-gate requirements that apply incrementally to every phase's plugin/manifest edits, not a one-time final task. Each phase's PR must pass plugin verification, include a seeded-defect fixture, and pass repo-standard lint/test gates before merging, with README/marketplace catalog counts kept in sync.
 
 ### Description
-New risk-triggered, read-only, mid-tier review seat that applies TASTE.md as a review lens, citing specific clauses and mapping severity from each preference's declared strength. The seat never casts if TASTE.md doesn't exist, and never produces Critical or sovereignty-marked findings.
+Cross-cutting quality-gate requirements that apply incrementally to every phase's plugin/manifest edits, not a one-time final task. Each phase's PR must pass plugin verification, include a seeded-defect fixture, and pass repo-standard lint/test gates before merging, with README/marketplace catalog counts kept in sync.
 
 ### Design Details
 
-#### Overview
-New entry in persona-catalog.md under Risk-Triggered Seats:
-- **Casts**: new read-only skill `plugins/review-panel/skills/taste-review/SKILL.md`
-- **Cast-when**: TASTE.md exists in the target repo. (No TASTE.md → seat never casts; no generic fallback.)
-- **Model tier**: mid-tier (applying a written preference file is procedural)
-- **Findings**: cite the specific TASTE.md clause; severity mapped from the preference's strength:
-  - absolute → Important+
-  - strong → Important
-  - weak → Minor
-  - Taste findings are never Critical and never sovereignty-marked
+Apply scripts/verify_plugin.py, the PRESSURE-TEST.md fixture pattern, uv run pytest, and uv run ruff check --fix as merge gates on every phase PR (1a/1b, 2a-2d, 3a-3d, 4, 5) — not deferred to the end of the epic. Update README.md and the marketplace catalog's command/skill/agent counts as each phase adds new skills (plan-security-review, grill-the-schema, data-steward, taste-review, grill-my-taste, explore-variants, triage-spine, lib-upgrades, prod-errors) and new plugins (variant-explorer, triage).
+
+This task documents a standing gate rather than a single unit of sequential work — treat it as re-run per phase PR, matching the pattern already established for review-panel's own PRESSURE-TEST.md fixtures. Failing to keep marketplace catalog counts in sync has caused version-sync bugs in this repo before (see commit 748dff1, 'fix(marketplace): sync review-panel catalog version to 0.2.0').
 
 ### Acceptance Criteria
 
-1. **Happy path**: Panel run on a diff violating a strong preference yields a taste finding citing the clause verbatim. PASS/FAIL: clause quoted in finding.
-2. **No TASTE.md**: Repo without TASTE.md → taste seat absent from Cast; no taste findings. PASS/FAIL: absent.
-3. **Error state**: Malformed TASTE.md (missing strength) — seat reports the file as unusable in Coverage Honesty rather than guessing. PASS/FAIL: explicit note.
+1. **scripts/verify_plugin.py runs clean**: After each phase's plugin/manifest edits. PASS/FAIL per phase.
+2. **Fixtures per phase**: Each phase adds at least one fixture under the owning plugin's tests/ following the review-panel/tests/PRESSURE-TEST.md pattern (seeded defect → expected finding). PASS/FAIL: fixture present per phase.
+3. **Lint and test gates**: uv run pytest and uv run ruff check --fix gate every phase per repo rules (CLAUDE.md). PASS/FAIL: both commands clean.
+4. **Catalog sync**: README.md / marketplace catalog counts are updated per phase since they enumerate commands/skills/agents explicitly. PASS/FAIL: counts match actual plugin contents after each phase merges.
 
 ### Dependencies
-- Depends on: ✓ scc-cnx (Phase 3a — TASTE.md format)
-- Blocks: ○ scc-5hy (Phase 4 — variant-explorer plugin)
+- Parent: scc-hzj (Two-System Architecture epic)
+- Applies to all phases: 1a, 1b, 2a-2d, 3a-3d, 4, 5
 
 ### Key Constraints
-- This is Phase 3d (fourth Phase 3 task) in the strict Phase 1 → 2 → 3 → 4 → 5 build order
-- Depends on Phase 3a (TASTE-FORMAT.md) for the clause/strength fields it reads and cites
-- Invariant 3 (coverage honesty) governs the malformed-file error state — report unusable, don't guess
-- The seat never casts if TASTE.md doesn't exist (no generic fallback)
-- Taste findings are never Critical and never sovereignty-marked
+- This is a standing gate (re-run per phase PR), not a one-time final task
+- Applies to every phase PR merge
+- Cross-phase quality assurance for the entire Two-System Architecture pipeline
+- Must keep marketplace catalog counts in sync to prevent version-sync bugs
 
 ### Phase
-Phase 3d of the Two-System Architecture (Phase 1 → 2 → 3 → 4 → 5 build order)
+Cross-cutting requirement for all phases (1-5) of the Two-System Architecture
 
 ### Parent Epic
 scc-hzj: Two-System Architecture — Security, Data Stewardship, Taste, Variants, and Triage Spine
 
-### Related Work
+### Related Phases
 - Phase 1a (scc-4xa): Security seat — COMPLETE
 - Phase 1b (scc-g12): Plan-security pass — COMPLETE
 - Phase 2a (scc-f9k): DATA-MODEL.md format — COMPLETE
@@ -63,4 +56,6 @@ scc-hzj: Two-System Architecture — Security, Data Stewardship, Taste, Variants
 - Phase 3a (scc-cnx): TASTE.md format — COMPLETE
 - Phase 3b (scc-3x5): grill-my-taste skill — COMPLETE
 - Phase 3c (scc-da0): Taste feedback loop — COMPLETE
-- Phase 3d (scc-4tt): Taste seat — THIS TASK
+- Phase 3d (scc-4tt): Taste seat — COMPLETE
+- Phase 4 (scc-5hy): variant-explorer plugin — READY
+- Phase 5 (scc-tsa): Triage spine plugin — READY

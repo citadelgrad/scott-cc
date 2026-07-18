@@ -1,175 +1,216 @@
-# Investigation: scc-4tt (Phase 3d — Taste seat)
+# Investigation: scc-d0u — Verification & tooling gates (all phases)
 
-## Task
+## Task nature
 
-New risk-triggered, read-only, mid-tier review seat (`taste-review`) that applies `TASTE.md` as
-a review lens: cites the specific clause, maps severity from the preference's declared
-`strength`, never casts without `TASTE.md`, never emits Critical or `sovereignty`-marked
-findings.
+This is a **standing/retroactive gate**, not new feature work. Phases 1a–3d (10 sub-phases)
+are already merged without this gate having been actively applied. The concrete work is: audit
+those 10 sub-phases against the four ACs now, fix the real gaps found, and leave tooling in a
+state where Phase 4/5 (not yet built) can be gated automatically going forward.
 
-## Files to modify/create
+Baseline run of the three commands cited in the task, before any changes:
 
-1. **New file:** `plugins/review-panel/skills/taste-review/SKILL.md` — the seat itself.
-2. **Edit:** `plugins/review-panel/reviewers/persona-catalog.md` — add a new entry under
-   "Risk-Triggered Seats" (after the existing "Data Steward" entry, before the "Excluded from
-   Individual Casting" section), plus a row in the "Seat Summary Table" at the bottom.
+```
+$ uv run python3 scripts/verify_plugin.py
+OK: plugin manifests parse cleanly; versions match; hook file references exist: ...
 
-No other files are in scope. `TASTE-FORMAT.md` already defines everything this seat reads
-(Phase 3a, complete) and explicitly reserves the "malformed/missing" contract this seat must
-honor. `grill-my-taste/SKILL.md` (3b/3c, complete) already forward-references "the taste review
-seat (Phase 3d)" at line 55 — this task is what fulfills that reference, not a file to edit.
+$ uv run pytest
+collected 0 items  (no test_*.py / *_test.py anywhere in the repo outside .venv)
 
-## Pattern to follow: `data-steward/SKILL.md`
+$ uv run ruff check --fix
+All checks passed!
+```
 
-`data-steward` is the closest existing seat — same shape (risk-triggered, read-only, reads a
-human-owned format file, cites specific clauses, maps severity, has a "missing file" fallback
-governed by Coverage Honesty). Its structure is the template:
+All three look "clean," but that's misleading for two of them — see AC1 and AC3 below.
 
-- Frontmatter: `name`, `description` (dense, single-paragraph, states cast-when + what it does +
-  what it explicitly excludes), `argument-hint`, `allowed-tools: Read, Grep`.
-- Body: intro paragraph (what it is, what format doc it reads, what it's not), then `## When to
-  Apply`, `## How to Review`, `## Output Contract` sections — mirroring `domain-modeling/SKILL.md`'s
-  shape, which `data-steward` itself cites as its structural precedent.
-- `allowed-tools: Read, Grep` matches `cast-and-spawn.md`'s "Read-only tool access" rule (no
-  `Edit`/`Write`/`Bash` for any SPAWN-dispatched seat) — `taste-review` needs no `Glob`/`Task`
-  since, unlike `adversarial-reviewer` or `design-it-twice`, it never dispatches a nested
-  subagent.
+---
 
-## Required content, derived from TASTE-FORMAT.md + the task's Design Details
+## AC1 — `scripts/verify_plugin.py` runs clean
 
-### When to Apply
-- **Cast-when:** `TASTE.md` exists at the repo root. This is a **file-existence gate, not a
-  diff-content-pattern gate** — unlike every other risk-triggered seat in the catalog (which
-  trigger on diff signal: touches auth, touches migrations, etc.), this seat's trigger is purely
-  "does the artifact exist." If it doesn't, the seat is absent from Cast — no generic fallback,
-  no partial casting. This must be stated explicitly since it's a different casting shape from
-  every sibling entry in `persona-catalog.md`.
-- Read-only: reviews the diff/file/directory given, never edits `TASTE.md` or the code (matches
-  Invariant 5 — "Human artifacts are human-owned"; `TASTE.md` is edited only via `grill-my-taste`
-  grilling sessions).
+**Current behavior:** `scripts/verify_plugin.py` (repo root `scripts/`) hardcodes exactly one
+comparison: `.claude-plugin/plugin.json`'s `version` (the root `scott-cc` plugin) against
+`marketplace.json.plugins[0].version` (also `scott-cc`, guaranteed index 0). It never looks at
+any other entry in `marketplace.json.plugins[]`, so it cannot detect a version mismatch for any
+of the 7 sub-plugins (`security-suite`, `browser-automation`, `research-tools`,
+`performance-optimization`, `mutation-testing`, `beads-epic-builder`, `review-panel`).
 
-### How to Review
-1. Check for `TASTE.md` at repo root. If absent → seat does not cast at all (this is a
-   pre-condition checked by the orchestrator via Cast, not a per-review "no findings" state —
-   worth being explicit that an absent-TASTE.md run of this skill directly is a no-op that says
-   so, since a human or `--mode=agent` harness could still invoke the skill file directly outside
-   the panel's Cast step).
-2. Parse `## Preferences`, `## Weightings`, and `## Anti-preferences` sections (per
-   TASTE-FORMAT.md's Structure). **`## Candidate rules` entries are explicitly out of scope** —
-   TASTE-FORMAT.md is explicit that Candidates have no `strength` yet (assigned only at
-   `--distill`-time promotion) and aren't confirmed preferences; citing an unconfirmed candidate
-   as a review finding would misrepresent it as settled taste.
-3. For each Preference: validate all four required fields are present (`rule`, `rationale`,
-   `strength`, `provenance`). A Preference missing any field (most commonly `strength`) is
-   **unusable** — do not guess the missing field; report it in Coverage Honesty (AC #3, this is
-   the seat's explicit malformed-file contract straight from TASTE-FORMAT.md's own "Malformed or
-   missing TASTE.md" section).
-4. Check the diff against each valid Preference's `rule`, each Weighting's stated priority, and
-   each Anti-preference's flagged pattern. Where the diff violates one, produce a finding that
-   quotes the clause verbatim (AC #1 requires the clause text appear in the finding, not just a
-   paraphrase/reference).
+**This is a real, confirmed gap.** The task's own motivating anecdote — commit `748dff1`
+("fix(marketplace): sync review-panel catalog version to 0.2.0") — was exactly a sub-plugin
+version desync (`review-panel/plugin.json` said `0.2.0`, `marketplace.json`'s `review-panel`
+entry still said `0.1.0`). `verify_plugin.py` predates that bug but **would not have caught it**
+because it only checks index 0. It currently reports "OK" while blind to the exact class of bug
+it exists to prevent.
 
-### Output Contract — severity mapping (the interesting design decision)
+**Secondary defect found while tracing this:** every sub-plugin manifest in this repo lives at
+`plugins/<name>/.claude-plugin/plugin.json` (confirmed for `beads-epic-builder`,
+`browser-automation`, `mutation-testing`, `performance-optimization`, `research-tools`,
+`security-suite` — this is also the convention documented in `PUBLISHING.md:144-178`). **`review-panel` is the sole outlier**: its manifest sits at `plugins/review-panel/plugin.json`,
+one level up from where every sibling puts it (added in `6e48699`, review-panel's first commit,
+and never corrected). Its current version (`0.2.1`) does happen to match `marketplace.json`'s
+review-panel entry (`0.2.1`) right now, so there's no live break today, but it's the plugin with
+the most active development in this whole epic (10 merged phases, 2 more to come) — the highest-risk
+candidate for a repeat of `748dff1`, and a generic multi-plugin check (below) can't treat it
+uniformly without this fixed first.
 
-Task says: `absolute → Important+`, `strong → Important`, `weak → Minor`, never Critical, never
-sovereignty-marked.
+**Files to modify:**
+- `plugins/review-panel/plugin.json` → move to `plugins/review-panel/.claude-plugin/plugin.json`
+  (git mv, content unchanged). No other file references the old path (checked: no hits in
+  `*.md`/`*.json`/`*.py`/`*.sh`), so this is a safe, isolated move.
+- `scripts/verify_plugin.py` → extend `main()` to iterate every entry in
+  `marketplace.json.plugins[]`, resolve `<repo_root>/<source>/.claude-plugin/plugin.json` (skip
+  the root entry, `source: "./"`, which is already handled by the existing check), and compare
+  each plugin.json's `name`/`version` against its marketplace entry. Missing plugin.json should
+  `fail()` with a clear message (same pattern the script already uses), not be silently skipped —
+  consistent with this epic's Coverage Honesty invariant.
 
-**Constraint found during investigation:** the panel's actual severity enum is a **closed
-three-value set**, enforced in two places:
-- `dual-mode-contract.md`'s JSON contract: `"severity": "Critical | Important | Minor"` (line
-  105) — a `mode:agent` consumer parses exactly these three strings.
-- `merge-and-validate.md` line 101: dedup/fingerprinting explicitly reasons over
-  "Critical/Important/Minor, taking the highest severity."
+**Risk:** low. The plugin.json move has no other referrers. The verify_plugin.py extension is
+additive to an already-passing check; test by deliberately desyncing a version locally and
+confirming the script now fails before reverting.
 
-There is no fourth `Important+` value anywhere else in this plugin. Introducing a literal
-`"Important+"` severity string would break the closed enum every downstream stage (MERGE,
-VALIDATE, the JSON contract, a `foundry` gate's `jq` parsing) depends on — this is exactly the
-kind of contract-breaking special-case Invariant 2 (review-panel never special-cases a
-subordinate concern) warns against.
+---
 
-**Resolution to write into the skill:** treat `Important+` as "the top of the Important band,"
-not a fourth severity value — same pattern `data-steward` already uses for `sovereignty:
-human-required` (an additional documented field/convention layered on the closed
-Critical/Important/Minor enum, not a new enum value). Concretely:
-- Emit `severity: Important` for `absolute`-strength findings (keeps the closed enum intact).
-- Additionally note `(absolute preference)` inline in the finding text/rationale so a human or
-  downstream consumer can distinguish it from a `strong`-derived Important finding, and sort
-  `absolute`-derived findings first within the Important bucket in any locally-rendered listing.
-- This must be spelled out as a deliberate design note in the SKILL.md's Output Contract (mirrors
-  how `data-steward`'s "Sovereignty extension" subsection documents its own contract extension
-  locally rather than editing the shared `contracts/reviewer-output.md`).
+## AC2 — Fixture per phase (PRESSURE-TEST.md pattern: seeded defect → expected finding)
 
-Severity floor/ceiling, explicit:
-- `absolute` → `Important` (top of band, noted as absolute)
-- `strong` → `Important`
-- `weak` → `Minor`
-- **Never `Critical`**, regardless of strength — this is an explicit task/format-doc invariant,
-  not a judgment call the seat makes per-finding.
-- **Never `sovereignty: human-required`** — this seat must not set that field under any
-  circumstance (it's a `data-steward`-only contract extension per TASTE-FORMAT.md's own framing
-  of taste vs. quality/sovereignty concerns).
+Checked `git show --name-status` for all 10 phase-labeled commits (not just current working-tree
+state, since some steps added fixtures under a different commit than the "Phase X" commit message):
 
-### Missing / malformed TASTE.md (AC #2, #3)
+| Phase | Commit | Fixture added? |
+|---|---|---|
+| 1a security seat | `eb5ee33` | added `review-panel/tests/fixtures/auth-token-service/` (4 seeded vulns) |
+| 1b plan-security-review | `b5cf582` | added `security-suite/tests/fixtures/plan-security-review/{auth-login-plan,ui-copy-change-plan}.md` |
+| 2a DATA-MODEL.md format | `3c843b6` | added `review-panel/tests/fixtures/orders-schema/` |
+| 2b grill-the-schema skill | `da9e54d` | none — reuses 2a's `orders-schema` fixture as interview input |
+| 2c data-steward seat | `eabbf50` | added `no-data-model-inventory/` + `orders-schema/app/diff.patch` |
+| 2d data-layer-guard hook | `662110c` | **none** |
+| 3a TASTE-FORMAT.md spec | `3a24056` | none at definition time (later covered by 3d's fixtures) |
+| 3b grill-my-taste skill | `dbdcf54` | none — interview skill, no diff to seed |
+| 3c taste feedback loop | `070d40d` | none — enhancement to 3b |
+| 3d taste-review seat | `72d50da` | added `taste-preferences/`, `taste-malformed/`, `no-taste-file/` |
 
-- **No `TASTE.md` at all:** seat does not cast (Cast-level exclusion, handled in "When to
-  Apply"/persona-catalog entry) — not a "ran and found nothing" state.
-- **`TASTE.md` exists, well-formed, no violations found:** say so plainly (matches
-  `data-steward`'s "If everything is clear, say so plainly" closing line).
-- **`TASTE.md` exists but has a malformed entry** (e.g. missing `strength`): the seat still casts
-  (file exists) and still reviews valid entries normally, but reports the malformed entry as
-  unusable under Coverage Honesty, explicitly, rather than guessing at severity — this is the
-  literal text of TASTE-FORMAT.md's own "Malformed or missing TASTE.md" rule, and Invariant 3
-  (coverage honesty) directly governs it.
+**Reading the gaps:** `PRESSURE-TEST.md:5-11` itself states review-panel skills are "not
+executable code" — a markdown prompt set driving a Claude subagent loop, not something a
+seeded-defect diff can be run against automatically. That legitimately explains 2b/3b/3c (pure
+grilling/interview skills — no diff exists to seed a defect into) and softens 3a (a doc-format
+spec, later exercised end-to-end by 3d's `TASTE.md` fixtures). None of those four need a new
+fixture retroactively; they're consistent with the plugin's own documented nature, and it would
+be process-theater to force a "seeded defect" fixture onto an interview skill that has none.
 
-## persona-catalog.md changes
+**2d is different and is a real gap.** `hooks/data_layer_guard.py` is 171 lines of plain,
+importable-shape Python (`find_repo_root`, `load_globs`, `matches_glob`, `matches_data_layer`,
+`has_todays_change_log_entry`, `main`) reading a JSON payload on stdin and writing a JSON
+permission decision (or nothing) on stdout — this is exactly the shape `uv run pytest` is meant
+to cover, and it currently has **zero** test coverage of any kind. This is the one place where
+AC2 and AC3 are both failing for the same reason.
 
-Add a new "Taste" entry under `## Risk-Triggered Seats`, following the same field structure as
-every existing entry (Casts / Cast-when / Model tier / Notes):
+**Files to modify:**
+- New: `hooks/tests/test_data_layer_guard.py` (repo has no existing hooks test directory;
+  colocating under `hooks/tests/` mirrors `plugins/review-panel/tests/` and keeps the hook and
+  its coverage next to each other). Invoke the hook as a subprocess (`python3
+  hooks/data_layer_guard.py` with JSON on stdin) rather than importing it, since `hooks/` isn't a
+  package and subprocess invocation is what actually exercises the real Claude Code contract
+  (stdin JSON in, stdout JSON/exit-code out) — the same black-box, "seeded defect → expected
+  finding" spirit as the markdown fixtures, just pytest-automated because this artifact actually
+  is code.
+- Minimum cases to cover (each is a "seeded defect" in the sense of a constructed repo-root
+  fixture under `tmp_path`, git-initialized so `find_repo_root` resolves):
+  1. Non-`Edit`/`Write`/`NotebookEdit` `tool_name` → silent no-op.
+  2. `permission_mode: "bypassPermissions"` on a matching path → silent no-op (unattended
+     deference to data-steward, per the hook's own docstring).
+  3. Edit to a `migrations/`-glob path with no `DATA-MODEL.md` at all → `ask` decision with the
+     glob pattern and reason in `permissionDecisionReason`.
+  4. Same, but `DATA-MODEL.md` has a `## Change log` entry dated today → silent no-op.
+  5. Edit to a path that matches no default glob → silent no-op.
+  6. `.data-guard.json` override present → hook uses the override globs, not `DEFAULT_GLOBS`.
 
-- **Casts:** `skills/taste-review/SKILL.md`
-- **Cast-when:** `TASTE.md` exists at the repo root — **not** a diff-content-pattern trigger
-  (unlike every sibling risk-triggered entry); must be called out as this catalog's only
-  file-existence-gated seat rather than diff-signal-gated. No fail-closed ambiguity applies here
-  since it's a mechanical file check, not a judgment call.
-- **Model tier:** Mid-tier, matching the task's explicit rationale ("applying a written
-  preference file is procedural") — this is the same mid-tier default the catalog uses generally,
-  contrasted explicitly against `data-steward`'s top-tier deviation (blast-radius asymmetry
-  doesn't apply here; a missed taste nit is not a data-loss risk).
-- **Notes:** severity-mapping summary (absolute/strong/weak → Important(absolute-noted)/
-  Important/Minor, never Critical, never sovereignty-marked); explicit no-`TASTE.md`-means-absent
-  rule (cross-reference to "Missing skill handling" section's coverage-honesty pattern, though
-  this is a "missing artifact" case rather than a "missing skill" case — worth distinguishing in
-  the note since the catalog's existing "Missing skill handling" section is about the skill file
-  itself being uninstalled, a different failure mode than the target repo simply having no
-  `TASTE.md`); note that Phase 4 (variant-explorer, `scc-5hy`, currently blocked on this task)
-  will consume this same severity mapping for its scoring function, per the epic's stated
-  dependency ("Phase 4 blocked on Phase 3 (taste is the scoring function)").
+**Risk:** low — pure functions, no network/filesystem side effects beyond reading the two files
+the test fixtures construct in `tmp_path`.
 
-Also add a row to the "Seat Summary Table" at the bottom, consistent with the other 10 rows:
+---
 
-| Seat | Casts | Cast-when | Model tier |
-|---|---|---|---|
-| Taste | `taste-review` | `TASTE.md` exists at repo root | Mid-tier |
+## AC3 — `uv run pytest` and `uv run ruff check --fix` gate every phase
 
-## Risks / dependencies
+**Current behavior:** both commands currently pass, but `pytest` passing is vacuous — it
+collects 0 items because there are no `test_*.py`/`*_test.py` files anywhere in the repo (only
+`.venv`'s vendored ones, which pytest correctly ignores). `ruff check --fix` passing is genuine
+(it lints the 3 real Python files under `hooks/`, plus `scripts/verify_plugin.py`).
 
-- **Must not introduce a 4th severity value.** This is the main design trap in the task's own
-  wording ("Important+") — confirmed no such value exists anywhere in the merge/validate/JSON
-  pipeline. Handling this as a documented sub-band of Important (as `data-steward` handles
-  `sovereignty` as an additional field, not a new severity) keeps the seat's output mergeable
-  through `merge-and-validate.md` and valid against `dual-mode-contract.md`'s JSON schema with
-  zero special-casing anywhere else in the pipeline — satisfies Invariant 2.
-- **Must not read `## Candidate rules`.** Candidates are unconfirmed and have no `strength` by
-  design (TASTE-FORMAT.md) — citing one as a finding would be citing an entry the format doc
-  itself says isn't ready to be treated as settled taste.
-- **No test fixtures currently exist for TASTE.md** (unlike `DATA-MODEL.md`, which has a fixture
-  at `tests/fixtures/orders-schema/DATA-MODEL.md`). The Run Tests step will likely need to build
-  fixtures by hand (a `TASTE.md` with a strong-strength Preference + a diff violating it, a
-  malformed entry missing `strength`, and a no-TASTE.md case) — consistent with the hand-worked
-  conformance-test approach used throughout Phase 3 (no live orchestrator exists yet to execute
-  the panel end-to-end).
-- **Dependency direction check (Invariant 2):** this seat only reads `TASTE.md` and diff content;
-  it does not import from or special-case `triage` or `foundry` — consistent with the invariant.
-- **Blocks Phase 4** (`scc-5hy`): the epic notes taste is Phase 4's scoring function, so getting
-  the severity-mapping contract right here (not just "it compiles") matters for that consumer,
-  even though wiring the two together is explicitly out of this task's scope.
+**Required change:** none beyond what AC2 already prescribes (the new `hooks/tests/` file gives
+`pytest` something real to run). No repo config changes needed — `pyproject.toml` has no
+`[tool.pytest.ini_options]` section and doesn't need one; default rootdir-based discovery already
+finds `hooks/tests/test_data_layer_guard.py` once it exists (pytest already reports
+`configfile: pyproject.toml` and searches from repo root).
+
+**Risk:** none — additive only.
+
+---
+
+## AC4 — README.md / marketplace catalog counts in sync
+
+**This is the largest, clearest gap found.** `README.md`'s "Sub-plugins" section (`README.md:20`,
+`README.md:136-247`) enumerates exactly 6 sub-plugins: `beads-epic-builder`,
+`browser-automation`, `research-tools`, `security-suite`, `performance-optimization`,
+`mutation-testing`. **`review-panel` is not mentioned anywhere in `README.md`** — not in the "At
+a Glance" table, not as its own `###` subsection — despite being the 7th entry in
+`marketplace.json.plugins[]` and having received 10 merged phases of active development
+(`review-panel` was added in `6e48699`, before this epic started, and was apparently never added
+to the README even then). Every one of the 10 completed sub-phases in this epic added a skill (or
+in 2d's case, a root-level hook, which *is* correctly counted in `README.md:18/113-120`) to
+`review-panel` without ever touching `README.md` — this task's AC4 has been silently failing
+since Phase 1a.
+
+Actual current review-panel contents (counted directly, not from any doc):
+- **Skills: 29** — `abstraction-quality, adr-skill, adversarial-reviewer, code-evolution,
+  comments-docs, complexity-recognition, data-steward, deep-modules, design-it-twice,
+  design-review, diagnose, domain-modeling, error-design, general-vs-special, grill-my-taste,
+  grill-the-schema, grill-with-docs, improve-codebase-architecture, information-hiding,
+  module-boundaries, naming-obviousness, ponytail-audit, ponytail-review, pull-complexity-down,
+  red-flags, review-panel, strategic-mindset, taste-review, tdd`
+- **Commands: 1** — `/review-panel` (`plugins/review-panel/commands/review-panel.md`)
+- **Agents: 1** — `clean-room-alternative` (`plugins/review-panel/agents/clean-room-alternative.md`)
+- Reference-only, not counted as skills/commands/agents: `reviewers/persona-catalog.md`,
+  `formats/{ADR,CONTEXT,DATA-MODEL,TASTE}-FORMAT.md`, `contracts/*.md`, `scripts/{review-package,workspace}`
+
+Secondary, lower-priority inconsistency: every other sub-plugin's `marketplace.json` description
+includes a parenthetical count (e.g. `"...(2 agents, 2 skills)"`); `review-panel`'s description
+does not. Given how fast review-panel's skill count is moving (29 already, Phase 4/5 still to
+come), baking a count into that one-line description is exactly the kind of value that goes stale
+every phase — same failure mode as the version field. Recommend leaving the marketplace
+description as-is and only fixing `README.md`, where the counts already live in one canonical,
+structured table per plugin.
+
+**Files to modify:**
+- `README.md`:
+  - `README.md:20` — `Sub-plugins | 6 | ...` → `7`, add `review-panel` to the name list.
+  - Add a new `### review-panel` subsection after `### mutation-testing` (README.md:229-247),
+    following the exact structure every other sub-plugin subsection uses (one-line description,
+    `**Agents (1)**` table, `**Skills (29)**` table). 29 skills likely need thematic
+    sub-groupings (e.g. "Review Seats", "Grilling/Interview", "Reference Skills") to stay readable
+    rather than one 29-row table — this is an editorial call, not a mechanical one.
+  - `README.md:1` — intro line already covers this loosely via "and more"; no change strictly
+    required, but consider naming review-panel given it's the largest sub-plugin.
+
+**Risk:** low — pure documentation. Main effort is deciding how to sub-group 29 skills readably,
+not correctness risk.
+
+---
+
+## Cross-cutting note for Phase 4 / Phase 5
+
+Phases 4 (`scc-5hy`, variant-explorer) and 5 (`scc-tsa`, triage) are not yet built, so there's
+nothing to retroactively audit for them. Once `scripts/verify_plugin.py` is extended (AC1) to
+walk every `marketplace.json` entry generically, both new plugins get version-sync coverage for
+free the moment their `.claude-plugin/plugin.json` + marketplace entries exist, provided their
+implementers follow the `.claude-plugin/plugin.json` convention (not review-panel's original,
+now-corrected, outlier layout). Their README/catalog-count updates (AC4) and fixtures (AC2) still
+need to happen as part of those phases' own implementation work — this task doesn't need to
+pre-create anything for them.
+
+## Summary of concrete changes for this task
+
+1. `git mv plugins/review-panel/plugin.json plugins/review-panel/.claude-plugin/plugin.json`
+2. Extend `scripts/verify_plugin.py` to check every `marketplace.json.plugins[]` entry's
+   `.claude-plugin/plugin.json` version, not just index 0.
+3. Add `hooks/tests/test_data_layer_guard.py` covering the 6 cases listed under AC2.
+4. Update `README.md`: bump Sub-plugins count 6→7, add a `### review-panel` section with
+   accurate Agents(1)/Commands(1)/Skills(29) tables.
+5. Re-run `uv run python3 scripts/verify_plugin.py`, `uv run pytest`, `uv run ruff check --fix`
+   after each change and confirm all three stay clean, with pytest now collecting >0 items.

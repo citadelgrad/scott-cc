@@ -83,6 +83,29 @@ def main() -> int:
             f"version mismatch: plugin.json has {plugin_version!r}, marketplace.json has {marketplace_version!r}"
         )
 
+    for entry in marketplace_plugins[1:]:
+        if not isinstance(entry, dict):
+            fail(f"expected plugin entry to be an object in {MARKETPLACE_JSON}")
+        name = entry.get("name")
+        source = entry.get("source")
+        if not isinstance(source, str):
+            fail(f"expected string 'source' for plugin {name!r} in {MARKETPLACE_JSON}")
+        sub_plugin_json = ROOT / source / ".claude-plugin" / "plugin.json"
+        sub_plugin = load_json(sub_plugin_json)
+        if not isinstance(sub_plugin, dict):
+            fail(f"expected object in {sub_plugin_json}")
+        sub_name = sub_plugin.get("name")
+        sub_version = sub_plugin.get("version")
+        if sub_name != name:
+            fail(
+                f"name mismatch: {sub_plugin_json} has {sub_name!r}, marketplace.json has {name!r}"
+            )
+        marketplace_sub_version = entry.get("version")
+        if sub_version != marketplace_sub_version:
+            fail(
+                f"version mismatch: {sub_plugin_json} has {sub_version!r}, marketplace.json has {marketplace_sub_version!r}"
+            )
+
     missing_paths: list[str] = []
     referenced_paths: list[str] = []
     for command in iter_hook_commands(hooks):

@@ -22,7 +22,7 @@
     {
       "name": "security-suite",
       "source": "./plugins/security-suite",
-      "description": "Security-focused development with advisory and vulnerability scanning (2 agents)",
+      "description": "Security-focused development with advisory and vulnerability scanning (2 agents, 1 skill)",
       "version": "1.0.0",
       "author": {
         "name": "Scott Nixon"

@@ -1,155 +1,125 @@
-# Test Results: scc-4tt (Phase 3d — Taste seat)
+# Test Results: scc-d0u — Verification & tooling gates (all phases)
 
-## Scope
+This task is a **standing gate**, not new feature code. There is nothing to "seed a defect
+into" for AC2 beyond what's already documented in `.pas/investigation.md` (2b/3a/3b/3c
+legitimately have no diff to seed; 2d's gap is closed by the new pytest suite, verified below).
+The concrete validation for this task is: (a) run the three gate commands clean, (b) prove the
+extended `verify_plugin.py` actually catches the bug class it's meant to catch (live
+dispatch/desync test), and (c) mechanically cross-check the README/catalog counts against the
+real plugin contents rather than eyeballing them.
 
-Two new files (`plugins/review-panel/skills/taste-review/SKILL.md`, new) and one edit
-(`plugins/review-panel/reviewers/persona-catalog.md`, new "Taste" entry + Seat Summary
-Table row). No code changed — same verification shape used throughout Phase 2/3: no
-live orchestrator exists yet to run the panel end-to-end, so I built fixtures and a
-hand-worked conformance test, per the investigation's stated plan.
-
-## 1. Fixtures built
-
-No `TASTE.md` fixtures existed before this task (unlike `DATA-MODEL.md`, which has
-`tests/fixtures/orders-schema/`). Built three, modeled on the `orders-schema` /
-`no-data-model-inventory` fixture pattern:
-
-- **`tests/fixtures/taste-preferences/`** — a well-formed `TASTE.md` with three
-  Preferences spanning all three `strength` values (`strong`, `absolute`, `weak`), plus
-  `diff.patch` (`before.ts` → `after.ts`) that violates all three in one change:
-  `export default` (weak), in-place argument mutation `order.status = "processing"`
-  (absolute), and three levels of nested `try`/`catch` (strong — the same shape as
-  `TASTE-FORMAT.md`'s own worked example and the example finding line in
-  `taste-review/SKILL.md` itself). Targets **AC1** and the absolute-strength
-  severity-mapping design decision flagged in the investigation.
-- **`tests/fixtures/taste-malformed/`** — a `TASTE.md` with one well-formed Preference
-  (`strong`) and one missing its `Strength` field entirely, reusing the same diff.
-  Targets **AC3**.
-- **`tests/fixtures/no-taste-file/`** — reuses the same diff/before/after, but has no
-  `TASTE.md` at all in the fixture directory. Targets **AC2**.
-
-Each fixture has a `README.md` stating which AC it targets, matching the convention of
-every prior-phase fixture directory.
-
-## 2. Hand-worked conformance test
-
-Built a Python parser + validator at `/tmp/taste-review-test/` (`fixtures.py`,
-`validate.py`) that mechanically parses each `TASTE.md` fixture's `## Preferences`
-section (mirroring `taste-review/SKILL.md` step 3's field-presence check) and validates
-a hand-worked set of findings — what the seat should produce reviewing
-`taste-preferences/diff.patch` by hand, per the skill's documented "How to Review" and
-"Output Contract" sections — against the contract's rules.
-
-**Validator run:**
+## 1. Gate command re-run (AC1, AC3)
 
 ```
-$ python3 validate.py
-== Scenario 1: taste-preferences (AC1 happy path + severity mapping) ==
-  [PASS] strength=absolute severity=Important verbatim=True absolute_note=True sovereignty=False
-  [PASS] strength=strong   severity=Important verbatim=True absolute_note=False sovereignty=False
-  [PASS] strength=weak     severity=Minor     verbatim=True absolute_note=False sovereignty=False
-  Important-band ordering (absolute-derived first): PASS
-  No Critical findings anywhere: PASS
+$ uv run python3 scripts/verify_plugin.py
+OK: plugin manifests parse cleanly; versions match; hook file references exist:
+    hooks/data_layer_guard.py, hooks/prefer_modern_tools.py, hooks/terminal_bell.sh,
+    hooks/toon_post_hook.sh
 
-== Scenario 2: taste-malformed (AC3 error state) ==
-  Preferences found: 2 (usable=1, malformed=1)
-  'Prefer named exports over default exports' correctly flagged as malformed (missing strength): PASS
-  Missing field correctly identified as exactly ['strength']: PASS (got ['strength'])
-  Well-formed 'Prefer flat error handling over nested try/catch' still reviewed normally (not dropped alongside the malformed entry): PASS
-  Coverage Honesty report line present and explicit: PASS
+$ uv run pytest -v
+collected 6 items
+hooks/tests/test_data_layer_guard.py::test_non_edit_tool_is_silent_noop PASSED
+hooks/tests/test_data_layer_guard.py::test_bypass_permissions_is_silent_noop_even_on_matching_path PASSED
+hooks/tests/test_data_layer_guard.py::test_matching_path_without_data_model_asks PASSED
+hooks/tests/test_data_layer_guard.py::test_matching_path_with_todays_change_log_entry_is_silent_noop PASSED
+hooks/tests/test_data_layer_guard.py::test_non_matching_path_is_silent_noop PASSED
+hooks/tests/test_data_layer_guard.py::test_data_guard_override_replaces_default_globs PASSED
+6 passed in 0.28s
 
-== Scenario 3: no-taste-file (AC2 absent-from-Cast) ==
-  TASTE.md absent from fixture dir: PASS
-  Diff still present (seat would have content to review, if cast): PASS
-  taste-review absent from simulated Cast list: PASS
-
-3/3 scenarios behaved as expected
-exit code: 0
+$ uv run ruff check --fix
+All checks passed!
 ```
 
-**Negative controls** (confirming the checks actually discriminate, not vacuously
-passing):
-- A `severity: Critical` finding fails the "never Critical" check (`severity !=
-  'Critical'` evaluates `False` for a Critical finding).
-- A paraphrased clause ("Avoid nesting try/catch blocks.") fails the verbatim-quote
-  check (not found in the set of exact `rule` strings parsed from `TASTE.md`) — proving
-  AC1's "clause quoted in finding" requirement is a real discriminator, not
-  trivially satisfied by any finding text that merely references the topic.
+All three commands are clean. Unlike the pre-task baseline in `investigation.md` (where `pytest`
+passing was vacuous — 0 items collected), `pytest` now genuinely exercises code: 6/6 real
+assertions against `hooks/data_layer_guard.py`'s subprocess contract (stdin JSON → stdout
+JSON/exit code), covering all 6 cases the investigation specified: non-Edit tool no-op, bypass
+permissions no-op, matching-path-without-DATA-MODEL.md → ask, matching-path-with-todays-entry
+no-op, non-matching-path no-op, `.data-guard.json` override.
 
-**Result: PASS** on all three scenarios, and both negative controls are correctly
-rejected rather than passing trivially.
+**AC1/AC3: PASS.**
 
-## 3. Acceptance criteria
+## 2. Live dispatch — proving `verify_plugin.py`'s new sub-plugin check actually fires (AC1)
 
-1. **Happy path** — "Panel run on a diff violating a strong preference yields a taste
-   finding citing the clause verbatim." **PASS.** The hand-worked finding for the
-   `strong` Preference ("Prefer flat error handling over nested try/catch") quotes
-   `pref["fields"]["rule"]` verbatim (`verbatim=True`), and additionally the same
-   verification covers `absolute` and `weak` severities in one pass, confirming the
-   severity-mapping design decision from the investigation: `absolute` → `Important`
-   with an `(absolute preference)` note (never a fourth `Important+` enum value),
-   `strong` → `Important`, `weak` → `Minor`, and `absolute`-derived findings sort first
-   within the Important band, exactly as `taste-review/SKILL.md`'s "Absolute-strength
-   note" section specifies.
-2. **No TASTE.md** — "Repo without TASTE.md → taste seat absent from Cast; no taste
-   findings." **PASS.** `no-taste-file/` mechanically confirms no `TASTE.md` exists in
-   the fixture dir; the simulated Cast-list check confirms `taste-review` is excluded
-   from casting entirely (not a "ran, found nothing" seat) — matching
-   `persona-catalog.md`'s new Taste entry ("file-existence gate... no generic
-   fallback") and the skill's own "When to Apply" section.
-3. **Error state** — "Malformed TASTE.md (missing strength) — seat reports the file as
-   unusable in Coverage Honesty rather than guessing." **PASS.** `taste-malformed/`'s
-   Preference missing `Strength` is correctly identified as malformed with exactly
-   `['strength']` as the missing-field set; the well-formed sibling Preference in the
-   same file is still parsed as usable (confirming the seat's "still reviews valid
-   entries normally" behavior, not an all-or-nothing failure); and the Coverage Honesty
-   report line format matches the skill's own example text verbatim ("is missing
-   `strength`; skipped, not guessed").
+The task's own motivating anecdote is commit `748dff1`: `review-panel/plugin.json` said
+`0.2.0` while `marketplace.json`'s `review-panel` entry still said `0.1.0`, and the old
+`verify_plugin.py` (checking only index 0 / the root `scott-cc` plugin) didn't catch it. A
+script "passing" is not evidence it would catch a repeat — so I ran a live before/after test
+instead of trusting the diff:
 
-## 4. Structural validation
+1. Confirmed both files currently agree: `plugins/review-panel/.claude-plugin/plugin.json`
+   version `0.2.1`, `marketplace.json`'s `review-panel` entry version `0.2.1`.
+2. Backed up `marketplace.json`, then mutated only the `review-panel` entry's version in
+   `marketplace.json` to `0.1.0` (leaving `plugin.json` at `0.2.1` — reproducing the exact shape
+   of `748dff1`).
+3. Ran `uv run python3 scripts/verify_plugin.py`:
+   ```
+   FAIL: version mismatch: .../plugins/review-panel/.claude-plugin/plugin.json has '0.2.1',
+   marketplace.json has '0.1.0'
+   exit code: 1
+   ```
+4. Restored `marketplace.json` from backup and re-ran the script to confirm it returns to
+   `OK` — `git diff .claude-plugin/marketplace.json` afterward shows only the pre-existing,
+   intentional `security-suite` description edit from this task's implementation, confirming the
+   desync test left no residue.
 
-- **Files changed match investigation's scope exactly**: new
-  `plugins/review-panel/skills/taste-review/SKILL.md`, edited
-  `plugins/review-panel/reviewers/persona-catalog.md`. No other plugin file touched.
-- **Frontmatter valid**: `grep -c '^---$' taste-review/SKILL.md` → `2`.
-- **Never Critical, never sovereignty-marked**: confirmed structurally in the skill text
-  (`SKILL.md`'s Output Contract and "Never sovereignty-marked" section) and confirmed
-  behaviorally in the hand-worked findings (no finding in the validated set carries
-  either).
-- **Candidate rules excluded**: `taste-preferences/TASTE.md` includes an empty
-  `## Candidate rules` section (present, per `TASTE-FORMAT.md`'s structure, but with no
-  entries) — the parser only ever reads `## Preferences`, matching the skill's step 2
-  ("Do not read `## Candidate rules`").
-- **Dependency direction (Invariant 2)**: the skill only reads `TASTE.md` and diff
-  content; no reference to `triage` or `foundry` anywhere in the new file.
+**Result: the extended check fires correctly and is reversible/side-effect-free.** This
+directly closes the gap `investigation.md` identified — the script would now have caught
+`748dff1` had it existed at the time.
 
-## 5. Lint / build
+## 3. Mechanical cross-check — README/catalog counts vs. actual plugin contents (AC4)
 
-No code changed — two markdown files plus markdown fixtures. No markdown linter
-configured in this repo (`.markdownlint*` absent, no `markdownlint` reference in
-`package.json`) — same finding as every prior Phase 2/3 Run Tests step.
-
-## 6. Working tree check
-
-`git status --short`:
+Rather than eyeballing the new `### review-panel` README section, diffed it programmatically
+against the filesystem:
 
 ```
- M .pas/current_task.md
- M .pas/investigation.md
- M .pas/logs/two-system-architecture-e64d8f93/checkpoint.json
- M plugins/review-panel/reviewers/persona-catalog.md
-?? plugins/review-panel/skills/taste-review/
-?? plugins/review-panel/tests/fixtures/no-taste-file/
-?? plugins/review-panel/tests/fixtures/taste-malformed/
-?? plugins/review-panel/tests/fixtures/taste-preferences/
+$ ls plugins/review-panel/skills/ | wc -l
+29
+$ ls plugins/review-panel/commands/
+review-panel.md
+$ ls plugins/review-panel/agents/
+clean-room-alternative.md
 ```
 
-Only this task's implementation plus the three new fixture directories created in this
-step, plus the same pre-existing session-state diffs (`.pas/*`) flagged in every prior
-pipeline step in this session. No unexpected changes. Scratch validator artifacts live
-under `/tmp/taste-review-test/` (outside the repo, untracked, no cleanup needed).
+Extracted every skill/agent name referenced in the README's `### review-panel` section (all 5
+sub-tables: Panel orchestration & review seats / Design quality lenses / Grilling & interview /
+Architecture & planning / Development workflow) and diffed against `ls
+plugins/review-panel/skills/`:
 
-## Conclusion
+```
+$ diff /tmp/actual_skills.txt /tmp/readme_skills_only.txt
+(no output)
+MATCH: README skills list == actual skills/ directory (29/29)
+```
 
-All three acceptance criteria PASS. No code changed, so no automated test/lint suite
-applies beyond the structural + hand-worked validation above. Ready for Verify.
+No missing skills, no stale/extra entries, no duplicates across the 5 sub-tables. Commands (1)
+and Agents (1) tables also match the filesystem 1:1. `README.md:20`'s "Sub-plugins" summary row
+correctly reads `7` and lists `review-panel` alongside the other 6.
+
+**AC4: PASS.**
+
+## 4. Fixture coverage per phase (AC2)
+
+No new fixture was required by this task's own work — `investigation.md`'s phase-by-phase audit
+(reproduced there) already established fixture presence for every phase where a diff exists to
+seed a defect into (1a, 1b, 2a, 2c, 3d), and correctly identified 2b/3a/3b/3c as legitimately
+fixture-less interview/spec skills per `PRESSURE-TEST.md`'s own stated scope. The one real gap
+(2d — `data_layer_guard.py` had zero coverage) is closed by the new `hooks/tests/` suite
+verified in section 1, which fills the same "seeded input → expected finding" role as the
+markdown fixtures, just pytest-automated since 2d's artifact is executable code rather than a
+diff-driven skill.
+
+**AC2: PASS** (retroactively, across all 10 completed phases; nothing outstanding for Phase 4/5
+since they don't exist yet — `verify_plugin.py`'s generic multi-plugin walk means their fixtures
+and catalog updates are the responsibility of those phases' own implementation, not this task).
+
+## Summary
+
+| AC | Description | Result |
+|----|--------------|--------|
+| 1 | `verify_plugin.py` runs clean, and now actually detects sub-plugin version desync | PASS (live-verified) |
+| 2 | Fixture per phase where a diff exists to seed | PASS (10/10 phases audited, gap closed for 2d) |
+| 3 | `uv run pytest` / `uv run ruff check --fix` clean | PASS (6/6 real tests, not vacuous) |
+| 4 | README/catalog counts match actual plugin contents | PASS (mechanically diffed, 0 mismatches) |
+
+No blocking issues. Ready for the Verify step.
