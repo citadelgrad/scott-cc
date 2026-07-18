@@ -1,177 +1,179 @@
-# Investigation: scc-4xa — Security seat in the review panel
+# Investigation: scc-g12 — Phase 1b Plan-security pass
 
 ## Task
-Rewrite the Security seat entry in `plugins/review-panel/reviewers/persona-catalog.md` to cast
-`security-suite`'s existing `security-engineer` agent directly, closing the documented gap
-("no security-specific skill is vendored... conditional on live-scan") since that agent already
-exists in this repo.
+Add `plugins/security-suite/skills/plan-security-review/SKILL.md`, a planning-stage
+threat-model checkpoint (not a diff/code review — that's the Phase 1a Security seat in
+review-panel, already shipped in commit eb5ee33). Wire it into
+`plugins/review-panel/skills/grill-with-docs/SKILL.md` as a closing-step offer. Spec
+source: `docs/plans/2026-07-16-two-system-architecture/two-system-spec.md:81-113`
+(section "1b. Plan-security pass").
 
-## Files to modify
+## Current state
 
-1. **`plugins/review-panel/reviewers/persona-catalog.md`** — primary target. Three separate spots
-   currently describe the "no security skill exists, conditional on live-scan" state and must all
-   be rewritten consistently (leaving any one stale reproduces the exact bug this task fixes):
-   - The `### Security (conditional)` entry (lines 132–149)
-   - The "Security seat" bullet under `## Missing skill handling` (lines 61–66) — duplicates/
-     restates the same now-stale claim ("no security-specific skill is vendored... conditional on
-     live-scan enrichment finding a security skill installed")
-   - The Seat Summary Table's Security row (line 286)
-2. **`plugins/security-suite/agents/security-engineer.md`** — investigated, **no edit needed** (see
-   "Output conformance" below for reasoning).
-3. **New test fixture** under `plugins/review-panel/tests/fixtures/` — needed to satisfy AC4 (a
-   seeded vulnerable-diff fixture producing a validated MERGE finding), following the
-   `tests/PRESSURE-TEST.md` pattern. None exists yet; `tests/fixtures/order-fulfillment/` is the
-   only fixture in the repo today and doesn't touch security-relevant surface.
+### security-suite plugin layout
+- `plugins/security-suite/.claude-plugin/plugin.json` — name/version/author only, no
+  `skills` field to register (Claude Code plugin skills auto-discover from
+  `skills/*/SKILL.md`, same as review-panel — no plugin.json edit needed).
+- `plugins/security-suite/agents/security-advisor.md` — has the OWASP topic table this
+  task must reuse: "Available Topics by Category" (lines 28-63), organized as
+  Authentication & Sessions, Injection Prevention, Web Application Security, API & Web
+  Services, Infrastructure & DevOps, Data Protection & Cryptography, AI/LLM Security,
+  Secure Development. Each topic maps to a fetchable URL:
+  `https://cheatsheetseries.owasp.org/cheatsheets/{Topic}_Cheat_Sheet.html`.
+- `plugins/security-suite/agents/security-engineer.md` — diff/code-review agent (Phase
+  1a's cast target), not this task's concern.
+- **No `skills/` directory exists yet in security-suite** — this is the plugin's first
+  skill. Precedent for skill frontmatter/structure comes from review-panel's skills
+  (see below), not from security-suite itself.
+- `plugins/security-suite/README.md` lines 59-68 has a ready-made "Security Checklist"
+  (no hardcoded secrets, input validation, SQL injection, XSS, CSRF, authn/authz, data
+  encryption at rest/in transit) — a reasonable seed for the offline/degraded built-in
+  checklist fallback (AC3), since no other air-gapped checklist precedent exists
+  anywhere in the repo.
 
-## Current behavior
+### CLEAR/TRIGGERED/N/A vocabulary precedent
+`plugins/review-panel/skills/domain-modeling/SKILL.md` (lines 30, 33-47) is the
+canonical source of this vocabulary:
+- Screen every check as `CLEAR` / `TRIGGERED` / `N/A` (not applicable to this artifact's
+  shape).
+- Only `TRIGGERED` lines are reportable findings; `CLEAR`/`N/A` carry no severity and
+  aren't forced.
+- Report format per triggered line: `TRIGGERED — <location> — <principle> — <severity> —
+  <note>`.
+- Explicit instruction: "If everything is CLEAR, say so plainly — do not force findings
+  where none exist." This directly satisfies AC2 (pure UI-copy plan → all CLEAR/N/A, zero
+  TRIGGERED, explicit "no security-relevant surface" statement).
 
-`persona-catalog.md`'s Security entry says no security skill is vendored (true, still) and makes
-casting **conditional on the live-scan secondary-enrichment layer** finding *some* security skill
-installed at runtime — i.e., if a user happens to have a security skill installed, live-scan
-surfaces it; otherwise the seat silently reduces to `adversarial-reviewer`'s Scope item 2 plus a
-required coverage-gap note. This is stale: `plugins/security-suite/agents/security-engineer.md`
-already ships in this repo, is diff-shaped (OWASP/CWE vulnerability assessment, threat modeling,
-compliance), and doesn't need live-scan discovery — it can be a **primary catalog cast**, the same
-tier as Fresh-Eyes casting `agents/clean-room-alternative.md`.
+`plugins/review-panel/skills/red-flags/SKILL.md` is a second, lighter-weight precedent
+for the same vocabulary applied to a checklist-of-checks structure (Review Process step
+2: "For each: CLEAR, TRIGGERED, or N/A").
 
-**Key precedent confirmed:** review-panel's own Fresh-Eyes seat already casts an *agent* (not a
-skill) — `agents/clean-room-alternative.md` — via `Task`. In this very session's available
-agent-type list it's exposed as `review-panel:clean-room-alternative` (flat `<plugin>:<agent-name>`
-namespacing, no subdirectory segment, since the file lives directly under `agents/`, unlike
-compound-engineering's `agents/review/*.md` which namespaces as `<plugin>:review:<persona>`).
-`security-suite/agents/security-engineer.md` lives directly under `agents/` the same way, so by the
-identical convention it is dispatchable as **`security-suite:security-engineer`**. This is the
-concrete "target" value the rewritten catalog entry should name.
+### grill-with-docs (wire-in target)
+`plugins/review-panel/skills/grill-with-docs/SKILL.md` (89 lines) is a single-file skill,
+no `SKILL.md` frontmatter fields beyond `name`/`description` (no `allowed-tools` — it's a
+conversational interview skill, not a scanner). Structure: `<what-to-do>` block (top),
+`<supporting-info>` block (bottom) with subsections (Domain awareness, During the
+session: Challenge against the glossary / Sharpen fuzzy language / Discuss concrete
+scenarios / Cross-reference with code / Update CONTEXT.md inline / Offer ADRs sparingly).
+The session currently has **no closing step at all** — it just ends when decisions are
+resolved. This task adds one: a closing offer of the plan-security pass "when the
+grilling session ends with a build-ready plan," documentation-only (no new mechanism,
+just a step that tells the assistant to offer/invoke the skill).
 
-`security-engineer.md` itself (frontmatter: `name`, `description`, `category` — no `tools:` or
-`model:` field) has **no declared tool restriction**, unlike `clean-room-alternative.md` (which
-declares `tools: Read, Grep, Glob`, `model: opus`). This means:
-- Its tool grant is whatever the runtime defaults an undeclared agent to, which may be broader than
-  read-only. Per `cast-and-spawn.md`'s existing SPAWN rule ("Read-only tool access" section, ~line
-  240), the orchestrator cannot force read-only from the outside for an externally-defined
-  agent-type dispatch — it must check the actual grant and note any `Edit`/`Write`/mutating `Bash`
-  deviation in the coverage-honesty statement, exactly as already documented for
-  `compound-engineering:review:<persona>` finds. This applies unchanged to `security-suite:
-  security-engineer` and is already covered by existing cast-and-spawn.md text — no new rule
-  needed, just something the catalog entry's Notes should point at rather than silently assume away.
-- No `model:` field means the catalog's "top-tier" designation is a *request* the SPAWN dispatch
-  should honor if the `Task` call can pin a model for a named agent-type; if it can't, that's a
-  coverage-honesty-worthy deviation too. Worth one sentence in the catalog entry's Notes; not a
-  blocker.
+### Foundry section / docs/foundry-recipes.md
+- `docs/foundry-recipes.md` **does not exist yet** (confirmed: no matches for
+  `foundry-recipes` under `docs/`). Per spec lines 330-371 (Phase 5 — Triage spine),
+  creating this file with its full schedule-wiring content
+  (`docs/foundry-recipes.md          # schedule wiring for Foundry`, spec line 342) is
+  explicitly **Phase 5's job** (task `scc-tsa`, currently blocked and not started — this
+  task, scc-g12, is one of its two blockers per `bd show scc-g12`).
+- Spec line 102 / current_task.md line 22 both describe this task's obligation as: "This
+  spec's Foundry section (Phase 5) lists it as a schedulable pre-build gate in
+  docs/foundry-recipes.md" — worded as a **forward reference**, not an instruction for
+  this task to create the file itself. Spec lines 368-371 confirm Phase 5 is what
+  actually writes `docs/foundry-recipes.md` and explicitly says it "lists Phase 1b's
+  plan-security pass ... as a schedulable entry" — i.e., Phase 5 does the listing, using
+  Phase 1b's skill as an input.
+- **Judgment call (flagging for Plan step):** scc-g12 should NOT create
+  `docs/foundry-recipes.md` — that would be doing Phase 5's work early, out of this
+  task's file scope, and duplicating effort once scc-tsa actually builds it. Instead,
+  the new `plan-security-review/SKILL.md` should include a short "Foundry" note stating
+  it is designed to be schedulable as a pre-build gate (so Phase 5 has something concrete
+  to wire in), without touching `docs/foundry-recipes.md` itself. This mirrors the
+  Task's own file list wording — "docs/foundry-recipes.md (Phase 5 section reference)" —
+  which reads as "referenced by," not "created by," this task.
 
-## Required changes to `persona-catalog.md`
+### Air-gapped / offline constraint precedent
+- `two-system-prd.md` decision D7: security-suite is "Reference; no vendoring — revisit
+  only if an air-gapped deploy actually materializes" — i.e., WebFetch-to-OWASP-online is
+  the default/expected path today; air-gapped is the exception path this task must still
+  handle gracefully (AC3), not the default.
+- `plugins/review-panel/skills/review-panel/references/design-lineage.md:41-43` documents
+  the plugin's general "air-gapped constraint" as a known hard constraint from the plan's
+  §2, already used to justify why VALIDATE uses same-model Task dispatch instead of
+  cross-model integration. This is the closest existing "graceful offline degradation"
+  precedent in the repo, though it's about model diversity, not WebFetch — no reusable
+  code/logic, just confirms the constraint is a recognized first-class concern.
+- No skill in the repo currently implements a live WebFetch-with-fallback pattern to
+  copy structurally. This task's SKILL.md must originate that pattern itself, using
+  security-advisor.md's topic table as the "always available" (non-network) baseline
+  data, and WebFetch as an enrichment step when reachable.
 
-### 1. Rewrite the `### Security` entry (currently `### Security (conditional)`)
+## Required changes
 
-Replace with something structurally parallel to the Fresh-Eyes entry:
+1. **New file: `plugins/security-suite/skills/plan-security-review/SKILL.md`**
+   - Frontmatter: `name`, `description` (with explicit "Use when..." trigger language
+     and a "Not for..." boundary line, matching domain-modeling's/red-flags'
+     description style), no `allowed-tools` restriction needed since it only reads a
+     plan doc + optionally WebFetches (or `Read, Grep, Glob, WebFetch` if being
+     explicit/read-only, following domain-modeling's `allowed-tools: Read, Grep`
+     precedent extended with WebFetch).
+   - Input: a plan/PRD/spec document, either a path argument or already in
+     conversation context.
+   - Procedure:
+     a. Extract security-relevant deltas from the plan (new endpoints, new data flows,
+        authn/authz surface changes, secrets/credentials introduced, third-party deps
+        added, trust boundaries crossed).
+     b. Map each delta to OWASP cheatsheet topics, reusing security-advisor.md's topic
+        table (link to it, don't duplicate the whole table — keep single-sourced)
+     c. Online: WebFetch the relevant cheatsheet(s) for citation-quality detail.
+        Offline/WebFetch unavailable: fall back to a **built-in checklist** derived from
+        security-suite/README.md's Security Checklist (secrets, input validation, SQLi,
+        XSS, CSRF, authn/authz, encryption at rest/in transit) plus the topic *names*
+        from security-advisor.md's table (topic names alone are enough for AC1's "cite
+        topic names" requirement even without live fetch content).
+     d. Emit findings as `CLEAR` / `TRIGGERED` / `N/A` lines per topic area, each
+        `TRIGGERED` line citing the OWASP topic name (AC1). Follow domain-modeling's
+        format convention: `TRIGGERED — <plan section/feature> — <OWASP topic> —
+        <one-line rationale>`.
+     e. If the pass ran in degraded (no-WebFetch) mode, state that explicitly in the
+        output (AC3) — e.g. a leading "Degraded mode: WebFetch unavailable, built-in
+        checklist used" line.
+     f. Close with a one-paragraph go/no-go recommendation.
+   - Explicit boundary statement (verbatim requirement from spec/task): "Not for
+     reviewing code diffs — that is the panel's security seat" (i.e. review-panel's
+     Phase-1a Security seat, `persona-catalog.md`'s `### Security` entry).
+   - AC2 handling: when no delta maps to any topic, all lines are `CLEAR`/`N/A` and the
+     skill states plainly "no security-relevant surface" (mirrors domain-modeling's "If
+     everything is CLEAR, say so plainly" instruction) — zero forced TRIGGERED lines.
+   - Include a short "Foundry" note (see judgment call above) that this pass is designed
+     to be schedulable as a pre-build gate, without creating `docs/foundry-recipes.md`.
 
-- **Casts:** `security-suite`'s `agents/security-engineer.md`, dispatched via `Task` as agent type
-  `security-suite:security-engineer` — the same cross-plugin agent-dispatch pattern this catalog
-  already uses for its own Fresh-Eyes seat (`agents/clean-room-alternative.md`, exposed as
-  `review-panel:clean-room-alternative`). No vendoring: this is a live cross-plugin reference, not
-  a copy, since `security-suite` ships alongside `review-panel` in this same repo/marketplace.
-- **Cast-when (risk-triggered, fail-closed):** diff touches auth, crypto, secrets handling, input
-  validation at a trust boundary, deserialization, dependency manifests/lockfiles, IaC, or CI
-  config. Ambiguity → cast, per the catalog's global fail-closed rule. (Note: this list is a
-  superset of the old cast-when trigger list — it adds IaC/CI config explicitly per the task's
-  design notes.)
-- **Model tier:** Top-tier (unchanged).
-- **Missing-plugin fallback:** if `security-suite` is not installed in this session, keep the
-  current fallback behavior verbatim — apply baseline security attention via
-  `adversarial-reviewer`'s Scope item 2, and state explicitly in the report (Coverage Honesty
-  section / `coverage` JSON object) that no dedicated security seat was cast and why. This is a
-  plugin-installed check now, not a live-scan-miss check — different failure condition, same
-  fallback text and same "never silently drop" rule.
-- **Notes:** (a) tool-grant caveat above (check actual grant; note deviation if not read-only); (b)
-  output-shape caveat (see below); (c) `adversarial-reviewer` Scope item 2 still provides baseline
-  coverage on every run regardless — don't conflate that with this specialist seat.
+2. **Edit: `plugins/review-panel/skills/grill-with-docs/SKILL.md`**
+   - Add a closing step (new subsection under `<supporting-info>`, e.g. after "Offer
+     ADRs sparingly") offering the plan-security pass when the session concludes with a
+     build-ready plan. Documentation-only — point at
+     `security-suite`'s `plan-security-review` skill by name, note the missing-plugin
+     degrade (if `security-suite` isn't installed, say so rather than silently skipping
+     — consistent with Invariant 3, Coverage honesty, and the Phase 1a missing-plugin
+     fallback pattern already established in `persona-catalog.md`).
 
-### 2. Rewrite the "Security seat" bullet under `## Missing skill handling`
+3. **`docs/foundry-recipes.md`** — do not create in this task (see judgment call above).
+   Flag this deviation from the literal task file list explicitly in the Plan step for
+   confirmation before implementation.
 
-Currently says the seat "is conditional on live-scan enrichment finding a security skill
-installed." Must be updated to match the new primary-cast behavior: cast directly when
-`security-suite` is installed and cast-when criteria are met; the *only* remaining fallback
-condition is `security-suite` itself being absent, not "live-scan found nothing." Leaving this
-bullet as-is after rewriting the main entry would reintroduce exactly the kind of
-already-fixed-but-still-documented-as-broken inconsistency this task exists to close, just in a
-second location in the same file.
+## Testing approach (for later Run Tests step)
+Mirrors scc-4xa's approach (hand-worked/live-dispatched scenarios, no unit test
+framework in this repo for skills):
+- AC1: construct a small plan snippet adding a login endpoint, run the skill's
+  procedure against it (live Task dispatch or manual walkthrough), confirm TRIGGERED
+  lines cite authn/session-family OWASP topic names.
+- AC2: construct a pure UI-copy-change plan snippet, confirm all-CLEAR/N/A output with
+  the explicit "no security-relevant surface" statement.
+- AC3: simulate WebFetch unavailability (or just don't invoke it) and confirm the skill
+  still completes using topic names / built-in checklist, with an explicit degraded-mode
+  note.
 
-### 3. Update the Seat Summary Table row
-
-Current: `| Security | *(none vendored — live-scan conditional)* | Diff touches auth/crypto/
-secrets/input-validation/deserialization/deps, AND live-scan finds a security skill | Top-tier |`
-
-New `Casts` column: `security-suite:security-engineer`. New `Cast-when` column: drop the "AND
-live-scan finds a security skill" clause (no longer applicable — it's a primary cast now); keep
-the trigger list, add IaC/CI config.
-
-### 4. Docs-only diff (AC3)
-
-No catalog change needed for this — it already works correctly once cast-when is content-based:
-a docs-only diff trips none of the trigger conditions, so CAST (per `cast-and-spawn.md` Step 2)
-correctly skips it. Confirmed by re-reading Step 2's existing judgment-match logic; nothing
-security-specific needs to change there.
-
-## Output conformance — why `security-engineer.md` likely does NOT need editing
-
-`security-engineer.md`'s own `## Outputs` section (Security Audit Reports, Threat Models,
-Compliance Reports, Vulnerability Assessments, Security Guidelines) does not natively use the
-Critical/Important/Minor + verdict shape. However, `cast-and-spawn.md`'s SPAWN "Collect raw output"
-step already states generically, for *every* seat regardless of source: "Each seat returns its
-findings in the shared `contracts/reviewer-output.md` structure... Collect all seats' raw output."
-This is necessarily true today for every live-scan-found foreign agent-type seat too (e.g. a
-hypothetical `compound-engineering:review:security-sentinel` cast) — none of those foreign files are
-owned/editable by this plugin either, yet the mechanism is presumed to already work by imposing the
-output-shape instruction **in the SPAWN dispatch prompt**, not by requiring the target file itself
-to natively emit that shape. So: the correct fix is a one-line Note in the catalog's Security entry
-telling SPAWN's dispatch prompt to explicitly instruct this seat to render its findings in
-`contracts/reviewer-output.md`'s shape (since, unlike `adversarial-reviewer`/`domain-modeling`,
-this agent's own file doesn't self-declare that contract) — not an edit to `security-engineer.md`
-itself. Editing a foreign plugin's file to reference review-panel's contract would also create
-needless two-way coupling between plugins that are supposed to combine only via the documented
-cross-plugin-reference/live-scan mechanisms, not by each plugin knowing about the other's internal
-formats.
-
-**Risk / open judgment call:** if whoever reviews this disagrees and wants belt-and-suspenders
-robustness, a minimal alternative is a single added sentence in `security-engineer.md`'s Outputs
-section noting it may be asked to conform to a caller-specified output contract — this is a small,
-defensible addition but not strictly required. Flagging rather than deciding unilaterally, since
-the task file explicitly says "Possibly" for this file.
-
-## AC4 — fixture requirement (new work, not just doc edits)
-
-AC4 requires "at least one seeded vulnerable-diff fixture produces a validated security finding in
-MERGE, with fingerprints and confidence anchors." No security fixture exists yet. Following
-`tests/PRESSURE-TEST.md`'s exact methodology (live `Task` dispatch of the cast seat against a
-seeded-bug fixture, then hand-worked MERGE table with fingerprint + confidence anchor, explicitly
-labeling live vs. worked-by-hand sections), this task needs:
-1. A new fixture directory (e.g. `tests/fixtures/<name>/`) with a `before`/`after`/`diff.patch` set
-   seeding a real vulnerability that trips the Security cast-when list — a dependency lockfile bump
-   pulling a known-vulnerable version, or an auth/crypto code change (e.g. a removed signature
-   check, a hardcoded secret, an unparameterized query) is the cleanest choice matching AC1's own
-   "dependency lockfile diff" scenario.
-2. A live `Task` dispatch of `security-suite:security-engineer` against that fixture (mirroring
-   PRESSURE-TEST.md's Section 3 live dispatch), demonstrating it produces a Critical/Important
-   finding.
-3. A hand-worked MERGE table (fingerprint match, confidence anchor) per
-   `references/merge-and-validate.md`'s existing methodology, appended either to
-   `tests/PRESSURE-TEST.md` or a new companion doc.
-4. Optionally, a walked-through AC1/AC2 scenario pair (with vs. without `security-suite` installed)
-   in the same style as PRESSURE-TEST.md Section 5's coverage-honesty walkthrough, since AC1/AC2 are
-   about the Cast/Coverage-Honesty *sections* of the report, not just the finding itself.
-
-## Risks / dependencies
-
-- **Cross-plugin dispatch mechanics are unverified beyond the compound-engineering precedent.**
-  Everything above assumes `security-suite:security-engineer` dispatches identically to how
-  `review-panel:clean-room-alternative` and `compound-engineering:review:<persona>` already do in
-  this session (confirmed via the live agent-type list). This should hold, but the AC4 fixture work
-  is exactly what empirically confirms it rather than assuming it.
-- **This is a hard blocker for Phase 5** (scc-tsa) per the epic's build order — triage feeds
-  dependency/IaC diffs into review-panel, and those are precisely the diff shapes this Security
-  seat's cast-when list targets. Getting the cast-when list right (deps/lockfiles/IaC/CI, not just
-  auth/crypto/secrets) matters more here than it would in isolation.
-- **Scope boundary respected:** no changes needed to `cast-and-spawn.md`, `dual-mode-contract.md`,
-  or `merge-and-validate.md` — their existing generic mechanisms (agent-type dispatch, tool-grant
-  checking, output-shape collection) already cover this seat without modification. Confirmed by
-  reading all three; flagging here so implementation doesn't over-scope into editing them.
+## Risks / open questions
+- **docs/foundry-recipes.md scope** (flagged above) — recommend NOT creating it now;
+  confirm with Plan step.
+- No existing skill in either plugin implements WebFetch-with-graceful-fallback; this
+  task originates the pattern, so keep it simple and self-contained rather than
+  over-engineering a "network detection" mechanism — the skill should just attempt
+  WebFetch and treat failure/unavailability as the trigger for degraded mode, per how
+  Claude Code tools already fail (tool call error/absence), no bespoke connectivity
+  check needed.
+- Keep the new skill decoupled from `review-panel` internals (Invariant 2: dependency
+  direction) — it must not import/reference review-panel's MERGE/VALIDATE machinery;
+  the only review-panel touchpoint is the one-line documentation offer added to
+  `grill-with-docs/SKILL.md`.

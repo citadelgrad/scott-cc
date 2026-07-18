@@ -1,41 +1,42 @@
-# Current Task: scc-4xa
+# Current Task: scc-g12
 
-## Phase 1a — Security seat in the review panel (cast security-suite's security-engineer)
+## Phase 1b — Plan-security pass (planning-stage threat-model checkpoint)
 
 ### Task ID
-scc-4xa
+scc-g12
 
 ### Status
 IN_PROGRESS
 
 ### Summary
-Rewrite the Security seat entry in `plugins/review-panel/reviewers/persona-catalog.md` to cast the existing `security-engineer` agent from `security-suite` directly, closing the documented gap that the catalog currently says is unfilled.
+Add a lightweight threat-model pass at the end of planning, before build — the planning-stage counterpart of the review seat. This is not a comprehensive audit (that's the future Foundry suite); it's a checkpoint asking: trust boundaries crossed? new data flows? authn/authz surface changed? secrets introduced? third-party deps added?
 
 ### Description
-`plugins/review-panel/reviewers/persona-catalog.md` currently states 'No security-specific skill is vendored in this plugin' and makes the Security seat conditional on live-scan enrichment — but `plugins/security-suite/agents/security-engineer.md` already exists in this repo, diff-shaped for vulnerability assessment, threat modeling, and OWASP/CWE coverage. The catalog documents a gap that is already filled. Rewrite the Security seat entry to cast that agent directly, closing the gap without vendoring a duplicate skill into review-panel.
+New skill: `plugins/security-suite/skills/plan-security-review/SKILL.md`.
+
+- **Input**: a plan/PRD/spec document (path or in-conversation).
+- **Procedure**: extract security-relevant deltas → map to OWASP cheatsheet topics (reuse `security-advisor.md`'s topic table; WebFetch when online, degrade to built-in checklist when air-gapped) → emit findings as CLEAR/TRIGGERED/N/A lines (same vocabulary as domain-modeling, for future merge-ability) plus a one-paragraph go/no-go.
+- **Explicit boundary** to document in the skill: 'Not for reviewing code diffs — that is the panel's security seat.'
+- **Wire-in points** (documentation edits only, no new mechanism):
+  - `plugins/review-panel/skills/grill-with-docs/SKILL.md`: add a closing step that offers the plan-security pass when the grilling session ends with a build-ready plan.
+  - This spec's Phase 5 (Foundry section) lists it as a schedulable pre-build gate in `docs/foundry-recipes.md`.
 
 ### Design Notes
-- **Casts:** security-suite's security-engineer agent. Precedent exists — Fresh-Eyes casts agents/clean-room-alternative.md
-- **Cast-when (risk-triggered, fail-closed):** diff touches auth, crypto, secrets, input validation at a trust boundary, deserialization, dependency manifests/lockfiles, IaC, or CI config
-- **Model tier:** top-tier (unchanged from current conditional entry)
-- **Missing-plugin fallback:** if security-suite is not installed, keep current behavior verbatim plus explicit coverage-gap note
-- **No vendoring:** cross-plugin reference preferred; both plugins ship together in scott-cc
-- **Output conformance:** must conform to Critical/Important/Minor + verdict shape in contracts/reviewer-output.md
+Distinct from the Phase 2c data-steward seat and the Phase 1a security seat — those operate on diffs at review time; this operates on plans at the end of planning. Keep the vocabulary (CLEAR/TRIGGERED/N/A) consistent with domain-modeling for future cross-tool merge-ability.
 
 ### Acceptance Criteria
-1. **With security-suite installed + dependency lockfile diff:** Panel run's Cast section lists the Security seat with a cast rationale. PASS/FAIL: seat present in Cast output
-2. **Without security-suite + same diff:** Final report's Coverage Honesty section states no dedicated security seat was cast and why. PASS/FAIL: explicit gap statement present
-3. **Docs-only diff:** Security seat is not cast. PASS/FAIL: seat absent from Cast output
-4. **Security findings validation:** At least one seeded vulnerable-diff fixture produces validated security finding in MERGE. PASS/FAIL: finding appears with fingerprints and confidence anchors
+1. **Auth-relevant plan**: Given a plan that adds a login endpoint, the pass TRIGGERs at least authn/session topics with cheatsheet citations. PASS/FAIL: triggered lines cite topic names.
+2. **No security-relevant delta**: Given a plan with no security-relevant delta (pure UI copy change), output is all CLEAR/N/A with an explicit 'no security-relevant surface' statement — no forced findings. PASS/FAIL: zero TRIGGERED lines.
+3. **Offline degradation**: Offline (no WebFetch): the pass completes using the built-in checklist and notes the degraded mode. PASS/FAIL: completion + explicit degradation note.
 
 ### Blocking
-- This is a hard prerequisite for Phase 5 (scc-tsa: Triage spine plugin)
+- This task blocks scc-tsa (Phase 5 — Triage spine plugin)
 
-### Files to Modify
-- `plugins/review-panel/reviewers/persona-catalog.md`
-- Possibly: `plugins/security-suite/agents/security-engineer.md` (conformance note if needed)
+### Files to Create/Modify
+- `plugins/security-suite/skills/plan-security-review/SKILL.md` (new)
+- `plugins/review-panel/skills/grill-with-docs/SKILL.md` (wire-in documentation)
+- `docs/foundry-recipes.md` (Phase 5 section reference)
 
 ### Applicable Invariants
-- Invariant 1: Substrate rule (diffs handed to review-panel)
-- Invariant 3: Coverage honesty (every gap reported explicitly)
-- Invariant 4: Graceful cross-plugin degradation (missing-plugin fallback)
+- Invariant 3: Coverage honesty (findings reported explicitly)
+- Invariant 5: Human artifacts (planning session is human-grilled)
