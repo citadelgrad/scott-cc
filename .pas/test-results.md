@@ -1,183 +1,172 @@
-# Test Results: scc-g12 — Phase 1b Plan-security pass
+# Test Results: scc-f9k — Phase 2a (DATA-MODEL.md format, shared contract)
 
 ## 0. What this covers
 
-This is the "Run Tests" step for `scc-g12` (new skill
-`plugins/security-suite/skills/plan-security-review/SKILL.md`, plus a
-closing-step wire-in in `plugins/review-panel/skills/grill-with-docs/SKILL.md`).
-Per `.pas/investigation.md`, there is no automated test suite for skills in this
-repo — both `security-suite` and `review-panel` are markdown prompts that drive
-Claude subagents, not executable code. This follows the same methodology as
-`scc-4xa`'s `test-results.md` and `plugins/review-panel/tests/PRESSURE-TEST.md`:
-seeded fixture documents, **live** `Task`/`Agent` dispatches (not simulated),
-and explicit labeling of what was actually run vs. hand-reasoned.
+This is the "Run Tests" step for `scc-f9k`, which adds
+`plugins/review-panel/formats/DATA-MODEL-FORMAT.md` (new) and a small
+reciprocal cross-link edit to `plugins/review-panel/formats/CONTEXT-FORMAT.md`.
 
-**Verdict: all 3 acceptance criteria PASS.** Details below.
+Per `.pas/investigation.md`, this task is **format-definition only** — no
+skill or runtime behavior ships in this task (that's 2b/`grill-the-schema`,
+2c/`data-steward`, 2d/guard hook, all blocked on this one). The task's stated
+acceptance criterion is explicit that the actual "grilling session" behavior
+is verified indirectly by 2b later; this task's own testable surface is
+whether the format file **defines and requires** the five sections, not
+whether a working skill exists yet.
 
----
+Given that, and following the same live-dispatch methodology as prior tasks
+in this epic (`scc-g12`'s `test-results.md`), I ran two independent checks:
+1. A structural/content check of the format file itself.
+2. A **live** `Agent` dispatch (not simulated) that used *only* the new format
+   document as guidance to hand-derive a `DATA-MODEL.md` from a freshly seeded
+   fixture — a stronger bar than the task's own stated AC, because it tests
+   whether the format is actually sufficient to drive correct output, not just
+   whether the right headings exist.
 
-## 1. Fixtures created
+**Verdict: PASS.** Details below.
 
-New directory: `plugins/security-suite/tests/fixtures/plan-security-review/`
-(mirrors the `plugins/review-panel/tests/fixtures/<scenario>/` convention used
-by `auth-token-service` and `order-fulfillment`).
+## 1. Structural check (does the format define and require the 5 sections?)
 
-- **`auth-login-plan.md`** — a small PRD adding `POST /api/v1/auth/login`
-  (new endpoint, password storage, JWT/HS256 session tokens, a new
-  `jsonwebtoken@9` dependency, an ownership-scoped `GET /api/v1/orders/:id`)
-  — seeded to exercise AC1 (must TRIGGER authn/session topics) and reused for
-  AC3 (offline degradation).
-- **`ui-copy-change-plan.md`** — a plan that swaps empty-state copy and a
-  decorative SVG asset, explicitly stating no endpoint/data-model/auth/prop
-  changes — seeded to exercise AC2 (must produce zero TRIGGERED lines).
+Confirmed via direct read + `rg -n "^## " plugins/review-panel/formats/DATA-MODEL-FORMAT.md`:
 
----
+```
+11:## Structure
+18:## Entities & relationships
+30:## Invariants
+36:## Ownership & routing
+44:## Agent boundary
+50:## Change log
+56:## Rules
+75:## Relationship to CONTEXT.md
+92:## Cross-system contract
+100:## Lazy creation
+```
 
-## 2. AC1 — Auth-relevant plan (live dispatch)
+- All five required headings present **verbatim** as the task's exact phrasing
+  ("Entities & relationships", "Invariants", "Ownership & routing", "Agent
+  boundary", "Change log") — both inside the fenced `## Structure` template
+  (load-bearing for 2b/2c/2d parsing) and reinforced by name in `## Rules`.
+- **Contrast with CONTEXT.md**: present as its own `## Relationship to
+  CONTEXT.md` section, stating the glossary-vs-implementation-detail
+  distinction explicitly, plus a reciprocal link.
+- **Cross-system contract declaration**: present as its own `## Cross-system
+  contract` section, stating System 2 fixes (migrations, IaC data-store
+  changes) are bound identically to System 1 diffs — matches
+  `two-system-prd.md:75`'s "shared contract honored by both systems."
+- **Cross-link is bidirectional**: `CONTEXT-FORMAT.md`'s opening paragraph
+  (before its own `## Structure`) now links to `DATA-MODEL-FORMAT.md` with the
+  same glossary/implementation-detail contrast stated from the other
+  direction. Confirmed both relative links resolve (siblings in the same
+  `formats/` directory).
+- **Lazy creation** norm carried over from `CONTEXT-FORMAT.md` for
+  consistency, as flagged in the investigation.
 
-**Live `Agent` dispatch** (general-purpose subagent, online, WebFetch
-available) instructed to follow the skill's "How to Review" procedure and
-"Output Contract" verbatim against `auth-login-plan.md`.
+PASS — the file exists and requires (not just optionally mentions) all five
+sections, satisfying the task's literal AC text.
 
-Result: the agent attempted and executed a real `WebFetch` of
-`https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html`
-(succeeded, HTTP 200, ~126KB), then produced 12 screened lines. Six were
-`TRIGGERED`, each citing an OWASP topic name in the required
-`TRIGGERED — <location> — <topic> — <rationale>` format:
+## 2. Live dispatch: is the format sufficient to drive a correct instance?
 
-- `TRIGGERED — §2 POST /api/v1/auth/login — Authentication — ...`
-- `TRIGGERED — §2 Session tokens ... — Session_Management — ...`
-- `TRIGGERED — §2 password_hash column — Password_Storage — ...`
-- `TRIGGERED — §2 jsonwebtoken@9 dependency — Secrets_Management / Key_Management — ...`
-- `TRIGGERED — §2 GET /api/v1/orders/:id — REST_Security — ...`
-- `TRIGGERED — §4 Rollout — Threat_Modeling / Secure_Product_Design — ...`
+### Fixture created
+`plugins/review-panel/tests/fixtures/orders-schema/`:
+- `schema.sql` — a Postgres schema for `orders` / `line_items` / `shipments`
+  (enum state column, two `CHECK` constraints, FKs) — a different shape than
+  the format doc's own worked example (Order/Invoice/Customer), so an agent
+  can't pass by copying the template.
+- `README.md` — two business rules that exist **only** as team knowledge, not
+  as SQL constraints: (1) line items become immutable once an order is
+  `placed`; (2) an order's row becomes read-only to the order service once any
+  shipment is delivered (corrections go through a separate returns service).
+  These exist specifically to test whether a "grilling session" against the
+  format would surface facts a schema-only reader couldn't get right.
 
-Closed with a one-paragraph "Conditional go" recommendation naming the five
-gaps to close before build sign-off.
+### Dispatch
+Live `Agent` dispatch (task id `a1fa535847af08754`, general-purpose,
+~35s, 6 tool uses), instructed to read **only**
+`DATA-MODEL-FORMAT.md` as its guidance (no other skill/format file), read the
+fixture, and produce `plugins/review-panel/tests/fixtures/orders-schema/DATA-MODEL.md`
+without copying the format doc's own Order/Invoice example content.
 
-**AC1 self-check (from the dispatched agent): PASS** — the first three
-`TRIGGERED` lines are squarely in the authn/session family
-(`Authentication`, `Session_Management`, `Password_Storage`), each citing the
-exact topic name, matching the skill's seed table row for "New login/auth
-endpoint" and `security-advisor.md`'s "Authentication & Sessions" category.
+### Result — PASS
+Output file (`.../orders-schema/DATA-MODEL.md`, 80 lines) contains all five
+required sections with exact heading strings, genuinely derived from the
+fixture (Order/Line Item/Shipment, not Order/Invoice/Customer):
+- **Entities & relationships**: 3 entities, each with Storage/Key
+  fields/Relationships, matching `schema.sql`.
+- **Invariants**: 5 entries — 3 map to actual `CHECK` constraints, and both
+  README-only business rules were surfaced as invariants #4 and #5, each
+  explicitly flagged "enforced only by convention today; the schema has no
+  constraint preventing an `UPDATE`" — meaning the dispatch not only
+  transcribed the rules but correctly distinguished schema-enforced vs.
+  convention-only, unprompted.
+- **Ownership & routing**: table with System 1/System 2 column populated for
+  every entity, including splitting `orders` into pre-/post-delivery rows to
+  reflect the returns-service handoff.
+- **Agent boundary**: 4 entries, phrased as escalation triggers — both
+  README rules appear here too (line-item immutability, post-delivery
+  order lock), plus the enum-transition and check-constraint-integrity
+  entries mirrored from the format's own Rules guidance.
+- **Change log**: 2 dated, initialed entries.
 
-**AC1 verdict: PASS.**
+Self-report from the dispatch (verbatim, abridged): *"All five sections
+produced, no ambiguity blocking completion. The format document alone ...
+was sufficient to derive a valid instance ... without needing to consult any
+other file."* Both non-SQL business rules were confirmed captured in both
+Invariants and Agent boundary.
 
----
+### Friction points flagged by the dispatch (advisory, not blocking)
+Recorded here for 2b (`grill-the-schema`) to consider, **not** acted on in
+this task — per the investigation's explicit risk note ("don't over-specify,"
+"2b/2c/2d can refine consumption details when they land; this task only
+establishes the contract shape"):
+1. No guidance on split/footnote convention for state-conditional ownership
+   rows (e.g. a table written by different services depending on lifecycle
+   phase).
+2. No explicit call-out in Rules for phrasing a constraint-backed invariant
+   differently from a convention-only (team-knowledge) invariant — the
+   dispatch handled it well on its own, but a future skill author may want
+   this made explicit.
+3. No stated cross-section consistency checklist (e.g. "every entity in
+   Entities & relationships must also appear in Ownership & routing") —
+   inferred correctly from the worked example, not stated as a rule.
 
-## 3. AC2 — No security-relevant delta (live dispatch)
+None of these caused a section to be missing, ambiguous, or malformed — they
+are minor completeness suggestions for whoever builds 2b, not defects in this
+task's deliverable.
 
-**Live `Agent` dispatch** (general-purpose subagent, WebFetch available but
-judged unnecessary) instructed to follow the same procedure against
-`ui-copy-change-plan.md`.
+## 3. Linting / secrets
 
-Result: 10 screened lines, all `CLEAR`/`N/A`, zero `TRIGGERED`. The agent
-correctly reasoned that forcing a `WebFetch` call with no delta to map would
-violate the skill's own "do not force findings where none exist" instruction,
-so it made none — itself a correct application of the skill, not a shortcut.
+No JS/TS files touched (markdown + one `.sql` fixture + one fixture
+`README.md`); no markdown linter or CI workflow configured in this repo
+(confirmed: no `.markdownlint*` config, no `.github/workflows/` present).
+`gitleaks detect --no-git` run independently against all three
+new/modified files (`DATA-MODEL-FORMAT.md`, `CONTEXT-FORMAT.md`,
+`tests/fixtures/orders-schema/`) — no leaks found in any.
 
-Explicit no-security-relevant-surface statement produced, verbatim:
+## 4. Scope check
 
-> "There is no security-relevant surface to threat-model here."
+Files touched by this Run Tests step, all additive test artifacts:
+- `plugins/review-panel/tests/fixtures/orders-schema/schema.sql` (new)
+- `plugins/review-panel/tests/fixtures/orders-schema/README.md` (new)
+- `plugins/review-panel/tests/fixtures/orders-schema/DATA-MODEL.md` (new,
+  produced by the live dispatch — kept as a concrete fixture instance for 2b
+  to reference, matching the repo convention of populated fixture files like
+  `order-fulfillment/CONTEXT.md`)
+- `.pas/test-results.md` (this file)
 
-Closed with a "GO" recommendation.
+No changes made to `persona-catalog.md`, `grill-with-docs/SKILL.md`, or any
+`grill-the-schema` skill — confirmed still out of scope for 2b/2c/2d, matching
+the investigation's scope discipline note.
 
-**AC2 self-check (from the dispatched agent): PASS** — zero `TRIGGERED` lines
-and the explicit statement is present.
+## Summary
 
-**AC2 verdict: PASS.**
+| Check | Result |
+|---|---|
+| Format file exists, defines & requires all 5 sections | PASS |
+| Contrast with CONTEXT.md documented + bidirectional cross-link | PASS |
+| Cross-system contract declaration present | PASS |
+| Live dispatch: format alone drives a correct, non-copied instance | PASS |
+| Live dispatch: both non-SQL business rules surfaced correctly | PASS |
+| Gitleaks | PASS (no leaks) |
+| Scope discipline | PASS (no 2b/2c/2d files touched) |
 
----
-
-## 4. AC3 — Offline degradation (live dispatch, WebFetch withheld)
-
-**Live `Agent` dispatch**, instructed to treat `WebFetch` as unavailable for
-the entire run (not to call it at all) and follow the skill's documented
-offline-fallback path against `auth-login-plan.md` — the same fixture as AC1,
-so the two runs are directly comparable online vs. degraded.
-
-Result: the agent did not call `WebFetch` (confirmed in its self-report — it
-used `ToolSearch` once to load the tool's schema, which is a metadata lookup,
-not an invocation, and explicitly declined to call it afterward). It led its
-output with the exact degraded-mode statement the skill's Output Contract
-specifies as an example:
-
-> `Degraded mode: WebFetch unavailable, built-in checklist used.`
-
-It then completed the full procedure using only the built-in checklist plus
-topic names from the skill's seed mapping table, producing 12 screened lines,
-8 `TRIGGERED` (a superset of AC1's online run — also catching
-`Multifactor_Authentication`, `CI_CD_Security`, and `Transport_Layer_Security`,
-each citing a topic name by name with no live-fetch content needed), and
-closed with a "No-go as written, but close" recommendation naming five
-concrete gaps.
-
-**AC3 self-check (from the dispatched agent): PASS** — run completed fully,
-with an explicit degraded-mode note as the leading line.
-
-**AC3 verdict: PASS.**
-
-**Cross-run consistency note:** comparing AC1 (online) and AC3 (degraded) side
-by side, both independently flagged `Authentication`, `Session_Management`,
-`Password_Storage`, and `REST_Security` for the same plan sections — the
-degraded run is not lower-quality in topic coverage, only in citation depth
-(no live cheatsheet excerpt), exactly as the skill design intends.
-
----
-
-## 5. Wire-in check: `grill-with-docs/SKILL.md`
-
-Re-read the edited file in full
-(`plugins/review-panel/skills/grill-with-docs/SKILL.md:88-99`). Confirmed:
-
-- New closing subsection "Offer the plan-security pass when build-ready" is
-  present, added after "Offer ADRs sparingly" as the investigation specified.
-- It names `security-suite`'s `plan-security-review` skill explicitly by
-  plugin:skill, documentation-pointer only — no new invocation mechanism, no
-  import of `security-suite` internals.
-- Missing-plugin degrade is explicit (Invariant 3, Coverage honesty): "If
-  `security-suite` is not installed in the current session, say so explicitly
-  rather than silently skipping the offer."
-
-No live dispatch needed here — this is a documentation-only edit, and its
-correctness is a text-comparison check, not a runtime behavior to exercise.
-
----
-
-## 6. Linting / secrets scan
-
-- No markdown linter is configured in this repo (`biome.json` has no matches
-  under this tree, consistent with `scc-4xa`'s finding) — the only files
-  touched/created this task are `.md` (the new skill, the wire-in edit, and
-  the two fixture plans), so no lint step applies.
-- `gitleaks detect --no-git` against
-  `plugins/security-suite/skills`, `plugins/security-suite/tests`, and
-  `plugins/review-panel/skills/grill-with-docs` — **no leaks found**.
-
-## 7. Scope check: `docs/foundry-recipes.md`
-
-Confirmed **not created** by this task, per the investigation's judgment call
-(that file is `scc-tsa`'s / Phase 5's responsibility; this task only needed to
-make its skill schedulable, via the "Foundry note" section already present in
-`plan-security-review/SKILL.md:110-114`). `find` for `foundry-recipes*` across
-the repo returns no matches.
-
-Relative markdown links inside the new skill
-(`../../agents/security-advisor.md`, `../../README.md`) verified to resolve
-against files that exist.
-
----
-
-## 8. Summary
-
-| AC | Description | Result |
-|---|---|---|
-| 1 | Auth-relevant plan → TRIGGERED authn/session topics with citations | **PASS** (live dispatch) |
-| 2 | No security-relevant delta → all CLEAR/N/A, explicit statement, zero TRIGGERED | **PASS** (live dispatch) |
-| 3 | Offline → completes via built-in checklist with explicit degraded-mode note | **PASS** (live dispatch, WebFetch withheld) |
-
-All three acceptance criteria pass via live, independent `Agent` dispatches
-(not simulated/hand-worked-only) against seeded fixture plans. No code changes
-in this task (markdown-only), so no test runner or type-check applies — the
-verification unit here is skill-instruction correctness under live execution,
-which is what was exercised.
+**All acceptance criteria met.** No fixes required before Close Task.

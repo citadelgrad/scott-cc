@@ -1,179 +1,131 @@
-# Investigation: scc-g12 — Phase 1b Plan-security pass
+# Investigation: scc-f9k (Phase 2a — DATA-MODEL.md format)
 
 ## Task
-Add `plugins/security-suite/skills/plan-security-review/SKILL.md`, a planning-stage
-threat-model checkpoint (not a diff/code review — that's the Phase 1a Security seat in
-review-panel, already shipped in commit eb5ee33). Wire it into
-`plugins/review-panel/skills/grill-with-docs/SKILL.md` as a closing-step offer. Spec
-source: `docs/plans/2026-07-16-two-system-architecture/two-system-spec.md:81-113`
-(section "1b. Plan-security pass").
+Create `plugins/review-panel/formats/DATA-MODEL-FORMAT.md`, sibling of the existing
+`CONTEXT-FORMAT.md`, defining the shared contract format that three downstream tasks
+depend on: `grill-the-schema` (2b, elicits it), `data-steward` seat (2c, enforces it),
+and the data-layer guard hook (2d, mechanically gates edits based on its change log).
+Spec source: `docs/plans/2026-07-16-two-system-architecture/two-system-spec.md:118-129`
+(section "2a. `DATA-MODEL.md` format (shared contract)").
 
-## Current state
+## Files to modify/create
+- **New:** `plugins/review-panel/formats/DATA-MODEL-FORMAT.md` — the primary artifact
+  this task creates.
+- **Edit:** `plugins/review-panel/formats/CONTEXT-FORMAT.md` — add a small
+  cross-link/contrast note pointing at the new file, so the relationship is discoverable
+  from both directions (spec: "Cross-link both files' formats to each other").
 
-### security-suite plugin layout
-- `plugins/security-suite/.claude-plugin/plugin.json` — name/version/author only, no
-  `skills` field to register (Claude Code plugin skills auto-discover from
-  `skills/*/SKILL.md`, same as review-panel — no plugin.json edit needed).
-- `plugins/security-suite/agents/security-advisor.md` — has the OWASP topic table this
-  task must reuse: "Available Topics by Category" (lines 28-63), organized as
-  Authentication & Sessions, Injection Prevention, Web Application Security, API & Web
-  Services, Infrastructure & DevOps, Data Protection & Cryptography, AI/LLM Security,
-  Secure Development. Each topic maps to a fetchable URL:
-  `https://cheatsheetseries.owasp.org/cheatsheets/{Topic}_Cheat_Sheet.html`.
-- `plugins/security-suite/agents/security-engineer.md` — diff/code-review agent (Phase
-  1a's cast target), not this task's concern.
-- **No `skills/` directory exists yet in security-suite** — this is the plugin's first
-  skill. Precedent for skill frontmatter/structure comes from review-panel's skills
-  (see below), not from security-suite itself.
-- `plugins/security-suite/README.md` lines 59-68 has a ready-made "Security Checklist"
-  (no hardcoded secrets, input validation, SQL injection, XSS, CSRF, authn/authz, data
-  encryption at rest/in transit) — a reasonable seed for the offline/degraded built-in
-  checklist fallback (AC3), since no other air-gapped checklist precedent exists
-  anywhere in the repo.
+No other files need touching. `persona-catalog.md`, the `grill-the-schema` skill, and
+the guard hook are explicitly out of scope — they belong to 2b/2c/2d, which are blocked
+on this task and not yet started (confirmed via `rg`: no `data-steward`/`sovereignty`/
+`DATA-MODEL` references exist anywhere in `persona-catalog.md` or the rest of the repo
+yet — this is a pure addition with zero conflict risk).
 
-### CLEAR/TRIGGERED/N/A vocabulary precedent
-`plugins/review-panel/skills/domain-modeling/SKILL.md` (lines 30, 33-47) is the
-canonical source of this vocabulary:
-- Screen every check as `CLEAR` / `TRIGGERED` / `N/A` (not applicable to this artifact's
-  shape).
-- Only `TRIGGERED` lines are reportable findings; `CLEAR`/`N/A` carry no severity and
-  aren't forced.
-- Report format per triggered line: `TRIGGERED — <location> — <principle> — <severity> —
-  <note>`.
-- Explicit instruction: "If everything is CLEAR, say so plainly — do not force findings
-  where none exist." This directly satisfies AC2 (pure UI-copy plan → all CLEAR/N/A, zero
-  TRIGGERED, explicit "no security-relevant surface" statement).
+## Current behavior / precedent to follow
+`plugins/review-panel/formats/` holds two sibling format specs today, both single
+canonical markdown files with no frontmatter, referenced by relative link from skills
+that consume them:
 
-`plugins/review-panel/skills/red-flags/SKILL.md` is a second, lighter-weight precedent
-for the same vocabulary applied to a checklist-of-checks structure (Review Process step
-2: "For each: CLEAR, TRIGGERED, or N/A").
+- **`CONTEXT-FORMAT.md`** (81 lines): opens with an HTML comment declaring itself the
+  canonical/single-source-of-truth copy ("do not fork or duplicate this file elsewhere
+  in the plugin; reference it instead"). Structure: `## Structure` (a fenced `md`
+  example of a full populated file), `## Rules` (bullet list of authoring principles),
+  `## Single vs multi-context repos` (lazy-creation + multi-file `CONTEXT-MAP.md` case).
+- **`ADR-FORMAT.md`** (48 lines): opens by stating where the artifact lives and its
+  numbering scheme, then `## Template` (minimal fenced example), `## Optional sections`,
+  `## Numbering`, `## When to offer an ADR` (a 3-part gate: hard to reverse, surprising,
+  real trade-off — reused verbatim by `grill-with-docs` for its own ADR offers).
 
-### grill-with-docs (wire-in target)
-`plugins/review-panel/skills/grill-with-docs/SKILL.md` (89 lines) is a single-file skill,
-no `SKILL.md` frontmatter fields beyond `name`/`description` (no `allowed-tools` — it's a
-conversational interview skill, not a scanner). Structure: `<what-to-do>` block (top),
-`<supporting-info>` block (bottom) with subsections (Domain awareness, During the
-session: Challenge against the glossary / Sharpen fuzzy language / Discuss concrete
-scenarios / Cross-reference with code / Update CONTEXT.md inline / Offer ADRs sparingly).
-The session currently has **no closing step at all** — it just ends when decisions are
-resolved. This task adds one: a closing offer of the plan-security pass "when the
-grilling session ends with a build-ready plan," documentation-only (no new mechanism,
-just a step that tells the assistant to offer/invoke the skill).
+Both are referenced from `grill-with-docs/SKILL.md` and `improve-codebase-architecture/
+SKILL.md` via relative links, e.g. `[CONTEXT-FORMAT.md](../../formats/CONTEXT-FORMAT.md)`.
+`DATA-MODEL-FORMAT.md` should follow the same relative-link convention once 2b's skill
+consumes it — wiring that link into `grill-with-docs` or a new `grill-the-schema` skill
+is 2b's job, not this task's.
 
-### Foundry section / docs/foundry-recipes.md
-- `docs/foundry-recipes.md` **does not exist yet** (confirmed: no matches for
-  `foundry-recipes` under `docs/`). Per spec lines 330-371 (Phase 5 — Triage spine),
-  creating this file with its full schedule-wiring content
-  (`docs/foundry-recipes.md          # schedule wiring for Foundry`, spec line 342) is
-  explicitly **Phase 5's job** (task `scc-tsa`, currently blocked and not started — this
-  task, scc-g12, is one of its two blockers per `bd show scc-g12`).
-- Spec line 102 / current_task.md line 22 both describe this task's obligation as: "This
-  spec's Foundry section (Phase 5) lists it as a schedulable pre-build gate in
-  docs/foundry-recipes.md" — worded as a **forward reference**, not an instruction for
-  this task to create the file itself. Spec lines 368-371 confirm Phase 5 is what
-  actually writes `docs/foundry-recipes.md` and explicitly says it "lists Phase 1b's
-  plan-security pass ... as a schedulable entry" — i.e., Phase 5 does the listing, using
-  Phase 1b's skill as an input.
-- **Judgment call (flagging for Plan step):** scc-g12 should NOT create
-  `docs/foundry-recipes.md` — that would be doing Phase 5's work early, out of this
-  task's file scope, and duplicating effort once scc-tsa actually builds it. Instead,
-  the new `plan-security-review/SKILL.md` should include a short "Foundry" note stating
-  it is designed to be schedulable as a pre-build gate (so Phase 5 has something concrete
-  to wire in), without touching `docs/foundry-recipes.md` itself. This mirrors the
-  Task's own file list wording — "docs/foundry-recipes.md (Phase 5 section reference)" —
-  which reads as "referenced by," not "created by," this task.
+The `order-fulfillment` fixture's `CONTEXT.md` (`plugins/review-panel/tests/fixtures/
+order-fulfillment/CONTEXT.md`) shows what a populated instance looks like: `# Context:
+{Name}` title, short scope-disclaimer paragraph, `## Glossary` with bold term +
+definition, `## Decision log` with dated entries. No equivalent `DATA-MODEL.md` fixture
+exists yet — 2b creates one, tied to its own acceptance criteria (grilling session
+against an orders-schema fixture repo).
 
-### Air-gapped / offline constraint precedent
-- `two-system-prd.md` decision D7: security-suite is "Reference; no vendoring — revisit
-  only if an air-gapped deploy actually materializes" — i.e., WebFetch-to-OWASP-online is
-  the default/expected path today; air-gapped is the exception path this task must still
-  handle gracefully (AC3), not the default.
-- `plugins/review-panel/skills/review-panel/references/design-lineage.md:41-43` documents
-  the plugin's general "air-gapped constraint" as a known hard constraint from the plan's
-  §2, already used to justify why VALIDATE uses same-model Task dispatch instead of
-  cross-model integration. This is the closest existing "graceful offline degradation"
-  precedent in the repo, though it's about model diversity, not WebFetch — no reusable
-  code/logic, just confirms the constraint is a recognized first-class concern.
-- No skill in the repo currently implements a live WebFetch-with-fallback pattern to
-  copy structurally. This task's SKILL.md must originate that pattern itself, using
-  security-advisor.md's topic table as the "always available" (non-network) baseline
-  data, and WebFetch as an enrichment step when reachable.
+## Required content (task description + spec:118-129)
 
-## Required changes
+**Required sections**, in order, matching the task's exact phrasing (headings are
+load-bearing — see Risks below):
+1. **Entities & relationships** — with storage mapping (which table/collection an
+   entity maps to; this is the "implementation detail" CONTEXT.md forbids).
+2. **Invariants** — what must never be violated (consumed directly by 2c's data-steward
+   seat, which checks diffs against this section).
+3. **Ownership & routing** — which system writes what (System 1 vs System 2, per the
+   PRD's two-system vocabulary, `two-system-prd.md:19-27`).
+4. **Agent boundary** — decisions agents may not revisit without escalation. This is
+   the section 2c's "sovereignty escalation" mechanism checks crossings against
+   (`two-system-spec.md:157-160`: a finding gets marked `sovereignty: human-required`
+   when a diff "crosses the Agent boundary section of DATA-MODEL.md").
+5. **Change log** — dated, human-initialed. This is what 2d's guard hook checks for
+   (presence of a current-work entry) before allowing an Edit/Write to a data-layer path
+   (`two-system-spec.md:189-191`).
 
-1. **New file: `plugins/security-suite/skills/plan-security-review/SKILL.md`**
-   - Frontmatter: `name`, `description` (with explicit "Use when..." trigger language
-     and a "Not for..." boundary line, matching domain-modeling's/red-flags'
-     description style), no `allowed-tools` restriction needed since it only reads a
-     plan doc + optionally WebFetches (or `Read, Grep, Glob, WebFetch` if being
-     explicit/read-only, following domain-modeling's `allowed-tools: Read, Grep`
-     precedent extended with WebFetch).
-   - Input: a plan/PRD/spec document, either a path argument or already in
-     conversation context.
-   - Procedure:
-     a. Extract security-relevant deltas from the plan (new endpoints, new data flows,
-        authn/authz surface changes, secrets/credentials introduced, third-party deps
-        added, trust boundaries crossed).
-     b. Map each delta to OWASP cheatsheet topics, reusing security-advisor.md's topic
-        table (link to it, don't duplicate the whole table — keep single-sourced)
-     c. Online: WebFetch the relevant cheatsheet(s) for citation-quality detail.
-        Offline/WebFetch unavailable: fall back to a **built-in checklist** derived from
-        security-suite/README.md's Security Checklist (secrets, input validation, SQLi,
-        XSS, CSRF, authn/authz, encryption at rest/in transit) plus the topic *names*
-        from security-advisor.md's table (topic names alone are enough for AC1's "cite
-        topic names" requirement even without live fetch content).
-     d. Emit findings as `CLEAR` / `TRIGGERED` / `N/A` lines per topic area, each
-        `TRIGGERED` line citing the OWASP topic name (AC1). Follow domain-modeling's
-        format convention: `TRIGGERED — <plan section/feature> — <OWASP topic> —
-        <one-line rationale>`.
-     e. If the pass ran in degraded (no-WebFetch) mode, state that explicitly in the
-        output (AC3) — e.g. a leading "Degraded mode: WebFetch unavailable, built-in
-        checklist used" line.
-     f. Close with a one-paragraph go/no-go recommendation.
-   - Explicit boundary statement (verbatim requirement from spec/task): "Not for
-     reviewing code diffs — that is the panel's security seat" (i.e. review-panel's
-     Phase-1a Security seat, `persona-catalog.md`'s `### Security` entry).
-   - AC2 handling: when no delta maps to any topic, all lines are `CLEAR`/`N/A` and the
-     skill states plainly "no security-relevant surface" (mirrors domain-modeling's "If
-     everything is CLEAR, say so plainly" instruction) — zero forced TRIGGERED lines.
-   - Include a short "Foundry" note (see judgment call above) that this pass is designed
-     to be schedulable as a pre-build gate, without creating `docs/foundry-recipes.md`.
+**Two explicit requirements beyond the section list**, both must be spelled out in prose
+in the format file itself (not just implied by section names):
 
-2. **Edit: `plugins/review-panel/skills/grill-with-docs/SKILL.md`**
-   - Add a closing step (new subsection under `<supporting-info>`, e.g. after "Offer
-     ADRs sparingly") offering the plan-security pass when the session concludes with a
-     build-ready plan. Documentation-only — point at
-     `security-suite`'s `plan-security-review` skill by name, note the missing-plugin
-     degrade (if `security-suite` isn't installed, say so rather than silently skipping
-     — consistent with Invariant 3, Coverage honesty, and the Phase 1a missing-plugin
-     fallback pattern already established in `persona-catalog.md`).
+- **Contrast with CONTEXT.md.** CONTEXT.md is a glossary of *what things are called*
+  and explicitly forbids implementation detail (its own Rules say "Define what it IS,
+  not what it does"). DATA-MODEL.md is the inverse — it *is* the implementation-detail
+  record: storage mapping, schema/migration-level invariants, etc. Must cross-link to
+  `CONTEXT-FORMAT.md` and vice versa, stating this distinction so a reader landing on
+  either file understands which one they need.
+- **Cross-system contract declaration.** Must state explicitly that DATA-MODEL.md binds
+  System 2 fixes (a migration inside a library upgrade, an IaC data-store change) to the
+  identical rules as System 1 changes — not a separate, looser standard. Directly serves
+  `two-system-prd.md:75`: "shared contract honored by both systems."
 
-3. **`docs/foundry-recipes.md`** — do not create in this task (see judgment call above).
-   Flag this deviation from the literal task file list explicitly in the Plan step for
-   confirmation before implementation.
+## How downstream tasks will read this file (context only, not this task's job to build)
+- **2b (`grill-the-schema`)** interviews the human about entities, invariants,
+  lifecycle, volume/access patterns, boundaries — populates sections 1, 2, 4 (and
+  touches 3/5) through elicitation, modeled on `grill-with-docs`.
+- **2c (`data-steward` seat)** reads Invariants + Agent boundary to evaluate diffs, and
+  writes the `sovereignty: human-required` marker when a diff crosses an Agent-boundary
+  entry, or when DATA-MODEL.md is absent entirely while the diff changes schema
+  semantics (a boundary case the spec already resolves at the 2c/2d level — this format
+  file doesn't need to define fallback behavior itself, just be unambiguous about what
+  "Agent boundary" contains).
+- **2d (guard hook)** looks for the Change log section specifically — checks for a dated
+  entry for current work before allowing edits to data-layer paths.
 
-## Testing approach (for later Run Tests step)
-Mirrors scc-4xa's approach (hand-worked/live-dispatched scenarios, no unit test
-framework in this repo for skills):
-- AC1: construct a small plan snippet adding a login endpoint, run the skill's
-  procedure against it (live Task dispatch or manual walkthrough), confirm TRIGGERED
-  lines cite authn/session-family OWASP topic names.
-- AC2: construct a pure UI-copy-change plan snippet, confirm all-CLEAR/N/A output with
-  the explicit "no security-relevant surface" statement.
-- AC3: simulate WebFetch unavailability (or just don't invoke it) and confirm the skill
-  still completes using topic names / built-in checklist, with an explicit degraded-mode
-  note.
+Section *names* and their semantics are load-bearing — 2b/2c/2d will read/parse against
+these heading strings, so the format file must state the five section headings plainly
+(as `##` headings in a fenced template example, matching CONTEXT-FORMAT.md's
+convention) rather than only describing them in prose.
 
-## Risks / open questions
-- **docs/foundry-recipes.md scope** (flagged above) — recommend NOT creating it now;
-  confirm with Plan step.
-- No existing skill in either plugin implements WebFetch-with-graceful-fallback; this
-  task originates the pattern, so keep it simple and self-contained rather than
-  over-engineering a "network detection" mechanism — the skill should just attempt
-  WebFetch and treat failure/unavailability as the trigger for degraded mode, per how
-  Claude Code tools already fail (tool call error/absence), no bespoke connectivity
-  check needed.
-- Keep the new skill decoupled from `review-panel` internals (Invariant 2: dependency
-  direction) — it must not import/reference review-panel's MERGE/VALIDATE machinery;
-  the only review-panel touchpoint is the one-line documentation offer added to
-  `grill-with-docs/SKILL.md`.
+## Risks / things to get right
+- **Don't over-specify.** Per repo convention (ADR-FORMAT.md's minimalism, CLAUDE.md's
+  "don't design for hypothetical future requirements"), define the five required
+  sections and the two explicit requirements, then stop — no need to invent a
+  storage-mapping sub-schema or an Agent-boundary entry schema beyond what 2c's spec
+  text already implies (a per-decision item flaggable with a marker). 2b/2c/2d can
+  refine consumption details when they land; this task only establishes the contract
+  shape.
+- **Heading-name stability matters more than for CONTEXT.md.** Because 2c/2d parse
+  against "Invariants," "Agent boundary," and "Change log" specifically (per spec
+  wording), the template headings must exactly match the section names the task
+  description uses, not paraphrases.
+- **Lazy creation.** CONTEXT-FORMAT.md documents lazy creation of CONTEXT.md ("create
+  the file lazily when the first term is resolved"). The spec says 2b "creates
+  DATA-MODEL.md lazily on first resolved decision" — worth stating the same lazy-creation
+  norm in this format file for consistency, even though actual creation happens in 2b.
+- **Scope discipline.** Do not touch `persona-catalog.md`, `grill-with-docs/SKILL.md`,
+  or create any `grill-the-schema` skill — all belong to the three blocked downstream
+  tasks (2b/2c/2d), which is exactly why this task exists first (`bd show scc-f9k`
+  confirms it blocks all three).
+
+## Acceptance criteria mapping
+Task's stated AC ("Grilling session on a fixture repo... produces a DATA-MODEL.md
+containing at least entities, one invariant, and an Agent boundary section... verified
+indirectly via task 2b's grilling flow, but the format itself must define and require
+these sections") means this task's own testable surface is: does
+`DATA-MODEL-FORMAT.md` exist and does it *define and require* (not just optionally
+mention) the five sections, especially Entities & relationships, Invariants, and Agent
+boundary? The actual grilling-session behavior is 2b's test, not this task's — this
+task is format-definition only, no runtime/skill behavior to exercise.

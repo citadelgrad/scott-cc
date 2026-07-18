@@ -3,6 +3,11 @@
 
 # CONTEXT.md Format
 
+`CONTEXT.md` is a glossary — it defines what things are called and explicitly forbids
+implementation detail (see Rules below). For the implementation-detail record — storage
+mapping, invariants, ownership, agent boundaries — see
+[DATA-MODEL-FORMAT.md](./DATA-MODEL-FORMAT.md).
+
 ## Structure
 
 ```md
