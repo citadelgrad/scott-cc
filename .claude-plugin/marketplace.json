@@ -88,6 +88,16 @@
         "name": "Scott Nixon"
       },
       "tags": ["code-review", "quality", "agents", "skills"]
+    },
+    {
+      "name": "variant-explorer",
+      "source": "./plugins/variant-explorer",
+      "description": "Parallel blind-builder variant exploration: spawns N isolated implementations against a spec + acceptance criteria, judges them against AC conformance, TASTE.md, and simplicity, and produces a ranked shortlist",
+      "version": "1.0.0",
+      "author": {
+        "name": "Scott Nixon"
+      },
+      "tags": ["variants", "worktree", "parallel", "exploration", "review"]
     }
   ]
 }

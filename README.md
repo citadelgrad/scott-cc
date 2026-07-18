@@ -17,7 +17,7 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 | Skills | 17 | `init`, `acceptance-criteria`, `cli-design`, `delegate-first`, `python-simplifier`, `typescript-simplifier`, `karpathy-guidelines`, `property-based-testing`, `verified-implementation`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory`, `thinking-in-systems` |
 | Hooks | 4 | `terminal-bell` (Stop), `toon-post-hook` (PostToolUse), `prefer-modern-tools` (PreToolUse), `data-layer-guard` (PreToolUse) |
 | Templates | 3 | `.pre-commit-config.yaml`, `CLAUDE.md`, `AGENTS.md` |
-| Sub-plugins | 7 | `beads-epic-builder`, `browser-automation`, `research-tools`, `security-suite`, `performance-optimization`, `mutation-testing`, `review-panel` |
+| Sub-plugins | 8 | `beads-epic-builder`, `browser-automation`, `research-tools`, `security-suite`, `performance-optimization`, `mutation-testing`, `review-panel`, `variant-explorer` |
 
 ---
 
@@ -133,7 +133,7 @@ Stored in `templates/` — copy to your project or use the `/init` skill to depl
 
 ---
 
-## Sub-plugins (7)
+## Sub-plugins (8)
 
 Install from the marketplace:
 
@@ -325,6 +325,31 @@ Multi-persona adversarial code and design review panel, vendoring and adapting p
 | Skill | Description |
 |-------|-------------|
 | `tdd` | Test-driven development with the red-green-refactor loop. |
+
+---
+
+### variant-explorer
+
+Parallel blind-builder variant exploration: spawns N isolated implementations against a spec and acceptance criteria, judges them against AC conformance, `TASTE.md`, and simplicity, and produces a ranked shortlist.
+
+**Commands (1)**
+
+| Command | Description |
+|---------|-------------|
+| `/explore-variants [spec] [--n N] [--ac <path>]` | Spawn N blind builders in isolated worktrees against a spec + acceptance criteria, then judge the results and produce a ranked shortlist. |
+
+**Agents (2)**
+
+| Agent | Description |
+|-------|-------------|
+| `blind-builder` | Builds one complete, independent implementation of a spec inside an isolated worktree, without seeing any sibling variant. |
+| `variant-judge` | Scores every surviving variant along one judging axis (AC-conformance, taste, or simplicity) and returns a scorecard per variant. Never edits variant code. |
+
+**Skills (1)**
+
+| Skill | Description |
+|-------|-------------|
+| `explore-variants` | Orchestrates the panel: gathers input, validates N (refuses N=1, clamps N>6), spawns blind builders, collects results with explicit failure reporting, runs the judge panel, and hands the human a ranked shortlist. |
 
 ---
 

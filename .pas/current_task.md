@@ -1,9 +1,9 @@
-# Current Task: scc-d0u
+# Current Task: scc-5hy
 
-## Verification & tooling gates (all phases)
+## Phase 4 — variant-explorer plugin (parallel blind-builder exploration)
 
 ### Task ID
-scc-d0u
+scc-5hy
 
 ### Status
 in_progress (started 2026-07-18)
@@ -12,50 +12,46 @@ in_progress (started 2026-07-18)
 P2
 
 ### Summary
-Cross-cutting quality-gate requirements that apply incrementally to every phase's plugin/manifest edits, not a one-time final task. Each phase's PR must pass plugin verification, include a seeded-defect fixture, and pass repo-standard lint/test gates before merging, with README/marketplace catalog counts kept in sync.
+New standalone plugin `plugins/variant-explorer/` that spawns N blind builders in isolated git worktrees against a spec + acceptance criteria, then judges the results against AC, TASTE.md, and simplicity, producing a ranked shortlist for the human to pick from.
 
 ### Description
-Cross-cutting quality-gate requirements that apply incrementally to every phase's plugin/manifest edits, not a one-time final task. Each phase's PR must pass plugin verification, include a seeded-defect fixture, and pass repo-standard lint/test gates before merging, with README/marketplace catalog counts kept in sync.
+New standalone plugin `plugins/variant-explorer/` (resolved OQ2: standalone, not co-located in review-panel) that spawns N blind builders in isolated git worktrees against a spec + acceptance criteria, then judges the results against AC, TASTE.md, and simplicity, producing a ranked shortlist for the human to pick from. Depends on review-panel to score its shortlist against TASTE.md; review-panel itself stays scoped to judgment-only tooling.
 
 ### Design Details
 
-Apply scripts/verify_plugin.py, the PRESSURE-TEST.md fixture pattern, uv run pytest, and uv run ruff check --fix as merge gates on every phase PR (1a/1b, 2a-2d, 3a-3d, 4, 5) — not deferred to the end of the epic. Update README.md and the marketplace catalog's command/skill/agent counts as each phase adds new skills (plan-security-review, grill-the-schema, data-steward, taste-review, grill-my-taste, explore-variants, triage-spine, lib-upgrades, prod-errors) and new plugins (variant-explorer, triage).
+New skill: `plugins/variant-explorer/skills/explore-variants/SKILL.md`.
 
-This task documents a standing gate rather than a single unit of sequential work — treat it as re-run per phase PR, matching the pattern already established for review-panel's own PRESSURE-TEST.md fixtures. Failing to keep marketplace catalog counts in sync has caused version-sync bugs in this repo before (see commit 748dff1, 'fix(marketplace): sync review-panel catalog version to 0.2.0').
+**Procedure:**
+
+1. **Input:** a design question or feature spec + acceptance criteria (generate via the acceptance-criteria skill if absent) + N (default 3, cap 6).
+2. **Spawn N blind builders** — clean-room-alternative dispatch pattern, each in an isolated git worktree, each given the spec + AC only (no sibling output, no preferred approach), each with a distinct angle prompt (e.g., MVP-first, data-model-first, dependency-free).
+3. **Judge panel:** independent judges score each variant against (a) the AC, (b) TASTE.md when present, (c) simplicity (reuse ponytail-review lens). Judges see all variants; builders never do.
+4. **Output:** ranked shortlist with per-variant scorecard citing AC items and TASTE clauses; the human picks; losing worktrees are deleted after an explicit 'harvest ideas from runners-up?' prompt.
+
+**Execution note:** local interactive runs dispatch via Task; Foundry/Reck runs map step 2 onto PAS tasks in containers (one task per variant). The skill documents both paths; v1 implements the local path, PAS mapping is a documented recipe only.
+
+### Key Constraints
+
+- Blocked on Phase 3 in full (3a-3d) per the spec's decompose plan: "4 is blocked on 3 (taste is the scoring function)"
+- review-panel must never absorb the worktree-spawning/execution machinery — that stays in this standalone plugin, matching OQ2's resolution
 
 ### Acceptance Criteria
 
-1. **scripts/verify_plugin.py runs clean**: After each phase's plugin/manifest edits. PASS/FAIL per phase.
-2. **Fixtures per phase**: Each phase adds at least one fixture under the owning plugin's tests/ following the review-panel/tests/PRESSURE-TEST.md pattern (seeded defect → expected finding). PASS/FAIL: fixture present per phase.
-3. **Lint and test gates**: uv run pytest and uv run ruff check --fix gate every phase per repo rules (CLAUDE.md). PASS/FAIL: both commands clean.
-4. **Catalog sync**: README.md / marketplace catalog counts are updated per phase since they enumerate commands/skills/agents explicitly. PASS/FAIL: counts match actual plugin contents after each phase merges.
+1. **AC1 — N=3 baseline:** A run with N=3 produces 3 worktrees, 3 scorecards, and a ranked shortlist; each scorecard cites >=1 AC item. PASS/FAIL: counts and citations present.
 
-### Dependencies
-- Parent: scc-hzj (Two-System Architecture epic)
-- Applies to all phases: 1a, 1b, 2a-2d, 3a-3d, 4, 5
+2. **AC2 — TASTE.md handling:** With TASTE.md present, at least the winning scorecard references taste clauses; without it, scorecards omit the taste axis and say so. PASS/FAIL: both modes.
 
-### Key Constraints
-- This is a standing gate (re-run per phase PR), not a one-time final task
-- Applies to every phase PR merge
-- Cross-phase quality assurance for the entire Two-System Architecture pipeline
-- Must keep marketplace catalog counts in sync to prevent version-sync bugs
+3. **AC3 — Builder isolation:** no builder prompt contains another variant's content (verifiable from dispatch logs). PASS/FAIL: prompt inspection.
 
-### Phase
-Cross-cutting requirement for all phases (1-5) of the Two-System Architecture
+4. **AC4 — Error handling:** a builder that fails/times out is reported as a lost variant, run continues with survivors, never silently reduced N. PASS/FAIL: explicit note.
+
+5. **AC5 — Boundary cases:** N=1 refuses with guidance to build directly; N>6 clamps with a note. PASS/FAIL: both behaviors.
+
+### Dependencies (all satisfied)
+- ✓ scc-cnx: Phase 3a — TASTE.md format
+- ✓ scc-3x5: Phase 3b — grill-my-taste skill
+- ✓ scc-4tt: Phase 3d — Taste seat (review stage)
+- ✓ scc-da0: Phase 3c — Taste feedback loop (capture + --distill)
 
 ### Parent Epic
 scc-hzj: Two-System Architecture — Security, Data Stewardship, Taste, Variants, and Triage Spine
-
-### Related Phases
-- Phase 1a (scc-4xa): Security seat — COMPLETE
-- Phase 1b (scc-g12): Plan-security pass — COMPLETE
-- Phase 2a (scc-f9k): DATA-MODEL.md format — COMPLETE
-- Phase 2b (scc-b56): grill-the-schema skill — COMPLETE
-- Phase 2c (scc-bqp): data-steward seat — COMPLETE
-- Phase 2d (scc-4rj): data-layer guard hook — COMPLETE
-- Phase 3a (scc-cnx): TASTE.md format — COMPLETE
-- Phase 3b (scc-3x5): grill-my-taste skill — COMPLETE
-- Phase 3c (scc-da0): Taste feedback loop — COMPLETE
-- Phase 3d (scc-4tt): Taste seat — COMPLETE
-- Phase 4 (scc-5hy): variant-explorer plugin — READY
-- Phase 5 (scc-tsa): Triage spine plugin — READY
