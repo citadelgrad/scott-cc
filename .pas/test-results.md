@@ -1,103 +1,106 @@
-# Test Results: scc-cnx (Phase 3a — TASTE.md format)
+# Test Results: scc-3x5 (Phase 3b — grill-my-taste skill)
 
-## Nature of this deliverable
+## Scope
 
-`plugins/review-panel/formats/TASTE-FORMAT.md` is a pure documentation deliverable — a
-format specification with no code, hooks, or skill logic (consumer skills `grill-my-taste`
-3b, `--distill` 3c, and `taste-review` 3d don't exist yet). There is no test suite or
-lint surface to run against a markdown format spec. Per the task's own Acceptance
-Criteria note, live behavioral verification (an actual `grill-my-taste` session producing
-a conforming `TASTE.md`) is deferred to Phase 3b. This session instead did two things a
-format spec *can* be checked for now: (1) structural/cross-reference validation of the
-file itself, and (2) a hand-worked conformance test — simulating the Phase 3 acceptance
-criteria against the format's own stated rules, to prove the format is capable of
-satisfying them before 3b/3c/3d are built on top of it.
+Pure markdown skill file (`plugins/review-panel/skills/grill-my-taste/SKILL.md`) —
+no code, no automated test suite applies. Same verification shape used for Phase 3a
+(scc-cnx): structural validation against precedent + a hand-worked conformance test,
+since no live orchestrator exists yet to run a real grilling session end-to-end.
 
-## 1. Structural validation of `TASTE-FORMAT.md`
+## 1. Structural validation
 
-- **Fenced code block balance:** 1 fenced block (2 backtick markers) — balanced, matches
-  precedent (`DATA-MODEL-FORMAT.md` also has exactly one `## Structure` example block).
-- **Header hierarchy:** no level-skips outside the fenced example (checked
-  programmatically). Section order (`Scope note` → `Structure` → `Rules` →
-  `Malformed or missing TASTE.md` → `Lazy creation`) mirrors the precedent files'
-  intro → structure → rules → disambiguation → lazy-creation shape.
-- **Cross-referenced paths all exist in the repo** (checked directly, not assumed):
-  `plugins/review-panel/skills/{deep-modules,complexity-recognition,naming-obviousness,
-  general-vs-special,strategic-mindset,code-evolution,comments-docs}`,
-  `skills/karpathy-guidelines/SKILL.md`, `plugins/review-panel/formats/{DATA-MODEL-FORMAT,
-  ADR-FORMAT}.md`, `plugins/review-panel/skills/grill-the-schema/SKILL.md`. All present.
-- **Spec conformance:** compared section-by-section against
-  `docs/plans/2026-07-16-two-system-architecture/two-system-spec.md` §3a (lines 233–241)
-  and Phase 3 acceptance criteria (lines 275–288) — exact match on required sections,
-  field names (`rule`, `rationale`, `strength`, `provenance`), and the `weak/strong/
-  absolute` enum. No other file in the repo yet references `TASTE-FORMAT.md` or
-  `TASTE.md` besides the PRD/SPEC/`.pas` docs — confirms the investigation's finding that
-  no other files need to change in this phase.
+- **File exists** at the correct path, single file (no `references/` subdir), matching
+  the `grill-the-schema` / `grill-with-docs` precedent pattern.
+- **Frontmatter shape matches siblings exactly**: `grep -c '^---$'` returns `2` for all
+  three grill-family `SKILL.md` files (opening/closing delimiter), same `name:` /
+  `description:` fields.
+- **`<what-to-do>` / `<supporting-info>` two-part shape** preserved, consistent with both
+  precedents.
+- **Cross-referenced link resolves**: `../../formats/TASTE-FORMAT.md` (used twice in the
+  skill) resolves to `plugins/review-panel/formats/TASTE-FORMAT.md`, confirmed to exist
+  on disk.
+- **Divergence from precedent is intentional and present**: unlike
+  `grill-the-schema`'s "interview me relentlessly" opener, this skill's `<what-to-do>`
+  explicitly forbids introspective questions ("Do not ask 'what's your invariant
+  here?'...") and opens with the forced-choice loop instead — matches the task's
+  explicit choice-based-not-introspective requirement.
+- **All required mechanics present**: forced-choice loop (steps 1–6), ≥5-choice session
+  minimum, evidence-mining mode, `--distill` mode stub scoped to "invoked through
+  grill-my-taste, not a distinct tool" (doesn't pre-implement Phase 3c/scc-da0's
+  promote/merge/reject logic), Preference vs. Weighting vs. Anti-preference routing
+  logic, partial-entry guard, codebase-sourced-vs-synthetic provenance honesty, lazy
+  `TASTE.md` creation, human-ownership (Invariant 5) statement.
 
-## 2. Hand-worked conformance test (simulated Phase 3 ACs against the format's rules)
+## 2. Hand-worked conformance test
 
-Since `grill-my-taste` doesn't exist yet, I hand-constructed three sample `TASTE.md`
-files that a real session would plausibly produce, and wrote a small mechanical
-validator (`/tmp/taste-format-test/validate.py`, scratch — not committed) that parses
-`## Preferences` entries against exactly the rules stated in `TASTE-FORMAT.md`'s own
-"Rules" and "Malformed or missing TASTE.md" sections: every Preference needs
-`Rule`/`Rationale`/`Strength`/`Provenance`, and `Strength` must be one of
-`weak|strong|absolute`.
+Since `--distill` (3c) and the taste-review seat (3d) don't exist yet to consume a real
+session, I hand-built a simulated `TASTE.md` representing what a ≥5-forced-choice
+`grill-my-taste` session (per this skill's own mechanics) would produce, plus a scratch
+Python validator (`/tmp/grill-my-taste-test/validate.py`) that mechanically enforces the
+skill's and TASTE-FORMAT.md's own stated rules — same approach as Phase 3a's conformance
+test.
 
-| Scenario | File | Simulates | Result |
-|---|---|---|---|
-| ≥5 forced choices, all fields present | `valid_taste.md` | Phase 3 AC1 (grill-my-taste session ≥5 forced choices) | **PASS** — 5/5 Preferences parsed, all 4 fields present, all `Strength` values valid enum members, `Candidate rules` section empty |
-| One Preference missing `Strength` | `malformed_taste.md` | Phase 3 AC5 (malformed TASTE.md, missing strength) | **PASS** — validator correctly flags the entry `UNUSABLE (missing: Strength)` rather than guessing a default, matching the format's "Malformed or missing TASTE.md" rule |
-| Post-`--distill` state, one promoted entry, empty Candidate section | `distilled_taste.md` | Phase 3 AC4 (`--distill` ends with zero remaining candidates) | **PASS** — promoted entry has all 4 fields (provenance recorded as "Promoted via --distill"), `Candidate rules` section is empty and mechanically detected as such |
-
-Full validator output:
+**Sample A — well-formed session output** (`/tmp/grill-my-taste-test/TASTE.md`):
+5 forced choices distributed across all three destination sections per the skill's
+routing rule (3 → Preferences, 1 → Weighting, 1 → Anti-preference), including one
+synthetic-pair provenance line that honestly discloses it wasn't codebase-sourced.
 
 ```
-=== valid_taste.md ===
-Preferences found: 5
-  - Prefer flat error handling over nested try/catch: OK
-  - Prefer named exports over default exports: OK
-  - Prefer composition over inheritance for shared behavior: OK
-  - Prefer explicit null checks over optional chaining chains: OK
-  - Prefer table-driven tests over repeated assertions: OK
-Candidate rules section empty: True
-Expected all-valid=True, got all-valid=True -> PASS
-
-=== malformed_taste.md ===
-Preferences found: 2
-  - Prefer flat error handling over nested try/catch: OK
-  - Prefer named exports over default exports: UNUSABLE (missing: Strength)
-Candidate rules section empty: True
-Expected all-valid=False, got all-valid=False -> PASS
-
-=== distilled_taste.md ===
-Preferences found: 1
-  - Prefer early returns over wrapping a function body in an if block: OK
-Candidate rules section empty: True
-Expected all-valid=True, got all-valid=True -> PASS
-
-OVERALL: PASS
+$ python3 validate.py
+Checked 3 Preference entries.
+PASS: every Preference entry has rule + rationale + strength + provenance,
+and strength is one of weak/strong/absolute.
 ```
+**Result: PASS** — satisfies the task's stated AC directly: "A grill-my-taste session of
+>=5 forced choices produces a TASTE.md where every preference has rule + rationale +
+strength + provenance."
 
-## Acceptance criteria (scc-cnx)
+**Sample B — malformed negative control** (`/tmp/grill-my-taste-test/TASTE-malformed.md`):
+one entry missing `Strength` entirely, one entry using `high` instead of the
+`weak|strong|absolute` enum (testing TASTE-FORMAT.md's "no synonyms" rule).
 
-> A grill-my-taste session of >=5 forced choices produces a TASTE.md where every
-> preference has rule + rationale + strength + provenance.
+```
+$ python3 validate_malformed.py
+Checked 2 Preference entries.
+FAIL:
+ - Entry 1 ('Prefer early returns over nested conditionals') missing field: Strength
+ - Entry 2 ('Prefer f-strings over `.format()` for string interpolation') has invalid strength: 'high'
+exit code: 1
+```
+**Result: correctly flagged** — confirms the validator (and, by extension, the skill's
+own "never write a Preference missing any of the four required fields" rule and
+TASTE-FORMAT.md's strength enum) actually discriminates well-formed from malformed
+entries rather than passing trivially.
 
-**PASS** (format-level verification, as the task's own AC note anticipates — full
-behavioral verification is 3b's responsibility): `TASTE-FORMAT.md` defines and requires
-all four fields per Preference (`## Rules`, first bullet), constrains `strength` to
-exactly `weak|strong|absolute` with no synonyms, and — demonstrated above — a
-5-preference sample conforming to the format's `## Structure` template parses cleanly
-with all fields present. The format also explicitly requires the "missing field →
-unusable, not guessed" behavior needed by Phase 3's error-state AC, and defines
-"Candidate rules empty" as a clean, greppable state needed by Phase 3's `--distill` AC —
-both confirmed above.
+## 3. Acceptance criteria
 
-## Scope check
+**AC**: "A grill-my-taste session of >=5 forced choices produces a TASTE.md where every
+preference has rule + rationale + strength + provenance."
+**PASS/FAIL check**: All fields (rule, rationale, strength, provenance) present for all
+preference entries.
 
-No code changed, so no `ruff`/`ty`/test-suite run applies. Working tree for this task is
-limited to the new `plugins/review-panel/formats/TASTE-FORMAT.md` file plus `.pas/`
-tracking docs, consistent with the investigation and implementation summaries. Scratch
-validation artifacts (`/tmp/taste-format-test/`) are outside the repo and were not
-committed.
+**Status: PASS.** The skill's mechanics (forced-choice loop with a hold-back rule for
+unresolved choices, confirm-before-write step, "never write a Preference missing any
+field" guard) structurally guarantee this outcome, and the hand-worked simulation
+confirms a session following those mechanics produces a conformant file.
+
+## 4. Lint / build
+
+No code changed — docs-only skill file. No markdown linter configured in this repo
+(same finding as Phase 3a: no `.markdownlint*` config, no `markdownlint` reference in
+`package.json`). Fenced code block check N/A — this `SKILL.md` has no fenced blocks
+requiring a balance check, unlike `TASTE-FORMAT.md`'s worked example.
+
+## 5. Working tree check
+
+`git status --short` shows only this task's new file
+(`plugins/review-panel/skills/grill-my-taste/SKILL.md`, untracked) plus the same
+pre-existing session-state diffs flagged in every prior pipeline step
+(`.pas/*`, PRD/SPEC docs, `.claude/settings.json`, `.pas/logs/`, `hooks/__pycache__/`,
+`pipelines/`). No unexpected changes. Scratch validation artifacts live under
+`/tmp/grill-my-taste-test/` (outside the repo, untracked, no cleanup needed).
+
+## Conclusion
+
+All checks pass. No code changed, so no test/lint suite applies beyond the above. Ready
+for Verify.

@@ -1,9 +1,9 @@
-# Current Task: scc-cnx
+# Current Task: scc-3x5
 
-## Phase 3a — TASTE.md format
+## Phase 3b — grill-my-taste skill (choice-based preference elicitation)
 
 ### Task ID
-scc-cnx
+scc-3x5
 
 ### Status
 in_progress (claimed 2026-07-18)
@@ -12,54 +12,53 @@ in_progress (claimed 2026-07-18)
 P2
 
 ### Summary
-Define the shared format for TASTE.md, capturing personal, contested preference — explicitly distinct from universal quality (which belongs in the Ousterhout lens set / Karpathy guidelines, not here). This format underlies grill-my-taste (3b), the taste feedback loop / --distill mode (3c), and the taste review seat (3d).
+New grill-family skill that elicits taste via forced choices between realistic alternatives rather than introspective questions, distilling each choice into a candidate rule written to TASTE.md. Includes an evidence-mining mode that mines repo/PR history for places the human rewrote agent or contributor output.
 
 ### Description
-Define the shared format for TASTE.md, capturing personal, contested preference — explicitly distinct from universal quality (which belongs in the Ousterhout lens set / Karpathy guidelines, not here). This format underlies grill-my-taste (3b), the taste feedback loop / --distill mode (3c), and the taste review seat (3d).
+New grill-family skill that elicits taste via forced choices between realistic alternatives rather than introspective questions, distilling each choice into a candidate rule written to TASTE.md. Includes an evidence-mining mode that mines repo/PR history for places the human rewrote agent or contributor output.
 
 ### Design Details
 
 #### Deliverable
-New file: `plugins/review-panel/formats/TASTE-FORMAT.md`
+New file: `plugins/review-panel/skills/grill-my-taste/SKILL.md`
 
-#### Required Sections
-- **Preferences**: Each entry must have rule, rationale, strength (weak/strong/absolute), and provenance (which choice or override produced it)
-- **Weightings**: Personal calibrations of universal principles (e.g., 'locality beats DRY')
-- **Anti-preferences**: Patterns to flag even when defensible
-- **Candidate rules**: Captured overrides awaiting distillation (see Phase 3c)
-- **Scope note**: Clearly state that universal quality does NOT belong here (that is the Ousterhout lens set / Karpathy guidelines); only personal, contested preference belongs in TASTE.md
+#### Grill-Family Mechanics
 
-#### Design Rationale
-- Invariant 5 (human artifacts are human-owned) applies directly — TASTE.md is a human-owned artifact
-- Blocks Phase 3b, 3c, 3d, and Phase 4 (variant scoring reads TASTE.md)
-- Depends on Phase 2a/2b for the DATA-MODEL.md format context
+**Elicitation is choice-based, not introspective:**
+- Present pairs of realistic alternatives (two API shapes, two error-message styles, two module layouts — generated from the user's actual codebase where available)
+- User picks
+- Agent asks why
+- Distills a candidate rule
+- Confirms wording
+- Writes to TASTE.md inline
+
+**Evidence mining mode:**
+- When pointed at a repo/PR history, find places the human rewrote agent or contributor output
+- Turn each rewrite into a forced-choice question (before vs after)
 
 ### Files to Create
-- `plugins/review-panel/formats/TASTE-FORMAT.md` — the TASTE.md format specification
+- `plugins/review-panel/skills/grill-my-taste/SKILL.md` — grill-family mechanics specification
 
 ### Acceptance Criteria
 
 A grill-my-taste session of >=5 forced choices produces a TASTE.md where every preference has rule + rationale + strength + provenance.
 
-**PASS/FAIL**: All fields (rule, rationale, strength, provenance) present for all preference entries. This will be verified via task 3b's flow, but the format itself must define and require these fields.
+**PASS/FAIL**: All fields (rule, rationale, strength, provenance) present for all preference entries.
 
 ### Dependencies
-- Depends on: ✓ scc-f9k (Phase 2a — DATA-MODEL.md format)
-- Depends on: ✓ scc-b56 (Phase 2b — grill-the-schema skill)
-- Depends on: ✓ scc-4rj (Phase 2d — data-layer guard hook, Phase 2 completion)
-- Blocks: scc-3x5 (Phase 3b — grill-my-taste skill)
+- Depends on: ✓ scc-cnx (Phase 3a — TASTE.md format)
 - Blocks: scc-da0 (Phase 3c — taste feedback loop)
-- Blocks: scc-4tt (Phase 3d — taste seat)
 - Blocks: scc-5hy (Phase 4 — variant-explorer plugin)
 
 ### Key Constraints
-- This is Phase 3a (first Phase 3 task) in the strict Phase 1 → 2 → 3 → 4 → 5 build order
-- Phase 2 is now fully complete; Phase 3a is the next sequential task
-- Must distinguish personal, contested preference from universal quality
-- Human-owned artifact (Invariant 5) — agents may propose edits but must not auto-modify
+- This is Phase 3b (second Phase 3 task) in the strict Phase 1 → 2 → 3 → 4 → 5 build order
+- Phase 3a (TASTE-FORMAT.md) is now complete; Phase 3b is the next sequential task
+- Depends on TASTE-FORMAT.md for target sections
+- The --distill mode used in 3c is a mode of this same skill, not a separate skill
+- Human-owned artifact (Invariant 5) — the TASTE.md file is human-owned, agents produce it via interview
 
 ### Phase
-Phase 3a of the Two-System Architecture (Phase 1 → 2 → 3 → 4 → 5 build order)
+Phase 3b of the Two-System Architecture (Phase 1 → 2 → 3 → 4 → 5 build order)
 
 ### Parent Epic
 scc-hzj: Two-System Architecture — Security, Data Stewardship, Taste, Variants, and Triage Spine
@@ -71,4 +70,5 @@ scc-hzj: Two-System Architecture — Security, Data Stewardship, Taste, Variants
 - Phase 2b (scc-b56): grill-the-schema skill — COMPLETE
 - Phase 2c (scc-bqp): data-steward seat — COMPLETE
 - Phase 2d (scc-4rj): data-layer guard hook — COMPLETE
-- Phase 3a (scc-cnx): TASTE.md format — THIS TASK
+- Phase 3a (scc-cnx): TASTE.md format — COMPLETE
+- Phase 3b (scc-3x5): grill-my-taste skill — THIS TASK

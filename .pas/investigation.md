@@ -1,140 +1,156 @@
-# Investigation: scc-cnx (Phase 3a — TASTE.md format)
+# Investigation: scc-3x5 (Phase 3b — grill-my-taste skill)
 
 ## Task
 
-Create `plugins/review-panel/formats/TASTE-FORMAT.md`, the format specification for a
-new human-owned artifact, `TASTE.md`. This is a pure documentation deliverable (like
-Phase 2a's `DATA-MODEL-FORMAT.md`) — no code, no hooks, no skill logic. It only defines
-the shape that Phase 3b (`grill-my-taste`), 3c (feedback loop / `--distill`), and 3d
-(taste review seat) will read and write.
+Create `plugins/review-panel/skills/grill-my-taste/SKILL.md` — a new grill-family skill
+that elicits taste via **forced choices** between realistic alternatives (not
+introspective questions), distills each choice into a candidate rule, and writes it to
+`TASTE.md` inline. Includes an **evidence-mining mode** that mines repo/PR history for
+places the human rewrote agent/contributor output, turning each rewrite into a
+before/after forced-choice question.
+
+Per the task notes, the `--distill` mode used by Phase 3c (`scc-da0`) is a **mode of this
+same skill**, not a separate skill — so this SKILL.md needs to at least stub/describe that
+mode's existence even though its full behavior is 3c's job to flesh out. (Checked: 3c is
+not yet implemented — `scc-da0` is still open, blocked on this task.)
 
 ## Files to create
 
-- `plugins/review-panel/formats/TASTE-FORMAT.md` — new file, the only deliverable.
+- `plugins/review-panel/skills/grill-my-taste/SKILL.md` (only file — matches the
+  single-file pattern used by `grill-the-schema` and `grill-with-docs`, no `references/`
+  subdirectory needed since there's no long reference material to externalize).
 
-No existing files need to change. `TASTE.md` itself is not created by this task — per
-Invariant 5 and the pattern already established for `DATA-MODEL.md`, the artifact is
-only ever produced through a human grilling session (Phase 3b), never scaffolded by an
-agent ahead of time.
+No other files need to change. `TASTE-FORMAT.md` (3a) already exists and is the
+target format this skill writes to — nothing there needs modification.
 
-## Current behavior / precedent
+## Precedent: two existing grill-family skills
 
-`plugins/review-panel/formats/` currently has three format specs, all following the
-same shape: short intro paragraph(s), a fenced `## Structure` template block, a
-`## Rules` section explaining *why* each field/section exists, and closing sections for
-cross-references and lazy-creation guidance.
+Both are single-file `SKILL.md`s with the same two-part shape: a short imperative
+`<what-to-do>` block, then a `<supporting-info>` block with domain awareness + session
+mechanics. I'll follow this shape exactly for consistency:
 
-- **`DATA-MODEL-FORMAT.md`** (Phase 2a) is the closest precedent — same "human-owned
-  artifact fed by a grilling session" pattern that 3a/3b will mirror for taste. Notable
-  conventions worth reusing:
-  - Opening HTML comment marking the file as the canonical/single source of truth (not
-    forked elsewhere).
-  - `## Structure` gives one concrete worked example in a fenced `md` block, not an
-    abstract schema.
-  - `## Rules` restates each required field as an imperative, tied to *why* it matters
-    and *which downstream consumer* reads it (e.g. "the data-layer guard hook checks for
-    a current-work entry").
-  - A `## Relationship to CONTEXT.md` section exists specifically to disambiguate two
-    documents with overlapping subject matter but different scope — directly analogous
-    to what's needed here for TASTE.md vs. Ousterhout-lens/Karpathy-guidelines universal
-    quality.
-  - Closing `## Lazy creation` section: don't scaffold the file until there's a real
-    decision to record.
-- **`ADR-FORMAT.md`** shows the "when to invoke this vs. not" three-part-gate pattern —
-  useful precedent for how TASTE-FORMAT.md should gate what counts as a "preference"
-  worth recording vs. noise.
-- **`plugins/review-panel/skills/grill-the-schema/SKILL.md`** (Phase 2b, the skill that
-  *consumes* DATA-MODEL-FORMAT.md) confirms the downstream contract: it links to the
-  format file, updates the artifact inline as decisions crystallize, includes a dated
-  Change-log-style entry per resolved decision, and explicitly states the artifact is
-  human-owned and FIX never auto-modifies it. Phase 3b (`grill-my-taste`, not yet built)
-  will do the equivalent for TASTE.md — this task must produce a format spec that
-  supports that same inline-update, human-owned workflow.
+1. **`plugins/review-panel/skills/grill-the-schema/SKILL.md`** (Phase 2b, closest
+   precedent — same author, same target pattern of "interview → write structured file
+   inline → cite the format spec"). Sections: Domain awareness (where to look, lazy
+   creation), During the session (interview topics, concrete scenarios, cross-reference
+   with code, update file inline, offer ADRs sparingly).
+2. **`plugins/review-panel/skills/grill-with-docs/SKILL.md`** (glossary/CONTEXT.md
+   version, also ends with an "offer the plan-security pass" cross-plugin pointer —
+   relevant precedent for how to write a "point at another skill/plugin without coupling
+   to it" note, per Invariant 4).
 
-No existing `TASTE.md` file or `TASTE-FORMAT.md` reference exists anywhere in the repo
-yet (confirmed via grep) — this is a clean creation, not a migration or rewrite.
+**Key difference this skill must diverge on:** both precedents are *introspective*
+interviews ("what's the invariant here?", "which term do you mean?"). `grill-my-taste`
+is explicitly **choice-based, not introspective** per the spec — present two concrete
+alternatives, user picks, agent asks why. This is a different interaction pattern from
+the precedents and needs its own `<what-to-do>` framing rather than copying
+grill-the-schema's "interview me relentlessly" opener verbatim.
 
-## Required changes (from task file + two-system-spec.md §3a, lines 231-241)
+## Target format: TASTE-FORMAT.md (already exists, Phase 3a — verified complete)
 
-The spec and `.pas/current_task.md` agree exactly on required content.
-`TASTE-FORMAT.md` must define:
+`plugins/review-panel/formats/TASTE-FORMAT.md` defines what this skill must produce:
 
-1. **Preferences** — each entry needs four fields:
-   - `rule` — the actual preference statement
-   - `rationale` — why
-   - `strength` — enum: `weak | strong | absolute`
-   - `provenance` — which choice or override produced it (traceable back to a
-     grill-my-taste forced-choice session or a captured override, per 3b/3c)
-2. **Weightings** — personal calibrations of *universal* principles, not new
-   principles. Spec's own example: "locality beats DRY." These are relative-priority
-   statements between two things that are each independently legitimate elsewhere, not
-   a preference in the Preferences-list sense.
-3. **Anti-preferences** — patterns to flag even when individually defensible (i.e.,
-   things that are locally fine per Ousterhout/Karpathy but that this particular human
-   still wants flagged).
-4. **Candidate rules** — a staging area for overrides captured by the Phase 3c feedback
-   loop, awaiting a `--distill` pass (3c) to promote/merge/reject each one. This section
-   must be structurally distinct from the confirmed Preferences list so 3c's acceptance
-   criterion ("ends with zero remaining candidates") is checkable — i.e. "Candidate
-   rules empty" must be a well-defined, greppable state.
-5. **Scope note** (required *in the format itself*, not just in this investigation):
-   universal quality does NOT belong in TASTE.md — that's the Ousterhout lens set (the
-   local skills grounded in *A Philosophy of Software Design*: `deep-modules`,
-   `complexity-recognition`, `naming-obviousness`, `general-vs-special`,
-   `strategic-mindset`, `code-evolution`, `comments-docs`, etc. — confirmed via grep,
-   all cite Ousterhout directly) and `skills/karpathy-guidelines/SKILL.md`. Only
-   *personal, contested* preference belongs here.
+- **Preferences**: rule, rationale, strength (`weak|strong|absolute`, exact word, no
+  synonyms), provenance. Format's own worked example shows provenance written as
+  `"grill-my-taste session {date}, forced choice #{n} ({short description})"` — this
+  skill must number its forced choices within a session so provenance can cite them.
+- **Weightings**: relative priority between two independently-legitimate things (e.g.
+  "locality beats DRY") — distinct from a Preference, which needs two legitimate sides.
+- **Anti-preferences**: patterns to flag even when individually defensible.
+- **Candidate rules**: staging area, no `strength` yet, populated by captured overrides
+  (3c's job) and awaiting `--distill`. This skill's mechanics don't need to fully
+  implement `--distill`'s distillation logic (that's 3c/scc-da0), but must house the
+  `--distill` mode entry point since the task explicitly says it's "a mode of this same
+  skill, not a separate skill."
+- **Human-owned artifact rule** (Invariant 5): "FIX never writes to this file directly" —
+  same rule `grill-the-schema` states for `DATA-MODEL.md`. This skill is the *human
+  grilling session* that legitimately writes the file — that's the mechanism Invariant 5
+  carves out.
+- **Lazy creation**: `TASTE.md` created only on first real `grill-my-taste` session, not
+  pre-scaffolded.
+- **Malformed/missing file section**: not this skill's concern directly (that's the 3d
+  taste-review seat's read path), but worth a one-line acknowledgment that a session
+  always produces well-formed entries (all four fields) so 3d never encounters a partial
+  Preference this skill wrote.
 
-## Downstream consumers (why the field set is load-bearing, not decorative)
+## Required mechanics (from task description + spec §3b, both in exact agreement)
 
-- **3b (`grill-my-taste`)** must be able to write a conforming entry after each forced
-  choice — the AC requires ≥5 forced choices → TASTE.md where *every* preference has all
-  four fields. The format's field names/order need to be unambiguous enough that a skill
-  description (not custom code) can reliably produce them.
-- **3c (feedback loop / `--distill`)** reads Candidate rules and needs a clear
-  promote/merge/reject action model — the format should make each candidate entry
-  self-contained enough to evaluate independently (own rationale/provenance, not just a
-  bare rule string), since `--distill` "walks Candidate rules, promotes/merges/rejects
-  each."
-- **3d (taste seat)** cites "the specific TASTE.md clause" and maps strength → severity
-  (`absolute → Important+, strong → Important, weak → Minor`). This means `strength`
-  must be exactly one of the three named values — no synonyms — and each Preference
-  needs to be independently citable (discrete entries, not prose paragraphs).
-- **Phase 4 (variant-explorer)** scores shortlists against TASTE.md and must degrade
-  gracefully (omit the taste axis, say so) when the file doesn't exist — reinforces that
-  the file's existence/absence must be a clean binary, with no partial/ambiguous state
-  where the file exists but is unusable. Phase 3's own AC #5 covers this directly:
-  malformed TASTE.md (missing `strength`) must be reported as unusable in Coverage
-  Honesty rather than guessed at — worth stating explicitly in the format spec's Rules
-  section so 3d's implementer has textual grounding for that behavior.
+1. **Forced-choice elicitation loop:**
+   - Present pairs of realistic alternatives — two API shapes, two error-message styles,
+     two module layouts — **generated from the user's actual codebase where available**
+     (i.e., don't always use generic canned examples; pull real patterns via codebase
+     exploration when possible, falling back to representative synthetic examples when
+     the codebase doesn't have enough signal).
+   - User picks one.
+   - Agent asks why.
+   - Agent distills a candidate rule (rule + rationale + strength + provenance).
+   - Agent confirms wording with the user.
+   - Writes to `TASTE.md` inline (not batched — same "update inline" convention as
+     `grill-the-schema`).
 
-## Risks / dependencies
+2. **Evidence-mining mode:**
+   - Given a repo/PR history, find diffs where the human rewrote agent or contributor
+     output.
+   - Turn each rewrite into a forced-choice question: "before" (original/agent output)
+     vs "after" (human's rewrite) — same choice mechanics as mode 1, just sourced from
+     history instead of live-generated pairs.
+   - This is a *mode* of eliciting the forced choices, not a different output format —
+     still funnels into the same distill-rule → confirm → write-inline pipeline.
 
-- **Scope discipline is the main risk.** Because "taste" and "quality" overlap
-  linguistically, the format doc needs an explicit, hard-to-miss boundary (mirroring how
-  `DATA-MODEL-FORMAT.md` has a dedicated "Relationship to CONTEXT.md" section) rather
-  than a single throwaway sentence — otherwise 3d's taste seat risks duplicating
-  Ousterhout-lens/Karpathy findings, which the spec's severity mapping ("taste findings
-  are never Critical") implies is meant to be a distinct, deliberately-lower-stakes
-  category.
-- **Field-name stability matters for 3b/3c/3d correctness** since none of those skills
-  exist yet — whatever field names/enum values are chosen here become the de facto
-  contract those three tasks build against. Must match the task file's exact wording
-  (`rule`, `rationale`, `strength` with `weak/strong/absolute`, `provenance`) rather than
-  inventing synonyms.
-- **No code/hook risk** — this task touches only a new markdown file under
-  `plugins/review-panel/formats/`, so there's no lint/test/runtime surface to break.
-  Verification is necessarily deferred to 3b's actual grilling-session flow, exactly as
-  the task's own Acceptance Criteria note states ("verified via task 3b's flow, but the
-  format itself must define and require these fields").
-- **Human-owned-artifact framing must be explicit in this file too** — should include a
-  sentence-level echo of Invariant 5 (agents may propose edits, FIX never auto-modifies)
-  so a reader who lands on TASTE-FORMAT.md without having read the epic still gets the
-  constraint, matching how `DATA-MODEL-FORMAT.md`'s prose ("which decisions require a
-  human before an agent touches them") and `grill-the-schema/SKILL.md`'s explicit
-  "FIX never auto-modifies" sentence both restate it locally.
-- **Weightings vs. Preferences boundary** is worth calling out precisely in the Rules
-  section (a Weighting is a *relative priority between two legitimate options*, e.g.
-  "locality beats DRY," not a standalone rule) so 3b's elicitation logic can route a
-  forced-choice answer to the right section instead of dumping everything into
-  Preferences.
+3. **`--distill` mode (housed here, fleshed out by 3c/scc-da0):**
+   - Since 3c is not yet built, describe this as an existing mode/entry point of the
+     skill (so the file structurally supports it and 3c's task doesn't need to
+     restructure this file, only extend its logic) without inventing 3c's full
+     promote/merge/reject mechanics prematurely. A short pointer paragraph, not a full
+     spec, avoids scope creep into scc-da0's job while satisfying "not a separate skill."
+
+4. **Session must support ≥5 forced choices** producing full 4-field entries — this is
+   the Phase 3 acceptance criterion (`scc-3x5`'s own AC): "A grill-my-taste session of
+   ≥5 forced choices produces a TASTE.md where every preference has rule + rationale +
+   strength + provenance." The skill's mechanics section should make clear that each
+   completed choice becomes one fully-formed Preference (or Weighting/Anti-preference
+   where the choice reveals a relative-priority or flag-anyway pattern instead of a
+   straightforward rule) — never a partial entry.
+
+## Cross-plugin / dependency-direction considerations
+
+- This skill lives entirely inside `plugins/review-panel/` — no new plugin, no
+  cross-plugin imports. Consistent with Invariant 2 (dependency direction) since
+  review-panel doesn't reference triage or variant-explorer.
+- `plugins/variant-explorer` (Phase 4, scc-5hy) is *blocked on* this task per `bd show`,
+  because Phase 4's scoring function needs `TASTE.md` to exist — but this skill itself
+  doesn't need to reference variant-explorer at all. No forward-reference needed (Phase 4
+  doesn't exist yet).
+- Taste-review seat (Phase 3d, scc-4tt) reads `TASTE.md` this skill produces — again no
+  direct coupling needed in this file; the format contract (TASTE-FORMAT.md) is the
+  interface.
+
+## Risks / things to get right
+
+1. **Don't accidentally make this introspective.** The single biggest divergence from the
+   grill-the-schema/grill-with-docs precedent is the choice-based mechanic. Must resist
+   copying "ask them what their invariants are" style questions.
+2. **Don't let this skill silently write partial entries.** Per TASTE-FORMAT.md's own
+   rule ("A Preference missing any field is not a valid entry — grill-my-taste must not
+   write one"), the skill's inline-write step must always have all four fields before
+   writing, or defer the item to Candidate rules if strength/wording isn't resolved yet.
+3. **Distinguish Preference vs. Weighting vs. Anti-preference at write time.** A forced
+   choice might reveal any of the three depending on how the user answers "why" — the
+   skill needs a decision rule for which section a given confirmed choice lands in,
+   mirroring TASTE-FORMAT.md's own "Rules" section distinctions.
+4. **Codebase-sourced alternatives require exploration, with a fallback.** Should state
+   what to do when the codebase doesn't have enough real examples for a topic (fall back
+   to realistic synthetic pairs) — Coverage Honesty spirit (don't fake "found in your
+   codebase" provenance for synthetic examples).
+5. **Session-level forced-choice numbering** needed so provenance strings
+   ("...forced choice #4") are meaningful and citable, matching the TASTE-FORMAT.md
+   worked example exactly.
+6. **`--distill` scope discipline** — must not pre-implement scc-da0's full logic; only
+   establish that it's a mode of this skill per task constraint, leaving depth to 3c.
+
+## No test/lint surface
+
+Pure markdown skill file, same as Phase 3a. No code changes, no automated test suite
+applies. Verification will be a hand-worked simulated session (as was done for 3a),
+checked against TASTE-FORMAT.md's own rules — consistent with how 3a's Run Tests step
+was conducted, since no live orchestrator exists yet to run a real session against.
