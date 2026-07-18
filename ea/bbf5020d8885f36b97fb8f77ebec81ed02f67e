@@ -1,0 +1,98 @@
+.pas/test-results.md
+  s_97814093bfd748::t_5ef0697f2f0373 1,5-9,11-12,14-141,143,145-149,151-220,223-225,228-235,238-244,247-268,272-283
+plugins/review-panel/skills/data-steward/SKILL.md
+  s_d1c9b409bb7571::t_a8c1ac762a9ac8 1-139
+plugins/review-panel/tests/fixtures/no-data-model-inventory/README.md
+  s_97814093bfd748::t_be422703ea3031 1-11
+plugins/review-panel/skills/review-panel/references/converge-and-pipeline.md
+  s_d1c9b409bb7571::t_41d94061c06bd5 15-34,37-42
+  s_d1c9b409bb7571::t_894dd3c2b32273 111-116
+  s_d1c9b409bb7571::t_ff8a9afef14d14 84-94
+plugins/review-panel/tests/fixtures/orders-schema/app/diff.patch
+  s_97814093bfd748::t_c710230072986d 1-24
+plugins/review-panel/skills/review-panel/references/merge-and-validate.md
+  s_d1c9b409bb7571::t_db78abcfc3b391 191-198
+  s_d1c9b409bb7571::t_0cbdbebd6a1ddd 106-114
+plugins/review-panel/skills/review-panel/SKILL.md
+  s_d1c9b409bb7571::t_7fb00f664ded3b 12-13
+plugins/review-panel/tests/fixtures/orders-schema/app/line_items_repo.before.ts
+  s_97814093bfd748::t_ee4921dbb54960 1-16,18-23
+  s_844c76c3b3204c::t_41bdc05b13ab66 17
+.pas/investigation.md
+  s_f407162ec0ae63::t_1a7fda7eef775b 1-278
+plugins/review-panel/skills/review-panel/references/fix-and-rereview.md
+  s_d1c9b409bb7571::t_73cfffc0cd5d5c 75-83
+  s_d1c9b409bb7571::t_75183c8ef59c4e 102-137
+plugins/review-panel/tests/fixtures/no-data-model-inventory/schema.sql
+  s_97814093bfd748::t_74f03bafbb5c7b 1-10
+plugins/review-panel/skills/review-panel/references/dual-mode-contract.md
+  s_d1c9b409bb7571::t_197747b6c768ba 72-78
+  s_d1c9b409bb7571::t_2edc0616c8c11f 148-156,160-166,173-177
+  s_d1c9b409bb7571::t_ed5cf8e6479c13 192-203
+  s_d1c9b409bb7571::t_13dc34d07db251 53,56-58
+  s_d1c9b409bb7571::t_80fd1914e82a15 110
+  s_d1c9b409bb7571::t_aa7d3c8aef4f6a 257-261,263-266
+  s_d1c9b409bb7571::t_e7f30f38b7b248 227-233,238
+  s_d1c9b409bb7571::t_4d1ebfaf02f8dc 132-135
+  s_d1c9b409bb7571::t_06d2c947dc59e2 86
+plugins/review-panel/tests/fixtures/no-data-model-inventory/migrations/0001_add_reserved_quantity.sql
+  s_97814093bfd748::t_bff06077bafae1 1-9
+plugins/review-panel/tests/fixtures/orders-schema/migrations/0002_drop_legacy_discount_code.sql
+  s_97814093bfd748::t_ebaa065fe984eb 1-8
+plugins/review-panel/reviewers/persona-catalog.md
+  s_d1c9b409bb7571::t_b158429ec8fa28 357
+  s_d1c9b409bb7571::t_1117b15cbb0fdb 263-301
+.pas/current_task.md
+  s_3d003d25ee251e::t_9fd88cda7e949e 1,3,6,9-12,15,19-54,56-58,60-63,65-69,73-96,98-99,101-102
+plugins/review-panel/tests/fixtures/orders-schema/app/line_items_repo.after.ts
+  s_97814093bfd748::t_de93777c933400 1-16,18-35
+  s_844c76c3b3204c::t_9442664ca88e65 17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "eabbf5020d8885f36b97fb8f77ebec81ed02f67e",
+  "prompts": {},
+  "sessions": {
+    "s_3d003d25ee251e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bbd1e6a1-1b76-4659-91cb-db728b8e284e",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_844c76c3b3204c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d550da2d-703c-48d2-a1e2-8665bc23e5b7",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_97814093bfd748": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "becf2f84-ee31-4756-aa65-aa31a2bd4679",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_d1c9b409bb7571": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a59b2ca8-1722-445f-937f-8b45bb818738",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_f407162ec0ae63": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b18c2aa0-c873-4d15-9ca2-82fab4646b6a",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
