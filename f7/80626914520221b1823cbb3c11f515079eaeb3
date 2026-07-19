@@ -1,0 +1,19 @@
+plugins/review-panel/tests/SECURITY-PRESSURE-TEST.md
+  s_a3afed5e58d601::t_c995950cd2a117 1-413
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "f780626914520221b1823cbb3c11f515079eaeb3",
+  "prompts": {},
+  "sessions": {
+    "s_a3afed5e58d601": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bec02c73-4157-4ff0-9cc9-6627d70ddcf7",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
