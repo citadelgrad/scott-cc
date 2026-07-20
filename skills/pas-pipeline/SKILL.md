@@ -155,7 +155,11 @@ Shows which specs were discovered, what `.dot` files would be generated, and the
 
 ---
 
-## Step 5: Project Setup
+## Step 5: Less-Common Commands
+
+`pas info`, `pas plan`, `pas plan --spec --from-prompt`, `pas decompose`, and `pas scaffold` are not detailed above. Do not guess their flags — run `pas <command> --help` first to confirm current syntax before invoking one of these.
+
+## Step 6: Project Setup
 
 If `pas.toml` doesn't exist in the project root:
 
