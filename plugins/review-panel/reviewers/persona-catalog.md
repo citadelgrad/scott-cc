@@ -58,12 +58,13 @@ installed/available in the current session:
   operation they are always available. If one is somehow missing (a broken install), report it
   as a coverage gap in the panel's final output rather than silently skipping — per the plan's
   "coverage honesty" rule (state what was skipped and why).
-- **Security seat**: no security-specific skill is vendored in this plugin (see the Security row
-  below for why). This seat is conditional on live-scan enrichment finding a security skill
-  installed. If none is found, the orchestrator must still apply baseline security attention via
-  `adversarial-reviewer`'s Scope item 2 (security holes) and say explicitly in the report that no
-  dedicated security-specialist seat was cast and why — do not silently drop security coverage
-  without comment.
+- **Security seat**: this plugin casts `security-suite`'s `agents/security-engineer.md` directly
+  (see the Security row below) — a primary catalog cast, not a live-scan-conditional one. If
+  `security-suite:security-engineer` is not present in the current session's available
+  Task/Agent-tool agent-type list (the plugin is not installed/enabled this session), the
+  orchestrator must still apply baseline security attention via `adversarial-reviewer`'s Scope
+  item 2 (security holes) and say explicitly in the report that no dedicated security-specialist
+  seat was cast and why — do not silently drop security coverage without comment.
 - **Risk-triggered seats whose skill is missing**: same coverage-honesty rule — note the gap,
   don't fail silently.
 
@@ -129,24 +130,49 @@ the risk of missing what they catch, and each covers a review angle none of the 
   coverage. Do not additionally cast the individual lenses it subsumes as separate seats — that
   would duplicate work `design-review` already does internally.
 
-### Security (conditional)
+### Security
 
-- **Casts:** No security-specific skill is vendored in this plugin. This is a deliberate scope
-  decision, not an oversight — none of the vendored sources (clairvoyance, ponytail, superpowers,
-  mattpocock) ship a dedicated security-review skill, and authoring one from scratch was out of
-  scope for this plugin's initial build.
-- **Cast-when:** Cast if and only if the live-scan secondary-enrichment layer finds a
-  security-specific skill installed in the current session (project-level, plugin-level, or
-  user-level under `~/.claude/skills`). If diff content touches auth, crypto, secrets handling,
-  input validation at a trust boundary, deserialization, or dependency/supply-chain changes, and
-  no dedicated security skill is found, the orchestrator must say so explicitly in its report
-  (see "Missing skill handling" above) rather than silently treating `adversarial-reviewer`'s
-  Scope item 2 as equivalent full coverage.
-- **Model tier:** Top-tier, if cast. Security review has the same asymmetric-cost profile as
-  adversarial review — a missed vulnerability is far more expensive than an extra review pass.
-- **Notes:** `adversarial-reviewer` Scope item 2 (security holes) provides baseline security
-  attention on every run even when this seat isn't cast, but it is a general adversarial pass,
-  not a specialist security review — don't conflate the two in reporting.
+- **Casts:** `security-suite`'s `agents/security-engineer.md`, dispatched via `Task` as agent type
+  `security-suite:security-engineer` — the same cross-plugin agent-dispatch pattern this catalog
+  already uses for its own Fresh-Eyes seat (`agents/clean-room-alternative.md`, exposed as
+  `review-panel:clean-room-alternative`). This is a live cross-plugin reference, not a vendored
+  copy: `security-suite` ships alongside `review-panel` in this repo, and no dedicated
+  security-review skill is authored inside this plugin.
+- **Cast-when (risk-triggered, fail-closed):** diff content touches auth, crypto, secrets
+  handling, input validation at a trust boundary, deserialization, dependency manifests/lockfiles,
+  IaC, or CI config. Ambiguity resolves to casting, per the catalog's global fail-closed rule
+  above.
+- **Model tier:** Top-tier. Security review has the same asymmetric-cost profile as adversarial
+  review — a missed vulnerability is far more expensive than an extra review pass.
+- **Missing-plugin fallback:** if `security-suite:security-engineer` is not present in the current
+  session's available Task/Agent-tool agent-type list (i.e. `security-suite` is not
+  installed/enabled this session — a concrete, mechanically checkable condition, since CAST's
+  dispatch prompt already receives this list per `references/cast-and-spawn.md` Step 4 item 1(b)),
+  the seat cannot be cast. The orchestrator must say so explicitly in its report (see "Missing
+  skill handling" above) rather than silently treating `adversarial-reviewer`'s Scope item 2 as
+  equivalent full coverage.
+- **Notes:**
+  - **Tool-grant caveat:** `security-engineer.md`'s frontmatter declares no `tools:` restriction
+    (unlike `clean-room-alternative.md`'s explicit `Read, Grep, Glob`). Per
+    `references/cast-and-spawn.md`'s SPAWN "Read-only tool access" section, the orchestrator
+    cannot force this externally-defined agent-type dispatch to read-only from the outside — check
+    its actual tool grant (visible in the Task/Agent-tool agent-type listing) and note any
+    `Edit`/`Write`/mutating-`Bash` deviation in the coverage-honesty statement rather than
+    silently assuming compliance.
+  - **Model-pin caveat:** `security-engineer.md` also declares no `model:` field, so this entry's
+    "top-tier" designation is a request the dispatching `Task` call should honor if it can pin a
+    model for a named agent-type; if it can't, that's a coverage-honesty-worthy deviation too, not
+    a blocker.
+  - **Output-shape caveat:** `security-engineer.md`'s own `## Outputs` section (Security Audit
+    Reports, Threat Models, Compliance Reports, Vulnerability Assessments, Security Guidelines)
+    does not natively use this plugin's Critical/Important/Minor + verdict shape. SPAWN's dispatch
+    prompt must explicitly instruct this seat to render its findings in
+    `contracts/reviewer-output.md`'s structure — the same generic instruction SPAWN already gives
+    every seat regardless of source (see "Collect raw output" in `references/cast-and-spawn.md`),
+    not a change to `security-engineer.md` itself.
+  - `adversarial-reviewer` Scope item 2 (security holes) provides baseline security attention on
+    every run even when this seat isn't cast, but it is a general adversarial pass, not a
+    specialist security review — don't conflate the two in reporting.
 
 ### Domain-Intent
 
@@ -234,6 +260,84 @@ ambiguous whether the signal is present, cast the seat.
   will false-positive-fail on the next refactor). Scoped narrowly to diffs that actually touch
   test files, since the seat has nothing to evaluate otherwise.
 
+### Data Steward
+
+- **Casts:** `skills/data-steward/SKILL.md`
+- **Cast-when (fail-closed):** the diff touches migration files, ORM/model definitions, schema
+  files (`*.sql`, `schema.*`, `prisma/`, `alembic/`, `migrations/`, etc.), serialization formats,
+  or any file `DATA-MODEL.md` maps an entity to (see `formats/DATA-MODEL-FORMAT.md`'s "Entities &
+  relationships" / "Ownership & routing" sections). Per the catalog's global fail-closed rule,
+  ambiguity about whether a file is data-layer resolves to casting.
+- **Model tier:** Top-tier — a deviation from the "mid-tier unless a specific seat's entry explains
+  a deviation" default. Justification: migration and schema mistakes are high-blast-radius and
+  often irreversible (data loss/corruption, outage-causing locks), the same asymmetric-cost
+  judgment that already justifies top-tier for Security/Correctness/Fresh-Eyes above — a weaker
+  model is more likely to miss a destructive migration or a subtle Agent-boundary crossing than to
+  miss a style nit.
+- **Notes:**
+  - Read-only, like `domain-modeling` — reports findings, does not edit `DATA-MODEL.md` or the
+    diff itself. `DATA-MODEL.md` is a human-owned artifact (see its format doc); this seat may
+    recommend edits but never makes them.
+  - **Sovereignty marker:** findings may carry an optional `sovereignty: human-required` field (a
+    contract extension beyond the standard Critical/Important/Minor shape, documented in
+    `skills/data-steward/SKILL.md`'s Output Contract) when the diff crosses a `DATA-MODEL.md` Agent
+    boundary entry, or when `DATA-MODEL.md` is absent while the diff changes schema semantics. The
+    orchestrator's FIX stage must never auto-resolve a sovereignty-marked finding (see
+    `references/fix-and-rereview.md`'s "Sovereignty guard"), and CONVERGE cannot report a clean
+    round while one remains unresolved (see `references/converge-and-pipeline.md`'s `escalated`
+    status).
+  - **Missing-`DATA-MODEL.md` fallback:** the seat still casts on schema/migration diffs even when
+    no `DATA-MODEL.md` exists in the repo — its file-pattern triggers don't depend on the file's
+    presence. When absent, it emits a sovereignty-marked finding recommending the user run
+    `grill-the-schema` to create one, phrased as a documentation pointer (mirroring the Security
+    seat's missing-plugin fallback template above), and states explicitly that `grill-the-schema`
+    (`skills/grill-the-schema/SKILL.md`) may not be installed in this session rather than silently
+    assuming it ran — coverage honesty, same rule as every other seat in this catalog.
+  - This seat is a hard prerequisite for Phase 5 (the Foundry-resident triage spine): triage-
+    produced migrations must never ship with no data-steward seat and no sovereignty escalation
+    path. It does not replace the data-layer guard hook (a separate, interactive-only pre-write
+    mechanism, out of this seat's scope) — this seat is the sole mechanism for *unattended*
+    sovereignty enforcement, since the hook no-ops in unattended runs.
+
+### Taste
+
+- **Casts:** `skills/taste-review/SKILL.md`
+- **Cast-when:** `TASTE.md` exists at the repo root — this catalog's **only file-existence-gated
+  seat**, as opposed to every sibling risk-triggered entry above, which triggers on diff-content
+  signal (touches auth, touches migrations, adds tests, etc.). There is no diff-signal judgment
+  call here and thus no fail-closed ambiguity to resolve: if `TASTE.md` is absent, the seat is
+  absent from Cast, full stop — no generic fallback.
+- **Model tier:** Mid-tier. Applying a written preference file against a diff is procedural, the
+  same rationale the catalog's Mid-tier default already uses generally — contrast this
+  explicitly with Data Steward's Top-tier deviation just above: a missed migration mistake risks
+  data loss, but a missed taste nit does not carry that blast-radius asymmetry.
+- **Notes:**
+  - **Severity mapping:** findings are severity-mapped from each `TASTE.md` entry's declared
+    `strength` — `absolute`/`strong` → `Important` (an `absolute`-strength finding additionally
+    notes `(absolute preference)` inline and sorts first within the Important group, since the
+    panel's severity enum is closed to `Critical`/`Important`/`Minor` and this seat does not
+    introduce a fourth value), `weak` → `Minor`. Taste findings are **never** `Critical` and
+    **never** carry the `sovereignty: human-required` marker — that marker is a `data-steward`-
+    only contract extension (see the Data Steward entry above) for a different concern
+    (`DATA-MODEL.md` Agent-boundary/schema-semantics risk), not personal taste.
+  - **No-`TASTE.md`-means-absent is a missing-artifact case, not a missing-skill case:** this is
+    distinct from this catalog's "Missing skill handling" section above, which covers the
+    `taste-review` skill file itself being uninstalled (report as a coverage gap, per that
+    section's rule). A target repo simply having no `TASTE.md` is a different, expected failure
+    mode — the seat is absent from Cast by design, and both this seat and Phase 4's variant
+    scoring must report that gap explicitly per Coverage Honesty rather than silently omitting
+    the taste axis (see `formats/TASTE-FORMAT.md`'s "Malformed or missing TASTE.md").
+  - **Malformed-entry handling:** a `TASTE.md` Preference missing a required field (most commonly
+    `strength`) does not block the seat from casting or from reviewing its other, valid entries —
+    the malformed entry is reported as unusable in Coverage Honesty rather than guessed at (see
+    `skills/taste-review/SKILL.md`'s Output Contract).
+  - **Read-only**, like `domain-modeling` and `data-steward` — reports findings, does not edit
+    `TASTE.md` itself. `TASTE.md` is a human-owned artifact, built only through `grill-my-taste`
+    grilling sessions (Invariant 5); this seat may cite it but never modifies it.
+  - This seat's severity mapping is Phase 4's (`scc-5hy`, variant-explorer) scoring function per
+    the epic's stated build order ("Phase 4 blocked on Phase 3 — taste is the scoring function");
+    wiring the two together is out of this seat's own scope.
+
 ---
 
 ## Excluded from Individual Casting (left to `design-review` funnel or live-scan)
@@ -283,12 +387,14 @@ is allowed to add.
 | Correctness/Adversarial | `adversarial-reviewer` | Always | Top-tier |
 | Simplicity | `ponytail-review` (diff) / `ponytail-audit` (repo) | Always | Mid-tier |
 | Structural | `design-review` | Always | Mid-tier |
-| Security | *(none vendored — live-scan conditional)* | Diff touches auth/crypto/secrets/input-validation/deserialization/deps, AND live-scan finds a security skill | Top-tier |
+| Security | `security-suite:security-engineer` | Diff touches auth/crypto/secrets/input-validation/deserialization/dependency-manifests/IaC/CI-config | Top-tier |
 | Domain-Intent | `domain-modeling` | Diff touches types/schemas/validation/workflows or CONTEXT.md-documented domain code | Mid-tier |
 | Fresh-Eyes | `clean-room-alternative` | Always | Top-tier |
 | Change-Trajectory | `code-evolution` | Diff modifies pre-existing code | Mid-tier |
 | Design-Alternatives | `design-it-twice` | New class/module/API/architecture with no alternatives-considered evidence | Mid-tier (top-tier for its internal fresh-design dispatch) |
 | Test-Design Quality | `tdd` (Philosophy section only) | Diff adds or modifies test files | Mid-tier |
+| Data Steward | `data-steward` | Diff touches migrations/ORM/schema/serialization files or a DATA-MODEL.md-mapped path | Top-tier |
+| Taste | `taste-review` | `TASTE.md` exists at repo root | Mid-tier |
 
 **Fail-closed reminder:** any ambiguity in the "Cast-when" column above resolves to casting the
 seat, not skipping it.

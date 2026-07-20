@@ -1,0 +1,59 @@
+{
+  "status": "circuit_broken",
+  "rounds": 8,
+  "cast": [
+    {
+      "seat": "Correctness/Adversarial",
+      "skill": "skills/adversarial-reviewer/SKILL.md",
+      "model_tier": "top",
+      "source": "catalog",
+      "cast_rationale": "core seat, always cast"
+    }
+  ],
+  "findings": [
+    {
+      "id": "f-001",
+      "fingerprint": {
+        "file": "app/checkout.py",
+        "line": 2,
+        "normalized_title": "missing null check on payment token"
+      },
+      "severity": "Critical",
+      "confidence": 80,
+      "contributing_seats": ["Correctness/Adversarial"],
+      "evidence_quote": "token = payment[\"token\"].strip()",
+      "recommendation": "guard payment[\"token\"] for None before calling .strip()",
+      "sovereignty": null,
+      "validation": {
+        "validator_count": 1,
+        "verdict": "survives",
+        "tally": "1-0"
+      },
+      "fix": {
+        "applied": false,
+        "skipped_reason": "FIX's proposed guard reintroduced a regression each of the last 3 rounds"
+      },
+      "re_review": {
+        "regression_clean": false,
+        "coherence_clean": true
+      }
+    }
+  ],
+  "convergence": {
+    "final_round_clean": false,
+    "circuit_breaker": {
+      "tripped": true,
+      "consecutive_no_progress_rounds": 3,
+      "diagnosis": "FIX's null-guard edit repeatedly breaks charge()'s existing empty-string test case; the fix and the pre-existing test assert contradictory behavior for an empty (non-None) token and need a human decision on which is correct"
+    },
+    "escalation": {
+      "pending": false,
+      "sovereignty_finding_ids": []
+    }
+  },
+  "coverage": {
+    "skipped_seats": [],
+    "fallbacks_used": [],
+    "notes": []
+  }
+}

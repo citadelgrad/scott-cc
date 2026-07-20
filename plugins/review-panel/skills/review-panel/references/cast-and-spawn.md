@@ -47,7 +47,7 @@ no-`Task` fallback (see SPAWN's "Fresh-Eyes seat specifics" below).
 
 Read `reviewers/persona-catalog.md` in full (it is short enough to read whole; do not skim). It
 defines:
-- **Core seats** (Correctness/Adversarial, Simplicity, Structural, Security-conditional,
+- **Core seats** (Correctness/Adversarial, Simplicity, Structural, Security,
   Domain-Intent, Fresh-Eyes) — cast on every run per their individual cast-when criteria.
 - **Risk-triggered seats** (Change-Trajectory, Design-Alternatives Check) — cast only when diff
   content signals relevance.
@@ -84,9 +84,9 @@ pattern-matching file extensions or directory names. Concretely:
   changed/removed lines against pre-existing logic (per its cast-when criteria), not e.g. a
   new file added alongside an unrelated one-line touch to an existing file's import list.
 - **Security example done right:** the trigger list (auth, crypto, secrets handling, input
-  validation at a trust boundary, deserialization, dependency/supply-chain changes) is a content
-  question — read whether the diff's logic actually crosses one of those boundaries, not whether
-  a file path contains the word "auth."
+  validation at a trust boundary, deserialization, dependency manifests/lockfiles, IaC, CI config)
+  is a content question — read whether the diff's logic actually crosses one of those boundaries,
+  not whether a file path contains the word "auth."
 - **Concrete threshold, not a vibe call:** check the stat summary first, before deciding how to
   read the rest. If the packaged diff exceeds roughly 1,500 changed lines or 25 files, do NOT read
   it in full. Instead read the stat summary (file list + line counts) plus the actual diff hunks
@@ -163,7 +163,9 @@ install, not merely "no live-scan match" — see Step 4, which is about finding 
 verifying core ones exist):
 - **Core seats** (they ship with this plugin, so this should be rare): report the gap in the
   coverage-honesty statement rather than silently dropping the seat.
-- **Security seat**: if no security skill is found via live-scan AND the diff trips a
+- **Security seat**: this is a primary catalog cast (`security-suite:security-engineer`), not a
+  live-scan-conditional one — check whether that agent type is present in the session's
+  Task/Agent-tool agent-type list (item 1(b) above). If it is absent AND the diff trips a
   security-relevant signal (per the catalog's Security cast-when list), state explicitly in the
   report that no dedicated security seat was cast, and that baseline coverage falls to
   `adversarial-reviewer`'s Scope item 2 only — do not present that as equivalent full coverage.

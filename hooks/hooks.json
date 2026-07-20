@@ -28,6 +28,14 @@
             "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/prefer_modern_tools.py"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/hooks/data_layer_guard.py"
+          }
+        ]
       }
     ]
   }

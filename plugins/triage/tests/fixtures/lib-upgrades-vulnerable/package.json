@@ -1,0 +1,9 @@
+{
+  "name": "triage-fixture-vulnerable",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fixture for AC1 — a manifest pinning a known-CVE dependency version.",
+  "dependencies": {
+    "lodash": "4.17.11"
+  }
+}

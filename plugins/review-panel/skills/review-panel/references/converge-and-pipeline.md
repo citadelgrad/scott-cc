@@ -12,12 +12,34 @@ must circuit-break and escalate to a human.
 
 ### Decision rule
 
+0. **Sovereignty check, ahead of the clean/dirty call.** Before applying the clean/dirty rule
+   below, check whether any surviving finding (from VALIDATE's output, carried through FIX
+   untouched by construction — see [fix-and-rereview.md](fix-and-rereview.md)'s "Sovereignty
+   guard") still carries `sovereignty: human-required`. This is a **new terminal state**, not a
+   loop condition: looping back to SPAWN again would not resolve a sovereignty finding, since FIX
+   is barred from ever touching it — re-running the loop just re-derives the same unresolved
+   finding. If one or more sovereignty-marked findings remain:
+   - Emit status `escalated` (human mode: an explicit human sign-off request block, naming each
+     unresolved sovereignty finding, its file, and why it wasn't auto-fixed; `mode:agent`: top-level
+     JSON `"status": "escalated"` — see [dual-mode-contract.md](dual-mode-contract.md)).
+   - Do **not** loop back to SPAWN for these findings, and do **not** collapse this into
+     `circuit_broken` — a circuit-break means the loop tried and failed to make progress;
+     `escalated` means the loop correctly recognized a finding it must never resolve on its own and
+     stopped by design. These are different outcomes and must stay distinguishable downstream.
+   - If sovereignty-marked findings coexist with other, ordinary unresolved findings in the same
+     round, still apply the dirty-round loop (step 2 below) to the ordinary findings across further
+     rounds — `escalated` is not exclusive of continuing to converge on everything else. Report
+     `escalated` as the overall run status only once every *non*-sovereignty finding has otherwise
+     reached a clean state; until then, the round is simply dirty (step 2) with the sovereignty
+     finding(s) noted as carried-forward-by-design in the report rather than counted as regressions.
 1. **Clean round → done.** If RE-REVIEW's Axis (a) regression check and Axis (b) coherence check
    both come back clean (zero new findings, zero unresolved findings from the round that just
-   fixed), the loop stops. Emit the final report (human mode) or the final JSON blob
-   (`mode:agent`) per [dual-mode-contract.md](dual-mode-contract.md), with status `converged`.
-2. **Dirty round → loop.** If RE-REVIEW surfaces any new or unresolved finding, the loop continues.
-   Take the new packaged diff RE-REVIEW already produced and hand it to the next iteration.
+   fixed) **and no sovereignty-marked finding remains** (step 0), the loop stops. Emit the final
+   report (human mode) or the final JSON blob (`mode:agent`) per
+   [dual-mode-contract.md](dual-mode-contract.md), with status `converged`.
+2. **Dirty round → loop.** If RE-REVIEW surfaces any new or unresolved finding (other than a
+   sovereignty-marked one already handled by step 0), the loop continues. Take the new packaged
+   diff RE-REVIEW already produced and hand it to the next iteration.
 3. **Loop back to SPAWN, not always CAST.** The re-entry point for a looped iteration is
    **SPAWN**, using the same cast list CAST already produced, UNLESS RE-REVIEW's findings suggest
    the diff has changed in a way that plausibly changes which seats should be cast (e.g. FIX
@@ -59,6 +81,17 @@ just moved file:line by more than the ±3 fingerprint tolerance without being ge
 not count as resolved — that's evasion, not progress, and should itself be flagged as suspicious
 in the report).
 
+**Sovereignty-marked findings are excluded from this count entirely, in both directions.** A
+finding carrying `sovereignty: human-required` is never resolved by FIX by construction (see
+"Sovereignty guard" in [fix-and-rereview.md](fix-and-rereview.md)) — it is expected, correct
+behavior for it to persist round over round. Do not count its persistence as "no progress" (it
+would otherwise misfire the 3-strikes breaker on every sovereignty case, mis-reporting a
+by-design outcome as `circuit_broken`), and do not count its presence toward the total/Critical
+finding tallies this section uses to judge progress on the *rest* of the round's findings. Once
+every non-sovereignty finding is resolved, the round's status is `escalated` (Decision rule step
+0), not `circuit_broken` — the circuit-breaker exists to catch genuine stagnation, and a
+sovereignty finding sitting untouched by design is not stagnation.
+
 ### 3-strikes circuit-breaker
 
 Track consecutive rounds with no progress (per the definition above). On the **3rd consecutive**
@@ -75,9 +108,12 @@ round with no progress:
    [dual-mode-contract.md](dual-mode-contract.md).
 3. **Do not silently give up.** A circuit-break is a distinct, explicit terminal state — never
    collapse it into either `converged` (it did not converge) or a bare error (it's not a crash,
-   it's a designed stop condition). Downstream automation (a `foundry` gate) must be able to
-   distinguish "converged clean," "circuit broken, needs a human," and "run failed to execute" as
-   three different outcomes.
+   it's a designed stop condition), and never collapse it into `escalated` either — a circuit-break
+   is unplanned stagnation on findings FIX was supposed to be able to resolve, while `escalated` is
+   the expected, by-design outcome for findings FIX was never allowed to touch (Decision rule step
+   0 above). Downstream automation (a `foundry` gate) must be able to distinguish "converged
+   clean," "circuit broken, needs a human," "escalated for sovereignty sign-off," and "run failed
+   to execute" as four different outcomes.
 
 A "strike" resets to 0 the moment a round shows progress by the definition above — this is a
 consecutive-rounds counter, not a lifetime counter across the whole run.

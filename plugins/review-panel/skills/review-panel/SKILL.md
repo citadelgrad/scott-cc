@@ -9,8 +9,8 @@ allowed-tools: Task, Read, Grep, Glob, Bash
 
 The orchestrator. Every other skill in this plugin — the clairvoyance lenses (via
 `design-review`), `ponytail-review`/`ponytail-audit`, `domain-modeling`, `adversarial-reviewer`,
-`code-evolution`, `design-it-twice`, `tdd` (test-design-quality axis only) — is a standalone
-reviewer seat. This skill casts a panel of
+`code-evolution`, `design-it-twice`, `tdd` (test-design-quality axis only), `data-steward` — is a
+standalone reviewer seat. This skill casts a panel of
 those seats against one shared diff, merges and scores their findings, independently validates
 each survivor, fixes everything in a single pass, re-reviews for regressions and domain-intent
 coherence, and loops until a clean round or a circuit-break. This is the thing a human runs by

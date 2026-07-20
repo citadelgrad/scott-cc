@@ -5,6 +5,10 @@
 .vscode/
 .idea/
 
+# Python build artifacts
+__pycache__/
+*.pyc
+
 # Local settings (users should not commit these)
 .claude/settings.local.json
 agents/CLAUDE.md
@@ -24,3 +28,8 @@ agents/CLAUDE.md
 *.db
 .beads-credential-key
 .beads/proxieddb/
+
+# PAS pipeline scratch state (current_task.md, investigation.md,
+# test-results.md, logs/<run-id>/checkpoint.json) — overwritten by every
+# pipeline run; promote anything worth keeping to a permanent file instead
+.pas/

@@ -1,0 +1,163 @@
+digraph EpicRunner {
+    label="Process all tasks in an epic"
+    goal="Implement all child tasks of epic scc-hzj: Two-System Architecture — Security, Data Stewardship, Taste, Variants, and Triage Spine. Implements the five goals of the Two-System Architecture PRD/SPEC (2026-07-16): a security review pass, a data-layer sovereignty system, a codified-taste system, a parallel variant-exploration plugin, and a Foundry-resident triage spine (System 2 v1). All work is built on top of review-panel as the sole diff-review substrate — no phase may introduce a second review mechanism. Five invariants apply across every phase: (1) Substrate rule — any component producing a diff hands it to review-panel (interactive by default, --mode=agent unattended); (2) Dependency direction — triage → review-panel and foundry → {panel, triage} only; review-panel never imports from or special-cases triage; (3) Coverage honesty — every seat/pass that cannot run must report the gap explicitly, never silently skip; (4) Graceful cross-plugin degradation — where one plugin references another, absence degrades to current behavior plus an explicit coverage note; (5) Human artifacts are human-owned — DATA-MODEL.md and TASTE.md are written via human grilling sessions; agents may propose edits but FIX never auto-modifies them. Build order is strictly Phase 1 → 2 → 3 → 4 → 5, with Phase 4 blocked on Phase 3 (taste is the scoring function) and Phase 5 blocked on both Phase 1 and Phase 2 (security seat and data-steward/sovereignty path must exist before triage feeds dependency and migration diffs into the pipeline)."
+    model="sonnet"
+    timeout="300s"
+
+    start [shape="Mdiamond"]
+    done  [shape="Msquare"]
+
+    // --- Pick the next task ---
+    pick_task [
+        shape="diamond"
+        label="Pick Next Task"
+        node_type="conditional"
+        llm_model="haiku"
+        allowed_tools="Bash(bd:*)"
+        timeout="120s"
+        prompt="Run: bd show scc-hzj
+Look at the BLOCKS section to see child tasks.
+
+Then run: bd ready
+Find the first ready (unblocked, open) child task of epic scc-hzj.
+
+If you find one:
+- Run: bd update <task-id> --status=in_progress
+- Write the task ID and full description to .pas/current_task.md
+- Respond with MORE on the last line
+
+If all child tasks are closed (no more ready tasks for this epic):
+- Respond with DONE on the last line"
+    ]
+
+    // --- Investigate ---
+    investigate [
+        shape="box"
+        label="Investigate"
+        allowed_tools="Read,Grep,Glob,Bash(bd:*)"
+        timeout="600s"
+        prompt="Read .pas/current_task.md to get the current task ID and description.
+Run bd show <task-id> to get full details.
+
+Investigate the codebase to understand what needs to change:
+- Find the relevant files and functions
+- Understand the current behavior
+- Identify what needs to change
+
+Write your findings to .pas/investigation.md including:
+- Files to modify
+- Current behavior
+- Required changes
+- Any risks or dependencies"
+    ]
+
+    // --- Implement ---
+    implement [
+        shape="box"
+        label="Implement"
+        timeout="900s"
+        prompt="Read .pas/current_task.md for the task and .pas/investigation.md for the plan.
+Implement the source/doc changes described. Follow existing code patterns and conventions.
+Keep changes minimal and focused on the task requirements.
+
+Scope boundary: do NOT create new test fixtures, run live sub-agent dispatches for validation,
+or hand-author validation write-ups (e.g. MERGE tables) here, even if investigation.md's plan
+calls for them — that work belongs to the Run Tests step, which runs next and owns verification.
+If investigation.md already lists such items, leave them for that step; only make the actual
+code/doc edits in this node."
+    ]
+
+    // --- Test ---
+    run_tests [
+        shape="box"
+        label="Run Tests"
+        timeout="1200s"
+        prompt="Read .pas/current_task.md to understand what was changed, and .pas/investigation.md
+for any fixture/validation work it identified as required by the task's acceptance criteria.
+
+1. If the acceptance criteria require a new test fixture or seeded example, create it now.
+2. If they require a live sub-agent dispatch (e.g. via the Task tool) to validate behavior,
+   run it now and capture the result.
+3. Run the relevant test suite for the modified code. If tests fail, fix the issues and re-run
+   until green.
+4. If a hand-worked validation write-up (e.g. a MERGE table with fingerprints/confidence
+   anchors) is required, author it now.
+
+Write all of the above (test results, fixture summary, live-dispatch output, any write-up) to
+.pas/test-results.md."
+    ]
+
+    // --- Verify ---
+    verify [
+        shape="diamond"
+        label="Verify"
+        node_type="conditional"
+        timeout="300s"
+        prompt="Read .pas/current_task.md for the task requirements.
+Check the changes:
+1. Review the git diff
+2. Run the linter on changed files
+3. Verify tests pass (read .pas/test-results.md)
+4. Check that the task's acceptance criteria are met
+
+If everything looks good, respond with PASS on the last line.
+If there are problems, respond with FAIL on the last line."
+    ]
+
+    fixup [
+        shape="box"
+        label="Fix Issues"
+        timeout="900s"
+        prompt="Read .pas/current_task.md and .pas/investigation.md for context.
+The verification step found problems. Fix any failing tests, lint errors, or unmet acceptance criteria.
+Re-run tests after fixing."
+    ]
+
+    // --- Close this task ---
+    close_task [
+        shape="box"
+        label="Close Task"
+        allowed_tools="Bash(bd:*),Bash(git:*)"
+        timeout="300s"
+        prompt="Read .pas/current_task.md to get the task ID.
+1. Stage changes: git add -A
+2. Commit with a descriptive message referencing the task ID
+3. Close the task: bd close <task-id> --reason='Implemented successfully'
+4. Run: bd sync --flush-only"
+    ]
+
+    // --- Check if more tasks remain ---
+    check_remaining [
+        shape="diamond"
+        label="More Tasks?"
+        node_type="conditional"
+        llm_model="haiku"
+        allowed_tools="Bash(bd:*)"
+        timeout="120s"
+        prompt="Run: bd show scc-hzj
+Look at the BLOCKS section. Count how many child tasks are still open.
+
+Run: bd ready
+Check if any remaining child tasks of this epic are ready (unblocked, open).
+
+If there are more ready tasks, respond with MORE on the last line.
+If all tasks are closed or remaining tasks are blocked, respond with DONE on the last line."
+    ]
+
+    // --- Edges ---
+    start -> pick_task
+
+    pick_task -> investigate [label="MORE", condition="preferred_label=MORE"]
+    pick_task -> done        [label="DONE", condition="preferred_label=DONE"]
+
+    investigate -> implement -> run_tests -> verify
+
+    verify -> close_task [label="PASS", condition="preferred_label=PASS"]
+    verify -> fixup      [label="FAIL", condition="preferred_label=FAIL"]
+    fixup  -> verify
+
+    close_task -> check_remaining
+
+    check_remaining -> pick_task [label="MORE", condition="preferred_label=MORE", loop_restart=true]
+    check_remaining -> done      [label="DONE", condition="preferred_label=DONE"]
+}

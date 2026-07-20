@@ -1,6 +1,6 @@
 # Scott's Claude Code Setup
 
-Modular Claude Code plugin suite for productive development. The core plugin provides **4 slash commands**, **8 specialized AI agents**, **17 skills**, **3 hooks**, and **3 project templates**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, and more.
+Modular Claude Code plugin suite for productive development. The core plugin provides **4 slash commands**, **8 specialized AI agents**, **17 skills**, **3 hooks**, and **3 project templates**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, multi-persona code review, and more.
 
 ## Quick Install
 
@@ -15,9 +15,9 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 | Commands | 4 | `delegate-first`, `gha`, `handoff`, `security-cheatsheet` |
 | Agents | 8 | `api-debugger`, `backend-architect`, `deep-research-agent`, `find-emergent-behavior`, `frontend-architect`, `refactoring-expert`, `requirements-analyst`, `system-architect` |
 | Skills | 17 | `init`, `acceptance-criteria`, `cli-design`, `delegate-first`, `python-simplifier`, `typescript-simplifier`, `karpathy-guidelines`, `property-based-testing`, `verified-implementation`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory`, `thinking-in-systems` |
-| Hooks | 3 | `terminal-bell` (Stop), `toon-post-hook` (PostToolUse), `prefer-modern-tools` (PreToolUse) |
+| Hooks | 4 | `terminal-bell` (Stop), `toon-post-hook` (PostToolUse), `prefer-modern-tools` (PreToolUse), `data-layer-guard` (PreToolUse) |
 | Templates | 3 | `.pre-commit-config.yaml`, `CLAUDE.md`, `AGENTS.md` |
-| Sub-plugins | 6 | `beads-epic-builder`, `browser-automation`, `research-tools`, `security-suite`, `performance-optimization`, `mutation-testing` |
+| Sub-plugins | 9 | `beads-epic-builder`, `browser-automation`, `research-tools`, `security-suite`, `performance-optimization`, `mutation-testing`, `review-panel`, `variant-explorer`, `triage` |
 
 ---
 
@@ -110,13 +110,14 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 
 ---
 
-## Hooks (3)
+## Hooks (4)
 
 | Hook | Event | Description |
 |------|-------|-------------|
 | `terminal-bell` | `Stop` | Terminal tab indicator when Claude finishes responding. Sends a BEL character for tab/dock notification, a desktop notification with a brief summary, and supports Ghostty/iTerm2 (OSC 9) and WezTerm (OSC 777). |
 | `toon-post-hook` | `PostToolUse` | Encodes large tool responses to TOON format (a compact alternative to JSON) before they enter the context window. Reduces token consumption on verbose MCP and built-in tool outputs. No-op if `toon` is not installed. |
 | `prefer-modern-tools` | `PreToolUse` | Rewrites legacy CLI commands to faster modern equivalents at runtime: `grep`/`egrep` → `rg`, `cat` → `bat --style=plain --paging=never`, `ls` → `lsd`, `ps aux`/`ps -ef` → `procs`. Safe near-drop-ins only — tools with incompatible flag syntax (`fd`, `dust`, `choose`) are excluded and documented in CLAUDE.md for native use. |
+| `data-layer-guard` | `PreToolUse` | Warns and asks for confirmation before an Edit/Write/NotebookEdit touches a data-layer path (migrations, schemas, ORM models — default globs overridable via `.data-guard.json`) without a same-day `DATA-MODEL.md` change-log entry. Interactive/planning-time only: silently no-ops in unattended contexts (`--dangerously-skip-permissions`/`mode:agent`), deferring to the data-steward review seat for unattended enforcement. |
 
 ---
 
@@ -132,7 +133,7 @@ Stored in `templates/` — copy to your project or use the `/init` skill to depl
 
 ---
 
-## Sub-plugins (6)
+## Sub-plugins (8)
 
 Install from the marketplace:
 
@@ -211,6 +212,12 @@ Security advisory and vulnerability scanning.
 | `security-advisor` | Answer security questions, review architecture for vulnerabilities, and provide tailored guidance by searching OWASP cheatsheets. |
 | `security-engineer` | Identify security vulnerabilities and ensure compliance with security standards and best practices. |
 
+**Skills (1)**
+
+| Skill | Description |
+|-------|-------------|
+| `plan-security-review` | Runs a lightweight threat-model checkpoint over a plan/PRD/spec document at the end of planning — trust boundaries, new data flows, authn/authz surface, secrets, third-party deps — producing a CLEAR/TRIGGERED/N/A report and go/no-go. Planning-stage counterpart to review-panel's Security seat, which reviews diffs. |
+
 ---
 
 ### performance-optimization
@@ -244,6 +251,121 @@ Comprehensive mutation testing with zombie test detection and automated refactor
 | Skill | Description |
 |-------|-------------|
 | `mutation-test` | Run comprehensive mutation testing to audit test quality, find zombie tests, and propose refactoring. |
+
+---
+
+### review-panel
+
+Multi-persona adversarial code and design review panel, vendoring and adapting patterns from compound-engineering, clairvoyance, superpowers, ponytail, and mattpocock/skills.
+
+**Commands (1)**
+
+| Command | Description |
+|---------|-------------|
+| `/review-panel [base..head \| branch \| PR] [--mode=agent]` | Run the review-panel orchestrator against a diff, PR, or branch — human-interactive by default, or unattended machine output with `--mode=agent`. |
+
+**Agents (1)**
+
+| Agent | Description |
+|-------|-------------|
+| `clean-room-alternative` | Generates a design alternative in isolation, without seeing the first design. Used by `design-it-twice` when a first design already exists in conversation. |
+
+**Skills (29)**
+
+*Panel orchestration & review seats*
+
+| Skill | Description |
+|-------|-------------|
+| `review-panel` | Orchestrates a full multi-reviewer code-review panel: casts reviewer seats from diff content, runs them concurrently, merges/dedupes findings, fixes, and re-reviews to convergence. |
+| `adversarial-reviewer` | Red-teams code, PRs, and designs — hunts for bugs, security holes, and hostile/malformed input handling. |
+| `design-review` | Orchestrates a diagnostic funnel through complexity, structural, interface, and red-flags checks for overall design quality. |
+| `domain-modeling` | Reviews a domain model against 8 type-driven functional-modeling techniques (illegal-states-unrepresentable, parse-don't-validate, etc.). |
+| `code-evolution` | Evaluates whether diffs to existing code look designed-in or bolted-on. |
+| `red-flags` | Scans code against 17 design smells and produces a structured diagnostic report. |
+| `strategic-mindset` | Assesses whether code reflects strategic or tactical design investment. |
+| `ponytail-review` | Reviews diffs exclusively for over-engineering — what to delete, replace with stdlib, or simplify. |
+| `ponytail-audit` | Whole-repo version of `ponytail-review` — a ranked list of what to delete or simplify. |
+| `data-steward` | Reviews migration/ORM/schema diffs against `DATA-MODEL.md` invariants and a 7-item migration-safety checklist. |
+| `taste-review` | Reviews diffs against `TASTE.md`'s Preferences/Weightings/Anti-preferences, mapping severity from declared strength. |
+
+*Design quality lenses*
+
+| Skill | Description |
+|-------|-------------|
+| `abstraction-quality` | Evaluates whether abstractions are genuinely useful or structurally shallow. |
+| `complexity-recognition` | Diagnoses what makes code complex and why, via a three-symptom two-root-cause framework. |
+| `comments-docs` | Reviews comment quality and documentation practices. |
+| `deep-modules` | Measures module depth — whether the interface is simple relative to its implementation. |
+| `error-design` | Reviews error-handling strategy against the "define errors out of existence" principle. |
+| `general-vs-special` | Evaluates whether interfaces are appropriately general-purpose. |
+| `information-hiding` | Checks for information leakage across module boundaries. |
+| `module-boundaries` | Evaluates where module boundaries are drawn and whether modules should merge or split. |
+| `naming-obviousness` | Reviews naming quality and code obviousness. |
+| `pull-complexity-down` | Checks whether complexity is pushed to callers or absorbed by implementations. |
+| `diagnose` | Routes a vague symptom to the most relevant design-quality lens via a decision tree. |
+
+*Grilling / interview*
+
+| Skill | Description |
+|-------|-------------|
+| `grill-my-taste` | Elicits personal taste via forced-choice interviews, distilling picks into `TASTE.md` Preferences/Weightings/Anti-preferences. |
+| `grill-the-schema` | Interviews to build `DATA-MODEL.md` — entities, invariants, lifecycle, volume/access patterns, Agent boundaries. |
+| `grill-with-docs` | Challenges a plan against the existing domain model, updating `CONTEXT.md`/ADRs inline. |
+
+*Architecture & planning*
+
+| Skill | Description |
+|-------|-------------|
+| `adr-skill` | Create and maintain Architecture Decision Records with Socratic questioning and an agent-readiness checklist. |
+| `design-it-twice` | Generates and compares at least two independent design alternatives before committing. |
+| `improve-codebase-architecture` | Finds deepening/refactoring opportunities informed by `CONTEXT.md` and ADRs. |
+
+*Development workflow*
+
+| Skill | Description |
+|-------|-------------|
+| `tdd` | Test-driven development with the red-green-refactor loop. |
+
+---
+
+### variant-explorer
+
+Parallel blind-builder variant exploration: spawns N isolated implementations against a spec and acceptance criteria, judges them against AC conformance, `TASTE.md`, and simplicity, and produces a ranked shortlist.
+
+**Commands (1)**
+
+| Command | Description |
+|---------|-------------|
+| `/explore-variants [spec] [--n N] [--ac <path>]` | Spawn N blind builders in isolated worktrees against a spec + acceptance criteria, then judge the results and produce a ranked shortlist. |
+
+**Agents (2)**
+
+| Agent | Description |
+|-------|-------------|
+| `blind-builder` | Builds one complete, independent implementation of a spec inside an isolated worktree, without seeing any sibling variant. |
+| `variant-judge` | Scores every surviving variant along one judging axis (AC-conformance, taste, or simplicity) and returns a scorecard per variant. Never edits variant code. |
+
+**Skills (1)**
+
+| Skill | Description |
+|-------|-------------|
+| `explore-variants` | Orchestrates the panel: gathers input, validates N (refuses N=1, clamps N>6), spawns blind builders, collects results with explicit failure reporting, runs the judge panel, and hands the human a ranked shortlist. |
+
+---
+
+### triage
+
+Foundry-resident triage spine: detect → bead → reproduce → fix → gate loop turning detector findings into beads, E2E-reproduced fixes, and `review-panel --mode=agent` gated PRs.
+
+**Skills (3)**
+
+| Skill | Description |
+|-------|-------------|
+| `triage-spine` | Consumes normalized triage items from any registered detector and runs the loop — intake → reproduce → diagnose → fix → gate — filing a bead per item, reproducing the issue E2E before any fix, producing a fix diff via `pas-pipeline`, and gating it through `review-panel --mode=agent`. |
+| `detectors/lib-upgrades` | Scans a project's dependency manifest/lockfile(s) for outdated or CVE-flagged libraries and emits normalized triage items. |
+| `detectors/prod-errors` | Consumes a log/Sentry-shaped production error source and emits one normalized triage item per distinct error, stack trace carried verbatim in evidence. |
+
+Two of five detector slots (`lib-upgrades`, `prod-errors`) are implemented in v1; three (`system-upgrades`, `iac-drift`, `security-advisory-sweeps`) are registered but stubbed.
 
 ---
 

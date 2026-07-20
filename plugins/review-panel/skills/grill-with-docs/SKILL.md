@@ -85,4 +85,17 @@ Only offer to create an ADR when all three are true:
 
 If any of the three is missing, skip the ADR. Use the format in [ADR-FORMAT.md](../../formats/ADR-FORMAT.md).
 
+### Offer the plan-security pass when build-ready
+
+When the session concludes with a build-ready plan, offer to run
+`security-suite`'s `plan-security-review` skill as a closing threat-model
+checkpoint — trust boundaries crossed, new data flows, authn/authz surface
+changed, secrets introduced, third-party deps added. This is a documentation
+pointer, not a new mechanism: `grill-with-docs` does not invoke or depend on
+`security-suite` internals.
+
+If `security-suite` is not installed in the current session, say so
+explicitly rather than silently skipping the offer — do not let the gap pass
+unnoticed.
+
 </supporting-info>
