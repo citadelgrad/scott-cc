@@ -1,0 +1,172 @@
+plugins/review-panel/skills/review-panel/references/cast-and-spawn.md
+  s_a3afed5e58d601::t_62ee167f0605d1 205-215
+  s_a3afed5e58d601::t_43ffd577209b02 202-204
+  s_a3afed5e58d601::t_0c2be771746b66 216-218
+  s_9da0a0349a65d3::t_678053bc4eaa56 109-115,197-201,219-224
+plugins/review-panel/reviewers/persona-catalog.md
+  s_a3afed5e58d601::t_e6ea9fae72caf7 144-146,178-202
+  s_a3afed5e58d601::t_97944523c9ee3e 331-346
+  s_a3afed5e58d601::t_632d5b0222bbc1 297-300
+  s_a3afed5e58d601::t_226483e176765f 453-460
+  s_a3afed5e58d601::t_3ea3939a8b802f 450-452
+  s_9da0a0349a65d3::t_7eca0e7e4671b9 447-449
+plugins/review-panel/tests/TIER-VERIFICATION.md
+  s_a3afed5e58d601::t_14cfdfcd6046a6 166-198
+  s_a3afed5e58d601::t_7ca38705f09148 45-50
+  s_a3afed5e58d601::t_292564fceee623 328-334
+  s_a3afed5e58d601::t_87c4a611cea8be 496-516
+  s_a3afed5e58d601::t_7ac1028add0822 352-363
+  s_a3afed5e58d601::t_7ccdb51af694d0 207-220
+  s_a3afed5e58d601::t_02fa52c581c265 249-259
+  s_a3afed5e58d601::t_1a00287185c3d3 292-303
+  s_a3afed5e58d601::t_a3207d0ced259c 305-326
+  s_a3afed5e58d601::t_0c5b03c82c8cef 472-477
+  s_a3afed5e58d601::t_1d3e228c9faf76 222-247
+  s_a3afed5e58d601::t_0239e52670523b 465-467
+  s_a3afed5e58d601::t_cbaebcdc3e91fb 42-44
+  s_a3afed5e58d601::t_375e730c3949eb 51-53,163-165
+  s_a3afed5e58d601::t_3d4616f86518bc 199-201,204-206
+  s_a3afed5e58d601::t_7030389c33ac71 221
+  s_a3afed5e58d601::t_579e5824c3aac0 248
+  s_a3afed5e58d601::t_35ce069890d081 260-262,289-291
+  s_a3afed5e58d601::t_ab3f53d50369da 304
+  s_a3afed5e58d601::t_2c92785d711793 327
+  s_a3afed5e58d601::t_1a8f549d1a593e 335-337,349-351
+  s_a3afed5e58d601::t_35138cc3ea371e 364-366,462-464
+  s_a3afed5e58d601::t_0c665c6d287712 468-471
+  s_a3afed5e58d601::t_c8e3f5033738fa 478-480,493-495
+  s_a3afed5e58d601::t_e243f163ac53ba 517-519
+  s_9da0a0349a65d3::t_b48e287899afea 1-41,54-162,202-203,263-288,338-348,367-461,481-492,520
+plugins/review-panel/skills/review-panel/references/lite-mode.md
+  s_a3afed5e58d601::t_ad76e60ef02cc5 159-165
+  s_a3afed5e58d601::t_7c09b8221e7d0c 74-83
+  s_a3afed5e58d601::t_8a61ecd11bd3cb 112-127
+  s_a3afed5e58d601::t_fb2bdffd9bdf3b 71-73
+  s_a3afed5e58d601::t_bcb926a448c48c 84-86,109-111
+  s_a3afed5e58d601::t_1405334e1a652e 128-130,156-158
+  s_a3afed5e58d601::t_3fda7fe920a72e 166-168
+  s_9da0a0349a65d3::t_24964df1e0d6e3 1-70,87-108,131-155,169-171
+plugins/review-panel/skills/review-panel/references/converge-and-pipeline.md
+  s_a3afed5e58d601::t_a8dd8df85e1dab 15-20,23-26,31-32,34-35,38-42,48-50
+  s_a3afed5e58d601::t_60ac6f9f3fa0c5 51-53
+  s_9da0a0349a65d3::t_658eae7fe1abef 54-68,147-189
+plugins/review-panel/skills/review-panel/references/dual-mode-contract.md
+  s_a3afed5e58d601::t_e20c23cd427224 165-167
+  s_a3afed5e58d601::t_deaa35cb7ae57b 77
+  s_a3afed5e58d601::t_5ffd70eeda4410 301-310,316
+  s_a3afed5e58d601::t_b17ad45efe559a 337-339,341-346
+  s_a3afed5e58d601::t_ce8305f3c3d66c 180,188-193
+  s_a3afed5e58d601::t_6213890fc58fd9 265
+  s_a3afed5e58d601::t_494a2fa30d72e3 194-196
+  s_a3afed5e58d601::t_11735cafabd099 264
+  s_a3afed5e58d601::t_61f07822b64bb6 266-268
+  s_9da0a0349a65d3::t_64e31f5bc7bf8d 32-55,83-84,112-115,197-210,232-237,269-271
+.claude-plugin/marketplace.json
+  s_a3afed5e58d601::t_8069441b2357f5 86
+docs/plans/2026-07-18-review-panel-lite/review-panel-lite-prd.md
+  s_a3afed5e58d601::t_c6807f0b63a8ec 1-254
+docs/plans/2026-07-18-review-panel-lite/review-panel-lite-spec.md
+  s_a3afed5e58d601::t_71a765b86a7bf0 1-655
+plugins/review-panel/.claude-plugin/plugin.json
+  s_a3afed5e58d601::t_650eb0a719d1c1 4
+plugins/review-panel/commands/review-panel.md
+  s_a3afed5e58d601::t_c328dbf2ceb315 3-4,28-35,50-52,92-94,101-105
+plugins/review-panel/skills/review-panel/SKILL.md
+  s_a3afed5e58d601::t_dabab6c211823b 4,73,80-107,141-167,188-191
+plugins/review-panel/skills/review-panel/references/fix-and-rereview.md
+  s_a3afed5e58d601::t_7add603ebffaaf 170-176,180-185,191-194
+plugins/review-panel/skills/review-panel/references/merge-and-validate.md
+  s_a3afed5e58d601::t_572085438efd31 130-157,193-208
+plugins/review-panel/tests/fixtures/auto-resolution/above-medium-boundary/diff.patch
+  s_a3afed5e58d601::t_ea62d26ab7fbb8 1-128
+plugins/review-panel/tests/fixtures/auto-resolution/above-medium-boundary/src/module-01.ts
+  s_a3afed5e58d601::t_e4d93fa9e2bbbf 1-5
+plugins/review-panel/tests/fixtures/auto-resolution/above-medium-boundary/src/module-02.ts
+  s_a3afed5e58d601::t_70ea9870ea6cf2 1-5
+plugins/review-panel/tests/fixtures/auto-resolution/above-medium-boundary/src/module-03.ts
+  s_a3afed5e58d601::t_5acfc14e0be194 1-5
+plugins/review-panel/tests/fixtures/auto-resolution/above-medium-boundary/src/module-04.ts
+  s_a3afed5e58d601::t_f57e3f2b7ecca7 1-5
+plugins/review-panel/tests/fixtures/auto-resolution/above-medium-boundary/src/module-05.ts
+  s_a3afed5e58d601::t_23b5dee85babbe 1-5
+plugins/review-panel/tests/fixtures/auto-resolution/above-medium-boundary/src/module-06.ts
+  s_a3afed5e58d601::t_c84adcefaff2e9 1-5
+plugins/review-panel/tests/fixtures/auto-resolution/above-medium-boundary/src/module-07.ts
+  s_a3afed5e58d601::t_dddc4d919d1d89 1-5
+plugins/review-panel/tests/fixtures/auto-resolution/above-medium-boundary/src/module-08.ts
+  s_a3afed5e58d601::t_507a741b9249ce 1-5
+plugins/review-panel/tests/fixtures/auto-resolution/above-medium-boundary/src/module-09.ts
+  s_a3afed5e58d601::t_898b3ddf26d896 1-5
+plugins/review-panel/tests/fixtures/auto-resolution/above-medium-boundary/src/module-10.ts
+  s_a3afed5e58d601::t_4d75a2bdfd30a9 1-5
+plugins/review-panel/tests/fixtures/auto-resolution/above-medium-boundary/src/module-11.ts
+  s_a3afed5e58d601::t_20e54ce9fbf16c 1-5
+plugins/review-panel/tests/fixtures/auto-resolution/above-medium-boundary/src/module-12.ts
+  s_a3afed5e58d601::t_f624ebf7102c57 1-5
+plugins/review-panel/tests/fixtures/auto-resolution/above-medium-boundary/src/module-13.ts
+  s_a3afed5e58d601::t_c25f53cd9cac5d 1-5
+plugins/review-panel/tests/fixtures/auto-resolution/above-medium-boundary/src/module-14.ts
+  s_a3afed5e58d601::t_ed6f2d0907a2cf 1-5
+plugins/review-panel/tests/fixtures/auto-resolution/above-medium-boundary/src/module-15.ts
+  s_a3afed5e58d601::t_d3f132b02a6961 1-5
+plugins/review-panel/tests/fixtures/auto-resolution/above-medium-boundary/src/module-16.ts
+  s_a3afed5e58d601::t_7278cc7dfaf731 1-5
+plugins/review-panel/tests/fixtures/auto-resolution/at-lite-boundary/diff.patch
+  s_a3afed5e58d601::t_00dd2125792823 1-209
+plugins/review-panel/tests/fixtures/auto-resolution/at-lite-boundary/src/module-a.ts
+  s_a3afed5e58d601::t_a775cf72f1dd64 1-67
+plugins/review-panel/tests/fixtures/auto-resolution/at-lite-boundary/src/module-b.ts
+  s_a3afed5e58d601::t_64c5425c90acd9 1-67
+plugins/review-panel/tests/fixtures/auto-resolution/at-lite-boundary/src/module-c.ts
+  s_a3afed5e58d601::t_473da8cd708d91 1-66
+plugins/review-panel/tests/fixtures/auto-resolution/just-over-lite-boundary/diff.patch
+  s_a3afed5e58d601::t_2da0a0ef7b8708 1-210
+plugins/review-panel/tests/fixtures/auto-resolution/just-over-lite-boundary/src/module-a.ts
+  s_a3afed5e58d601::t_c645de55ca6098 1-67
+plugins/review-panel/tests/fixtures/auto-resolution/just-over-lite-boundary/src/module-b.ts
+  s_a3afed5e58d601::t_68a80a52dca57a 1-67
+plugins/review-panel/tests/fixtures/auto-resolution/just-over-lite-boundary/src/module-c.ts
+  s_a3afed5e58d601::t_01aa18198e349f 1-67
+plugins/review-panel/tests/fixtures/dependency-bump/diff.patch
+  s_a3afed5e58d601::t_17a53aa47f683c 1-38
+plugins/review-panel/tests/fixtures/dependency-bump/package-lock.json
+  s_a3afed5e58d601::t_0463d19e2527dc 1-20
+plugins/review-panel/tests/fixtures/dependency-bump/package.json
+  s_a3afed5e58d601::t_27c45409c9f36a 1-7
+plugins/review-panel/tests/fixtures/needless-abstraction/after.ts
+  s_a3afed5e58d601::t_c58f25a20c4087 1-22
+plugins/review-panel/tests/fixtures/needless-abstraction/before.ts
+  s_a3afed5e58d601::t_5a999635ee0690 1-6
+plugins/review-panel/tests/fixtures/needless-abstraction/diff.patch
+  s_a3afed5e58d601::t_7f43140249e169 1-29
+plugins/review-panel/tests/fixtures/sensitive-migration/DATA-MODEL.md
+  s_a3afed5e58d601::t_1b1a705ff4e7fd 1-17
+plugins/review-panel/tests/fixtures/sensitive-migration/db/migrations/0012_add_customer_tax_id.sql
+  s_a3afed5e58d601::t_5b27dc065cc741 1-5
+plugins/review-panel/tests/fixtures/sensitive-migration/diff.patch
+  s_a3afed5e58d601::t_c7422170cfd6ba 1-16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "f88022e69f3d1959c0e216bbcf0559b888873a7c",
+  "prompts": {},
+  "sessions": {
+    "s_9da0a0349a65d3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-af01af5db930c71eb",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_a3afed5e58d601": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bec02c73-4157-4ff0-9cc9-6627d70ddcf7",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
