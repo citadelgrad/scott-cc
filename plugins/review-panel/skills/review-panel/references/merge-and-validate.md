@@ -127,16 +127,34 @@ Dispatch one validator subagent per surviving finding (post-MERGE, post-dedup �
 seat report; a finding two seats agreed on gets one validator, not two). Default: **1 validator**
 per finding.
 
-### Escalate to 2-3 validators for CRITICAL findings
+### Escalate to 2-3 validators for CRITICAL findings — tier conditional
 
-Any finding whose severity is Critical gets **2-3 independent validators**, not 1. This directly
-implements clairvoyance `workflow-builder.md`'s majority-survives-challenge principle (see Design
-Lineage): keep a finding only if a majority of its challengers cannot refute it. For a
-Critical-severity finding — the class most likely to block a merge or trigger a fix that touches
-sensitive code — a single validator's miss is more costly than for a Minor finding, so the
-extra validation cost is justified. Use 3 validators when the finding's confidence anchor is
-below 75 (more room for the finding to be wrong); 2 validators when confidence is 75+ (already
-well-evidenced, but Critical severity still warrants more than one check).
+**This escalation is itself tier-conditional** (see [lite-mode.md](lite-mode.md), narrowed
+guarantee #2 for both tiers):
+
+- **Lite (`--lite`):** no escalation — every surviving finding, Critical or not, gets exactly
+  **1 validator**. The confidence-based 3-vs-2 branch below does not apply; it only exists to
+  choose between 2 and 3, which is moot once Critical findings are capped at 1 like everything
+  else.
+- **Medium (`--medium`):** Critical findings get exactly **2 validators**, never 3 — the
+  confidence-based branch below (which would otherwise pick 3 for sub-75 confidence) is dropped in
+  favor of a flat 2. Non-Critical findings are unaffected: still the 1-validator default, identical
+  to full mode.
+- **Full (no tier flag, or `--auto` resolved to full):** unchanged from today — any finding whose
+  severity is Critical gets **2-3 independent validators**, not 1. This directly implements
+  clairvoyance `workflow-builder.md`'s majority-survives-challenge principle (see Design Lineage):
+  keep a finding only if a majority of its challengers cannot refute it. For a Critical-severity
+  finding — the class most likely to block a merge or trigger a fix that touches sensitive code — a
+  single validator's miss is more costly than for a Minor finding, so the extra validation cost is
+  justified. Use 3 validators when the finding's confidence anchor is below 75 (more room for the
+  finding to be wrong); 2 validators when confidence is 75+ (already well-evidenced, but Critical
+  severity still warrants more than one check).
+
+Nothing else about validation narrows: the validator's own procedure (clean-room independence,
+never-the-original-finder rule, evidence given to the validator) is identical across all three
+tiers — only the *count* of validators dispatched per finding changes. Any run where a Critical
+finding received fewer validators than full mode would have used must say so in the Coverage
+Honesty disclosure.
 
 ### The validator must never be the original finder
 
@@ -172,15 +190,22 @@ section) for each validator dispatch:
 
 ### Majority-survives-challenge verdict
 
-- **1-validator findings**: SURVIVES → finding proceeds to FIX. REFUTED → finding is dropped
-  (recorded in the internal history, not discarded from the run's audit trail, but not sent to
-  FIX).
-- **2-3 validator findings** (Critical severity): the finding proceeds to FIX only if a
-  **majority** of its validators return SURVIVES (2 of 2, or 2 of 3, or 3 of 3). If a majority
-  return REFUTED, the finding is dropped. A tie is impossible at 2-3 validator counts by
-  construction (2 validators: majority is 2-0 or the finding is dropped on a 1-1 split, treated
-  the same as a REFUTED majority — do not pass a Critical finding to FIX on a non-majority
-  result).
+- **1-validator findings** (every finding under `--lite`, non-Critical findings in every tier):
+  SURVIVES → finding proceeds to FIX. REFUTED → finding is dropped (recorded in the internal
+  history, not discarded from the run's audit trail, but not sent to FIX). Record the tally as the
+  single-validator shape, e.g. `1-0` (survives) or `0-1` (refuted) — no recount, no second
+  validator dispatched regardless of severity.
+- **2-validator findings** (Critical severity under `--medium`, and Critical findings at
+  confidence 75+ under full mode): the finding proceeds to FIX only on a `2-0` majority. A `1-1`
+  split is recorded as a non-majority tally and treated the same as a REFUTED majority — the
+  finding is dropped, and **no 3rd tie-breaking validator is dispatched** to resolve it; `--medium`
+  never escalates past 2 regardless of how a 2-validator round ties.
+- **3-validator findings** (Critical severity below confidence 75, full mode only — never occurs
+  under `--lite` or `--medium`, which cap Critical validator counts below 3): the finding proceeds
+  to FIX only if a majority return SURVIVES (2 of 3, or 3 of 3). If a majority return REFUTED, the
+  finding is dropped. A tie is impossible at 3 validators by construction.
+- **Zero surviving findings after MERGE**: VALIDATE dispatches zero validators and emits an empty
+  validated list — this is a normal, expected outcome in every tier, not an error condition.
 
 ### Output
 

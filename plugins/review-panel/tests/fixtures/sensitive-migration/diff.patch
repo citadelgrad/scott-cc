@@ -1,0 +1,16 @@
+--- /dev/null
++++ b/db/migrations/0012_add_customer_tax_id.sql
+@@ -0,0 +1,5 @@
++-- Fixture: sensitive-migration. Used only by
++-- plugins/review-panel/tests/TIER-VERIFICATION.md. Not part of any real application.
++--
++-- Adds a nullable tax_id column to customers, backfilled out-of-band.
++ALTER TABLE customers ADD COLUMN tax_id text;
+--- a/DATA-MODEL.md
++++ b/DATA-MODEL.md
+@@ -12,4 +12,5 @@
+ | id | uuid | primary key |
+ | email | text | unique, not null |
+ | display_name | text | |
+ | created_at | timestamptz | not null, default now() |
++| tax_id | text | added by `db/migrations/0012_add_customer_tax_id.sql`; government-issued taxpayer ID, nullable until backfilled |

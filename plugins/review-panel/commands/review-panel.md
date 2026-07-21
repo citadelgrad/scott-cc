@@ -1,7 +1,7 @@
 ---
 name: review-panel
-description: Run the review-panel orchestrator against a diff, PR, or branch — human-interactive by default, or unattended machine output with --mode=agent
-argument-hint: "[base..head | branch | PR] [--mode=agent]"
+description: Run the review-panel orchestrator against a diff, PR, or branch — human-interactive by default, or unattended machine output with --mode=agent; narrow the review scope with --lite, --medium, or --auto
+argument-hint: "[base..head | branch | PR] [--mode=agent] [--lite | --medium | --auto]"
 allowed-tools: Task, Read, Grep, Glob, Bash
 ---
 
@@ -25,6 +25,14 @@ Parse the arguments to extract:
   human-interactive mode. This is the one piece of state this command is responsible for setting;
   everything else about mode-specific behavior is owned by
   `skills/review-panel/references/dual-mode-contract.md`.
+- **Tier flag**: `--lite`, `--medium`, or `--auto` if present anywhere in `$ARGUMENTS`, otherwise
+  default to full (unnarrowed) review scope. These three are presence-only flags, pairwise mutually
+  exclusive with each other (two or more together is a hard error), and independently composable
+  with `--mode=agent` in any order. `--auto` defers the concrete tier choice to a pre-CAST resolver
+  over cheap diff-size and sensitive-path signals rather than selecting a tier directly. This is the
+  other piece of state this command is responsible for setting; everything else about narrowed-tier
+  behavior — the per-stage guarantees each tier gives, and `--auto`'s resolver and decision table —
+  is owned by `skills/review-panel/references/lite-mode.md`.
 
 ## Action
 
@@ -39,6 +47,9 @@ attempt to run the panel from memory of this command file. In particular:
   `references/converge-and-pipeline.md` — full procedural detail per stage.
 - `skills/review-panel/references/dual-mode-contract.md` — exactly how each mode's output is
   shaped; read this before producing any final output.
+- `skills/review-panel/references/lite-mode.md` — the `--lite`/`--medium`/`--auto` flag contract,
+  each tier's narrowed guarantees per stage, and `--auto`'s resolver and decision table; read this
+  before running a tier-flagged invocation.
 
 **Mode selection affects only final output shape; every stage of the panel loop runs identically
 in both modes.** There is no separate "agent orchestrator" or "human orchestrator" — one
@@ -78,9 +89,17 @@ field maps to `decision_on_failure`.
 /review-panel main..feature/checkout-fix
 /review-panel feature/checkout-fix --mode=agent
 /review-panel 1a2b3c4..HEAD --mode=agent
+/review-panel --lite
+/review-panel main..feature/checkout-fix --medium
+/review-panel feature/checkout-fix --auto --mode=agent
 ```
 
 - No arguments: reviews the current working-tree diff against `HEAD`, human-interactive.
 - A range or branch: reviews that diff, human-interactive.
 - `--mode=agent` anywhere: same target resolution, unattended JSON-only output — this is the form
   a `foundry.yaml` gate or other automation harness should invoke.
+- `--lite` or `--medium` anywhere: same target resolution, narrowed review scope per
+  `references/lite-mode.md`'s per-tier guarantees — no flag defaults to full (unnarrowed) scope.
+- `--auto` anywhere: same target resolution, tier chosen for you by the pre-CAST resolver in
+  `references/lite-mode.md`'s "Auto resolution" section, based on the diff's size and whether it
+  touches a sensitive path.

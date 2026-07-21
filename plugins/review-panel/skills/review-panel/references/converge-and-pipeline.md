@@ -12,34 +12,60 @@ must circuit-break and escalate to a human.
 
 ### Decision rule
 
-0. **Sovereignty check, ahead of the clean/dirty call.** Before applying the clean/dirty rule
-   below, check whether any surviving finding (from VALIDATE's output, carried through FIX
-   untouched by construction — see [fix-and-rereview.md](fix-and-rereview.md)'s "Sovereignty
-   guard") still carries `sovereignty: human-required`. This is a **new terminal state**, not a
+0. **Sovereignty check, ahead of the clean/dirty call, in every tier.** Before applying the
+   clean/dirty rule below or either narrowed tier's iteration cap in step 2, check whether any
+   surviving finding (from VALIDATE's output, carried through FIX untouched by construction — see
+   [fix-and-rereview.md](fix-and-rereview.md)'s "Sovereignty guard") still carries
+   `sovereignty: human-required` (produced by the Data-Steward seat — see
+   `reviewers/persona-catalog.md`'s "Data Steward" entry). This is a **new terminal state**, not a
    loop condition: looping back to SPAWN again would not resolve a sovereignty finding, since FIX
    is barred from ever touching it — re-running the loop just re-derives the same unresolved
-   finding. If one or more sovereignty-marked findings remain:
+   finding. This check runs identically in every tier including full mode — narrowing the review
+   scope never narrows it (SPEC Architecture invariant 3; see also
+   [lite-mode.md](lite-mode.md)'s "The sovereignty guard is untouched"). If one or more
+   sovereignty-marked findings remain:
    - Emit status `escalated` (human mode: an explicit human sign-off request block, naming each
      unresolved sovereignty finding, its file, and why it wasn't auto-fixed; `mode:agent`: top-level
      JSON `"status": "escalated"` — see [dual-mode-contract.md](dual-mode-contract.md)).
    - Do **not** loop back to SPAWN for these findings, and do **not** collapse this into
-     `circuit_broken` — a circuit-break means the loop tried and failed to make progress;
+     `circuit_broken` or `capped` — a circuit-break means the loop tried and failed to make
+     progress; `capped` means a narrowed tier's round budget ran out on ordinary findings;
      `escalated` means the loop correctly recognized a finding it must never resolve on its own and
-     stopped by design. These are different outcomes and must stay distinguishable downstream.
+     stopped by design. These are three different outcomes and must stay distinguishable
+     downstream.
    - If sovereignty-marked findings coexist with other, ordinary unresolved findings in the same
      round, still apply the dirty-round loop (step 2 below) to the ordinary findings across further
-     rounds — `escalated` is not exclusive of continuing to converge on everything else. Report
-     `escalated` as the overall run status only once every *non*-sovereignty finding has otherwise
-     reached a clean state; until then, the round is simply dirty (step 2) with the sovereignty
+     rounds, subject to the active tier's cap — `escalated` is not exclusive of continuing to
+     converge on everything else. Report `escalated` as the overall run status once every
+     *non*-sovereignty finding has otherwise reached a clean state, or once the active tier's cap is
+     reached on those ordinary findings (report both `escalated` and the tier-cap diagnosis
+     together in that case); until then, the round is simply dirty (step 2) with the sovereignty
      finding(s) noted as carried-forward-by-design in the report rather than counted as regressions.
 1. **Clean round → done.** If RE-REVIEW's Axis (a) regression check and Axis (b) coherence check
    both come back clean (zero new findings, zero unresolved findings from the round that just
    fixed) **and no sovereignty-marked finding remains** (step 0), the loop stops. Emit the final
    report (human mode) or the final JSON blob (`mode:agent`) per
-   [dual-mode-contract.md](dual-mode-contract.md), with status `converged`.
-2. **Dirty round → loop.** If RE-REVIEW surfaces any new or unresolved finding (other than a
-   sovereignty-marked one already handled by step 0), the loop continues. Take the new packaged
-   diff RE-REVIEW already produced and hand it to the next iteration.
+   [dual-mode-contract.md](dual-mode-contract.md), with status `converged`. This is unchanged in
+   every tier — a clean round is `converged` whether reached in round 1 under `--lite`, round 1 or
+   2 under `--medium`, or any round under full mode.
+2. **Dirty round → check the active tier's cap, then loop or terminate.** If RE-REVIEW surfaces any
+   new or unresolved finding, first check the round just completed against the active tier's
+   iteration cap:
+   - **Lite:** capped at **1** total round. If the round that just went dirty was round 1 (it
+     always is, under lite), do **not** loop back to SPAWN — terminate immediately with status
+     `capped` (see "Narrowed-tier iteration cap" below).
+   - **Medium:** capped at **2** total rounds. If the round that just went dirty was round 2,
+     terminate with status `capped`. If it was round 1, the tier still has its second permitted
+     round available — loop back to SPAWN as step 3 describes, exactly once.
+   - **Full** (no tier flag, or `--auto` resolved to full): no tier cap — unchanged from today,
+     loop back to SPAWN as step 3 describes, subject only to the existing 3-strikes circuit-breaker
+     and the round-8 hard cap below. Full mode's dirty-round-loops-to-SPAWN behavior, the 3-strikes
+     breaker, and the round-8 hard cap are all unmodified by this phase and are simply never
+     reached under either narrowed tier, since a narrowed-tier loop never proceeds past its own
+     cap (1 or 2 rounds) to begin with.
+
+   When step 2 does loop (dirty round, cap not yet reached): take the new packaged diff RE-REVIEW
+   already produced and hand it to the next iteration, per step 3 below.
 3. **Loop back to SPAWN, not always CAST.** The re-entry point for a looped iteration is
    **SPAWN**, using the same cast list CAST already produced, UNLESS RE-REVIEW's findings suggest
    the diff has changed in a way that plausibly changes which seats should be cast (e.g. FIX
@@ -117,6 +143,49 @@ round with no progress:
 
 A "strike" resets to 0 the moment a round shows progress by the definition above — this is a
 consecutive-rounds counter, not a lifetime counter across the whole run.
+
+### Narrowed-tier iteration cap → `capped`
+
+When decision-rule step 2 above terminates a `--lite` or `--medium` run because its tier's round
+cap was reached on a still-dirty round, that is a **new terminal status, `capped`** — deliberately
+**not** a reuse of `circuit_broken` (PRD D5, resolving SPEC OQ4; an earlier provisional design that
+reused `circuit_broken` for this case is superseded by this decision):
+
+1. **Stop looping immediately** — do not attempt a round beyond the tier's cap (1 for lite, 2 for
+   medium), regardless of whether the rounds so far showed progress. A narrowed tier's cap is a
+   hard stop on round count, not a progress judgment — unlike the 3-strikes breaker above, `capped`
+   can trigger on a *first* dirty round (lite) even if that round's RE-REVIEW was clearly moving in
+   the right direction.
+2. **Emit a tier-specific diagnosis.** Human-interactive mode: print an escalation block headed
+   `## Capped — Narrowed Tier Limit Reached` — structurally parallel to, but visually and textually
+   distinct from, the circuit-breaker's `## Circuit Broken` block above, so a reader never confuses
+   "this tier did what it was told" with "something is actually wrong." Word the diagnosis for the
+   specific tier and cap reached, e.g.:
+   - Lite: *"lite mode capped at 1 iteration; findings remain after the first FIX/RE-REVIEW pass —
+     re-run without `--lite` (or with `--medium` / no flag) for deeper convergence."*
+   - Medium: *"medium mode capped at 2 iterations; findings remain after the second FIX/RE-REVIEW
+     pass — re-run without `--medium` (or with no flag) for deeper convergence."*
+   `mode:agent`: set the top-level JSON `status` to `capped` (not `circuit_broken`), with the same
+   diagnosis text in `convergence.capped.diagnosis`, alongside the run's `tier` and
+   `narrowed_guarantees` fields (see [dual-mode-contract.md](dual-mode-contract.md)) so the tier
+   context is unmistakable next to the diagnosis without a consumer having to cross-reference which
+   flag was passed.
+3. **Why a new status value, not `circuit_broken` reuse:** hitting a tier's iteration cap is
+   expected, by-design behavior the invoker opted into by selecting `--lite`/`--medium` — it is not
+   an anomaly. `circuit_broken` must keep meaning exactly what it means today: full mode's genuine
+   3-strikes-or-round-8 stagnation, an actual "something isn't converging" signal. Conflating the
+   two under one status value would force every consumer (human or `mode:agent`/`foundry` gate) to
+   parse diagnosis text to tell "this tier did what it was told" from "something is actually
+   wrong." With `capped` structurally distinct, a `foundry` gate can branch on it directly — e.g.
+   `decision_on_failure: warn` and "re-run at a deeper tier," per
+   [dual-mode-contract.md](dual-mode-contract.md)'s foundry-wiring guidance — rather than the
+   `circuit_broken` gate's "investigate a stuck review" response.
+4. **Tier exclusivity, both directions.** Full mode never returns `capped` — it has no tier cap to
+   hit, only the circuit-breaker and round-8 hard cap below. Narrowed tiers (`--lite`, `--medium`)
+   never return `circuit_broken` — their round count never reaches high enough (1 or 2 rounds) for
+   the 3-strikes-consecutive-no-progress condition or the round-8 hard cap to have a chance to
+   trigger first; the tier's own cap always terminates the loop before either of those full-mode-
+   only conditions could fire.
 
 ### Loop iteration cap independent of circuit-breaker
 

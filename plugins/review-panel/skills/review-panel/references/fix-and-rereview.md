@@ -167,15 +167,30 @@ catching regressions FIX itself introduced:
 - Re-cast any other seat whose prior-round finding was in the fixed set, scoped to just the files
   that finding's fix touched (per FIX's own return report — no need to re-read the diff to make
   this scoping decision) — confirm the fix actually resolved what it claimed to, not just that
-  something changed at that location.
+  something changed at that location. **This clause is unchanged in every tier** — under `--lite`
+  or `--medium` it simply has fewer candidate seats to draw from, because SPAWN (see
+  [cast-and-spawn.md](cast-and-spawn.md), "Seat set: full vs. narrowed tiers") only cast a narrower
+  set to begin with. Do not write a tier-specific carve-out for Security or a Data-Steward seat —
+  this existing rule already re-casts them correctly whenever their finding was in the fixed set,
+  because a narrowed tier's SPAWN only cast them via the same fail-closed criteria that's
+  unmodified across all tiers.
 - Re-cast **Fresh-Eyes** if the fix touched a broad enough surface that a truly independent
   first-read of the new diff is warranted (judgment call — a one-line fix to a single validated
   finding likely doesn't need it; a fix that restructured a type or workflow across multiple files
-  does).
+  does). **Tier conditional: under `--lite` or `--medium`, skip this conditional Fresh-Eyes
+  re-cast entirely** — Fresh-Eyes is never part of either narrowed tier's SPAWN cast set (per
+  [cast-and-spawn.md](cast-and-spawn.md)'s Phase 2 seat-set conditional), so there is no prior-round
+  Fresh-Eyes dispatch to regression-check against, and re-casting it here would introduce a seat
+  RE-REVIEW's own tier never used. Full mode (no tier flag, or `--auto` resolved to full) is
+  unaffected — the broad-surface judgment call still applies exactly as before.
 - This is a smaller re-cast than a full CAST-stage run — CAST's full judgment-based casting only
   runs again if CONVERGE decides to loop back to SPAWN for a genuinely new full round (see
   [converge-and-pipeline.md](converge-and-pipeline.md) for the loop-back decision between SPAWN
   and MERGE).
+
+Axis (b) below (domain-intent coherence) is **unmodified by tier** — it runs identically in every
+tier, including its own Domain-Intent cast-when trigger, regardless of what SPAWN cast in this
+round. Only Axis (a)'s re-cast seat set narrows; Axis (b)'s logic is untouched by this phase.
 
 ### Axis (b) — Coherence vs. domain intent
 

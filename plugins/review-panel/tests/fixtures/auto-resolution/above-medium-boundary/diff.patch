@@ -1,0 +1,128 @@
+--- /dev/null
++++ b/src/module-01.ts
+@@ -0,0 +1,5 @@
++export const m01_001 = 1;
++export const m01_002 = 2;
++export const m01_003 = 3;
++export const m01_004 = 4;
++export const m01_005 = 5;
+--- /dev/null
++++ b/src/module-02.ts
+@@ -0,0 +1,5 @@
++export const m02_001 = 1;
++export const m02_002 = 2;
++export const m02_003 = 3;
++export const m02_004 = 4;
++export const m02_005 = 5;
+--- /dev/null
++++ b/src/module-03.ts
+@@ -0,0 +1,5 @@
++export const m03_001 = 1;
++export const m03_002 = 2;
++export const m03_003 = 3;
++export const m03_004 = 4;
++export const m03_005 = 5;
+--- /dev/null
++++ b/src/module-04.ts
+@@ -0,0 +1,5 @@
++export const m04_001 = 1;
++export const m04_002 = 2;
++export const m04_003 = 3;
++export const m04_004 = 4;
++export const m04_005 = 5;
+--- /dev/null
++++ b/src/module-05.ts
+@@ -0,0 +1,5 @@
++export const m05_001 = 1;
++export const m05_002 = 2;
++export const m05_003 = 3;
++export const m05_004 = 4;
++export const m05_005 = 5;
+--- /dev/null
++++ b/src/module-06.ts
+@@ -0,0 +1,5 @@
++export const m06_001 = 1;
++export const m06_002 = 2;
++export const m06_003 = 3;
++export const m06_004 = 4;
++export const m06_005 = 5;
+--- /dev/null
++++ b/src/module-07.ts
+@@ -0,0 +1,5 @@
++export const m07_001 = 1;
++export const m07_002 = 2;
++export const m07_003 = 3;
++export const m07_004 = 4;
++export const m07_005 = 5;
+--- /dev/null
++++ b/src/module-08.ts
+@@ -0,0 +1,5 @@
++export const m08_001 = 1;
++export const m08_002 = 2;
++export const m08_003 = 3;
++export const m08_004 = 4;
++export const m08_005 = 5;
+--- /dev/null
++++ b/src/module-09.ts
+@@ -0,0 +1,5 @@
++export const m09_001 = 1;
++export const m09_002 = 2;
++export const m09_003 = 3;
++export const m09_004 = 4;
++export const m09_005 = 5;
+--- /dev/null
++++ b/src/module-10.ts
+@@ -0,0 +1,5 @@
++export const m10_001 = 1;
++export const m10_002 = 2;
++export const m10_003 = 3;
++export const m10_004 = 4;
++export const m10_005 = 5;
+--- /dev/null
++++ b/src/module-11.ts
+@@ -0,0 +1,5 @@
++export const m11_001 = 1;
++export const m11_002 = 2;
++export const m11_003 = 3;
++export const m11_004 = 4;
++export const m11_005 = 5;
+--- /dev/null
++++ b/src/module-12.ts
+@@ -0,0 +1,5 @@
++export const m12_001 = 1;
++export const m12_002 = 2;
++export const m12_003 = 3;
++export const m12_004 = 4;
++export const m12_005 = 5;
+--- /dev/null
++++ b/src/module-13.ts
+@@ -0,0 +1,5 @@
++export const m13_001 = 1;
++export const m13_002 = 2;
++export const m13_003 = 3;
++export const m13_004 = 4;
++export const m13_005 = 5;
+--- /dev/null
++++ b/src/module-14.ts
+@@ -0,0 +1,5 @@
++export const m14_001 = 1;
++export const m14_002 = 2;
++export const m14_003 = 3;
++export const m14_004 = 4;
++export const m14_005 = 5;
+--- /dev/null
++++ b/src/module-15.ts
+@@ -0,0 +1,5 @@
++export const m15_001 = 1;
++export const m15_002 = 2;
++export const m15_003 = 3;
++export const m15_004 = 4;
++export const m15_005 = 5;
+--- /dev/null
++++ b/src/module-16.ts
+@@ -0,0 +1,5 @@
++export const m16_001 = 1;
++export const m16_002 = 2;
++export const m16_003 = 3;
++export const m16_004 = 4;
++export const m16_005 = 5;

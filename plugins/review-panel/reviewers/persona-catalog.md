@@ -141,7 +141,9 @@ the risk of missing what they catch, and each covers a review angle none of the 
 - **Cast-when (risk-triggered, fail-closed):** diff content touches auth, crypto, secrets
   handling, input validation at a trust boundary, deserialization, dependency manifests/lockfiles,
   IaC, or CI config. Ambiguity resolves to casting, per the catalog's global fail-closed rule
-  above.
+  above. This is decidable from CAST Steps 1-3 content/path matching alone — not a live-scan
+  (Step 4)-conditional cast-when — so, like Data Steward below, this seat is forced into SPAWN
+  dispatch in every tier, including `--lite`/`--medium` (see the Tier eligibility footnote below).
 - **Model tier:** Top-tier. Security review has the same asymmetric-cost profile as adversarial
   review — a missed vulnerability is far more expensive than an extra review pass.
 - **Missing-plugin fallback:** if `security-suite:security-engineer` is not present in the current
@@ -173,6 +175,31 @@ the risk of missing what they catch, and each covers a review angle none of the 
   - `adversarial-reviewer` Scope item 2 (security holes) provides baseline security attention on
     every run even when this seat isn't cast, but it is a general adversarial pass, not a
     specialist security review — don't conflate the two in reporting.
+  - **Path-identifiable subset (for cheap, pre-CAST signals):** the auth / crypto / secrets-handling
+    / dependency-supply-chain portion of the Cast-when categories above is also usable as a fast,
+    path-only proxy — before any diff-content read — by callers that need a cheap sensitive-path
+    check ahead of CAST itself (currently: `--auto`'s tier resolver, see
+    [lite-mode.md](../skills/review-panel/references/lite-mode.md)'s "Auto resolution" section, which
+    cites this list verbatim rather than defining its own copy). This is the single source of truth
+    for that path list — do not redefine it elsewhere:
+    - **Auth**: path contains `auth/`, `authn/`, `authz/`, `session/`, `oauth/`, `login`, or `jwt`.
+    - **Crypto / secrets handling**: path contains `crypto/`, `cipher`, `secrets/`, `credentials/`,
+      `.env` (or any `.env.*` variant), or matches `*.pem` / `*.key` / `*.p12` / `*.pfx`, or the
+      filename itself contains `secret` or `credential`.
+    - **Dependency / supply-chain**: path is a lockfile (`package-lock.json`, `yarn.lock`,
+      `pnpm-lock.yaml`, `Cargo.lock`, `Gemfile.lock`, `poetry.lock`, `uv.lock`, `go.sum`,
+      `composer.lock`, or any `*.lock`) or a dependency manifest (`package.json`, `Cargo.toml`,
+      `pyproject.toml`, `Gemfile`, `go.mod`, `requirements*.txt`).
+    - **Not included here** (content-only, not path-identifiable): input validation at a trust
+      boundary, and deserialization — these two Cast-when categories require reading diff content,
+      not just paths, so no caller should attempt to approximate them via a path list. A cheap
+      pre-CAST resolver that omits them is a known, intentional narrowing of `--auto`'s *tier
+      selection* signal only, not a coverage gap in the finished run — CAST's Steps 1-3
+      content-based judgment still runs identically regardless of tier, and since this seat's
+      cast-when is itself Steps-1-3-decidable (not Step-4/live-scan-gated), a diff that trips one
+      of these content-only triggers still gets Security cast even in a narrowed tier whose
+      `--auto` resolver missed it on the path-only signal — the resolver's blind spot narrows only
+      which *tier* gets picked, never whether Security itself is cast once CAST actually runs.
 
 ### Domain-Intent
 
@@ -267,7 +294,10 @@ ambiguous whether the signal is present, cast the seat.
   files (`*.sql`, `schema.*`, `prisma/`, `alembic/`, `migrations/`, etc.), serialization formats,
   or any file `DATA-MODEL.md` maps an entity to (see `formats/DATA-MODEL-FORMAT.md`'s "Entities &
   relationships" / "Ownership & routing" sections). Per the catalog's global fail-closed rule,
-  ambiguity about whether a file is data-layer resolves to casting.
+  ambiguity about whether a file is data-layer resolves to casting. This is decidable from CAST
+  Steps 1-3 content/path matching alone, the same property that makes Security's cast-when above
+  tier-independent — so this seat, too, is forced into SPAWN dispatch in every tier, including
+  `--lite`/`--medium` (see the Tier eligibility footnote below).
 - **Model tier:** Top-tier — a deviation from the "mid-tier unless a specific seat's entry explains
   a deviation" default. Justification: migration and schema mistakes are high-blast-radius and
   often irreversible (data loss/corruption, outage-causing locks), the same asymmetric-cost
@@ -298,6 +328,22 @@ ambiguous whether the signal is present, cast the seat.
     path. It does not replace the data-layer guard hook (a separate, interactive-only pre-write
     mechanism, out of this seat's scope) — this seat is the sole mechanism for *unattended*
     sovereignty enforcement, since the hook no-ops in unattended runs.
+  - **Path-identifiable subset (for cheap, pre-CAST signals):** the migration/schema portion of the
+    Cast-when categories above is also usable as a fast, path-only proxy — before any diff-content
+    read — by callers that need a cheap sensitive-path check ahead of CAST itself (currently:
+    `--auto`'s tier resolver, see [lite-mode.md](../skills/review-panel/references/lite-mode.md)'s
+    "Auto resolution" section, which cites this list verbatim alongside Security's path list above
+    rather than defining its own copy). This is the single source of truth for that path list — do
+    not redefine it elsewhere:
+    - **Migrations/schema**: path is under a `migrations/` or `db/migrations/` directory, or
+      matches `schema.sql`, `schema.prisma`, or `*.migration.*`, or is a file `DATA-MODEL.md` maps
+      an entity to.
+    - **Not included here** (content-only, not path-identifiable): ORM/model definitions and
+      serialization-format changes that don't live under a recognizable migration/schema path or
+      DATA-MODEL.md mapping — these require reading diff content, not just paths. As with
+      Security's path-only proxy above, a cheap pre-CAST resolver that misses one of these narrows
+      only `--auto`'s *tier selection* signal, never whether this seat gets cast once CAST's
+      Steps 1-3 content matching actually runs.
 
 ### Taste
 
@@ -398,3 +444,17 @@ is allowed to add.
 
 **Fail-closed reminder:** any ambiguity in the "Cast-when" column above resolves to casting the
 seat, not skipping it.
+
+**Tier eligibility** (which of the seats above `--lite`/`--medium` dispatch — see
+[lite-mode.md](../skills/review-panel/references/lite-mode.md); this catalog's cast-when criteria
+above are unmodified in every tier, only which of CAST's output seats SPAWN actually dispatches
+narrows): Correctness/Adversarial — always, all tiers. Simplicity, Structural — medium and full
+only. Any fail-closed-forced seat whose cast-when is decidable from CAST Steps 1-3 alone (content/
+path judgment against a known, vendored or cross-plugin target skill, with no dependency on Step
+4/live-scan) — fail-closed, all tiers, identically to full mode: a cast-when match forces the seat
+in regardless of the active tier. **Security and Data Steward are both this kind of seat** — their
+cast-when entries above are content/path matches CAST resolves in Steps 1-3, not a live-scan
+(Step 4) discovery, so a cast-when match under `--lite`/`--medium` forces either in exactly as it
+would in full mode; neither is skipped or downgraded to disclosure-only under a narrowed tier. All
+other seats (Domain-Intent, Fresh-Eyes, Change-Trajectory, Design-Alternatives, Test-Design
+Quality) — full-mode only.

@@ -106,6 +106,13 @@ can see why a seat with a marginal signal was included.
 
 ### Step 4 — Live-scan secondary enrichment
 
+**Tier conditional:** if `--lite` or `--medium` was set (see
+[lite-mode.md](lite-mode.md)), skip this step entirely — go straight from Step 3's cast list to
+Step 6, unmodified. Live-scan is the single biggest cost lever identified in the SPEC's research
+(an uncapped multiplier over the installed-skill count), so both narrowed tiers cut it rather than
+scale it down. This applies identically to `--lite` and `--medium`; only full mode (no tier flag,
+or `--auto` resolved to full) runs Step 4.
+
 After Step 3 produces the primary cast list from the catalog, run a secondary enrichment pass:
 
 1. Enumerate skills visible in the current session beyond what's vendored in this plugin —
@@ -186,6 +193,34 @@ that material re-enters the orchestrator's context.
 **Goal:** the orchestrator (having received the cast list back from CAST's subagent) dispatches
 every cast seat concurrently against the ONE shared packaged diff, bounded by a concrete
 concurrency cap, with read-only tool access.
+
+### Seat set: full vs. narrowed tiers
+
+CAST's Step 6 cast list is unmodified by tier — it always contains every seat the fail-closed
+casting logic (Steps 1-3, plus Step 4 when it runs) decided to cast. What narrows under `--lite`/
+`--medium` is which of *that* list SPAWN actually dispatches:
+
+- **Lite:** dispatch only (a) the Adversarial seat (always core, unconditional in every tier) and
+  (b) any seat whose fail-closed cast-when criteria are decidable from Steps 1-3 alone (content/
+  path judgment against a known, vendored or cross-plugin target skill, with no dependency on
+  Step 4/live-scan) and forced it in — concretely, Security and Data Steward, whenever either's
+  catalog cast-when matched the diff (see [lite-mode.md](lite-mode.md), "The sovereignty guard is
+  untouched" — that guard is never narrowed by tier). Every other cast-list seat (Simplicity,
+  Structural, Domain-Intent, Fresh-Eyes, Change-Trajectory, Design-Alternatives, Test-Design
+  Quality, and any live-scan finds — moot under Lite since Step 4 didn't run) is excluded from
+  dispatch, even if CAST's list included it.
+- **Medium:** dispatch (a) Adversarial, Simplicity, and Structural (always core under Medium,
+  unconditional) plus (b) any seat Steps 1-3's fail-closed cast-when criteria forced in, same as
+  Lite (Security and Data Steward, per above). All other cast-list seats are excluded from
+  dispatch.
+- **Full** (no tier flag, or `--auto` resolved to full): unchanged from today — every seat on
+  CAST's Step 6 list is dispatched, including live-scan finds.
+
+This is a SPAWN-side dispatch filter only — **no change to `persona-catalog.md` itself** or to
+CAST's own casting logic in Steps 1-5. CAST still reasons and casts exactly as it does in full
+mode; the tier eligibility footnote on the catalog's Seat Summary Table documents this same filter
+for a reader of the catalog, but the filter's single implementation lives here, applied once CAST's
+list comes back, not duplicated into the catalog's cast-when logic.
 
 ### Shared diff, not per-seat re-derivation
 

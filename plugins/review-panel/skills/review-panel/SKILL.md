@@ -1,7 +1,7 @@
 ---
 name: review-panel
 description: Orchestrates a full multi-reviewer code-review panel against one shared diff — casts a diverse set of reviewer seats by reading diff content (not paths), runs them concurrently, merges and deduplicates their findings with confidence scoring, independently validates each surviving finding, fixes everything in one pass, re-reviews for regressions and domain-intent coherence, and loops to convergence or a circuit-break. Use when a diff, PR, or branch needs a comprehensive verification pass before merge, when invoked as an automated foundry/CI gate (mode:agent), or whenever the user asks for a "review panel," "full review," or "panel review." Not for a single-lens check (invoke that reviewer skill directly, e.g. adversarial-reviewer, design-review, domain-modeling, ponytail-review) and not for generating a second independent design from scratch with no existing code to review (use design-it-twice).
-argument-hint: "[diff, PR, branch, or base..head range to review; or --mode=agent for machine output]"
+argument-hint: "[diff, PR, branch, or base..head range to review; --lite, --medium, or --auto to narrow the review tier; --mode=agent for machine output]"
 allowed-tools: Task, Read, Grep, Glob, Bash
 ---
 
@@ -70,17 +70,41 @@ hold unused for the many tool calls between, say, CAST and CONVERGE.
 | CONVERGE, pipeline-not-barrier | [references/converge-and-pipeline.md](references/converge-and-pipeline.md) |
 | Dual-mode (human + `mode:agent` JSON) | [references/dual-mode-contract.md](references/dual-mode-contract.md) — only if invoked with `mode:agent` |
 | Design Lineage / provenance | [references/design-lineage.md](references/design-lineage.md) — only if a CONTEXT.md/ADR exists to check against |
+| Narrowed-tier parameters | [references/lite-mode.md](references/lite-mode.md) — only if invoked with `--lite`, `--medium`, or `--auto` |
 
 ## Setup: diff packaging and scratch workspace
 
 Before CAST, materialize the shared diff every seat will review, using the vendored scripts
 rather than re-deriving diffs ad hoc:
 
-1. Check whether `$ARGUMENTS` names a target (ignore `--mode=agent` when checking).
-   - **Empty** (bare `/review-panel`): this is the fast path — the review target is the current
-     working tree against `HEAD`. Do **not** run `git status`, branch discovery, `git
-     merge-base`, or any other lookup to find a base branch; none of that is needed and it is
-     the exact cost this path exists to avoid. Go straight to step 2, then invoke
+1. Check whether `$ARGUMENTS` names a target (ignore `--mode=agent`, `--lite`, `--medium`, and
+   `--auto` when checking). In this same step, also parse the tier-selecting flags — this mirrors
+   the existing precedent that `--mode=agent` is already parsed independently of target
+   resolution, so `--lite`/`--medium`/`--auto` and `--mode=agent` must be order-independent and
+   composable: every ordering of these flags parses to the identical internal state.
+   - `--lite`, `--medium`, and `--auto` are flag-presence-only — there is no `=value` form. A
+     `--lite=false` (or `--medium=false` or `--auto=false`, or any other `=`-suffixed variant) is
+     malformed input: reject the invocation with a clear error naming the malformed flag, before
+     CAST runs. Never silently interpret this as an inverted flag, and never silently fall back to
+     flag-absent/full mode — this would mask a typo'd invocation (e.g. a CI script that meant
+     `--lite=true`) as an ordinary full-mode pass.
+   - `--lite`, `--medium`, and `--auto` are pairwise mutually exclusive with each other. If any two
+     of the three are present together, reject the invocation with a clear error naming both
+     conflicting flags, before CAST runs — never silently prefer one. (This is a 3-way pairwise
+     exclusivity check.) Malformed-flag rejection above uses this same fail-closed rejection path.
+   - Set `tier_source` the moment these flags are parsed: `"explicit"` for an explicit `--lite` or
+     `--medium` flag, or when no tier flag is present at all (full mode); `"auto"` the instant
+     `--auto` is detected. This step fully owns and writes `tier_source` for both of its values
+     (contract documented in `references/dual-mode-contract.md`). Setting `tier_source` to
+     `"auto"` here does **not** resolve which concrete tier (full/medium/lite) the run actually
+     uses — that resolution happens later, in a separate Setup step that runs after target
+     resolution and before CAST, and only fires when `tier_source` is `"auto"` (see
+     `references/lite-mode.md`, "Auto resolution"). So a `--auto` invocation exits this step with
+     `tier_source` already set to `"auto"` but no concrete tier chosen yet.
+   - **Empty** (bare `/review-panel`, or bare aside from tier/mode flags): this is the fast path —
+     the review target is the current working tree against `HEAD`. Do **not** run `git status`,
+     branch discovery, `git merge-base`, or any other lookup to find a base branch; none of that is
+     needed and it is the exact cost this path exists to avoid. Go straight to step 2, then invoke
      `review-package --worktree` in step 3.
    - **Non-empty**: resolve `BASE` and `HEAD` from the given target — a `base..head` range used
      as-is, or a branch name diffed against its merge-base with the default branch (`git
@@ -114,6 +138,33 @@ rather than re-deriving diffs ad hoc:
    in-conversation as the shared diff; note this fallback in the final report's coverage-honesty
    statement — this is the one path where the orchestrator ends up holding full diff content,
    since there's no file to point subagents at instead.
+6. **Resolve `--auto` to a concrete tier — only when `tier_source` is `"auto"`; a no-op for
+   `"explicit"` runs**, where `tier` is already simply whichever flag (or absence of one) step 1
+   parsed. This is the one point in Setup where a tier-selecting flag has a genuine data dependency
+   on the resolved review target, so it runs here, after the diff is packaged and its stat summary
+   captured (step 4, or step 5's fallback stat), and before CAST. Using that stat summary's file
+   list and added/removed line counts — no new git plumbing, no live-scan, no file content beyond
+   path matching — compute:
+   - `files_changed`: count of distinct files in the stat summary.
+   - `lines_changed`: total added + deleted lines across every file in the stat summary.
+   - `sensitive_path_match`: true if any changed file's path matches the sensitive-path criteria
+     `reviewers/persona-catalog.md`'s Security entry defines (the single source of truth for that
+     path list, per Architecture invariant 2) — cited, never redefined, by
+     `references/lite-mode.md`'s "Auto resolution" section.
+
+   Feed these three signals into `references/lite-mode.md`'s "Auto resolution" decision table to
+   get a concrete `tier` (`"full" | "medium" | "lite"`). Record `files_changed`, `lines_changed`,
+   and `sensitive_path_match` verbatim — these become the `mode:agent` JSON's `auto_signals` object
+   and the human report's auto-resolution disclosure line (both in
+   [references/dual-mode-contract.md](references/dual-mode-contract.md)).
+
+   From this point forward, treat the resolved `tier` exactly as if that tier's flag had been
+   passed explicitly. `tier_source` stays `"auto"` for the rest of the run regardless of which
+   concrete tier it resolved to — `tier_source` records *how* the tier was chosen, `tier` records
+   *what* was chosen. Every later stage (CAST/SPAWN/VALIDATE/RE-REVIEW/CONVERGE) reads `tier`,
+   never `tier_source`, so no stage needs an `--auto`-specific branch of its own (Architecture
+   invariant 1) — see `references/lite-mode.md`'s "Auto resolution" section for the full signal
+   definitions, decision table, and safety rationale.
 
 Every subsequent loop iteration (after FIX, before RE-REVIEW) re-runs `review-package` against
 the new `HEAD` (post-fix commit or working-tree state) so RE-REVIEW and any next SPAWN operate on
@@ -134,4 +185,7 @@ At every stage, if this run's coverage is bounded in any way — a seat skipped 
 skill wasn't installed, a scope reduction for a very large diff, a fallback path taken because
 `Task` or the vendored scripts weren't available — say so explicitly in the final report. A panel
 run that silently skipped coverage and reported "clean" is worse than one that states what it
-skipped and why. This rule applies across all 7 stages, not just CONVERGE's final synthesis.
+skipped and why. This rule applies across all 7 stages, not just CONVERGE's final synthesis. A
+narrowed run's tier-specific guarantees (enumerated in `references/lite-mode.md`) are this same
+coverage-honesty disclosure applied to `--lite`/`--medium`/`--auto` — a deliberate, disclosed scope
+reduction, never a silent behavior change.
