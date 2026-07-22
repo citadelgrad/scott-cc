@@ -33,3 +33,8 @@ agents/CLAUDE.md
 # test-results.md, logs/<run-id>/checkpoint.json) — overwritten by every
 # pipeline run; promote anything worth keeping to a permanent file instead
 .pas/
+
+# SkillOpt-Sleep per-run staging (reports, diagnostics, proposed diffs,
+# backups) — the accepted output lives in CLAUDE.md and
+# skills/skillopt-sleep-learned/SKILL.md instead
+.skillopt-sleep/

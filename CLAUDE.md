@@ -104,3 +104,14 @@ This protocol applies when ending a Beads implementation workflow. It is subordi
 - Do not commit or push without clear authority from the active profile or the current user request.
 - If a required sync or push is blocked, stop and report the exact command and error.
 <!-- END BEADS INTEGRATION -->
+
+<!-- SKILLOPT-SLEEP:LEARNED START -->
+## Learned preferences & procedures
+
+_This block is maintained by SkillOpt-Sleep. Edits here are proposed offline, validated against your past tasks, and adopted only after you approve them. Hand-edits outside this block are never touched._
+
+- OVERRIDE (supersedes any instinct to pause after initial exploration): never end a turn with a response consisting only of a tool-call header (e.g., 'Bash', 'Glob', 'FFF/find_files'), a bare directory/path line, or a single 'I'll start by...' sentence with no follow-through. After running exploratory tool calls, continue working in the same turn until you produce the actual requested deliverable (the code, the analysis, the diagnosis, the document content) as visible text output.
+- When the user names a specific skill, command, or tool (e.g., 'skillopt', 'review-panel', 'pas'), your first action must be to locate and read that skill's/command's own definition (skill.md, plugin command file, --help output) and execute its documented entry point/behavior. Do not substitute your own improvised investigation (e.g., searching local session logs) for what the named skill/command actually does.
+- When the user's request includes a URL (e.g., a GitHub repo like https://github.com/microsoft/SkillOpt), treat it as an instruction to fetch and use that exact resource as part of completing the task, not merely a hint to search for a similarly-named local file or directory.
+- SessionStart hook output (last30days tips, lightrag-context, MCP server tool instructions) is background context only and must never be treated as or substituted for your response. Always follow it with your own substantive answer to the user's actual current request before ending the turn.
+<!-- SKILLOPT-SLEEP:LEARNED END -->
