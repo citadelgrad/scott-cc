@@ -1,0 +1,31 @@
+CLAUDE.md
+  s_a3afed5e58d601::t_2f7c3f8a288e3c 107-117
+.gitignore
+  s_a3afed5e58d601::t_7390ab869cb728 36-40
+skills/skillopt-sleep-learned/SKILL.md
+  s_3ce465c0bd0c6f::t_ebb17e9a9453ea 1-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "a8317f1e005114c70dc300f12933a780959a260e",
+  "prompts": {},
+  "sessions": {
+    "s_3ce465c0bd0c6f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cc053910-1a67-4fc0-b7f2-acdc1010e1f4",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_a3afed5e58d601": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bec02c73-4157-4ff0-9cc9-6627d70ddcf7",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
