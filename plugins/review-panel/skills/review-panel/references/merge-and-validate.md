@@ -71,6 +71,28 @@ that would be 50 on single-seat merits becomes 75 with 2+ agreement; a 75 become
 implements the persona-catalog's diversity-of-perspective premise directly: independent
 corroboration is signal, and MERGE is where that signal gets counted.
 
+**Manufactured findings are excluded from this bump, in both directions.** A finding carrying the
+`manufactured: true` marker (emitted by `adversarial-reviewer`'s must-find-at-least-one-issue
+fallback, see its SKILL.md's "Manufactured-finding marker" section) is a note about the *absence*
+of a real finding, not an independently-discovered issue — so agreement between two such fallback
+notes is not corroboration, it is two reviewers independently having nothing to report. Concretely:
+
+- A `manufactured: true` finding does **not** count toward the 2+ agreement threshold for any
+  *other* fingerprint-matching finding (it cannot supply the second "vote").
+- A `manufactured: true` finding never itself **receives** the bump, even if 2+ seats independently
+  produce a fingerprint-matching manufactured finding on the same target. Its severity stays floored
+  at Minor and its confidence anchor is computed from Step 2 like any other finding, but the bump in
+  this Step 3 simply never applies to it — skip straight to Step 4 for these findings.
+- This exclusion is unconditional and origin-based, not lens-based: it does not matter how many
+  seats independently produce a fingerprint-matching manufactured finding, or how distinct those
+  seats' declared lenses are — a manufactured finding is ineligible for the promotion bump because
+  of *how it was produced* (the fallback rule, not a genuine attack), and no amount of independent
+  corroboration changes that.
+- MERGE must preserve the `manufactured: true` marker through fingerprinting and dedup exactly like
+  the `sovereignty` marker (Step 5 below) — it is not part of the fingerprint key and never
+  influences fingerprint matching — so downstream stages (VALIDATE, FIX) can continue to recognize
+  and floor these findings.
+
 ### Step 4 — Quote-the-line evidence gate
 
 Every finding must cite the ACTUAL code text at its claimed file:line as part of its evidence —
@@ -111,6 +133,21 @@ or more seats report fingerprint-matching findings and any one of them carries t
 merged finding keeps it (the marker is a logical OR across contributing seats, not something that
 needs unanimous agreement — a single seat correctly identifying a sovereignty boundary is enough).
 MERGE must not strip, downgrade, or silently drop this field while deduplicating.
+
+**Manufactured marker passes through untouched, floored at Minor.** A finding carrying
+`manufactured: true` (emitted by `adversarial-reviewer`'s must-find-at-least-one-issue fallback,
+see its SKILL.md's "Manufactured-finding marker" section) keeps that marker through fingerprinting
+and dedup exactly as-is, the same pass-through mechanics as `sovereignty` above — it is not part of
+the fingerprint key and never influences fingerprint matching. Unlike `sovereignty`'s logical-OR
+behavior, though, a `manufactured: true` finding's severity stays at Minor **even if it
+fingerprint-matches a non-manufactured finding from another seat**: if a genuine finding and a
+manufactured finding collide on the same fingerprint, the merge keeps the genuine finding's higher
+severity and drops the `manufactured` marker entirely for that merged record (the underlying issue
+is real, corroborated independently of the fallback path, and the 2+ agreement bump in Step 3
+applies normally in that case since a genuine finding is present). The marker, and the Minor floor,
+only apply when *every* contributing seat for that fingerprint reported it via the fallback rule.
+MERGE must not strip this field, nor let a manufactured finding's severity float above Minor, while
+deduplicating.
 
 ---
 
@@ -221,3 +258,12 @@ field. A sovereignty-marked finding that is REFUTED is dropped like any other re
 marker doesn't grant immunity from validation); one that SURVIVES keeps the marker into FIX, where
 [fix-and-rereview.md](fix-and-rereview.md)'s dispatch contract and post-FIX sovereignty guard take
 over.
+
+The `manufactured` marker (see MERGE Step 5) carries through VALIDATE the same way, floored at
+Minor: a `manufactured: true` finding is always a 1-validator finding by construction (Minor
+severity never escalates validator count), and VALIDATE's SURVIVES/REFUTED judgment applies to it
+like any other finding — VALIDATE has no authority to promote a manufactured finding's severity or
+strip its marker. It is subject to being REFUTED like any finding (a validator may determine even
+the "most fragile assumption" noted isn't actually fragile); one that SURVIVES proceeds to FIX still
+capped at Minor and still marked `manufactured: true`, so FIX and any later re-review continue to
+treat it as a floor-Minor, non-promotable finding rather than a discovered issue.

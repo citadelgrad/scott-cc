@@ -66,6 +66,7 @@ If your runtime does not support the `Task` tool, fall back to running the adver
 4. **Attack assumptions, not just syntax**: look for comments or code implying "this can't happen" or "this is always true" — those are the highest-value attack targets.
 5. **If prior findings exist, attack Scope item 4 last**: reread each existing finding's claim and try to construct a counterexample or overlooked scenario.
 6. **Rate severity honestly** — an adversarial mindset finds more issues than a constructive review, but not every finding is Critical. Calibrate per the contract below.
+7. **Must-find-at-least-one-issue fallback**: if steps 1-5 genuinely turn up nothing — no bug, no security hole, no hostile-input gap, no attackable prior finding — do not emit an empty Issues section and do not manufacture a fake bug either. Instead, note the single most fragile assumption the code relies on (the "this is safe because X" claim that is *least* battle-tested, even without a concrete counterexample to prove it wrong yet). This keeps "nothing found" and "not looked hard enough" distinguishable, and gives a human a starting point if they want to push further. **This fallback finding is manufactured, not discovered** — it must be tagged per the Output Contract below and is never treated as equivalent to a genuine attack finding downstream (see the MERGE promotion exclusion in [`references/merge-and-validate.md`](../review-panel/references/merge-and-validate.md)).
 
 ## Output Contract
 
@@ -81,6 +82,30 @@ Adapt that contract's framing to the adversarial angle:
 - **Recommendations**: hardening priorities beyond the specific issues found.
 - **Assessment**: `Ready to merge?` [Yes | No | With fixes], plus 1-2 sentence reasoning stated as an adversary would — "an attacker/hostile input could still X" rather than generic risk language.
 
+### Manufactured-finding marker (must-find-at-least-one-issue fallback output)
+
+A finding produced via Attack Procedure step 7 (the bulletproof-code fallback) is **not** a normal Issue and must be marked so it can never be mistaken for one downstream:
+
+- **Severity is always Minor** — the panel's severity enum is closed to `Critical`/`Important`/`Minor` (same closed-enum rule `taste-review` follows per `persona-catalog.md`), so a manufactured finding is filed under **Minor** and capped there. It is never Critical or Important regardless of how it's worded or how many other seats independently produce a similar fallback note for the same target.
+- **Carries an explicit `manufactured: true` marker**, appended inline exactly like the existing `sovereignty: human-required` marker convention (see `skills/data-steward/SKILL.md`'s Output Contract): `Minor — file:line — <fragile assumption> — manufactured: true`.
+- **The marker is permanent** — it travels with the finding through MERGE/VALIDATE/FIX like `sovereignty` does, and no downstream stage may strip it, upgrade the finding's severity past Minor, or treat it as a genuine attack finding.
+
+Example (illustrates the distinction from a genuine finding in the same output):
+
+```
+### Issues
+
+#### Minor
+1. **Retry loop assumes the downstream queue never permanently rejects a message**
+   - File: worker.py:142
+   - Issue: no bug or hostile-input path could be constructed against this file — the retry/backoff
+     logic, input validation, and error handling all held up under attack. The most fragile
+     surviving assumption is that `queue.publish()` will eventually succeed on retry; there's no
+     concrete counterexample today, but no dead-letter path exists if that assumption ever breaks.
+   - manufactured: true
+   - Fix: none required now; consider a dead-letter queue if this assumption is ever violated.
+```
+
 ## Critical Rules
 
 **DO:**
@@ -89,9 +114,11 @@ Adapt that contract's framing to the adversarial angle:
 - Give a concrete attack/input for every issue, not just a category name
 - Calibrate severity honestly — adversarial framing is not license to inflate everything to Critical
 - Emit output in the shared `contracts/reviewer-output.md` structure so panel aggregation works
+- Tag any must-find-at-least-one-issue fallback finding with `manufactured: true` and file it as Minor, every time — never leave it unmarked or let it masquerade as a genuine finding
 
 **DON'T:**
 - Skip attacking existing findings just because they came from a credible source — Scope item 4 exists precisely to challenge credible-looking conclusions
 - Let a prior reviewer's framing anchor what you look for
 - Report a finding without a file:line and a concrete triggering scenario
 - Treat this skill as gated behind a panel session — it is standalone-invocable on any target, any time
+- Rate a manufactured (fallback) finding above Minor, or omit its `manufactured: true` marker, under any circumstance — including when another seat happens to raise a similar note independently
