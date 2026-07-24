@@ -6,17 +6,7 @@
 - Apply that same high standard to engineering excellence: lint, test failures, and test flakiness. If you see one, even if it is not caused by what you are working on right now, still get it fixed.
 -
 ## CLI Tool Preferences
-Modern tools are installed at `/opt/homebrew/bin/`. Prefer them for efficiency:
-
-- **File Content Search:** `rg -C 3` (Fallback: `grep`)
-- **File Name Search:** `fd` (Fallback: `find`)
-- **Directory Listing:** `lsd -la` (Fallback: `ls -la`)
-- **View Content:** `bat --style=plain` (Fallback: `cat`)
-- **Log Tail / Follow:** `uu-tail -f` (Fallback: `tail -f`) - efficient kqueue tracking
-- **Top of File:** `uu-head` (Fallback: `head`)
-- **Disk Usage:** `dust` (Never use raw `du`)
-- **Process Hierarchy:** `procs --tree` (Never use raw `ps`)
-- **Field Extraction:** `choose` (Zero-based index: `choose 1` = `cut -f2`)
+See `templates/CLAUDE.md`'s CLI Tool Preferences section for the canonical, up-to-date tool list and fallback mappings.
 
 ## Environment Variables
 - Always use `.envrc` files managed via `direnv`.
