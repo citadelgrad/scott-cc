@@ -1,0 +1,38 @@
+hooks/tests/test_prefer_modern_tools.py
+  s_ea100192a5c408::t_c6996775b9a611 98-100
+hooks/tests/test_skill_xref_check.py
+  s_ea100192a5c408::t_124bf84fb186fe 151-177
+hooks/_guard_base.py
+  s_ea100192a5c408::t_6369ca2b6041e2 3-8
+  s_ea100192a5c408::t_ab1e0d82d6c32e 87-89,93-97
+plugins/security-suite/hooks/secret_scan.py
+  s_ea100192a5c408::t_56358d5246b5de 109-113,115
+  s_ea100192a5c408::t_d380a3cdc9b882 160-164
+  s_ea100192a5c408::t_374942a9a2d24e 114
+hooks/skill_xref_check.py
+  s_ea100192a5c408::t_e39fa30ecf9850 12-19
+  s_ea100192a5c408::t_9af0db3126e38c 84,86-101,103
+  s_ea100192a5c408::t_240896108a7676 40-43
+  s_ea100192a5c408::t_1db4f43dffb004 119-121
+plugins/security-suite/hooks/tests/test_secret_scan.py
+  s_ea100192a5c408::t_e7b15729c483b1 139-197
+hooks/prefer_modern_tools.py
+  s_ea100192a5c408::t_6ac5002a1dcef9 93
+  s_ea100192a5c408::t_aa3e75eaeae748 19-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "90aeb3fe99e38187c5cb12135af2a9c17e42b67d",
+  "prompts": {},
+  "sessions": {
+    "s_ea100192a5c408": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "30dab69b-900c-41cf-9724-f535eeabd96b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
