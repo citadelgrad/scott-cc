@@ -1,0 +1,36 @@
+plugins/review-panel/reviewers/persona-catalog.md
+  s_18a4170943b3a0::t_e44e947227295b 409-483
+  s_18a4170943b3a0::t_a59d560721c74d 541-544
+  s_18a4170943b3a0::t_72dc0452989b12 561-565
+plugins/review-panel/reviewers/mental-models-catalog.md
+  s_18a4170943b3a0::t_ecc0a71d03a007 1-85
+plugins/review-panel/skills/mental-models-economics/SKILL.md
+  s_18a4170943b3a0::t_8d4a01e7490a08 1-62
+README.md
+  s_18a4170943b3a0::t_4d43ab6444d25c 320-323
+  s_18a4170943b3a0::t_4b9b6754b04d79 303
+plugins/review-panel/skills/mental-models-simplifier/SKILL.md
+  s_18a4170943b3a0::t_69f6a03b47809f 1-60
+plugins/review-panel/CREDITS.md
+  s_18a4170943b3a0::t_75d577fb6a6b92 132-152
+plugins/review-panel/skills/mental-models-systems/SKILL.md
+  s_18a4170943b3a0::t_bd03a5dab57ef2 1-64
+plugins/review-panel/skills/mental-models-adversarial/SKILL.md
+  s_18a4170943b3a0::t_491a3c4d285738 1-61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "58c14ba8a71844ccf396a737b0420d0d102f1c98",
+  "prompts": {},
+  "sessions": {
+    "s_18a4170943b3a0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f6b50020-52ca-48ef-982b-c7013626ba77",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
