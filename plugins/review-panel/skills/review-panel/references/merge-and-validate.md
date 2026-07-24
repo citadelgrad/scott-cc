@@ -71,6 +71,49 @@ that would be 50 on single-seat merits becomes 75 with 2+ agreement; a 75 become
 implements the persona-catalog's diversity-of-perspective premise directly: independent
 corroboration is signal, and MERGE is where that signal gets counted.
 
+**Distinct-lens requirement — agreement alone is not enough.** Two seats agreeing is only real
+independent corroboration if they got there via genuinely different review lenses. Two seats that
+both effectively ran the same lens (e.g. a live-scan-added security-flavored skill agreeing with
+the catalog's own Security seat) converging on the same finding is one perspective confirming
+itself, not two — it must not earn the bump.
+
+- **What counts as a "declared lens":** each seat's `Seat` name from
+  `reviewers/persona-catalog.md`'s Seat Summary Table (Correctness/Adversarial, Simplicity,
+  Structural, Security, Domain-Intent, Fresh-Eyes, Change-Trajectory, Design-Alternatives,
+  Test-Design Quality, Data Steward, Taste). This table is the catalog's own lens taxonomy — MERGE
+  does not define a second, separate one. A live-scan-added supplementary seat (persona-catalog's
+  "SECONDARY enrichment layer") inherits the declared lens of whichever catalog Seat its function
+  most closely matches (e.g. a user-installed security linter skill declares the Security lens);
+  if its lens doesn't map cleanly to any row in the table, treat it as its own distinct lens rather
+  than folding it into an existing one, per the catalog's fail-closed default.
+- **Overlapping, and does not qualify for the bump on its own:** two or more contributing seats
+  that share the same declared lens (same `Seat` row, or a live-scan seat mapped to the same row).
+  Their agreement still merges into one finding (Step 1 fingerprinting is unaffected) and still
+  contributes to that finding's `contributing seat(s)` list, but it does not, by itself, satisfy
+  the 2+ agreement bump — same-lens agreement is treated as a single corroborating perspective,
+  confidence-wise, no matter how many same-lens seats reported it.
+- **Distinct, and qualifies:** two or more contributing seats whose declared lenses are different
+  rows in the Seat Summary Table (e.g. Structural + Security, or Domain-Intent + Correctness/
+  Adversarial). This is the normal case the bump was designed for and needs no special handling
+  beyond confirming the lenses actually differ.
+- **The mandatory-contrarian exception:** if a fingerprint-matched finding's contributing seats are
+  all same-lens (so the rule above would withhold the bump), the bump still applies if
+  `Correctness/Adversarial` (`adversarial-reviewer`) — this plugin's always-cast contrarian/
+  adversarial seat, per persona-catalog's Core Seats — is itself one of the contributing seats. A
+  same-lens pair corroborated by the panel's mandatory adversarial seat has already cleared a
+  genuinely independent, hostile-framed check, which is what the distinct-lens requirement exists
+  to guarantee; a third seat is not required. This exception cannot itself be satisfied by two
+  same-lens seats that both happen not to be Correctness/Adversarial — it requires that specific
+  seat's participation, since it is the one seat every CAST always includes regardless of
+  diff-specific casting judgment (persona-catalog's Core Seats section), making it the one lens
+  every panel run can rely on as a structural check on same-lens groupthink.
+- **Practical effect:** when evaluating a fingerprint-matched finding for the bump, first list the
+  declared lens of every contributing seat. If 2+ distinct lenses are present, apply the bump. If
+  only one lens is represented (however many seats reported it), withhold the bump unless
+  Correctness/Adversarial is among the contributors. A finding that fails this check is not
+  demoted or dropped — it simply stays at whatever confidence anchor Step 2's base criteria alone
+  would assign, same as any single-corroboration finding.
+
 ### Step 4 — Quote-the-line evidence gate
 
 Every finding must cite the ACTUAL code text at its claimed file:line as part of its evidence —
