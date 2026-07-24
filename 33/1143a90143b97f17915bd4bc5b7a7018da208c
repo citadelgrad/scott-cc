@@ -1,0 +1,24 @@
+plugins/review-panel/skills/adversarial-reviewer/SKILL.md
+  s_ea100192a5c408::t_1156d64fc6ec32 69,85-108,117,124
+plugins/review-panel/skills/review-panel/references/merge-and-validate.md
+  s_ea100192a5c408::t_3f6070e785bb42 86-90
+  s_ea100192a5c408::t_239b1404fa8c2b 74-85,91-95
+  s_ea100192a5c408::t_da79d37a25ea96 137-151
+  s_ea100192a5c408::t_76665c7f53b000 261-269
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "331143a90143b97f17915bd4bc5b7a7018da208c",
+  "prompts": {},
+  "sessions": {
+    "s_ea100192a5c408": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "30dab69b-900c-41cf-9724-f535eeabd96b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
