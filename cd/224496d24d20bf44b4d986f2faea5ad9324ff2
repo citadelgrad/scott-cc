@@ -1,0 +1,21 @@
+QUICK-START.md
+  s_ea100192a5c408::t_30af58ba8bf6ec 47-50
+README.md
+  s_ea100192a5c408::t_bc3c352327496e 122-129
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "cd224496d24d20bf44b4d986f2faea5ad9324ff2",
+  "prompts": {},
+  "sessions": {
+    "s_ea100192a5c408": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "30dab69b-900c-41cf-9724-f535eeabd96b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
