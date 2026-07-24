@@ -1,0 +1,27 @@
+hooks/tests/test_guard_base.py
+  s_ea100192a5c408::t_15c3708eac85b4 151,153-155,162,164-166
+  s_ea100192a5c408::t_d3232114bdf423 143,147-150,152,156
+  s_ea100192a5c408::t_bd9461440f75a7 1-142,144-146,157-161,163
+hooks/data_layer_guard.py
+  s_ea100192a5c408::t_b7bfb4c1ad0c75 113
+  s_ea100192a5c408::t_653ad7d70701fe 22-28,40
+  s_ea100192a5c408::t_958b334df4c675 157
+hooks/_guard_base.py
+  s_ea100192a5c408::t_64af54eb304d62 1-88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "4c42f3fc94a2743dfad2d2d295d51abacef91a2f",
+  "prompts": {},
+  "sessions": {
+    "s_ea100192a5c408": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "30dab69b-900c-41cf-9724-f535eeabd96b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
