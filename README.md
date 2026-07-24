@@ -133,13 +133,35 @@ Stored in `templates/` — copy to your project or use the `/init` skill to depl
 
 ---
 
-## Sub-plugins (8)
+## Sub-plugins (9)
 
 Install from the marketplace:
 
 ```bash
 /plugin marketplace add citadelgrad/scott-cc/<name>
 ```
+
+**Status** reflects real git activity, not a manual label. Derived from each plugin's `git log -- plugins/<name>/`:
+
+| Status | Rule |
+|--------|------|
+| `stable` | 3+ commits and a commit within the last 60 days |
+| `experimental` | Fewer than 3 commits (too new/unproven to call stable), regardless of recency |
+| `unmaintained` | No commits in 90+ days |
+
+| Plugin | Status | Description |
+|--------|--------|-------------|
+| `beads-epic-builder` | `stable` | Plan, build, and swarm beads epics — sequential and parallel execution with CE code review. |
+| `browser-automation` | `stable` | Browser testing and validation with E2E test generation and UI validation. |
+| `research-tools` | `unmaintained` | Learning guides, tech stack research, and technical writing assistance. |
+| `security-suite` | `stable` | Security advisory and vulnerability scanning. |
+| `performance-optimization` | `unmaintained` | Performance engineering with bottleneck analysis and profiling. |
+| `mutation-testing` | `unmaintained` | Comprehensive mutation testing with zombie test detection and automated refactoring. |
+| `review-panel` | `stable` | Multi-persona adversarial code and design review panel. |
+| `variant-explorer` | `experimental` | Parallel blind-builder variant exploration with AC/taste/simplicity judging. |
+| `triage` | `experimental` | Foundry-resident triage spine: detect → bead → reproduce → fix → gate loop. |
+
+---
 
 ### beads-epic-builder
 
