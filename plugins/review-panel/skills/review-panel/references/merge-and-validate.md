@@ -253,26 +253,42 @@ finding. This is the no-self-grading rule: a seat cannot validate its own findin
 
 Reuse the blind-subagent pattern from `agents/clean-room-alternative.md` (the same pattern
 `adversarial-reviewer` uses internally — see its "Independence via clean-room-alternative"
-section) for each validator dispatch:
+section) for each validator dispatch. The dispatch happens in two ordered phases within the same
+validator subagent — **blind restatement first, original claim second** — because showing the
+original finder's title, severity, or rationale before the validator has committed to its own
+read is exactly the anchoring bias this procedure exists to prevent (a validator who reads "this
+is Critical" before looking at the code tends to go looking for a reason to agree with "Critical"
+rather than independently arriving at a severity).
 
-1. Give the validator: the finding's claimed file:line, its stated issue category
-   (Critical/Important/Minor), and the raw code at and around that location (via Read/Grep on the
-   actual files, not a copy-paste snippet chosen by the original finder).
-2. **Withhold**: the original finder's full reasoning chain, its "why it matters" prose, and its
-   proposed fix. The validator sees the finding's *claim* (what's wrong, at what location) and the
-   *raw code* — not the finder's argument for why the claim is true. This is deliberate: a
-   validator handed the finder's full reasoning tends to rubber-stamp it rather than
-   independently re-derive whether the claim holds.
+1. **Phase 1 — blind restatement.** Give the validator only: the finding's claimed file:line, and
+   the raw code at and around that location (via Read/Grep on the actual files, not a copy-paste
+   snippet chosen by the original finder). **Withhold everything else** — the original finder's
+   title, its stated issue category (Critical/Important/Minor), its full reasoning chain, its "why
+   it matters" prose, and its proposed fix. Instruct the validator to independently examine the
+   code at that location and record, before seeing anything else: **what it sees wrong there (if
+   anything), the severity it would assign (Critical/Important/Minor/nothing), and its own
+   rationale** — in the same title / severity / rationale shape the original finding uses, so the
+   two are directly comparable in Phase 2. This restatement is committed (returned as part of the
+   validator's output) before Phase 2 begins; the validator does not get to revise it after seeing
+   the original claim.
+2. **Phase 2 — reveal and reconcile.** Only after the blind restatement is recorded, reveal the
+   original finder's title, severity, and rationale (still withholding its proposed fix, which
+   remains irrelevant to whether the claim is real). Ask the validator to state whether its
+   independent restatement **matches, partially matches, or contradicts** the original finding —
+   and to use that comparison, not deference to the original claim, to decide the verdict.
 3. **The validator's task**: independently determine whether the claimed issue is real, given only
-   the location and the raw code. Does the code at that location actually exhibit the described
-   problem? Construct the validator's prompt as a challenge, not a confirmation request — ask it
-   to try to show the finding is WRONG (no bug here, the "issue" is actually handled elsewhere,
-   the input claimed to be hostile is actually validated upstream) before concluding it's right.
-   This framing matches the challenger framing in Step 4 below and in the pipeline-not-barrier
-   reference's majority-survives-challenge principle.
-4. Each validator returns: **SURVIVES** (the finding is real, as stated or with minor correction)
-   or **REFUTED** (the finding does not hold — the validator found a reason the claimed issue
-   isn't actually a problem, and states that reason concretely).
+   the location and the raw code (Phase 1), then reconcile against the original claim (Phase 2).
+   Does the code at that location actually exhibit the described problem? Construct the Phase 2
+   framing as a challenge, not a confirmation request — ask the validator to try to show the
+   finding is WRONG (no bug here, the "issue" is actually handled elsewhere, the input claimed to
+   be hostile is actually validated upstream) before concluding it's right. This framing matches
+   the challenger framing in Step 4 below and in the pipeline-not-barrier reference's
+   majority-survives-challenge principle.
+4. Each validator returns: its **blind restatement** (title/severity/rationale, Phase 1), its
+   **match/partial-match/contradicts** call against the original claim (Phase 2), and a final
+   verdict of either **SURVIVES** (the finding is real, as stated or with minor correction) or
+   **REFUTED** (the finding does not hold — the validator found a reason the claimed issue isn't
+   actually a problem, and states that reason concretely).
 
 ### Majority-survives-challenge verdict
 
@@ -297,8 +313,13 @@ section) for each validator dispatch:
 
 VALIDATE emits the final validated findings list — every finding that survived its
 challenge(s) — annotated with its confidence anchor, severity, evidence quote, and (for
-transparency in the final report) how many validators checked it and the verdict tally. This list
-is FIX's entire input.
+transparency in the final report) how many validators checked it and the verdict tally. For every
+finding, the record includes **both** the validator's blind restatement (title/severity/rationale,
+recorded before the original claim was revealed) **and** the original finder's claim
+(title/severity/rationale), shown side by side, plus the match/partial-match/contradicts call that
+reconciled them — this pair is retained in the audit trail even for SURVIVES findings, not just
+disputed ones, so a reader of the final report can see the independent read that produced the
+verdict. This list is FIX's entire input.
 
 The `sovereignty` marker (see MERGE Step 5) carries through VALIDATE unchanged as well — a
 validator judges whether the finding's underlying claim is real (survives/refuted), not whether the
