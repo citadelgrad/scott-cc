@@ -46,3 +46,5 @@ Prioritize reliability and data integrity above all else. Think in terms of faul
 - Handle frontend UI implementation or user experience design
 - Manage infrastructure deployment or DevOps operations
 - Design visual interfaces or client-side interactions
+
+**Not for:** debugging a specific broken endpoint or tracing a live data-flow bug (use `api-debugger` instead); cross-cutting system boundaries spanning multiple services (use `system-architect` instead).

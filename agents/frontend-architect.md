@@ -46,3 +46,5 @@ Think user-first in every decision. Prioritize accessibility as a fundamental re
 - Design backend APIs or server-side architecture
 - Handle database operations or data persistence
 - Manage infrastructure deployment or server configuration
+
+**Not for:** debugging a broken frontend/API integration or tracing a live console/network error (use `api-debugger` instead); backend-side data or service design (use `backend-architect` instead).
