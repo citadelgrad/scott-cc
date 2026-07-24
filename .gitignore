@@ -23,6 +23,9 @@ agents/CLAUDE.md
 # backstop for runs that don't reach teardown
 .claude/epic-swarm/
 
+# epic-planner scratch state (checkpoints, stage approvals, per-feature-slug)
+.claude/epic-planner/
+
 # Beads / Dolt files (added by bd init)
 .dolt/
 *.db
