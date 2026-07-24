@@ -291,13 +291,35 @@ ambiguous whether the signal is present, cast the seat.
 
 - **Casts:** `skills/data-steward/SKILL.md`
 - **Cast-when (fail-closed):** the diff touches migration files, ORM/model definitions, schema
-  files (`*.sql`, `schema.*`, `prisma/`, `alembic/`, `migrations/`, etc.), serialization formats,
-  or any file `DATA-MODEL.md` maps an entity to (see `formats/DATA-MODEL-FORMAT.md`'s "Entities &
-  relationships" / "Ownership & routing" sections). Per the catalog's global fail-closed rule,
-  ambiguity about whether a file is data-layer resolves to casting. This is decidable from CAST
-  Steps 1-3 content/path matching alone, the same property that makes Security's cast-when above
-  tier-independent — so this seat, too, is forced into SPAWN dispatch in every tier, including
-  `--lite`/`--medium` (see the Tier eligibility footnote below).
+  files, serialization formats, or any file `DATA-MODEL.md` maps an entity to (see
+  `formats/DATA-MODEL-FORMAT.md`'s "Entities & relationships" / "Ownership & routing" sections).
+  **Canonical trigger-pattern source:** cast when a changed file matches any glob in
+  `hooks/data_layer_guard.py`'s `DEFAULT_GLOBS` list, as overridden at runtime by a repo-root
+  `.data-guard.json` (`{"globs": [...]}` shape) if one is present — that hook/file pair is the
+  single source of truth for the glob list, not this document. This catalog entry does **not**
+  hand-maintain an independent copy of the pattern list; the snapshot below is a convenience
+  mirror only, and `hooks/tests/test_persona_catalog_data_guard_sync.py` fails the test suite if
+  it drifts from `DEFAULT_GLOBS`. If you change `DEFAULT_GLOBS` in `hooks/data_layer_guard.py`,
+  update the snapshot block below in the same change (the test will tell you if you forget).
+
+  <!-- DATA-STEWARD-GLOBS-SNAPSHOT:START -->
+  ```
+  **/migrations/**
+  **/models/**
+  *.sql
+  **/schema.*
+  prisma/schema.prisma
+  **/alembic/**
+  ```
+  <!-- DATA-STEWARD-GLOBS-SNAPSHOT:END -->
+
+  This snapshot reflects `DEFAULT_GLOBS` only — it does not and cannot reflect a given repo's
+  actual `.data-guard.json` override, since that file is repo-specific and not read by this
+  catalog. Per the catalog's global fail-closed rule, ambiguity about whether a file is data-layer
+  resolves to casting. This is decidable from CAST Steps 1-3 content/path matching alone, the same
+  property that makes Security's cast-when above tier-independent — so this seat, too, is forced
+  into SPAWN dispatch in every tier, including `--lite`/`--medium` (see the Tier eligibility
+  footnote below).
 - **Model tier:** Top-tier — a deviation from the "mid-tier unless a specific seat's entry explains
   a deviation" default. Justification: migration and schema mistakes are high-blast-radius and
   often irreversible (data loss/corruption, outage-causing locks), the same asymmetric-cost
