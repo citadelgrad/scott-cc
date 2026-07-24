@@ -435,9 +435,32 @@ On FAIL, inspect the log file for the failing test names only, not the whole run
 
 ### Step 4.2: Commit Any Review Fixes
 
-If Phase 3 produced fixes:
+If Phase 3 produced fixes, stage **only the files those fixes touched** —
+never `git add -A` or `git add .`. Fixes are edits you made directly in Step
+3.3 in response to review findings, so `git status --porcelain` at this point
+reflects exactly that file scope; list them explicitly rather than
+globbing the whole tree, since a multi-worktree wave run can leave unrelated
+build artifacts or stray files sitting in the working tree:
+
 ```bash
-git add -A
+git status --porcelain
+```
+
+```bash
+git add <file-1> <file-2> ...   # the specific files Step 3.3 edited — never -A or .
+```
+
+**Before committing, gate on a secret scan of the staged diff:**
+
+```bash
+gitleaks protect --staged --redact
+```
+
+- If gitleaks isn't installed, fall back to `git diff --staged | rg -i "api[_-]?key|secret|password|token|BEGIN.*PRIVATE KEY"` as a coarse check.
+- If the scan reports **any** finding, **abort** — do not run `git commit`. Surface the exact finding (file:line) to the user and ask them to confirm it's a false positive or remove the secret before retrying.
+- Only if the scan passes clean:
+
+```bash
 git commit -m "refactor: address code review findings for <epic-id>"
 ```
 
