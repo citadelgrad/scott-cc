@@ -1,0 +1,26 @@
+.pre-commit-config.yaml
+  s_ea100192a5c408::t_0d98b46aecd43a 53-62
+hooks/skill_xref_check.py
+  s_ea100192a5c408::t_b3efdab681f6f6 101
+  s_ea100192a5c408::t_735b2a29e80a6a 1-100,102-153
+hooks/tests/test_skill_xref_check.py
+  s_ea100192a5c408::t_4c61537fe0653f 21
+  s_ea100192a5c408::t_61b10794ba31a3 19
+  s_ea100192a5c408::t_da64c07e360b57 1-18,20,22-191
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "265574f6f37b645c2db271acd6b74ccf7b540930",
+  "prompts": {},
+  "sessions": {
+    "s_ea100192a5c408": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "30dab69b-900c-41cf-9724-f535eeabd96b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
