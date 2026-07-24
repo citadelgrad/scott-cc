@@ -1,0 +1,15 @@
+version: 1
+
+profiles:
+  plugin-staleness-audit:
+    gates:
+      - id: staleness-audit
+        run: python3 scripts/plugin_staleness_audit.py
+        timeout: 5m
+        allow_failure: false
+        decision_on_failure: fail
+
+schedules:
+  plugin-staleness-audit-weekly:
+    profile: plugin-staleness-audit
+    cron: '0 6 * * 1'
