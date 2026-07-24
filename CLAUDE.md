@@ -45,8 +45,7 @@ Modern tools are installed at `/opt/homebrew/bin/`. Prefer them for efficiency:
 When creating beads issues (via `bd create` or `/beads:create`), always generate acceptance criteria first using the `acceptance-criteria` skill, then pass the result via `--acceptance="..."`. AC must be testable (each criterion gets an unambiguous PASS/FAIL), cover the happy path, error states, and boundary conditions, and exclude Definition-of-Done items (tests passing, code reviewed).
 
 ## Code Analysis & Verification Gates
-- Prioritize structural intelligence tools from the `tldr` MCP server (`tldr_context`, `tldr_impact`, `tldr_semantic`, `tldr_structure`, `tldr_dead`, `tldr_slice`).
-- Fallback Strategy: If the `tldr` MCP index fails, map codebase layouts via precise `rg` and `fd` calls. Do not read entire raw directories.
+- Map codebase layouts via precise `rg` and `fd` calls. Do not read entire raw directories.
 - Testing Requirement: Run `uv run pytest` to verify execution before presenting any solution.
 - Linting Requirement: Run `uv run ruff check --fix` on all modified tracking paths before completing a workspace session.
 

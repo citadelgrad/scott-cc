@@ -128,7 +128,7 @@ Stored in `templates/` — copy to your project or use the `/init` skill to depl
 | Template | Deployed by | Description |
 |----------|-------------|-------------|
 | `.pre-commit-config.yaml` | `init` skill | Canonical pre-commit hooks: general hygiene (trailing whitespace, file checks), Python (ruff lint+format, ty type check), TypeScript/JS (biome lint+format), security (gitleaks secret scanning). |
-| `CLAUDE.md` | `init` skill | Global Claude Code instructions template covering CLI tool preferences, direnv/Makefile/port conventions, uv-only Python, C4 diagram standards, and TLDR MCP usage. |
+| `CLAUDE.md` | `init` skill | Global Claude Code instructions template covering CLI tool preferences, direnv/Makefile/port conventions, uv-only Python, and C4 diagram standards. |
 | `AGENTS.md` | `init` skill (symlink) | Global Codex/agent instructions template. Deployed as a symlink pointing to `CLAUDE.md` so both agents share the same instructions. |
 
 ---

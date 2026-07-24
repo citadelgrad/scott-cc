@@ -68,17 +68,9 @@ Prefer these modern CLI tools when available:
 
 Always use C4 model (Context/Container/Component) with standard Mermaid `flowchart` syntax. **Never use the `C4Context`/`C4Container`/`C4Component` Mermaid plugin** — broken layout. Keep node labels ≤5 words; put detail in a legend table below. Save diagrams as `.md` files in `docs/`. For full guidance invoke `/scott-cc:c4-diagram`.
 
-## Code Analysis: TLDR MCP
+## Code Analysis
 
-When analyzing code, prefer using TLDR tools (via the `tldr` MCP server) for:
-
-- **Function context**: use `tldr_context` instead of reading entire files
-- **Call graphs**: use `tldr_impact` to see who calls a function
-- **Semantic search**: use `tldr_semantic` for natural language code search
-- **Code structure**: use `tldr_structure` to list functions/classes without reading raw files
-- **Dead code**: use `tldr_dead` to find unreachable code
-- **Program slicing**: use `tldr_slice` to trace what affects a specific line
-- **Fallback Strategy:** If the `tldr` MCP server is unavailable or fails to index the workspace, fall back immediately to precise `rg` and `fd` commands to map the codebase rather than reading entire directory trees
+Map codebase layouts with precise `rg` and `fd` commands rather than reading entire directory trees.
 
 ## Beads Task Tracking
 
