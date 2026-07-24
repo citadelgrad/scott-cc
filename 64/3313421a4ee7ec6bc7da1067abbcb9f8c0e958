@@ -1,0 +1,21 @@
+hooks/prefer_modern_tools.py
+  s_ea100192a5c408::t_fbd891f82c08ec 35-54,57-66,80-81,91-94
+hooks/tests/test_prefer_modern_tools.py
+  s_ea100192a5c408::t_34a018f7be3857 1-116
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "643313421a4ee7ec6bc7da1067abbcb9f8c0e958",
+  "prompts": {},
+  "sessions": {
+    "s_ea100192a5c408": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "30dab69b-900c-41cf-9724-f535eeabd96b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
