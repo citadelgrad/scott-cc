@@ -1,0 +1,20 @@
+plugins/review-panel/skills/review-panel/references/merge-and-validate.md
+  s_ea100192a5c408::t_ee9af9e0a32e68 230-236
+  s_ea100192a5c408::t_295f351e5ff7a9 170-192,194-205
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "681bfe4d007fc0a7a56ec626f46c065e6b7bf71e",
+  "prompts": {},
+  "sessions": {
+    "s_ea100192a5c408": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "30dab69b-900c-41cf-9724-f535eeabd96b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
