@@ -32,9 +32,38 @@ REWRITES = [
 ]
 
 
+def _quote_mask(cmd: str) -> list[bool]:
+    """Per-character mask; True where the character sits inside a quoted
+    string (single or double). Doesn't handle backslash-escaping of quotes
+    inside double quotes, but that's rare enough in agent-issued commands
+    that skipping the whole quoted span either way is the safe behavior.
+    """
+    mask = [False] * len(cmd)
+    quote_char: str | None = None
+    for i, ch in enumerate(cmd):
+        if quote_char is None:
+            if ch in ("'", '"'):
+                quote_char = ch
+                mask[i] = True
+        else:
+            mask[i] = True
+            if ch == quote_char:
+                quote_char = None
+    return mask
+
+
 def rewrite(cmd: str) -> str:
     for pattern, replacement in REWRITES:
-        cmd = re.sub(pattern, replacement, cmd)
+        mask = _quote_mask(cmd)
+
+        def _sub(m: re.Match, mask=mask, replacement=replacement) -> str:
+            # Skip (leave untouched) any match that falls inside a quoted
+            # string; only rewrite bare tool-name tokens used as commands.
+            if any(mask[m.start() : m.end()]):
+                return m.group(0)
+            return replacement
+
+        cmd = re.sub(pattern, _sub, cmd)
     return cmd
 
 
@@ -48,7 +77,8 @@ def main() -> None:
     if payload.get("tool_name") not in ("Bash", "terminal"):
         sys.exit(0)
 
-    original = payload["tool_input"].get("command", "")
+    tool_input = payload.get("tool_input") or {}
+    original = tool_input.get("command", "")
     rewritten = rewrite(original)
 
     if rewritten != original:
@@ -58,4 +88,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception:
+        sys.exit(0)
