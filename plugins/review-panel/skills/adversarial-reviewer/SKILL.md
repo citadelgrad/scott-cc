@@ -72,6 +72,17 @@ If your runtime does not support the `Task` tool, fall back to running the adver
 
 Findings **must** be emitted using the shared reviewer output contract defined in [`contracts/reviewer-output.md`](../../contracts/reviewer-output.md): Strengths / Issues (Critical, Important, Minor, each with file:line) / Recommendations / Assessment.
 
+This is the **human-interactive** output shape (the default). For unattended/algorithmic use —
+wiring this skill into a `foundry.yaml` gate or a triage-style pipeline — invoke with
+`--mode=agent` instead, which emits a single machine-parseable JSON blob (top-level `verdict` +
+`findings` array, each finding carrying `persona`, `severity`, `promoted`, and `manufactured`
+fields) instead of the narrative report below. See
+[`references/dual-mode-contract.md`](references/dual-mode-contract.md) for the full JSON shape,
+field-by-field notes, and a concrete `foundry.yaml` gate example. That contract deliberately reuses
+review-panel's own `--mode=agent` field naming (`references/dual-mode-contract.md` in the
+`review-panel` skill) so downstream tooling can consume both skills' agent-mode output with one
+shared parsing path.
+
 Adapt that contract's framing to the adversarial angle:
 
 - **Strengths**: defenses that are already in place and actually hold up under attack (be honest — don't manufacture praise).
