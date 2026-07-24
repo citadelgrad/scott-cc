@@ -7,8 +7,10 @@ The first two stages of the panel loop. CAST decides who's on the panel; SPAWN r
 ## CAST
 
 **Goal:** produce a concrete list of reviewer seats to dispatch, each seat mapped to the specific
-skill it casts (per `reviewers/persona-catalog.md`) and a model tier — determined by a single
-dispatched CAST subagent, not by the orchestrator reading the catalog and the full diff itself.
+skill it casts (per `reviewers/persona-catalog.md`) and a model tier, PLUS a companion record of
+every catalog seat considered and excluded with why — determined by a single dispatched CAST
+subagent via an explicit yes/no pass over every seat in the catalog, not by the orchestrator
+reading the catalog and the full diff itself, and not by free-recall of "the usual seats."
 
 ### Why CAST is delegated, not inline
 
@@ -30,12 +32,13 @@ Dispatch this subagent with:
   `Read`/`Grep`/`Glob` only (no `Task` — see below), so it cannot discover this list itself the way
   the orchestrator can; Step 4's live-scan needs it handed over verbatim.
 - Steps 1 through 6 below as its literal instructions.
-- A firm instruction that its ONLY return value is Step 6's cast list — no diff commentary, no
-  restated catalog content, nothing that would re-inflate the orchestrator's context with the
-  material this dispatch exists to keep out of it.
+- A firm instruction that its ONLY return value is Step 6's cast list and considered-and-excluded
+  list — no diff commentary, no restated catalog content, nothing that would re-inflate the
+  orchestrator's context with the material this dispatch exists to keep out of it.
 
 Everything in Steps 1-6 below is what the CAST subagent does internally. The orchestrator's part
-in CAST is just: dispatch it, receive the cast list, move to SPAWN.
+in CAST is just: dispatch it, receive the cast list (and the considered-and-excluded list), move
+to SPAWN.
 
 **If this session's runtime has no `Task`/subagent support at all**, CAST cannot be dispatched as a
 subagent in the first place. Fall back to the orchestrator performing Steps 1-6 inline against the
@@ -59,8 +62,16 @@ defines:
 
 ### Step 2 — Judgment-match against diff CONTENT, not paths
 
-For each seat in the catalog, decide cast/skip by actually reading what the diff changed, not by
-pattern-matching file extensions or directory names. Concretely:
+**This step is a full pass over every seat in the catalog, not free recall.** Walk
+`reviewers/persona-catalog.md` top to bottom — every Core seat, every Risk-Triggered seat, one at
+a time — and record an explicit yes/no cast decision plus a one-line rationale for each, before
+moving to Step 3. Do not shortcut this by recalling from memory "the seats that usually apply" or
+by only reviewing the seats a prior run happened to cast; a seat this run excludes must still
+appear in the pass with its own "no" and a reason, not be silently omitted for having been
+excluded before. This guards against drifting toward a shrinking set of habitual seats over time —
+the catalog, not memory of past casts, is the checklist. For each seat, decide cast/skip by
+actually reading what the diff changed, not by pattern-matching file extensions or directory
+names. Concretely:
 
 - Read the packaged diff (from the Setup step in SKILL.md, by path — this is happening inside the
   CAST subagent's own disposable context, per "Why CAST is delegated, not inline" above) before
@@ -185,6 +196,19 @@ SPAWN's input and MERGE's provenance record (which seat produced which finding).
 else: not the diff content, not the catalog text, not a restatement of the reasoning beyond the
 one-line rationale per seat — the whole point of dispatching CAST as a subagent is that none of
 that material re-enters the orchestrator's context.
+
+**Alongside the cast list, also emit a considered-and-excluded list**: `{seat name, one-line
+exclusion rationale}` for every catalog seat that Step 2's full pass decided "no" on. This is the
+visible record that the yes/no pass above actually covered every seat rather than only naming the
+ones selected — a cast list with no companion exclusion record cannot be distinguished from a
+free-recall subset pick after the fact. Keep each exclusion rationale to one line, same budget as
+a cast rationale; this list stays short (a skip is usually a one-clause reason) and does not
+reopen the context-budget problem "Why CAST is delegated, not inline" above describes. Live-scan
+supplementary skills (Step 4) that were found but judged not to apply are recorded the same way,
+alongside catalog seats; live-scan skills never even considered (nothing found beyond the catalog
+roster, per Step 4 item 5) have nothing to list. Both lists — cast and considered-and-excluded —
+are the CAST subagent's entire return value; still nothing else re-enters the orchestrator's
+context.
 
 ---
 
