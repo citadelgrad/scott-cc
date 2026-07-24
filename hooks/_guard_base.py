@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """
-Shared scaffolding for PreToolUse "guard" hooks (data_layer_guard.py, and
-future guards such as a secret-scan hook).
+Shared scaffolding for this repo's root-level PreToolUse "guard" hooks
+(data_layer_guard.py, prefer_modern_tools.py, and future hooks/*.py guards).
+
+Not imported by plugins/*/hooks/*.py (e.g. security-suite's secret_scan.py) —
+those are self-contained, independently-distributed plugins and must not
+depend on a module that only ships with this repo's root-level hooks/.
 
 Provides:
   - find_repo_root(start)      — walk up from `start` to the nearest .git dir
@@ -80,9 +84,15 @@ def run_guard_main(main_fn: Callable[[], None]) -> None:
 
     Guard hooks are advisory/confirmation layers, not hard blocks: a bug
     inside one must never propagate as a stack trace or non-zero exit that
-    could be mistaken for (or accidentally behave like) a deny decision.
+    could be mistaken for (or accidentally behave like) a deny decision. The
+    exception is still named on stderr first, so a silently-broken guard
+    shows up in logs instead of vanishing without a trace.
     """
     try:
         main_fn()
-    except Exception:
+    except Exception as exc:
+        print(
+            f"{sys.argv[0]}: unhandled exception, failing open: {exc!r}",
+            file=sys.stderr,
+        )
         sys.exit(0)

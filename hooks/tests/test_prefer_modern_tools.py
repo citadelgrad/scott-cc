@@ -95,7 +95,9 @@ def test_malformed_payload_wrong_type_tool_input_fails_open():
 
     assert result.returncode == 0
     assert result.stdout == ""
-    assert result.stderr == ""
+    # Fails open (never blocks the tool call), but the exception is still
+    # named on stderr rather than vanishing silently — see _guard_base.run_guard_main.
+    assert "unhandled exception, failing open" in result.stderr
 
 
 def test_non_json_payload_fails_open():

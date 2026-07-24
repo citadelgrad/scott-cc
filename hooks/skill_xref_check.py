@@ -9,10 +9,14 @@ with prose like:
     Not for evaluating module depth (use deep-modules) or checking for
     information leakage (use information-hiding).
 
-Each `(use <skill>[, <skill> | or <skill>]*)` parenthetical names one or more
-sibling skill directories by name. Nothing enforced that those directories
-still exist, so a rename or removal silently breaks the cross-reference.
-This script parses every such parenthetical out of every SKILL.md under
+    ...the fuller audit of why `private` plus getter/setter doesn't hide
+    anything, see **information-hiding**.
+
+Each `(use <skill>[, <skill> | or <skill>]*)` parenthetical, and each bare
+`use **<skill>**` / `see **<skill>**` bold cross-reference, names a sibling
+skill directory by name. Nothing enforced that those directories still
+exist, so a rename or removal silently breaks the cross-reference. This
+script parses every such reference out of every SKILL.md under
 plugins/review-panel/skills/ and confirms the named directory is present.
 
 Pure-function core (`find_broken_references`) plus a thin CLI wrapper, same
@@ -32,6 +36,10 @@ from pathlib import Path
 # identifiers, optionally wrapped in backticks (e.g. "(use `red-flags`)").
 USE_GROUP_RE = re.compile(r"\(use ([^)]*)\)")
 SKILL_NAME_RE = re.compile(r"`?([a-z][a-z0-9]*(?:-[a-z0-9]+)+)`?")
+
+# Matches a single bare bold cross-reference outside a "(use X)" parenthetical,
+# e.g. "see **information-hiding**" or "use **pull-complexity-down**".
+BOLD_REF_RE = re.compile(r"\b(?:use|see) \*\*([a-z][a-z0-9]*(?:-[a-z0-9]+)+)\*\*")
 
 
 @dataclass(frozen=True)
@@ -73,19 +81,26 @@ def find_broken_references(skills_root: Path) -> list[BrokenReference]:
         text = skill_md.read_text(encoding="utf-8", errors="replace")
 
         for line_number, line in enumerate(text.splitlines(), start=1):
+            targets: list[str] = []
             for use_group in USE_GROUP_RE.finditer(line):
-                for target in extract_referenced_skills(use_group.group(1)):
-                    if target == source_skill:
-                        continue  # self-reference, not a cross-skill link
-                    if target not in valid_skill_names:
-                        broken.append(
-                            BrokenReference(
-                                source_file=skill_md,
-                                line_number=line_number,
-                                target=target,
-                                context=line.strip(),
-                            )
+                targets.extend(extract_referenced_skills(use_group.group(1)))
+            # Bold refs ("see **X**") sit outside "(use ...)" parentheticals,
+            # so scan the whole line for them separately rather than only
+            # inside already-matched groups.
+            targets.extend(match.group(1) for match in BOLD_REF_RE.finditer(line))
+
+            for target in targets:
+                if target == source_skill:
+                    continue  # self-reference, not a cross-skill link
+                if target not in valid_skill_names:
+                    broken.append(
+                        BrokenReference(
+                            source_file=skill_md,
+                            line_number=line_number,
+                            target=target,
+                            context=line.strip(),
                         )
+                    )
 
     return broken
 
@@ -101,8 +116,9 @@ def format_report(broken: list[BrokenReference], skills_root: Path) -> str:
             rel = ref.source_file.relative_to(Path.cwd())
         except ValueError:
             rel = ref.source_file
-        lines.append(f"  {rel}:{ref.line_number}: references missing skill "
-                      f"'{ref.target}'")
+        lines.append(
+            f"  {rel}:{ref.line_number}: references missing skill '{ref.target}'"
+        )
         lines.append(f"    {ref.context}")
     lines.append("")
     lines.append(

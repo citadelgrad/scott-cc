@@ -16,6 +16,8 @@ import json
 import re
 import sys
 
+from _guard_base import run_guard_main
+
 # ponytail: conservative set — only tools where flag compat covers agent use cases
 REWRITES = [
     # egrep before grep so we don't turn 'egrep' into 'rrg'
@@ -88,7 +90,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception:
-        sys.exit(0)
+    run_guard_main(main)

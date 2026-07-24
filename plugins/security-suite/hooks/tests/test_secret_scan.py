@@ -136,6 +136,65 @@ def test_output_never_contains_raw_private_key_material():
     assert "MIIEpAIBAAKCAQEA" not in result.stderr
 
 
+def test_multi_edit_edits_array_is_scanned():
+    payload = {
+        "tool_name": "MultiEdit",
+        "cwd": "/repo",
+        "tool_input": {
+            "file_path": "src/config.py",
+            "edits": [
+                {"old_string": "a = 1", "new_string": "a = 2"},
+                {"old_string": "b = 1", "new_string": f"AWS_KEY = '{AWS_KEY}'"},
+            ],
+        },
+    }
+
+    result = run_hook(payload)
+
+    assert result.returncode == 0
+    output = json.loads(result.stdout)
+    reason = output["hookSpecificOutput"]["permissionDecisionReason"]
+    assert "src/config.py" in reason
+    assert "aws-access-key-id" in reason
+    assert AWS_KEY not in result.stdout
+
+
+def test_multi_edit_with_no_secret_is_silent_noop():
+    payload = {
+        "tool_name": "MultiEdit",
+        "cwd": "/repo",
+        "tool_input": {
+            "file_path": "src/app.py",
+            "edits": [{"old_string": "a = 1", "new_string": "a = 2"}],
+        },
+    }
+
+    result = run_hook(payload)
+
+    assert result.returncode == 0
+    assert result.stdout == ""
+
+
+def test_notebook_edit_with_secret_is_detected():
+    payload = {
+        "tool_name": "NotebookEdit",
+        "cwd": "/repo",
+        "tool_input": {
+            "notebook_path": "analysis.ipynb",
+            "new_source": f"AWS_KEY = '{AWS_KEY}'",
+        },
+    }
+
+    result = run_hook(payload)
+
+    assert result.returncode == 0
+    output = json.loads(result.stdout)
+    reason = output["hookSpecificOutput"]["permissionDecisionReason"]
+    assert "analysis.ipynb" in reason
+    assert "aws-access-key-id" in reason
+    assert AWS_KEY not in result.stdout
+
+
 def test_output_never_contains_raw_generic_secret_value():
     secret_value = "sup3rSecretTokenValue1234567890"
     payload = write_payload("src/settings.py", f"api_key = '{secret_value}'")

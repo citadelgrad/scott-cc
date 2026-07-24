@@ -106,7 +106,13 @@ def main() -> None:
     except json.JSONDecodeError:
         sys.exit(0)
 
-    if payload.get("tool_name") not in ("Write", "Edit", "MultiEdit", "Bash"):
+    if payload.get("tool_name") not in (
+        "Write",
+        "Edit",
+        "MultiEdit",
+        "Bash",
+        "NotebookEdit",
+    ):
         sys.exit(0)
 
     # Unattended/mode:agent contexts have no human to answer a confirm prompt —
@@ -151,5 +157,9 @@ def main() -> None:
 if __name__ == "__main__":
     try:
         main()
-    except Exception:
+    except Exception as exc:
+        print(
+            f"{sys.argv[0]}: unhandled exception, failing open: {exc!r}",
+            file=sys.stderr,
+        )
         sys.exit(0)

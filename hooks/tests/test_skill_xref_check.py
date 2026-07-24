@@ -148,6 +148,33 @@ def test_missing_skills_root_returns_empty(tmp_path):
     assert find_broken_references(tmp_path / "does-not-exist") == []
 
 
+def test_bold_use_reference_outside_parenthetical_is_checked(tmp_path):
+    skills_root = tmp_path / "skills"
+    make_skill(
+        skills_root,
+        "general-vs-special",
+        "See the fuller audit at use **information-hiding-renamed** for more.",
+    )
+    # information-hiding-renamed missing.
+
+    broken = find_broken_references(skills_root)
+
+    assert len(broken) == 1
+    assert broken[0].target == "information-hiding-renamed"
+
+
+def test_bold_see_reference_outside_parenthetical_is_checked(tmp_path):
+    skills_root = tmp_path / "skills"
+    make_skill(
+        skills_root,
+        "general-vs-special",
+        "For the fuller audit, see **information-hiding**.",
+    )
+    make_skill(skills_root, "information-hiding", "desc")
+
+    assert find_broken_references(skills_root) == []
+
+
 # --- CLI wrapper -------------------------------------------------------------
 
 
