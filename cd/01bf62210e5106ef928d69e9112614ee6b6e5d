@@ -1,0 +1,21 @@
+plugins/review-panel/reviewers/persona-catalog.md
+  s_ea100192a5c408::t_5195f40db7a202 294-322
+hooks/tests/test_persona_catalog_data_guard_sync.py
+  s_ea100192a5c408::t_d5241bc7c14772 1-90
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "cd01bf62210e5106ef928d69e9112614ee6b6e5d",
+  "prompts": {},
+  "sessions": {
+    "s_ea100192a5c408": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "30dab69b-900c-41cf-9724-f535eeabd96b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
