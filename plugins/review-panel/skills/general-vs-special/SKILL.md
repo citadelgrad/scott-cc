@@ -73,4 +73,8 @@ But "slightly more general" means one step, not three. Generality should come fr
 5. **Review defaults**: Could required parameters become optional?
 6. **Recommend**: Push specialization to edges. Deepen with defaults.
 
+## Relationship to Other Lenses
+
+This skill asks "is this interface over-specialized for one caller?": a single-module, single-interface question. **information-hiding** asks the broader question of whether a design decision is known by more than one module at all; over-specialization is one *cause* of leakage (a general-purpose module absorbing a caller-specific method), but information-hiding covers leakage that has nothing to do with generality (e.g. two modules independently encoding the same file format). **pull-complexity-down** is about a different axis entirely: whether complexity is pushed to callers or absorbed internally, not whether an interface serves one caller or many. Use this skill when a module's interface looks tailored to a single caller; use **information-hiding** when the concern is a design decision leaking across a boundary; use **pull-complexity-down** when the concern is who does the work, not who the interface serves.
+
 Red flag signals for generality are cataloged in **red-flags** (Special-General Mixture, Overexposure).

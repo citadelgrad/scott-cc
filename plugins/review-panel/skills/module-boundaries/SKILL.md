@@ -93,4 +93,8 @@ A well-placed boundary fully encloses a design decision. If two modules share kn
 5. **Check boundary criterion**: Boundaries drawn around knowledge ownership?
 6. **Recommend adjustments**: Specific merges, splits, or restructurings
 
+## Relationship to Other Lenses
+
+This skill asks "where should the line between these two modules be?": merge, split, or find a third abstraction? **deep-modules** asks a narrower question about one module in isolation: is *its own* interface simple relative to what it does? **abstraction-quality** asks whether adjacent layers (a vertical relationship) are conceptually distinct, not whether two peer modules (a horizontal relationship) should be combined or separated. **information-hiding** picks up after boundaries are drawn: it checks whether a design decision leaks across a boundary that already exists, whereas this skill decides where that boundary should go in the first place. Use **module-boundaries** to decide the shape of the decomposition; use **information-hiding** to audit an existing decomposition for leakage.
+
 Red flag signals for module boundaries are cataloged in **red-flags** (Conjoined Methods).

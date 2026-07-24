@@ -89,6 +89,10 @@ When a general-purpose module is given knowledge of specific higher-level operat
 5. **Audit getters/setters**: Are any "private" fields effectively public through accessors?
 6. **Propose consolidation**: Merge the knowing modules, or extract shared knowledge into a single owner with a genuinely abstract interface
 
+## Relationship to Other Lenses
+
+This skill asks "does a design decision leak across a boundary that already exists?": knowledge ownership, not module shape. **module-boundaries** asks the prior, structural question — where should the boundary between two modules be drawn in the first place? Draw the boundary first with **module-boundaries**, then audit it for leakage with this skill. **general-vs-special** is a narrower, single-interface case: it checks whether one module's interface is over-specialized for a particular caller, not whether a decision is known by more than one module. A getter/setter pair can be flagged by either lens for different reasons: this skill flags it because "private" plus accessors doesn't actually hide the field; **general-vs-special** flags it because the accessor may expose representation only one caller needs.
+
 Red flag signals for information hiding are cataloged in **red-flags** (Information Leakage, Temporal Decomposition, Overexposure).
 
 ## References
