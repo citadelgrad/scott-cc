@@ -1,0 +1,19 @@
+plugins/beads-epic-builder/commands/epic-swarm.md
+  s_ea100192a5c408::t_6b545676a6f6a5 438-462
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "3aeabcd57c76ec3e82086d77218cee6c6d08af3c",
+  "prompts": {},
+  "sessions": {
+    "s_ea100192a5c408": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "30dab69b-900c-41cf-9724-f535eeabd96b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
