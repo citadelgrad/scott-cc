@@ -1,0 +1,23 @@
+plugins/security-suite/hooks/tests/test_failure_redaction.py
+  s_ea100192a5c408::t_89a1d4d301822d 1-121
+docs/skillopt-sleep-failure-ingestion.md
+  s_ea100192a5c408::t_09cf3d4198ab34 1-159
+plugins/security-suite/hooks/failure_redaction.py
+  s_ea100192a5c408::t_89a1d4d301822d 1-101
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "000e75fd8f083a75cbff26fbd307eb22fa2198ef",
+  "prompts": {},
+  "sessions": {
+    "s_ea100192a5c408": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "30dab69b-900c-41cf-9724-f535eeabd96b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
