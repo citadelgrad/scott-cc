@@ -300,7 +300,7 @@ Multi-persona adversarial code and design review panel, vendoring and adapting p
 |-------|-------------|
 | `clean-room-alternative` | Generates a design alternative in isolation, without seeing the first design. Used by `design-it-twice` when a first design already exists in conversation. |
 
-**Skills (29)**
+**Skills (33)**
 
 *Panel orchestration & review seats*
 
@@ -317,6 +317,10 @@ Multi-persona adversarial code and design review panel, vendoring and adapting p
 | `ponytail-audit` | Whole-repo version of `ponytail-review` — a ranked list of what to delete or simplify. |
 | `data-steward` | Reviews migration/ORM/schema diffs against `DATA-MODEL.md` invariants and a 7-item migration-safety checklist. |
 | `taste-review` | Reviews diffs against `TASTE.md`'s Preferences/Weightings/Anti-preferences, mapping severity from declared strength. |
+| `mental-models-adversarial` | Pressure-tests the reasoning behind a change — assumptions, incentives, second-order consequences — via fs.blog-inspired mental models. |
+| `mental-models-simplifier` | Questions whether this is even the right problem/approach, conceptually, via fs.blog-inspired mental models. |
+| `mental-models-systems` | Evaluates dynamic runtime behavior — feedback loops, bottlenecks, emergence, scale — via fs.blog-inspired mental models. |
+| `mental-models-economics` | Frames a change as a resource-allocation decision — tech debt, build-vs-buy, vendor lock-in — via fs.blog-inspired mental models. |
 
 *Design quality lenses*
 
