@@ -143,6 +143,32 @@ its output.
 can stop: (a) did the fixes introduce regressions, and (b) does the fixed code still cohere with
 documented domain intent.
 
+### Context isolation guarantee (structural, not a norm)
+
+**RE-REVIEW's re-cast seats (Axis (a)) and the Domain-Intent seat (Axis (b)) must never share a
+conversation, thread, or context window with the FIX fixer's dispatch.** This is the loop's main
+honesty check on a proposed fix, so it must not be structurally positioned to rate its own fix
+favorably. Concretely:
+
+- Every RE-REVIEW seat is dispatched via its own fresh `Task` call — the same disposable-context
+  primitive CAST and every SPAWN seat use (see [cast-and-spawn.md](cast-and-spawn.md)'s "Why CAST
+  is delegated, not inline"). A fresh `Task` dispatch never continues the FIX fixer's conversation
+  or thread; it starts with an empty context.
+- Each RE-REVIEW seat's dispatch prompt carries **only**: the repackaged diff's path (never its
+  content — see "Re-package the diff first" below), the file paths a re-cast is scoped to (from
+  FIX's *return report*, not FIX's reasoning), and — for Axis (b) — the relevant `CONTEXT.md`
+  entries. None of these is FIX's dispatch prompt, FIX's intermediate reasoning, or a transcript of
+  FIX's conversation.
+- The orchestrator itself must not paraphrase, summarize, or forward the fixer's reasoning trace
+  (as opposed to its structured `{finding → fix applied/skipped}` report — see FIX's Output
+  section) into any RE-REVIEW seat's dispatch prompt. The fixer's *justification* for why it
+  believes a fix is correct is exactly the material that would bias a re-reviewer toward agreeing
+  with it; only the factual "what changed, where" belongs in scope framing.
+- This is a hard requirement, not a documentation-only convention: if any future change to this
+  plugin routes RE-REVIEW through the same subagent instance, session, or conversation the fixer
+  used — rather than a fresh `Task` dispatch — that change violates this contract and must be
+  rejected in review, the same way a sovereignty-guard violation halts the loop in FIX above.
+
 ### Re-package the diff first
 
 Before re-reviewing, re-run `scripts/review-package` against the new `HEAD` (the fixer's
