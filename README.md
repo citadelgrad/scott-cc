@@ -119,6 +119,14 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 | `prefer-modern-tools` | `PreToolUse` | Rewrites legacy CLI commands to faster modern equivalents at runtime: `grep`/`egrep` → `rg`, `cat` → `bat --style=plain --paging=never`, `ls` → `lsd`, `ps aux`/`ps -ef` → `procs`. Safe near-drop-ins only — tools with incompatible flag syntax (`fd`, `dust`, `choose`) are excluded and documented in CLAUDE.md for native use. |
 | `data-layer-guard` | `PreToolUse` | Warns and asks for confirmation before an Edit/Write/NotebookEdit touches a data-layer path (migrations, schemas, ORM models — default globs overridable via `.data-guard.json`) without a same-day `DATA-MODEL.md` change-log entry. Interactive/planning-time only: silently no-ops in unattended contexts (`--dangerously-skip-permissions`/`mode:agent`), deferring to the data-steward review seat for unattended enforcement. |
 
+> **Hooks only run when this repo is installed as a plugin.** The hook wiring lives in [`hooks/hooks.json`](hooks/hooks.json), which Claude Code loads and expands `${CLAUDE_PLUGIN_ROOT}` from automatically — but only for plugins installed via `/plugin marketplace add` (or `/plugin install`). The root [`.claude/settings.json`](.claude/settings.json) in this repo ships `"hooks": {}` on purpose: it is the config Claude Code reads if you just `git clone` this repo and open it as a plain project, and `${CLAUDE_PLUGIN_ROOT}` has no meaning there.
+>
+> **Net effect: a plain git-clone checkout has zero hook enforcement active**, including `data-layer-guard` — the guard that's supposed to stop an Edit/Write from silently touching a migration/schema/ORM file without a `DATA-MODEL.md` entry. If you clone this repo directly instead of installing it as a plugin, that protection (and the other three hooks) simply never runs; nothing will warn you that it's missing.
+>
+> If you want the hooks active without installing the plugin, either:
+> - Install via the marketplace (`/plugin marketplace add citadelgrad/scott-cc`) so Claude Code wires `hooks/hooks.json` up for you, or
+> - Hand-edit your own `.claude/settings.json` and copy the hook entries from `hooks/hooks.json`, replacing `${CLAUDE_PLUGIN_ROOT}` with the absolute path to your clone (e.g. `/Users/you/scott-cc`).
+
 ---
 
 ## Templates (3)

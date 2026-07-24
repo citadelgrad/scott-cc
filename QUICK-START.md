@@ -44,6 +44,10 @@
 /handoff
 ```
 
+## Hooks Need a Real Plugin Install
+
+The 4 hooks (`terminal-bell`, `toon-post-hook`, `prefer-modern-tools`, `data-layer-guard`) only activate when Claude Code loads this repo as an installed plugin — that's what makes `${CLAUDE_PLUGIN_ROOT}` resolve in `hooks/hooks.json`. If you `git clone` this repo instead of installing it via `/plugin marketplace add`, the shipped `.claude/settings.json` has `"hooks": {}` and none of them run — including `data-layer-guard`, so nothing warns you before an Edit/Write touches a migration or schema file. See the note in [README.md](README.md#hooks-4) for how to wire hooks up manually from a plain clone.
+
 ## Links
 
 - GitHub: https://github.com/citadelgrad/scott-cc
