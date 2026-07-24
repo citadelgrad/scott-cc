@@ -273,7 +273,27 @@ The coordinator's returned JSON is small — safe to read in full.
 
 - `unresolved_conflicts` non-empty → stop, show the user the conflicting branch/files, follow Error Handling below.
 - `test_status: "fail"` → show the user `failure_summary` only. If it needs deeper investigation, spawn a fresh small agent to dig in rather than re-running the suite yourself in the foreground.
-- Otherwise, close the completed tasks:
+- Otherwise, before closing anything, **independently spot-check `test_status: "pass"`**. The coordinator's report is self-graded, and the next independent check is the Phase 4 final suite run — by then several more waves may already be closed on a false positive. Run this cheap check yourself, in the real checkout, for every wave that reports `pass`:
+
+  1. **Diff-scope sanity check** — confirm the merged branches actually changed what the coordinator claims:
+
+     ```bash
+     git diff --stat <default-branch>...HEAD
+     ```
+
+     Fail the spot-check if this is empty despite `tasks_completed` being non-empty, or if it doesn't touch files you'd expect for those task IDs.
+
+  2. **Re-run the touched tests** — from the diff-stat output, identify the test file(s) that changed or that cover the changed source files, and re-run just those (not the full suite):
+
+     ```bash
+     <test-cmd> <touched-test-paths> > .claude/epic-swarm/<epic-id>/wave-<N>-spotcheck.log 2>&1 && echo PASS || echo FAIL
+     ```
+
+     If the project's test command can't be scoped to specific paths, fall back to re-running its full suite command instead — still redirected to the same log file. The point is independent re-execution, not trusting the coordinator's own run.
+
+  If either check fails, or the spot-check can't be run at all (no test command detected, ambiguous file scope), **do not close the wave's tasks**. Treat it like `test_status: "fail"`: leave the tasks open, note the reason (`"spot-check failed or inconclusive"`), and surface it to the user for review before starting the next wave.
+
+  Once both checks pass, close the completed tasks:
 
 ```bash
 bd close <task-id-1> <task-id-2> ...
@@ -435,9 +455,32 @@ On FAIL, inspect the log file for the failing test names only, not the whole run
 
 ### Step 4.2: Commit Any Review Fixes
 
-If Phase 3 produced fixes:
+If Phase 3 produced fixes, stage **only the files those fixes touched** —
+never `git add -A` or `git add .`. Fixes are edits you made directly in Step
+3.3 in response to review findings, so `git status --porcelain` at this point
+reflects exactly that file scope; list them explicitly rather than
+globbing the whole tree, since a multi-worktree wave run can leave unrelated
+build artifacts or stray files sitting in the working tree:
+
 ```bash
-git add -A
+git status --porcelain
+```
+
+```bash
+git add <file-1> <file-2> ...   # the specific files Step 3.3 edited — never -A or .
+```
+
+**Before committing, gate on a secret scan of the staged diff:**
+
+```bash
+gitleaks protect --staged --redact
+```
+
+- If gitleaks isn't installed, fall back to `git diff --staged | rg -i "api[_-]?key|secret|password|token|BEGIN.*PRIVATE KEY"` as a coarse check.
+- If the scan reports **any** finding, **abort** — do not run `git commit`. Surface the exact finding (file:line) to the user and ask them to confirm it's a false positive or remove the secret before retrying.
+- Only if the scan passes clean:
+
+```bash
 git commit -m "refactor: address code review findings for <epic-id>"
 ```
 

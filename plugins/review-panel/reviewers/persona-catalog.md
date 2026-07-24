@@ -291,13 +291,35 @@ ambiguous whether the signal is present, cast the seat.
 
 - **Casts:** `skills/data-steward/SKILL.md`
 - **Cast-when (fail-closed):** the diff touches migration files, ORM/model definitions, schema
-  files (`*.sql`, `schema.*`, `prisma/`, `alembic/`, `migrations/`, etc.), serialization formats,
-  or any file `DATA-MODEL.md` maps an entity to (see `formats/DATA-MODEL-FORMAT.md`'s "Entities &
-  relationships" / "Ownership & routing" sections). Per the catalog's global fail-closed rule,
-  ambiguity about whether a file is data-layer resolves to casting. This is decidable from CAST
-  Steps 1-3 content/path matching alone, the same property that makes Security's cast-when above
-  tier-independent — so this seat, too, is forced into SPAWN dispatch in every tier, including
-  `--lite`/`--medium` (see the Tier eligibility footnote below).
+  files, serialization formats, or any file `DATA-MODEL.md` maps an entity to (see
+  `formats/DATA-MODEL-FORMAT.md`'s "Entities & relationships" / "Ownership & routing" sections).
+  **Canonical trigger-pattern source:** cast when a changed file matches any glob in
+  `hooks/data_layer_guard.py`'s `DEFAULT_GLOBS` list, as overridden at runtime by a repo-root
+  `.data-guard.json` (`{"globs": [...]}` shape) if one is present — that hook/file pair is the
+  single source of truth for the glob list, not this document. This catalog entry does **not**
+  hand-maintain an independent copy of the pattern list; the snapshot below is a convenience
+  mirror only, and `hooks/tests/test_persona_catalog_data_guard_sync.py` fails the test suite if
+  it drifts from `DEFAULT_GLOBS`. If you change `DEFAULT_GLOBS` in `hooks/data_layer_guard.py`,
+  update the snapshot block below in the same change (the test will tell you if you forget).
+
+  <!-- DATA-STEWARD-GLOBS-SNAPSHOT:START -->
+  ```
+  **/migrations/**
+  **/models/**
+  *.sql
+  **/schema.*
+  prisma/schema.prisma
+  **/alembic/**
+  ```
+  <!-- DATA-STEWARD-GLOBS-SNAPSHOT:END -->
+
+  This snapshot reflects `DEFAULT_GLOBS` only — it does not and cannot reflect a given repo's
+  actual `.data-guard.json` override, since that file is repo-specific and not read by this
+  catalog. Per the catalog's global fail-closed rule, ambiguity about whether a file is data-layer
+  resolves to casting. This is decidable from CAST Steps 1-3 content/path matching alone, the same
+  property that makes Security's cast-when above tier-independent — so this seat, too, is forced
+  into SPAWN dispatch in every tier, including `--lite`/`--medium` (see the Tier eligibility
+  footnote below).
 - **Model tier:** Top-tier — a deviation from the "mid-tier unless a specific seat's entry explains
   a deviation" default. Justification: migration and schema mistakes are high-blast-radius and
   often irreversible (data loss/corruption, outage-causing locks), the same asymmetric-cost
@@ -384,6 +406,81 @@ ambiguous whether the signal is present, cast the seat.
     the epic's stated build order ("Phase 4 blocked on Phase 3 — taste is the scoring function");
     wiring the two together is out of this seat's own scope.
 
+### Mental Models: Reasoning-Risk
+
+- **Casts:** `skills/mental-models-adversarial/SKILL.md`
+- **Cast-when (fail-closed):** the diff introduces a new algorithm, heuristic, threshold, or
+  retry/backoff/rate-limit policy; adds a config value that shapes downstream behavior; or a
+  comment/PR description makes a "this is safe because X" claim worth pressure-testing.
+  Ambiguity resolves to casting, per the catalog's global fail-closed rule.
+- **Model tier:** Mid-tier. The procedure works a fixed, curated model table
+  (`reviewers/mental-models-catalog.md`'s Adversarial/Risk section) against the target; the
+  catalog carries the cognitive weight, the same rationale `design-review` gets mid-tier for.
+- **Why included:** `adversarial-reviewer` attacks the code as written — bugs, exploits, hostile
+  input. This seat instead pressure-tests the *reasoning behind the decision* — hidden
+  assumptions, incentive effects, second-order consequences, single points of failure — using
+  named mental models so findings are auditable back to a specific model rather than generic
+  "this seems risky" commentary.
+- **Overlap guardrail:** Do not cast this seat's findings as duplicates of `adversarial-reviewer`
+  (code-level bugs/exploits) or `design-review` (structural quality) or `mental-models-systems`
+  (runtime/systems dynamics) — each seat's own SKILL.md states these boundaries explicitly in its
+  "When NOT to Apply" section. MERGE-stage fingerprint dedupe is the second line of defense if a
+  finding is reported by more than one seat.
+
+### Mental Models: Conceptual-Simplicity
+
+- **Casts:** `skills/mental-models-simplifier/SKILL.md`
+- **Cast-when (fail-closed):** the diff is primarily a performance optimization, introduces a new
+  abstraction/layer/pattern, or touches code already known to be complex. Ambiguity resolves to
+  casting, per the catalog's global fail-closed rule.
+- **Model tier:** Mid-tier. Same rationale as Reasoning-Risk above — the fixed model table
+  (`reviewers/mental-models-catalog.md`'s Simplifier section) carries the weight, not raw model
+  strength.
+- **Why included:** `ponytail-review` runs a mechanical delete/stdlib/native/yagni/shrink pass
+  over the diff as literally written. This seat asks a level up — is this even the right problem
+  being solved, is effort aimed at the actual constraint, would a genuinely different approach
+  serve better — using named mental models (Occam's Razor, First Principles Thinking, Law of
+  Diminishing Returns, and others) to make that judgment auditable.
+- **Overlap guardrail:** Do not duplicate `ponytail-review`'s mechanical findings or
+  `design-review`'s structural/abstraction-quality findings — this seat's own SKILL.md routes
+  those explicitly elsewhere. MERGE-stage fingerprint dedupe is the second line of defense.
+
+### Mental Models: Systems-Dynamics
+
+- **Casts:** `skills/mental-models-systems/SKILL.md`
+- **Cast-when (fail-closed):** the diff touches concurrency, queues/message buses, caching,
+  retries/backoff, rate limiting, service-to-service calls, or connection pooling. Ambiguity
+  resolves to casting, per the catalog's global fail-closed rule.
+- **Model tier:** Mid-tier. Same rationale as the other Mental Models seats — the fixed model
+  table (`reviewers/mental-models-catalog.md`'s Systems/Boundaries section) carries the weight.
+- **Why included:** `design-review`'s funnel evaluates *static* module/abstraction quality; this
+  seat evaluates *dynamic* behavior — how components interact at runtime, under load, and over
+  time (feedback loops, bottlenecks, emergence, scale) — a distinct failure mode two
+  independently well-designed components can still produce together.
+- **Overlap guardrail:** Do not duplicate `design-review`'s static structural findings or
+  `mental-models-adversarial`'s decision-reasoning findings — this seat's own SKILL.md states it
+  should stop rather than force a finding on a diff with no cross-component interaction to trace
+  (e.g. a pure single-function utility). MERGE-stage fingerprint dedupe is the second line of
+  defense.
+
+### Mental Models: Engineering-Economics
+
+- **Casts:** `skills/mental-models-economics/SKILL.md`
+- **Cast-when (fail-closed):** the diff adds a new dependency or vendor, includes a
+  TODO/FIXME/HACK marker or other explicit debt marker, or the PR description discusses a
+  trade-off or deferred work. Ambiguity resolves to casting, per the catalog's global fail-closed
+  rule.
+- **Model tier:** Mid-tier. Same rationale as the other Mental Models seats — the fixed model
+  table (`reviewers/mental-models-catalog.md`'s Economics/Debt section) carries the weight.
+- **Why included:** No other seat in this catalog frames a change as a resource-allocation
+  decision — technical debt taken on knowingly vs. silently, build-vs-buy, vendor lock-in, effort
+  proportional to value delivered. Distinct from `mental-models-simplifier` (code-level
+  simplicity/approach) and `mental-models-systems` (runtime behavior).
+- **Overlap guardrail:** Do not flag debt that's already tracked with an owner/ticket as an Issue
+  — that's a Strength, per this seat's own SKILL.md. Do not duplicate
+  `mental-models-simplifier`'s or `mental-models-systems`'s findings. MERGE-stage fingerprint
+  dedupe is the second line of defense.
+
 ---
 
 ## Excluded from Individual Casting (left to `design-review` funnel or live-scan)
@@ -441,6 +538,10 @@ is allowed to add.
 | Test-Design Quality | `tdd` (Philosophy section only) | Diff adds or modifies test files | Mid-tier |
 | Data Steward | `data-steward` | Diff touches migrations/ORM/schema/serialization files or a DATA-MODEL.md-mapped path | Top-tier |
 | Taste | `taste-review` | `TASTE.md` exists at repo root | Mid-tier |
+| Mental Models: Reasoning-Risk | `mental-models-adversarial` | New algorithm/heuristic/threshold/retry-backoff policy, or a "safe because X" claim to pressure-test | Mid-tier |
+| Mental Models: Conceptual-Simplicity | `mental-models-simplifier` | Diff is primarily a perf optimization, adds a new abstraction/layer, or touches known-complex code | Mid-tier |
+| Mental Models: Systems-Dynamics | `mental-models-systems` | Diff touches concurrency/queues/caching/retries/rate-limiting/service calls/connection pooling | Mid-tier |
+| Mental Models: Engineering-Economics | `mental-models-economics` | Diff adds a dependency/vendor, has a TODO/FIXME/HACK marker, or PR description discusses trade-offs/deferred work | Mid-tier |
 
 **Fail-closed reminder:** any ambiguity in the "Cast-when" column above resolves to casting the
 seat, not skipping it.
@@ -457,4 +558,8 @@ cast-when entries above are content/path matches CAST resolves in Steps 1-3, not
 (Step 4) discovery, so a cast-when match under `--lite`/`--medium` forces either in exactly as it
 would in full mode; neither is skipped or downgraded to disclosure-only under a narrowed tier. All
 other seats (Domain-Intent, Fresh-Eyes, Change-Trajectory, Design-Alternatives, Test-Design
-Quality) — full-mode only.
+Quality, and the four Mental Models seats — Reasoning-Risk, Conceptual-Simplicity,
+Systems-Dynamics, Engineering-Economics) — full-mode only. The Mental Models seats are Mid-tier
+with no asymmetric-cost justification (unlike Security/Data Steward's Top-tier, irreversible-risk
+profile), so they follow the standard full-mode-only treatment rather than the fail-closed-all-
+tiers exception.

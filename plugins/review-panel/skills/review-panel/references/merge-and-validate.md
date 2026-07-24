@@ -71,6 +71,77 @@ that would be 50 on single-seat merits becomes 75 with 2+ agreement; a 75 become
 implements the persona-catalog's diversity-of-perspective premise directly: independent
 corroboration is signal, and MERGE is where that signal gets counted.
 
+**Manufactured findings are excluded from this bump, in both directions.** A finding carrying the
+`manufactured: true` marker (emitted by `adversarial-reviewer`'s must-find-at-least-one-issue
+fallback, see its SKILL.md's "Manufactured-finding marker" section) is a note about the *absence*
+of a real finding, not an independently-discovered issue — so agreement between two such fallback
+notes is not corroboration, it is two reviewers independently having nothing to report. Concretely:
+
+- A `manufactured: true` finding does **not** count toward the 2+ agreement threshold for any
+  *other* fingerprint-matching finding (it cannot supply the second "vote").
+- A `manufactured: true` finding never itself **receives** the bump, even if 2+ seats independently
+  produce a fingerprint-matching manufactured finding on the same target. Its severity stays floored
+  at Minor and its confidence anchor is computed from Step 2 like any other finding, but the bump in
+  this Step 3 simply never applies to it — skip straight to Step 4 for these findings.
+- This exclusion is unconditional and origin-based, not lens-based: it does not matter how many
+  seats independently produce a fingerprint-matching manufactured finding, or how distinct those
+  seats' declared lenses are — a manufactured finding is ineligible for the promotion bump because
+  of *how it was produced* (the fallback rule, not a genuine attack), and no amount of independent
+  corroboration changes that.
+- MERGE must preserve the `manufactured: true` marker through fingerprinting and dedup exactly like
+  the `sovereignty` marker (Step 5 below) — it is not part of the fingerprint key and never
+  influences fingerprint matching — so downstream stages (VALIDATE, FIX) can continue to recognize
+  and floor these findings.
+
+The above origin-based exclusion is checked **first** and is absolute: if it applies, the finding
+is ineligible for the bump full stop, and the lens-distinctness rule below never needs to be
+consulted for it. For any finding that is *not* `manufactured: true`, the bump is additionally
+gated on the lens-distinctness requirement immediately below — both conditions are independent
+requirements on the same Step 3 bump, not alternatives.
+
+**Distinct-lens requirement — agreement alone is not enough.** Two seats agreeing is only real
+independent corroboration if they got there via genuinely different review lenses. Two seats that
+both effectively ran the same lens (e.g. a live-scan-added security-flavored skill agreeing with
+the catalog's own Security seat) converging on the same finding is one perspective confirming
+itself, not two — it must not earn the bump.
+
+- **What counts as a "declared lens":** each seat's `Seat` name from
+  `reviewers/persona-catalog.md`'s Seat Summary Table (Correctness/Adversarial, Simplicity,
+  Structural, Security, Domain-Intent, Fresh-Eyes, Change-Trajectory, Design-Alternatives,
+  Test-Design Quality, Data Steward, Taste). This table is the catalog's own lens taxonomy — MERGE
+  does not define a second, separate one. A live-scan-added supplementary seat (persona-catalog's
+  "SECONDARY enrichment layer") inherits the declared lens of whichever catalog Seat its function
+  most closely matches (e.g. a user-installed security linter skill declares the Security lens);
+  if its lens doesn't map cleanly to any row in the table, treat it as its own distinct lens rather
+  than folding it into an existing one, per the catalog's fail-closed default.
+- **Overlapping, and does not qualify for the bump on its own:** two or more contributing seats
+  that share the same declared lens (same `Seat` row, or a live-scan seat mapped to the same row).
+  Their agreement still merges into one finding (Step 1 fingerprinting is unaffected) and still
+  contributes to that finding's `contributing seat(s)` list, but it does not, by itself, satisfy
+  the 2+ agreement bump — same-lens agreement is treated as a single corroborating perspective,
+  confidence-wise, no matter how many same-lens seats reported it.
+- **Distinct, and qualifies:** two or more contributing seats whose declared lenses are different
+  rows in the Seat Summary Table (e.g. Structural + Security, or Domain-Intent + Correctness/
+  Adversarial). This is the normal case the bump was designed for and needs no special handling
+  beyond confirming the lenses actually differ.
+- **The mandatory-contrarian exception:** if a fingerprint-matched finding's contributing seats are
+  all same-lens (so the rule above would withhold the bump), the bump still applies if
+  `Correctness/Adversarial` (`adversarial-reviewer`) — this plugin's always-cast contrarian/
+  adversarial seat, per persona-catalog's Core Seats — is itself one of the contributing seats. A
+  same-lens pair corroborated by the panel's mandatory adversarial seat has already cleared a
+  genuinely independent, hostile-framed check, which is what the distinct-lens requirement exists
+  to guarantee; a third seat is not required. This exception cannot itself be satisfied by two
+  same-lens seats that both happen not to be Correctness/Adversarial — it requires that specific
+  seat's participation, since it is the one seat every CAST always includes regardless of
+  diff-specific casting judgment (persona-catalog's Core Seats section), making it the one lens
+  every panel run can rely on as a structural check on same-lens groupthink.
+- **Practical effect:** when evaluating a fingerprint-matched finding for the bump, first list the
+  declared lens of every contributing seat. If 2+ distinct lenses are present, apply the bump. If
+  only one lens is represented (however many seats reported it), withhold the bump unless
+  Correctness/Adversarial is among the contributors. A finding that fails this check is not
+  demoted or dropped — it simply stays at whatever confidence anchor Step 2's base criteria alone
+  would assign, same as any single-corroboration finding.
+
 ### Step 4 — Quote-the-line evidence gate
 
 Every finding must cite the ACTUAL code text at its claimed file:line as part of its evidence —
@@ -111,6 +182,21 @@ or more seats report fingerprint-matching findings and any one of them carries t
 merged finding keeps it (the marker is a logical OR across contributing seats, not something that
 needs unanimous agreement — a single seat correctly identifying a sovereignty boundary is enough).
 MERGE must not strip, downgrade, or silently drop this field while deduplicating.
+
+**Manufactured marker passes through untouched, floored at Minor.** A finding carrying
+`manufactured: true` (emitted by `adversarial-reviewer`'s must-find-at-least-one-issue fallback,
+see its SKILL.md's "Manufactured-finding marker" section) keeps that marker through fingerprinting
+and dedup exactly as-is, the same pass-through mechanics as `sovereignty` above — it is not part of
+the fingerprint key and never influences fingerprint matching. Unlike `sovereignty`'s logical-OR
+behavior, though, a `manufactured: true` finding's severity stays at Minor **even if it
+fingerprint-matches a non-manufactured finding from another seat**: if a genuine finding and a
+manufactured finding collide on the same fingerprint, the merge keeps the genuine finding's higher
+severity and drops the `manufactured` marker entirely for that merged record (the underlying issue
+is real, corroborated independently of the fallback path, and the 2+ agreement bump in Step 3
+applies normally in that case since a genuine finding is present). The marker, and the Minor floor,
+only apply when *every* contributing seat for that fingerprint reported it via the fallback rule.
+MERGE must not strip this field, nor let a manufactured finding's severity float above Minor, while
+deduplicating.
 
 ---
 
@@ -167,26 +253,42 @@ finding. This is the no-self-grading rule: a seat cannot validate its own findin
 
 Reuse the blind-subagent pattern from `agents/clean-room-alternative.md` (the same pattern
 `adversarial-reviewer` uses internally — see its "Independence via clean-room-alternative"
-section) for each validator dispatch:
+section) for each validator dispatch. The dispatch happens in two ordered phases within the same
+validator subagent — **blind restatement first, original claim second** — because showing the
+original finder's title, severity, or rationale before the validator has committed to its own
+read is exactly the anchoring bias this procedure exists to prevent (a validator who reads "this
+is Critical" before looking at the code tends to go looking for a reason to agree with "Critical"
+rather than independently arriving at a severity).
 
-1. Give the validator: the finding's claimed file:line, its stated issue category
-   (Critical/Important/Minor), and the raw code at and around that location (via Read/Grep on the
-   actual files, not a copy-paste snippet chosen by the original finder).
-2. **Withhold**: the original finder's full reasoning chain, its "why it matters" prose, and its
-   proposed fix. The validator sees the finding's *claim* (what's wrong, at what location) and the
-   *raw code* — not the finder's argument for why the claim is true. This is deliberate: a
-   validator handed the finder's full reasoning tends to rubber-stamp it rather than
-   independently re-derive whether the claim holds.
+1. **Phase 1 — blind restatement.** Give the validator only: the finding's claimed file:line, and
+   the raw code at and around that location (via Read/Grep on the actual files, not a copy-paste
+   snippet chosen by the original finder). **Withhold everything else** — the original finder's
+   title, its stated issue category (Critical/Important/Minor), its full reasoning chain, its "why
+   it matters" prose, and its proposed fix. Instruct the validator to independently examine the
+   code at that location and record, before seeing anything else: **what it sees wrong there (if
+   anything), the severity it would assign (Critical/Important/Minor/nothing), and its own
+   rationale** — in the same title / severity / rationale shape the original finding uses, so the
+   two are directly comparable in Phase 2. This restatement is committed (returned as part of the
+   validator's output) before Phase 2 begins; the validator does not get to revise it after seeing
+   the original claim.
+2. **Phase 2 — reveal and reconcile.** Only after the blind restatement is recorded, reveal the
+   original finder's title, severity, and rationale (still withholding its proposed fix, which
+   remains irrelevant to whether the claim is real). Ask the validator to state whether its
+   independent restatement **matches, partially matches, or contradicts** the original finding —
+   and to use that comparison, not deference to the original claim, to decide the verdict.
 3. **The validator's task**: independently determine whether the claimed issue is real, given only
-   the location and the raw code. Does the code at that location actually exhibit the described
-   problem? Construct the validator's prompt as a challenge, not a confirmation request — ask it
-   to try to show the finding is WRONG (no bug here, the "issue" is actually handled elsewhere,
-   the input claimed to be hostile is actually validated upstream) before concluding it's right.
-   This framing matches the challenger framing in Step 4 below and in the pipeline-not-barrier
-   reference's majority-survives-challenge principle.
-4. Each validator returns: **SURVIVES** (the finding is real, as stated or with minor correction)
-   or **REFUTED** (the finding does not hold — the validator found a reason the claimed issue
-   isn't actually a problem, and states that reason concretely).
+   the location and the raw code (Phase 1), then reconcile against the original claim (Phase 2).
+   Does the code at that location actually exhibit the described problem? Construct the Phase 2
+   framing as a challenge, not a confirmation request — ask the validator to try to show the
+   finding is WRONG (no bug here, the "issue" is actually handled elsewhere, the input claimed to
+   be hostile is actually validated upstream) before concluding it's right. This framing matches
+   the challenger framing in Step 4 below and in the pipeline-not-barrier reference's
+   majority-survives-challenge principle.
+4. Each validator returns: its **blind restatement** (title/severity/rationale, Phase 1), its
+   **match/partial-match/contradicts** call against the original claim (Phase 2), and a final
+   verdict of either **SURVIVES** (the finding is real, as stated or with minor correction) or
+   **REFUTED** (the finding does not hold — the validator found a reason the claimed issue isn't
+   actually a problem, and states that reason concretely).
 
 ### Majority-survives-challenge verdict
 
@@ -211,8 +313,13 @@ section) for each validator dispatch:
 
 VALIDATE emits the final validated findings list — every finding that survived its
 challenge(s) — annotated with its confidence anchor, severity, evidence quote, and (for
-transparency in the final report) how many validators checked it and the verdict tally. This list
-is FIX's entire input.
+transparency in the final report) how many validators checked it and the verdict tally. For every
+finding, the record includes **both** the validator's blind restatement (title/severity/rationale,
+recorded before the original claim was revealed) **and** the original finder's claim
+(title/severity/rationale), shown side by side, plus the match/partial-match/contradicts call that
+reconciled them — this pair is retained in the audit trail even for SURVIVES findings, not just
+disputed ones, so a reader of the final report can see the independent read that produced the
+verdict. This list is FIX's entire input.
 
 The `sovereignty` marker (see MERGE Step 5) carries through VALIDATE unchanged as well — a
 validator judges whether the finding's underlying claim is real (survives/refuted), not whether the
@@ -221,3 +328,12 @@ field. A sovereignty-marked finding that is REFUTED is dropped like any other re
 marker doesn't grant immunity from validation); one that SURVIVES keeps the marker into FIX, where
 [fix-and-rereview.md](fix-and-rereview.md)'s dispatch contract and post-FIX sovereignty guard take
 over.
+
+The `manufactured` marker (see MERGE Step 5) carries through VALIDATE the same way, floored at
+Minor: a `manufactured: true` finding is always a 1-validator finding by construction (Minor
+severity never escalates validator count), and VALIDATE's SURVIVES/REFUTED judgment applies to it
+like any other finding — VALIDATE has no authority to promote a manufactured finding's severity or
+strip its marker. It is subject to being REFUTED like any finding (a validator may determine even
+the "most fragile assumption" noted isn't actually fragile); one that SURVIVES proceeds to FIX still
+capped at Minor and still marked `manufactured: true`, so FIX and any later re-review continue to
+treat it as a floor-Minor, non-promotable finding rather than a discovered issue.

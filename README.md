@@ -119,6 +119,14 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 | `prefer-modern-tools` | `PreToolUse` | Rewrites legacy CLI commands to faster modern equivalents at runtime: `grep`/`egrep` → `rg`, `cat` → `bat --style=plain --paging=never`, `ls` → `lsd`, `ps aux`/`ps -ef` → `procs`. Safe near-drop-ins only — tools with incompatible flag syntax (`fd`, `dust`, `choose`) are excluded and documented in CLAUDE.md for native use. |
 | `data-layer-guard` | `PreToolUse` | Warns and asks for confirmation before an Edit/Write/NotebookEdit touches a data-layer path (migrations, schemas, ORM models — default globs overridable via `.data-guard.json`) without a same-day `DATA-MODEL.md` change-log entry. Interactive/planning-time only: silently no-ops in unattended contexts (`--dangerously-skip-permissions`/`mode:agent`), deferring to the data-steward review seat for unattended enforcement. |
 
+> **Hooks only run when this repo is installed as a plugin.** The hook wiring lives in [`hooks/hooks.json`](hooks/hooks.json), which Claude Code loads and expands `${CLAUDE_PLUGIN_ROOT}` from automatically — but only for plugins installed via `/plugin marketplace add` (or `/plugin install`). The root [`.claude/settings.json`](.claude/settings.json) in this repo ships `"hooks": {}` on purpose: it is the config Claude Code reads if you just `git clone` this repo and open it as a plain project, and `${CLAUDE_PLUGIN_ROOT}` has no meaning there.
+>
+> **Net effect: a plain git-clone checkout has zero hook enforcement active**, including `data-layer-guard` — the guard that's supposed to stop an Edit/Write from silently touching a migration/schema/ORM file without a `DATA-MODEL.md` entry. If you clone this repo directly instead of installing it as a plugin, that protection (and the other three hooks) simply never runs; nothing will warn you that it's missing.
+>
+> If you want the hooks active without installing the plugin, either:
+> - Install via the marketplace (`/plugin marketplace add citadelgrad/scott-cc`) so Claude Code wires `hooks/hooks.json` up for you, or
+> - Hand-edit your own `.claude/settings.json` and copy the hook entries from `hooks/hooks.json`, replacing `${CLAUDE_PLUGIN_ROOT}` with the absolute path to your clone (e.g. `/Users/you/scott-cc`).
+
 ---
 
 ## Templates (3)
@@ -133,13 +141,35 @@ Stored in `templates/` — copy to your project or use the `/init` skill to depl
 
 ---
 
-## Sub-plugins (8)
+## Sub-plugins (9)
 
 Install from the marketplace:
 
 ```bash
 /plugin marketplace add citadelgrad/scott-cc/<name>
 ```
+
+**Status** reflects real git activity, not a manual label. Derived from each plugin's `git log -- plugins/<name>/`:
+
+| Status | Rule |
+|--------|------|
+| `stable` | 3+ commits and a commit within the last 60 days |
+| `experimental` | Fewer than 3 commits (too new/unproven to call stable), regardless of recency |
+| `unmaintained` | No commits in 90+ days |
+
+| Plugin | Status | Description |
+|--------|--------|-------------|
+| `beads-epic-builder` | `stable` | Plan, build, and swarm beads epics — sequential and parallel execution with CE code review. |
+| `browser-automation` | `stable` | Browser testing and validation with E2E test generation and UI validation. |
+| `research-tools` | `unmaintained` | Learning guides, tech stack research, and technical writing assistance. |
+| `security-suite` | `stable` | Security advisory and vulnerability scanning. |
+| `performance-optimization` | `unmaintained` | Performance engineering with bottleneck analysis and profiling. |
+| `mutation-testing` | `unmaintained` | Comprehensive mutation testing with zombie test detection and automated refactoring. |
+| `review-panel` | `stable` | Multi-persona adversarial code and design review panel. |
+| `variant-explorer` | `experimental` | Parallel blind-builder variant exploration with AC/taste/simplicity judging. |
+| `triage` | `experimental` | Foundry-resident triage spine: detect → bead → reproduce → fix → gate loop. |
+
+---
 
 ### beads-epic-builder
 
@@ -270,7 +300,7 @@ Multi-persona adversarial code and design review panel, vendoring and adapting p
 |-------|-------------|
 | `clean-room-alternative` | Generates a design alternative in isolation, without seeing the first design. Used by `design-it-twice` when a first design already exists in conversation. |
 
-**Skills (29)**
+**Skills (33)**
 
 *Panel orchestration & review seats*
 
@@ -287,6 +317,10 @@ Multi-persona adversarial code and design review panel, vendoring and adapting p
 | `ponytail-audit` | Whole-repo version of `ponytail-review` — a ranked list of what to delete or simplify. |
 | `data-steward` | Reviews migration/ORM/schema diffs against `DATA-MODEL.md` invariants and a 7-item migration-safety checklist. |
 | `taste-review` | Reviews diffs against `TASTE.md`'s Preferences/Weightings/Anti-preferences, mapping severity from declared strength. |
+| `mental-models-adversarial` | Pressure-tests the reasoning behind a change — assumptions, incentives, second-order consequences — via fs.blog-inspired mental models. |
+| `mental-models-simplifier` | Questions whether this is even the right problem/approach, conceptually, via fs.blog-inspired mental models. |
+| `mental-models-systems` | Evaluates dynamic runtime behavior — feedback loops, bottlenecks, emergence, scale — via fs.blog-inspired mental models. |
+| `mental-models-economics` | Frames a change as a resource-allocation decision — tech debt, build-vs-buy, vendor lock-in — via fs.blog-inspired mental models. |
 
 *Design quality lenses*
 

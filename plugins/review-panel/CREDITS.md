@@ -129,6 +129,27 @@ This plugin's own `skills/domain-modeling/SKILL.md` and
 `skills/adversarial-reviewer/SKILL.md` are authored from scratch by a separate
 task and are not derived from mattpocock's files.
 
+## fs.blog Mental Models
+
+Source: https://fs.blog/mental-models/ (Farnam Street's "Mental Models" catalog, ~70 models
+across General Thinking Tools, Systems Thinking, Mathematics, Economics, and Art categories).
+
+**Not vendored — inspiration only.** No prose from this page is copied verbatim anywhere in this
+plugin. The page was fetched live to identify the actual list of model names and one-line
+definitions it catalogs. `reviewers/mental-models-catalog.md` (backing the four
+`skills/mental-models-<vector>/` seats: Adversarial/Risk, Simplifier, Systems/Boundaries,
+Economics/Debt) uses only the model **names** from that source as a checklist of well-established
+thinking tools to cover. Every "reframed as a code-review question" line in that catalog — the
+entire substantive content of the four skills — is authored fresh for this plugin, not copied or
+paraphrased from fs.blog's own explanatory text.
+
+**Curation note:** not all ~70 models reframe usefully against code. Most of the Art category
+(Melody, Genre, Character, Plot, Setting, Performance, Audience) and several General Thinking
+Tools items (Thermodynamics, Reciprocity, Alloying, Catalysts, Activation Energy, Ecosystems,
+Self-Preservation, Replication) were deliberately excluded as not mapping to a concrete review
+question. The ~34 models that made the cut are split across the four vectors in
+`reviewers/mental-models-catalog.md`.
+
 ## Local Trial-Copies
 
 The four sources below are **not** from the 5 main vendored MIT repos listed

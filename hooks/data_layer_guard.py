@@ -19,6 +19,13 @@ import json
 import sys
 from pathlib import Path
 
+from _guard_base import (
+    find_repo_root,
+    is_unattended_noop,
+    load_json_override,
+    run_guard_main,
+)
+
 DEFAULT_GLOBS = [
     "**/migrations/**",
     "**/models/**",
@@ -29,25 +36,8 @@ DEFAULT_GLOBS = [
 ]
 
 
-def find_repo_root(start: str) -> Path | None:
-    path = Path(start).resolve()
-    for candidate in (path, *path.parents):
-        if (candidate / ".git").exists():
-            return candidate
-    return None
-
-
 def load_globs(repo_root: Path) -> list[str]:
-    override_path = repo_root / ".data-guard.json"
-    if override_path.exists():
-        try:
-            data = json.loads(override_path.read_text())
-            globs = data.get("globs")
-            if isinstance(globs, list) and all(isinstance(g, str) for g in globs):
-                return globs
-        except (json.JSONDecodeError, OSError):
-            pass
-    return DEFAULT_GLOBS
+    return load_json_override(repo_root, ".data-guard.json", "globs", DEFAULT_GLOBS)
 
 
 def matches_glob(rel_path: str, pattern: str) -> bool:
@@ -120,7 +110,7 @@ def main() -> None:
 
     # Unattended/mode:agent contexts have no human to answer a confirm prompt —
     # defer entirely to the data-steward review seat's enforcement instead.
-    if payload.get("permission_mode") == "bypassPermissions":
+    if is_unattended_noop(payload):
         sys.exit(0)
 
     tool_input = payload.get("tool_input", {})
@@ -164,7 +154,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception:
-        sys.exit(0)
+    run_guard_main(main)

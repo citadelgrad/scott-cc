@@ -38,3 +38,12 @@ agents/CLAUDE.md
 # backups) — the accepted output lives in CLAUDE.md and
 # skills/skillopt-sleep-learned/SKILL.md instead
 .skillopt-sleep/
+
+# foundry run evidence (result.json, logs per run) — reproducible from
+# foundry.yaml + `foundry run <profile>`; not for version control
+.foundry/
+
+# Stray agent-session tool-output artifacts (e.g. WebSearch result dumps)
+# that can land at repo root during interactive sessions — not produced by
+# any repo script; ignored as a backstop so they don't get committed
+text_*_archived_replacement_*.json
