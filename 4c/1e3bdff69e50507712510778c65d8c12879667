@@ -1,0 +1,27 @@
+agents/requirements-analyst.md
+  s_ea100192a5c408::t_db4b0827d8d9f3 49-50
+agents/frontend-architect.md
+  s_ea100192a5c408::t_20858a462a4d32 49-50
+agents/system-architect.md
+  s_ea100192a5c408::t_d60d0083e34717 49-50
+agents/backend-architect.md
+  s_ea100192a5c408::t_ad2563897cffb3 49-50
+agents/refactoring-expert.md
+  s_ea100192a5c408::t_6d70cce76aa05b 49-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "4c1e3bdff69e50507712510778c65d8c12879667",
+  "prompts": {},
+  "sessions": {
+    "s_ea100192a5c408": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "30dab69b-900c-41cf-9724-f535eeabd96b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
