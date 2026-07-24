@@ -1,6 +1,6 @@
 ---
 name: init
-description: Initialize a new project with standard scaffolding. Sets up git repo, CLAUDE.md, AGENTS.md symlink, beads, .envrc, Makefile, and pre-commit hooks. All components are optional — pick what you need.
+description: Initialize a new project with standard scaffolding. Sets up git repo, CLAUDE.md, AGENTS.md symlink, beads, .envrc, Makefile, pre-commit hooks, and foundry.yaml. All components are optional — pick what you need.
 license: MIT
 tags: [project-setup, scaffolding, templates]
 uses:
@@ -29,7 +29,7 @@ ls -d .git/ 2>/dev/null
 ls pyproject.toml package.json tsconfig.json 2>/dev/null
 
 # Existing scaffolding
-ls CLAUDE.md AGENTS.md .envrc Makefile .pre-commit-config.yaml 2>/dev/null
+ls CLAUDE.md AGENTS.md .envrc Makefile .pre-commit-config.yaml foundry.yaml 2>/dev/null
 ls -d .beads/ 2>/dev/null
 ```
 
@@ -51,6 +51,7 @@ Project init — select what to set up:
   5. .envrc         ○  direnv environment stub
   6. Makefile       ○  service management targets
   7. pre-commit     ○  commit hooks (.pre-commit-config.yaml)
+  8. foundry.yaml   ○  scheduling/automation control layer
 
 Which would you like to set up? (enter numbers, "all", or "none")
 ```
@@ -129,9 +130,12 @@ Condition: `.beads/` directory does not exist.
 
 ```bash
 bd init
+bd config set validation.on-create warn
 ```
 
-If `.beads/` already exists, skip and note it.
+`validation.on-create warn` makes `bd create` nag when the description is missing its required sections (e.g. Acceptance Criteria for task/feature/bug) — a technical backstop for the global CLAUDE.md rule that acceptance criteria must be generated via the `acceptance-criteria` skill before `bd create`. This setting is per-repo (stored in `.beads/config.yaml`); there is no global bd config for it, which is why it's wired into every `bd init` here instead.
+
+If `.beads/` already exists, skip and note it. If `.beads/` already exists but `validation.on-create` is unset, still run `bd config set validation.on-create warn` (idempotent, safe to re-run).
 
 ### .envrc
 
@@ -271,6 +275,71 @@ Steps:
 
 **Caveat:** If `bd init` is re-run later, it may overwrite `.beads/hooks/pre-commit`. Re-apply step 3 after any beads upgrade.
 
+### foundry.yaml
+
+Condition: `foundry.yaml` does not exist (never overwrite an existing one).
+
+Create the file with this exact content:
+```yaml
+# foundry.yaml — scheduling & automation control layer for this project.
+# See CLAUDE.md's "Scheduling & Automation" section for the full schema.
+# `foundry run <profile>` runs one locally; `foundry run <profile> --dry-run`
+# previews its gates; `foundry schedule install <name>` installs its cron entry.
+
+version: 1
+
+# Example 1: unattended code review via the review-panel skill's mode:agent
+# JSON contract, run as a post-feature gate. Reckoner calls `foundry run
+# post-feature` automatically after every successful PR — no other wiring
+# needed. See plugins/review-panel/skills/review-panel/references/dual-mode-contract.md
+# for the full contract (status values, escalation handling, etc).
+# profiles:
+#   post-feature:
+#     gates:
+#       - id: review-panel
+#         run: |
+#           claude -p "/review-panel $(git merge-base origin/main HEAD)..HEAD --mode=agent" \
+#             --dangerously-skip-permissions --output-format json \
+#             > "$FOUNDRY_RUN_DIR/claude-cli.json"
+#           jq -r '.result' "$FOUNDRY_RUN_DIR/claude-cli.json" \
+#             > "$FOUNDRY_RUN_DIR/review-panel.json"
+#           status=$(jq -r '.status' "$FOUNDRY_RUN_DIR/review-panel.json")
+#           # converged/escalated pass; circuit_broken/error fail (escalated
+#           # must never block unattended automation — see OQ4 in the
+#           # dual-mode-contract.md doc above)
+#           [ "$status" = "converged" ] || [ "$status" = "escalated" ]
+#         timeout: 20m
+#         allow_failure: false
+#         decision_on_failure: fail
+
+# Example 2: a scheduled agent gate that invokes a single review skill
+# directly (not the full panel) — e.g. a nightly adversarial pass over
+# recent changes, reported but never blocking on its own
+# profiles:
+#   adversarial-nightly:
+#     gates:
+#       - id: adversarial-review
+#         run: |
+#           claude -p "Use the adversarial-reviewer skill to review changes
+#           from the last 24h and report findings." \
+#             --dangerously-skip-permissions --output-format json \
+#             > "$FOUNDRY_RUN_DIR/adversarial-review.json"
+#         timeout: 15m
+#         allow_failure: true
+#         decision_on_failure: warn
+#
+# schedules:
+#   nightly-adversarial-review:
+#     profile: adversarial-nightly
+#     cron: '0 3 * * *'
+
+profiles: {}
+
+schedules: {}
+```
+
+If `foundry.yaml` already exists, skip and note it.
+
 ## Step 4: Report Results
 
 After all components are processed, print a summary:
@@ -281,11 +350,12 @@ Done. Here's what was set up:
   ✓ git           — git init ran successfully
   ✓ CLAUDE.md     — copied from scott-cc template
   ✓ AGENTS.md     — symlinked to CLAUDE.md
-  ✓ beads         — bd init ran successfully
+  ✓ beads         — bd init ran successfully, validation.on-create=warn set
   ✓ .envrc        — created, direnv allow ran
   ✓ Makefile      — created (Python project: includes test + lint targets)
   ✓ pre-commit    — config copied, hook chain written to .beads/hooks/pre-commit
                     (hook envs install lazily on first commit)
+  ✓ foundry.yaml  — created (empty profiles/schedules skeleton, two examples commented)
 
 Skipped:
   — (none)
@@ -300,13 +370,13 @@ List skipped items with a reason (e.g., "already exists", "user declined").
 Then offer an initial commit:
 ```
 Make an initial commit? (y/n)
-  Would stage: Makefile, .pre-commit-config.yaml, .gitignore
+  Would stage: Makefile, .pre-commit-config.yaml, foundry.yaml, .gitignore
   Message: "chore: initial project scaffolding"
 ```
 
 If yes:
 ```bash
-git add Makefile .pre-commit-config.yaml .gitignore
+git add Makefile .pre-commit-config.yaml foundry.yaml .gitignore
 git commit -m "chore: initial project scaffolding"
 ```
 
