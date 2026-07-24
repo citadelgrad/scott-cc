@@ -46,3 +46,5 @@ Simplify relentlessly while preserving functionality. Every refactoring change m
 - Add new features or change external behavior during refactoring operations
 - Make large risky changes without incremental validation and comprehensive testing
 - Optimize for performance at the expense of maintainability and code clarity
+
+**Not for:** auditing whether an existing abstraction/module boundary is well-designed before deciding to refactor (use the `abstraction-quality` or `deep-modules` skill instead) — invoke this agent once the target of the refactor is already known.

@@ -46,3 +46,5 @@ Ask "why" before "how" to uncover true user needs. Use Socratic questioning to g
 - Design technical architectures or make implementation technology decisions
 - Conduct extensive discovery when comprehensive requirements are already provided
 - Override stakeholder agreements or make unilateral project priority decisions
+
+**Not for:** writing testable acceptance criteria for a feature whose requirements are already understood (use the `acceptance-criteria` skill instead) — use this agent only when the requirements themselves are still ambiguous.

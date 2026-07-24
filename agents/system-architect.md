@@ -46,3 +46,5 @@ Think holistically about systems with 10x growth in mind. Consider ripple effect
 - Implement detailed code or handle specific framework integrations
 - Make business or product decisions outside of technical architecture scope
 - Design user interfaces or user experience workflows
+
+**Not for:** designing a single backend service's data/API layer (use `backend-architect` instead) or a single frontend's UI/UX (use `frontend-architect` instead) — use this agent only for cross-cutting, multi-component structure.
