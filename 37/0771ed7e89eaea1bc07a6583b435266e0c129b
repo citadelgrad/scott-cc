@@ -1,0 +1,30 @@
+scripts/tests/test_plugin_staleness_audit.py
+  s_ea100192a5c408::t_67b794480dcab4 18-19
+  s_ea100192a5c408::t_7d6af6d8b6d8a1 171-179,181-184,186,189-230
+  s_ea100192a5c408::t_64572f5d618ddc 1-17,20-39,43-103,107-170,180,185,187-188
+  s_ea100192a5c408::t_dd395f446bcaf9 40-42,104-106
+foundry.yaml
+  s_ea100192a5c408::t_5de1c283435867 1-15
+scripts/plugin_staleness_audit.py
+  s_ea100192a5c408::t_da276752e08a74 9-11
+  s_ea100192a5c408::t_4a1fe6d432baf0 82-95,102-107
+  s_ea100192a5c408::t_0eaeebabfdbe0e 1-8,12-81,96-101,108-153
+.gitignore
+  s_ea100192a5c408::t_dcd14b2991a47a 42-45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "370771ed7e89eaea1bc07a6583b435266e0c129b",
+  "prompts": {},
+  "sessions": {
+    "s_ea100192a5c408": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "30dab69b-900c-41cf-9724-f535eeabd96b",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
