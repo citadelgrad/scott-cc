@@ -11,6 +11,12 @@ metadata:
 
 # browser-use E2E Testing
 
+## When to Use
+- Creating automated browser tests for authenticated flows or user journeys
+- Generating E2E test scripts from natural language descriptions
+- Validating UI workflows with AI-powered browser control
+- Testing multi-step user interactions across web applications
+
 ## Overview
 
 Generate and execute end-to-end tests using browser-use, an AI-powered browser automation library. Tests are written in natural language and the AI agent figures out the specific interactions.
@@ -264,3 +270,10 @@ project/
 └── scripts/
     └── setup_profile.py         # Profile setup for 2FA
 ```
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Requires browser-use library and a compatible browser to be installed.
+- AI-driven interaction is non-deterministic — tests may need retries or explicit waits for flaky elements.
+- Credentials are stored in .env.test — ensure this file is gitignored and never committed.
+- Stop and ask for clarification if the target application, authentication flow, or test scope is unclear.

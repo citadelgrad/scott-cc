@@ -16,6 +16,12 @@ metadata:
 
 # Mental Models: Adversarial/Risk
 
+## When to Use
+- A diff introduces a new algorithm, heuristic, threshold, retry/backoff policy, or config value
+- A design rationale makes a "this is safe because X" claim that needs pressure-testing
+- Evaluating reasoning behind a change (not bugs in the code itself)
+- Applying adversarial mental models: Inversion, Second-Order Thinking, Margin of Safety, Incentives
+
 Pressure-tests the *reasoning* behind a change, not the code as written. `adversarial-reviewer`
 already attacks the implementation for bugs, exploits, and hostile input; this skill instead asks
 whether the decision to build it *this way* holds up — the assumptions, incentives, and systemic
@@ -68,3 +74,9 @@ for this target — not a restated definition of the model.
 - Restate a bug/exploit/hostile-input finding `adversarial-reviewer` would already catch
 - Manufacture a finding just to cover every model in the list
 - Report a finding without naming which model produced it
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Pressure-tests reasoning, not code — use adversarial-reviewer for bug/exploit hunting.
+- Do not manufacture findings to cover every model in the catalog.
+- Stop and ask for clarification if the design rationale, assumptions, or change context is unclear.

@@ -19,7 +19,7 @@ When invoked with $ARGUMENTS, focus the analysis on the specified file or module
 
 General-purpose modules are surprisingly simpler, deeper and less effort to build. They produce better information hiding and can even provide these benefits when used in a single context. Because a general-purpose interface doesn't need to know about specific callers, the knowledge always stays where it belongs.
 
-## When to Apply
+## When to Use
 
 - Designing a new module, API, or utility
 - When a module has use-case-specific logic embedded in it
@@ -86,3 +86,9 @@ But "slightly more general" means one step, not three. Generality should come fr
 This skill asks "is this interface over-specialized for one caller?": a single-module, single-interface question. **information-hiding** asks the broader question of whether a design decision is known by more than one module at all; over-specialization is one *cause* of leakage (a general-purpose module absorbing a caller-specific method), but information-hiding covers leakage that has nothing to do with generality (e.g. two modules independently encoding the same file format). **pull-complexity-down** is about a different axis entirely: whether complexity is pushed to callers or absorbed internally, not whether an interface serves one caller or many. Use this skill when a module's interface looks tailored to a single caller; use **information-hiding** when the concern is a design decision leaking across a boundary; use **pull-complexity-down** when the concern is who does the work, not who the interface serves.
 
 Red flag signals for generality are cataloged in **red-flags** (Special-General Mixture, Overexposure).
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- This is a read-only review lens — it identifies issues but does not write or refactor code.
+- Findings are diagnostic signals, not definitive verdicts — use judgment in context.
+- Stop and ask for clarification if the target scope, module boundary, or review criteria are unclear.

@@ -24,9 +24,17 @@
       "skills": [
         "python-simplifier",
         "typescript-simplifier",
+        "tdd",
         "property-based-testing",
         "karpathy-guidelines",
         "verified-implementation"
+      ]
+    },
+    {
+      "title": "Planning & Review",
+      "description": "Stress-test proposals and gate implementation behind explicit decisions.",
+      "skills": [
+        "grill-me"
       ]
     },
     {
@@ -36,7 +44,8 @@
         "cli-design",
         "delegate-first",
         "context7",
-        "context-file-optimizer"
+        "context-file-optimizer",
+        "skillopt-sleep-learned"
       ]
     },
     {

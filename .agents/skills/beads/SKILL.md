@@ -5,6 +5,12 @@ description: Use when working in a repository that uses bd or Beads for durable 
 
 # Beads
 
+## When to Use
+- Working in a repository that uses bd/Beads for durable task tracking
+- Finding ready work, claiming or closing tasks, creating follow-up work
+- Inspecting blockers, recovering project context, or multi-session handoff
+- Choosing between local planning and persistent project tracking
+
 Use Beads as the shared project task system. Local plans, scratch files, and personal memories are useful, but they are not the durable source of truth for project work.
 
 ## First Step
@@ -78,3 +84,10 @@ Use agent-local planning tools only for the current turn's execution checklist. 
 - Prefer `--json` when parsing `bd` output programmatically.
 - If hooks are installed, `bd prime` may already be injected. Run it manually when context is missing.
 - Do not auto-close or mutate tasks unless the work is actually complete.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Requires `bd` CLI to be installed and a Beads workspace to be initialized in the repository.
+- Does not replace git for version control or CI/CD for automation.
+- Do not use `bd edit` — it opens an interactive editor; use `bd update` flags instead.
+- Stop and ask for clarification if the Beads workspace status, task scope, or sync requirements are unclear.

@@ -25,7 +25,7 @@ This skill is **read-only** and reviews existing diffs; it does not write or ref
 it does not edit `TASTE.md` itself — that file is human-owned, built and maintained only through
 `grill-my-taste` grilling sessions (Invariant 5: human artifacts are human-owned).
 
-## When to Apply
+## When to Use
 
 **Cast-when:** `TASTE.md` exists at the repo root. This is a **file-existence gate, not a
 diff-content-pattern gate** — unlike every other risk-triggered seat in this catalog (which
@@ -120,3 +120,9 @@ entry or invent a value for it.
 
 Example finding line:
 `Important — src/errors.ts:42 — taste: "Return errors as values (Result-style) instead of throwing and catching across multiple nesting levels." (strength: strong) — this diff introduces a nested try/catch three levels deep`
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Requires TASTE.md at repo root — does not cast on TASTE.md absence.
+- Ignores Candidate rules; only reviews against declared Preferences, Weightings, and Anti-preferences.
+- Not a substitute for universal-quality lenses (design-review, ponytail-review).

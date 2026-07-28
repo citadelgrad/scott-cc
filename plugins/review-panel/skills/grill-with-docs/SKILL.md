@@ -9,6 +9,12 @@ metadata:
   category: technique
 ---
 
+## When to Use
+- Stress-testing a plan against project language and documented decisions
+- Challenging a plan against the existing domain model (CONTEXT.md, ADRs)
+- Sharpening terminology and updating documentation as decisions crystallize
+- Pre-implementation planning review when documentation consistency matters
+
 <what-to-do>
 
 Interview me relentlessly about every aspect of this plan until we reach a shared understanding. Walk down each branch of the design tree, resolving dependencies between decisions one-by-one. For each question, provide your recommended answer.
@@ -105,3 +111,10 @@ explicitly rather than silently skipping the offer — do not let the gap pass
 unnoticed.
 
 </supporting-info>
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Requires CONTEXT.md or ADRs to exist for documentation cross-referencing.
+- Interview quality depends on engagement with the questioning process.
+- Updates documentation inline during the session, which may need post-session review.
+- Stop and ask for clarification if the plan scope, domain model, or documentation structure is unclear.

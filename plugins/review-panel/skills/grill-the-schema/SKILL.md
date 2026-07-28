@@ -10,6 +10,12 @@ metadata:
   category: technique
 ---
 
+## When to Use
+- Stress-testing a data layer design or when no DATA-MODEL.md exists yet
+- Building DATA-MODEL.md from scratch through structured interview
+- Validating entities, invariants, lifecycle, volume/access patterns, and boundaries
+- Cross-referencing actual schema/migration files against documentation
+
 <what-to-do>
 
 Interview me relentlessly about the data layer until we reach a shared understanding. Walk down each branch — entities, invariants, lifecycle, volume/access patterns, ownership, boundaries — resolving dependencies between decisions one-by-one. For each question, provide your recommended answer.
@@ -91,3 +97,10 @@ an ownership split between two services are all common examples. If any of the t
 skip the ADR. Use the format in [ADR-FORMAT.md](../../formats/ADR-FORMAT.md).
 
 </supporting-info>
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Interview quality depends on the user engaging with data layer questions.
+- Produces a DATA-MODEL.md document, not executable schema or migration code.
+- Cross-referencing requires actual schema/migration files to be present in the codebase.
+- Stop and ask for clarification if the data layer scope, entity boundaries, or storage technology is unclear.

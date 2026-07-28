@@ -19,7 +19,7 @@ When invoked with $ARGUMENTS, focus the analysis on the specified file or module
 
 Names are arguably the most important form of abstraction because a name claims what matters most about an entity. Because names appear at extreme frequency, mediocre names produce systemic complexity that no single example would suggest.
 
-## When to Apply
+## When to Use
 
 - Reviewing any code for readability and clarity
 - When a variable, method, or class name feels wrong
@@ -112,3 +112,9 @@ Reduce information needed (deep modules, information hiding), leverage what read
 6. **Recommend**: Specific renames tied to the isolation test
 
 Red flag signals for naming and obviousness are cataloged in **red-flags** (Vague Name, Hard to Pick Name, Non-obvious Code).
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- This is a read-only review lens — it identifies issues but does not write or refactor code.
+- Findings are diagnostic signals, not definitive verdicts — use judgment in context.
+- Stop and ask for clarification if the target scope, module boundary, or review criteria are unclear.

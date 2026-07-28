@@ -12,6 +12,12 @@ metadata:
 
 # ADR Skill
 
+## When to Use
+- Proposing, writing, updating, accepting, rejecting, deprecating, or superseding an ADR
+- Bootstrapping an ADR folder and index in a new or existing project
+- Consulting existing ADRs before implementing changes
+- Enforcing ADR conventions in agentic coding workflows
+
 ## No-Node Fallback
 
 The `scripts/*.js` helpers (`new_adr.js`, `set_adr_status.js`,
@@ -327,3 +333,10 @@ Notes:
 - Scripts auto-detect ADR directory and filename strategy.
 - Use `--dir` and `--strategy` to override.
 - Use `--json` to emit machine-readable output.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Script helpers require Node.js — uses shell fallbacks when Node is unavailable.
+- ADR quality depends on the quality of the Socratic questioning and decision context provided.
+- Does not enforce ADR compliance at runtime; ADRs are documentation, not code constraints.
+- Stop and ask for clarification if the decision scope, stakeholders, or ADR directory structure is unclear.

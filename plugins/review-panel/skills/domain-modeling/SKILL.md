@@ -23,7 +23,7 @@ Authored from scratch for this plugin — grounded in Scott Wlaschin's *Domain M
 
 This skill is **read-only** and reviews existing code; it does not write or refactor code itself.
 
-## When to Apply
+## When to Use
 
 - Reviewing a type, interface, schema, or entity definition for representability of illegal states
 - Reviewing a validation layer, parsing boundary, or "checked at the API edge" code path
@@ -57,3 +57,9 @@ Output is **markdown**, not JSON, so results merge cleanly with other review-pan
 Example line: `TRIGGERED — src/order.ts:14 — boolean-pair/flag-cluster (illegal states unrepresentable) — Important — replace isPaid/isShipped/isRefunded booleans with a status-tagged union; see WORKED-EXAMPLE.md`
 
 If everything is `CLEAR`, say so plainly — do not force findings where none exist.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- FP-only lens — does not cover OOP patterns, general code quality, or glossary work.
+- Read-only review — identifies issues but does not write or refactor code.
+- Stop and ask for clarification if the domain, entity boundaries, or modeling approach is unclear.

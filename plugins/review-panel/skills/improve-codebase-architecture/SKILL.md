@@ -11,6 +11,12 @@ metadata:
 
 # Improve Codebase Architecture
 
+## When to Use
+- Improving architecture, finding refactoring opportunities, or consolidating tightly-coupled modules
+- Making a codebase more testable and AI-navigable
+- Surfacing architectural friction and proposing deepening opportunities
+- Using CONTEXT.md domain language and ADR decisions to inform refactoring suggestions
+
 Surface architectural friction and propose **deepening opportunities** — refactors that turn shallow modules into deep ones. The aim is testability and AI-navigability.
 
 ## Glossary
@@ -75,3 +81,10 @@ Side effects happen inline as decisions crystallize:
 - **Sharpening a fuzzy term during the conversation?** Update `CONTEXT.md` right there.
 - **User rejects the candidate with a load-bearing reason?** Offer an ADR, framed as: _"Want me to record this as an ADR so future architecture reviews don't re-suggest it?"_ Only offer when the reason would actually be needed by a future explorer to avoid re-suggesting the same thing — skip ephemeral reasons ("not worth it right now") and self-evident ones. See [ADR-FORMAT.md](../../formats/ADR-FORMAT.md).
 - **Want to explore alternative interfaces for the deepened module?** See [INTERFACE-DESIGN.md](INTERFACE-DESIGN.md).
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Proposes deepening opportunities; does not implement refactors itself.
+- Suggestions are informed by CONTEXT.md and ADRs — quality depends on their completeness.
+- Not a substitute for profiling or performance analysis.
+- Stop and ask for clarification if the codebase scope, target modules, or improvement goals are unclear.

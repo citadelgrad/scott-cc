@@ -18,7 +18,7 @@ When invoked with $ARGUMENTS, focus the analysis on the specified file or module
 
 Evaluate whether complexity is absorbed into implementations or pushed up to callers.
 
-## When to Apply
+## When to Use
 
 - Designing or reviewing a module's interface
 - When callers must do significant setup or configuration
@@ -86,3 +86,9 @@ Red flag signals for complexity direction are cataloged in **red-flags** (Overex
 For deeper coverage, read the following:
 
 - [Configuration parameter audit](references/configuration-parameter-audit.md): Patterns for recognizing and eliminating unnecessary config parameters
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- This is a read-only review lens — it identifies issues but does not write or refactor code.
+- Findings are diagnostic signals, not definitive verdicts — use judgment in context.
+- Stop and ask for clarification if the target scope, module boundary, or review criteria are unclear.

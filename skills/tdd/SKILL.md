@@ -12,6 +12,12 @@ metadata:
 
 Build one behavior at a time through an observed Red → Green → Refactor cycle.
 
+## When to Use
+- Implementing a feature or bug fix test-first
+- The user requests red-green-refactor workflow
+- Behavior needs a durable regression test through a public interface
+- Building confidence that new code actually works through observed failure → pass cycles
+
 ## Non-Negotiable Constraint
 
 DO NOT write or modify implementation code until a new or changed test has failed for the expected behavioral reason.
@@ -108,3 +114,10 @@ All of these mean: delete the unverified code, start over with a failing test.
 | Batching all tests before implementation | One test → one implementation → repeat |
 | Chasing mutation score blindly | Review surviving mutations; meaningful survivors become new Red tests |
 | Skipping the Refactor step | Refactor while green to maintain code quality |
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- TDD biases toward caution over speed — for throwaway scripts or exploration, strict TDD may be overhead.
+- Requires a working test runner and framework in the project; does not set up test infrastructure.
+- Mutation testing gate requires the mutation-testing sub-plugin to be available.
+- Stop and ask for clarification if the behavior to test, the public seam, or the testing framework is unclear.

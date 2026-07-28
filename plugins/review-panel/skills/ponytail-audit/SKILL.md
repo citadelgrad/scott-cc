@@ -10,6 +10,12 @@ metadata:
   category: discipline
 ---
 
+## When to Use
+- Auditing an entire codebase for over-engineering and bloat
+- Finding what to delete, simplify, or replace with stdlib/native equivalents
+- Running a repo-wide scan (vs. ponytail-review which operates on diffs)
+- Ranking findings by biggest cut first
+
 ponytail-review, repo-wide. Scan the whole tree instead of a diff. Rank
 findings biggest cut first.
 
@@ -40,3 +46,10 @@ Scope: over-engineering and complexity only. Correctness bugs, security holes,
 and performance are explicitly out of scope. Route them to a normal review
 pass. Lists findings, applies nothing. One-shot.
 "stop ponytail-audit" or "normal mode" to revert.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Lists findings only — does not apply fixes.
+- Correctness, security, and performance are explicitly out of scope; route those to other lenses.
+- One-shot scan; does not track changes over time.
+- Stop and ask for clarification if the audit scope, codebase boundaries, or severity threshold is unclear.

@@ -19,7 +19,7 @@ When invoked with $ARGUMENTS, scope the scan to the specified file or directory.
 
 A red flag is a signal, not a diagnosis. It tells you something is wrong but not why. Each flag below points to a deeper lens that identifies the root cause.
 
-## When to Apply
+## When to Use
 
 - Before merging a PR or completing a design review
 - When code "feels wrong" but the specific problem is unclear
@@ -255,3 +255,9 @@ _Hard to Pick Name_, _Hard to Describe_, _Non-obvious Code_ and _No Alternatives
 5. **Check for syndromes**: Multiple triggered flags may share a root cause. See `references/flag-interaction-map.md` for named clusters. A syndrome points at an architectural issue. Fixing the root cause resolves all flags in the cluster.
 6. **Prioritize**: Boundary flags compound over time and infect adjacent code, so fix those first. Canary flags are the cheapest to act on. Structural flags require refactoring but affect a bounded area.
 7. **Recommend**: Create a report with prioritized, actionable fixes tied to specific principles.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Red flags are signals, not diagnoses — each flag points to a deeper lens for root cause analysis.
+- Does not fix issues; produces a diagnostic report only.
+- Stop and ask for clarification if the review scope or severity threshold is unclear.

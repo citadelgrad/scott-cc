@@ -18,7 +18,7 @@ When invoked with $ARGUMENTS, focus the analysis on the specified file or module
 
 **Comments are not recording a design that already exists. They are the medium in which the design is discovered.** Code captures mechanism. Comments capture meaning. Even a perfect programming language could not replace them. The information types are distinct.
 
-## When to Apply
+## When to Use
 
 - Reviewing code with comments (or conspicuously lacking them)
 - When writing new interfaces and considering documentation strategy
@@ -110,3 +110,9 @@ Red flag signals for comments are cataloged in **red-flags** (Comment Repeats Co
 For deeper coverage, load on demand:
 
 - [Comments-first workflow](references/comments-first-workflow.md): Full 6-step process, complexity canary tests, cost analysis, and why after-the-fact comments are a red flag.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- This is a read-only review lens — it identifies issues but does not write or refactor code.
+- Findings are diagnostic signals, not definitive verdicts — use judgment in context.
+- Stop and ask for clarification if the target scope, module boundary, or review criteria are unclear.

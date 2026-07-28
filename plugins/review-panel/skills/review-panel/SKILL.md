@@ -29,6 +29,12 @@ each survivor, fixes everything in a single pass, re-reviews for regressions and
 coherence, and loops until a clean round or a circuit-break. This is the thing a human runs by
 hand or a `foundry` gate invokes unattended.
 
+## When to Use
+- A diff, PR, or branch needs a comprehensive verification pass before merge
+- Invoked as an automated foundry/CI gate (mode:agent)
+- The user asks for a "review panel" or "full review"
+- Multiple review perspectives are needed simultaneously (not just one lens)
+
 ## When to invoke this vs. a single seat
 
 - **Invoke this skill** when the ask is comprehensive verification of a diff/PR/branch before
@@ -202,3 +208,10 @@ skipped and why. This rule applies across all 7 stages, not just CONVERGE's fina
 narrowed run's tier-specific guarantees (enumerated in `references/lite-mode.md`) are this same
 coverage-honesty disclosure applied to `--lite`/`--medium`/`--auto` — a deliberate, disclosed scope
 reduction, never a silent behavior change.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Context-intensive — large PRs may need --lite or --medium mode to avoid context exhaustion.
+- Works best when the full Clairvoyance lens collection is installed; discloses missing seats.
+- Not for single-lens checks — invoke the specific reviewer directly for focused analysis.
+- Stop and ask for clarification if the review scope, tier, or output format requirements are unclear.

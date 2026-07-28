@@ -25,6 +25,11 @@ metadata:
 
 # Test-Driven Development
 
+## When to Use
+- Building features or fixing bugs using TDD with red-green-refactor
+- Writing integration tests or test-first development
+- Design-philosophy-oriented TDD grounded in deep modules and interface design for testability
+
 ## Philosophy
 
 **Core principle**: Tests should verify behavior through public interfaces, not implementation details. Code can change entirely; tests shouldn't.
@@ -127,3 +132,10 @@ After all tests pass, look for [refactor candidates](refactoring.md):
 [ ] Code is minimal for this test
 [ ] No speculative features added
 ```
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- TDD biases toward caution — for throwaway scripts or exploration, strict TDD may be overhead.
+- Requires a working test runner and framework in the project.
+- Design-philosophy approach may differ from pure red-green-refactor TDD; both are valid.
+- Stop and ask for clarification if the behavior to test, testing framework, or test scope is unclear.

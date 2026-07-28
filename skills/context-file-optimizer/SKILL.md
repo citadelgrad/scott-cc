@@ -8,7 +8,7 @@ description: >-
 license: MIT
 metadata:
   category: technique
-  triggers: [CLAUDE.md, AGENTS.md, cursorrules, context-file, agent-instructions, token-optimization, context-bloat]
+  triggers: [CLAUDE.md, AGENTS.md, cursorrules, windsurfrules, copilot-instructions, context-file, agent-instructions, token-optimization, context-bloat, context-audit, verbose-context, context-cost]
 ---
 
 # Context File Optimizer
@@ -132,6 +132,22 @@ After rewriting, verify:
 5. **Commands are exact** — Every command can be copy-pasted and run
 6. **Displaced content goes to Skills** — Cut reference material becomes a Skill, not a docs/ file
 
+## Common Mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Cutting code quality standards as "general advice" | Project coding rules (DRY, KISS, thin handlers) belong in CLAUDE.md — preserve them |
+| Moving content to `docs/` instead of a Skill | `docs/` files don't auto-load; Skills are the only JIT mechanism |
+| Using `@path` imports for deferred loading | `@` imports expand eagerly at launch — they're organizational, not deferred |
+| Keeping architecture prose in CLAUDE.md | Agents explore codebases effectively on their own; cut architecture overviews |
+| Going over 200 lines in root CLAUDE.md | Attention degrades past this threshold; split to Skills or subdirectory CLAUDE.md |
+
 ## Research Reference
 
 Read `references/research-findings.md` for the full experimental data supporting these guidelines, including specific performance numbers and the verbatim conclusion from the paper.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Research findings are based on specific benchmarks — results may vary for niche domains or unusual project structures.
+- Does not cover IDE-specific context mechanisms (e.g., Cursor composer rules, Copilot workspace files) beyond the file formats listed.
+- Stop and ask for clarification if the project has multiple context files with unclear ownership or conflicting content.

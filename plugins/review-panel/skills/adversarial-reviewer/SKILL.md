@@ -34,7 +34,7 @@ Every adversarial pass must cover all four of these, not a subset:
 
 Scope 4 is what distinguishes this skill from a typical security/bug scanner: it is adversarial toward *conclusions*, not just toward *code*.
 
-## When to Apply
+## When to Use
 
 - Any time a PR, diff, file, or design needs a red-team pass
 - As a core seat in a multi-reviewer panel session (see the panel orchestrator)
@@ -141,3 +141,9 @@ Example (illustrates the distinction from a genuine finding in the same output):
 - Report a finding without a file:line and a concrete triggering scenario
 - Treat this skill as gated behind a panel session — it is standalone-invocable on any target, any time
 - Rate a manufactured (fallback) finding above Minor, or omit its `manufactured: true` marker, under any circumstance — including when another seat happens to raise a similar note independently
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Adversarial review is destructive testing — it finds weaknesses, not solutions.
+- Does not replace security-specific tooling (SAST, DAST, penetration testing) for production systems.
+- Stop and ask for clarification if the attack surface, threat model, or review scope is unclear.

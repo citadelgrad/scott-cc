@@ -19,7 +19,7 @@ When invoked with $ARGUMENTS, focus the analysis on the specified file or module
 
 Complexity is relative to the task: the same codebase can feel simple for one operation and painful for another. The writer of the code is often the worst judge of its complexity. If other collaborators (human or agent) find it complex, it is. Diagnose it using three symptoms, two root causes, and the fundamental formula.
 
-## When to Apply
+## When to Use
 
 - When code feels harder to work with than it should be
 - When small changes require edits in many places
@@ -92,3 +92,9 @@ When you find complexity, you have two options:
 6. **Recommend**: Eliminate the complexity, or encapsulate it in a deep module
 
 Unlike other lenses, no individual red-flags signal routes here directly — complexity-recognition is the entry point when red-flags itself doesn't pinpoint a specific named flag (see red-flags' own "Not for diagnosing why code feels complex" disambiguation).
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- This is a read-only review lens — it identifies issues but does not write or refactor code.
+- Findings are diagnostic signals, not definitive verdicts — use judgment in context.
+- Stop and ask for clarification if the target scope, module boundary, or review criteria are unclear.

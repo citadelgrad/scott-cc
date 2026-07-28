@@ -23,7 +23,7 @@ scores every surviving variant, and this skill hands the human a ranked shortlis
 **Builders never see each other's work. Judges see all of it.** That asymmetry is the whole
 point: contamination-free generation, informed comparison.
 
-## When to Apply
+## When to Use
 
 - Multiple genuinely different implementation approaches are plausible and worth building out,
   not just sketching
@@ -186,3 +186,9 @@ This skill depends on `review-panel`'s `taste-review` and `ponytail-review` skil
 judge panel's three axes — this is the sanctioned direction. `review-panel` must never import
 from or special-case `variant-explorer`, and must never gain any worktree-spawning or execution
 machinery; that machinery stays entirely inside this plugin.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Variant exploration is generative — results need evaluation and validation before adoption.
+- Quality of variants depends on clarity of the design space and constraints provided.
+- Stop and ask for clarification if the design space, constraints, or evaluation criteria are unclear.

@@ -17,7 +17,7 @@ When invoked with $ARGUMENTS, focus the analysis on the specified file, module, 
 
 Evaluate whether code modifications maintain or degrade design quality.
 
-## When to Apply
+## When to Use
 
 - Reviewing a PR that modifies existing code
 - After adding a feature to an existing system
@@ -105,3 +105,9 @@ Five maintenance rules:
 6. **Recommend**: Specific improvements to make the change feel designed-in
 
 Red flag signals for code evolution are cataloged in **red-flags** (Repetition, Tactical Momentum).
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- This is a read-only review lens — it identifies issues but does not write or refactor code.
+- Findings are diagnostic signals, not definitive verdicts — use judgment in context.
+- Stop and ask for clarification if the target scope, module boundary, or review criteria are unclear.

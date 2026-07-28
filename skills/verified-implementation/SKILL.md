@@ -218,3 +218,10 @@ For Tier 1 changes, add a "Sources consulted" block to the PR body. The citation
 - [ ] Patterns without an authoritative source are explicitly flagged UNVERIFIED
 - [ ] PR description includes "Sources consulted" block for Tier 1 changes
 - [ ] Doc/code conflicts surfaced to the user, not silently resolved
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Source-fetching depends on internet access and API availability — if authoritative sources cannot be reached, flag the gap explicitly.
+- Does not replace professional security audits, penetration testing, or compliance reviews for production systems.
+- Verification is only as good as the sources consulted — emerging vulnerabilities may not yet be documented.
+- Stop and ask for clarification if the criticality tier, applicable standards, or threat model is unclear.

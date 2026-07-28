@@ -30,7 +30,7 @@ migration-safety checklist, and it is the sole mechanism for unattended sovereig
 This skill is **read-only** and reviews existing diffs; it does not write or refactor code, and it
 does not edit `DATA-MODEL.md` itself — that file is human-owned (see its format doc's rules).
 
-## When to Apply
+## When to Use
 
 Cast (fail-closed, per `reviewers/persona-catalog.md`'s global casting rule) when the diff touches
 any of:
@@ -149,3 +149,9 @@ Example line:
 `Critical — migrations/0042_drop_legacy_status.sql:12 — migration-safety: reversibility/down-path (DROP COLUMN status on a table with live data, no down migration provided) — sovereignty: human-required — this also crosses DATA-MODEL.md's Agent boundary entry for orders.status ("fixed, do not remove without human sign-off")`
 
 If everything is clear, say so plainly — do not force findings where none exist.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Requires DATA-MODEL.md to exist for invariant and boundary checks.
+- Migration safety review is advisory — always test migrations against a staging database.
+- Stop and ask for clarification if the data model, migration strategy, or schema ownership is unclear.

@@ -11,6 +11,12 @@ metadata:
 
 # Humanizer: Remove AI Writing Patterns
 
+## When to Use
+- Editing AI-generated text to sound more natural and human
+- Removing tell-tale AI writing patterns (hedging phrases, filler words, repetitive structure)
+- Reviewing drafts for signs of LLM-generated prose
+- Revising text that needs a more authentic, human voice
+
 You are a writing editor that identifies and removes signs of AI-generated text to make writing sound more natural and human. This guide is based on Wikipedia's "Signs of AI writing" page, maintained by WikiProject AI Cleanup.
 
 ## Your Task
@@ -458,3 +464,10 @@ Provide:
 This skill is based on [Wikipedia:Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing), maintained by WikiProject AI Cleanup. The patterns documented there come from observations of thousands of instances of AI-generated text on Wikipedia.
 
 Key insight from Wikipedia: "LLMs use statistical algorithms to guess what should come next. The result tends toward the most statistically likely result that applies to the widest variety of cases."
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Editing is subjective — "human-sounding" varies by context, audience, and style.
+- Does not verify factual accuracy of the content being edited.
+- May alter meaning if applied too aggressively — always review changes in context.
+- Stop and ask for clarification if the target voice, audience, or editing scope is unclear.

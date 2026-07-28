@@ -10,6 +10,12 @@ metadata:
   category: technique
 ---
 
+## When to Use
+- Building or extending a TASTE.md file for a project
+- Eliciting personal taste via forced choices between realistic alternatives
+- Distilling taste picks into Preferences, Weightings, and Anti-preferences
+- Running a grilling session to surface implicit design preferences
+
 <what-to-do>
 
 Elicit taste through forced choices, not introspection. Do not ask "what's your invariant here?" or "how do you like to structure X?" — those questions ask the user to theorize about their own preferences, and people are unreliable narrators of their own taste. Instead, present two concrete, realistic alternatives and make them pick.
@@ -103,3 +109,10 @@ Outside of a live grilling session, taste signal also shows up in the moment: a 
 5. The session is complete once `Candidate rules` is empty. If the human stops early with candidates still pending, say so explicitly in the session summary rather than implying completion.
 
 </supporting-info>
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Taste preferences are subjective — they document personal style, not universal quality.
+- Effectiveness depends on the user engaging honestly with forced choices.
+- Does not replace universal-quality lenses (design-review, ponytail-review).
+- Stop and ask for clarification if the domain, scope of taste elicitation, or TASTE.md format is unclear.

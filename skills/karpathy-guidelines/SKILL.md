@@ -7,7 +7,7 @@ description: >-
 license: MIT
 metadata:
   category: discipline
-  triggers: [overcomplication, over-engineering, surgical-changes, simplicity, assumptions, LLM-mistakes, code-review, refactoring]
+  triggers: [overcomplication, over-engineering, surgical-changes, simplicity-first, hidden-assumptions, LLM-mistakes, YAGNI, speculative-code, scope-creep, unnecessary-abstraction, code-review, goal-driven]
 ---
 
 # Karpathy Guidelines
@@ -15,6 +15,12 @@ metadata:
 Behavioral guidelines to reduce common LLM coding mistakes, derived from [Andrej Karpathy's observations](https://x.com/karpathy/status/2015883857489522876) on LLM coding pitfalls.
 
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
+
+## When to Use
+- Writing or reviewing code where overcomplication is a risk
+- Making surgical changes to existing code without scope creep
+- Reviewing LLM-generated code for common pitfalls
+- Any task where simplicity, explicitness, and verifiable success criteria matter
 
 ## 1. Think Before Coding
 
@@ -103,3 +109,10 @@ All of these mean: pause, re-read the request, and simplify.
 | Refactoring unrelated code in the same PR | Touch only what the request requires |
 | Defining success as "it works" | Define specific, testable criteria before starting |
 | Adding configuration/flexibility not requested | Ship the simplest thing that solves the problem |
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- These guidelines bias toward caution — for speed-critical prototyping or throwaway code, use judgment.
+- Does not replace language-specific best practices or domain-specific design patterns.
+- Not a substitute for code review by a human with domain knowledge.
+- Stop and ask for clarification if the scope of the change or success criteria are unclear.

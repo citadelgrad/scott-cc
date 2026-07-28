@@ -18,7 +18,7 @@ dependencies and hand each one to `triage-spine` as a normalized item. It never 
 produces a fix, and never invokes `review-panel` itself — that's the spine's job, downstream of
 this detector's output (`skills/triage-spine/SKILL.md`'s registered `source: lib-upgrades`).
 
-## When to Apply
+## When to Use
 
 - A scheduled Foundry check (see `../../../docs/foundry-recipes.md`) periodically runs this
   detector over the repo's manifest(s)
@@ -85,3 +85,9 @@ This detector is designed to be schedulable as a periodic Foundry check (see
 `../../../docs/foundry-recipes.md`). It does not create or modify any `foundry.yaml` file itself —
 that wiring is a Foundry-side concern, per the same convention `plan-security-review` already
 establishes.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Detects upgrades based on lockfile/manifest changes; may miss transitive dependency changes.
+- Does not evaluate whether the upgrade is safe — pair with a test run or security scan.
+- Stop and ask for clarification if the package ecosystem, upgrade scope, or risk tolerance is unclear.

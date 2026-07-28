@@ -22,6 +22,12 @@ uses:
 
 Interactive scaffolding for a new project. Detects what already exists, presents a menu, and sets up only what you select.
 
+## When to Use
+- Starting a brand-new project from scratch
+- Adding missing scaffolding pieces (CLAUDE.md, Makefile, .envrc, etc.) to an existing project
+- Setting up beads issue tracking, pre-commit hooks, or foundry.yaml for the first time
+- Onboarding a project to the standard toolchain
+
 ## Step 1: Detect Current State
 
 Run these checks in the current working directory:
@@ -401,3 +407,10 @@ Available skills for common workflows:
 Only list skills that are relevant to the project type detected in Step 1:
 - Python or unknown project: list all four
 - Node/TS project: omit `pas-pipeline` and `reck-factory` unless `pas.toml` or `foundry.yaml` is present
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Templates are opinionated — they reflect this project's conventions, not universal best practices.
+- Does not install system dependencies (git, direnv, pre-commit) — assumes they are already available.
+- Does not configure CI/CD pipelines; use foundry.yaml for local automation only.
+- Stop and ask for clarification if the project type, language, or desired components are unclear.

@@ -12,6 +12,11 @@ metadata:
 
 Preferences and procedures learned from your past local agent sessions.
 
+## When to Use
+- Applying learned behavioral preferences from past sessions
+- Reviewing or updating auto-maintained agent procedures
+- Debugging why an agent follows certain patterns during sessions
+
 <!-- SKILLOPT-SLEEP:LEARNED START -->
 ## Learned preferences & procedures
 
@@ -22,3 +27,8 @@ _This block is maintained by SkillOpt-Sleep. Edits here are proposed offline, va
 - OVERRIDE: this environment has 'Auto Mode Active' — do not pause to ask clarifying questions on ambiguous but actionable requests (e.g. 'review the last 100 sessions', 'give an overview of the review panel skill', 'run skillopt on the pas skill'). Make the reasonable interpretation, use available local search/file tools to gather real content, and deliver a substantive answer in the same turn. Only stop short if genuinely blocked with no reasonable default (e.g. missing credentials, destructive/irreversible action, or truly no viable interpretation).
 - For requests asking for a deliverable (an overview, a settings.json file, a reviewed/improved plan, a demo file), the final response must contain the complete deliverable content itself — not a description of the plan to produce it, and not a truncated fragment. If the deliverable is large, complete it fully within the turn rather than stopping after outlining the approach.
 <!-- SKILLOPT-SLEEP:LEARNED END -->
+
+## Limitations
+- This file is auto-maintained by SkillOpt-Sleep — do not hand-edit the content between the LEARNED START/END markers.
+- Preferences are derived from local session patterns and may not generalize across different environments or users.
+- Does not replace explicit project-level or user-level instructions when they conflict.

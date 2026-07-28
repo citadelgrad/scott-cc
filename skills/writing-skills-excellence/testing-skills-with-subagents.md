@@ -1,3 +1,11 @@
+---
+description: >-
+  How to test skills using subagents before deployment. Covers pressure
+  testing, rationalization resistance, and verification workflows.
+metadata:
+  tags: [testing, subagents, skill-verification, pressure-testing, deployment]
+---
+
 # Testing Skills With Subagents
 
 **Load this reference when:** creating or editing skills, before deployment, to verify they work under pressure and resist rationalization.

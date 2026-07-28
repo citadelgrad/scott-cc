@@ -116,3 +116,10 @@ function process(data: ProcessableData) {
 | Creating abstractions for 1-2 uses | Wait for 3+ similar patterns before extracting |
 | Adding logging everywhere | Only add logging where it provides concrete value |
 | Changing behavior while simplifying | Only change *how*, never *what* |
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Preserves exact functionality — does not add features, fix bugs, or change behavior.
+- Framework patterns are opinionated (React, Next.js, Express) — verify they match the project's conventions.
+- Does not replace running tests, linters, and type checkers after refactoring.
+- Stop and ask for clarification if the codebase structure, framework choice, or refactoring scope is unclear.

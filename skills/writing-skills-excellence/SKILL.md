@@ -1,6 +1,9 @@
 ---
 name: writing-skills-excellence
-description: "Use when creating, updating, or improving agent skills."
+description: >-
+  Use when creating, updating, or improving agent skills. Covers skill
+  structure, naming, descriptions, anti-rationalization, testing, and
+  tiered architecture (simple, expanded, platform).
 license: MIT
 metadata:
   category: meta

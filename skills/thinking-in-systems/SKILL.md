@@ -8,7 +8,7 @@ description: >-
 license: MIT
 metadata:
   category: pattern
-  triggers: [systems-thinking, analysis, design, leverage-points, archetypes]
+  triggers: [systems-thinking, stocks-and-flows, feedback-loops, reinforcing-loop, balancing-loop, leverage-points, system-archetypes, tragedy-of-commons, policy-resistance, shifting-the-burden, root-cause-structure, Donella-Meadows]
 sources:
   - "Meadows, Donella H. Thinking in Systems: A Primer. Chelsea Green Publishing, 2008."
 ---
@@ -20,9 +20,12 @@ technical, ecological, or policy. The skill runs four phases: map the system's
 structure, diagnose which system traps are active, rank leverage points by impact,
 and produce concrete intervention recommendations.
 
-Use this skill when:
+## When to Use
 - Analyzing why a system keeps producing the same bad outcomes despite repeated fixes
 - Designing a new system and wanting to avoid classic failure traps from the start
+- Mapping feedback loops, stocks, and flows in organizational or technical systems
+- Diagnosing system archetypes (tragedy of the commons, shifting the burden, etc.)
+- Ranking leverage points to find the highest-impact interventions
 - Looking for the highest-leverage intervention in a complex, interconnected problem
 - Helping a team stop treating symptoms and start addressing root structure
 
@@ -353,3 +356,10 @@ or in a proposed design:
 | **Short-term symptom addiction** | Repeated application of a fix that works briefly but worsens the root cause | Name the reinforcing loop being created; identify structural alternative |
 
 Flag any anti-pattern you spot throughout the live analysis — not just during this final review pass.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Systems thinking is a diagnostic and design framework, not an execution plan — it identifies leverage points, not implementation steps.
+- Requires sufficient information about the system's structure; stop and ask for clarification if stocks, flows, or boundaries are unclear.
+- Model accuracy depends on the quality of inputs — garbage in, garbage out.
+- Does not replace domain expertise in the specific system being analyzed (organizational, ecological, policy, etc.).

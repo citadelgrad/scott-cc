@@ -4,7 +4,7 @@ description: Use when a plan, architecture, or implementation proposal needs Soc
 license: MIT
 metadata:
   category: discipline
-  triggers: [grill, stress-test, architecture, risk-matrix, pre-implementation]
+  triggers: [grill, stress-test, architecture-review, risk-matrix, pre-implementation, proposal-review, decision-tree, trade-offs, requirements-vague, failure-modes]
   source: https://github.com/mattpocock/skills/tree/main/skills/productivity/grill-me
 ---
 
@@ -12,9 +12,15 @@ metadata:
 
 Interrogate the proposal until its important decisions are explicit and defensible. This is a pre-execution gate, not performative brainstorming.
 
+## When to Use
+- A plan, architecture, or implementation proposal is about to be executed
+- Requirements, trade-offs, edge cases, or failure modes remain vague
+- A decision tree has unresolved parent nodes blocking child decisions
+- A team wants stress-testing of a proposal before committing resources
+
 ## Hard Stop
 
-Do not write code, edit files, launch implementation agents, or approve execution while a material requirement or design decision is vague. “We can decide later,” “probably,” and unstated defaults are unresolved decisions, not answers.
+Do not write code, edit files, launch implementation agents, or approve execution while a material requirement or design decision is vague. "We can decide later," "probably," and unstated defaults are unresolved decisions, not answers.
 
 Facts belong to discovery: inspect the repository, documentation, and runtime instead of asking the user to recall retrievable information. Decisions belong to the user: present a recommendation, ask for justification, and wait.
 
@@ -52,8 +58,30 @@ Only `PROCEED` may flow directly into implementation. `PROCEED WITH CONDITIONS` 
 
 ## Anti-Rationalization
 
-- Urgency does not make ambiguity safe.
-- A familiar architecture is not evidence that it fits this system.
-- A happy-path demo does not resolve failure behavior.
-- “The agent can figure it out” transfers an unresolved product decision to implementation.
-- A risk matrix with generic entries is paperwork; tie every row to this proposal.
+**Violating the letter of these rules is violating the spirit of these rules.**
+
+| Rationalization | Reality |
+|---|---|
+| "This is urgent, we can decide later" | Urgency does not make ambiguity safe. Ambiguous decisions under pressure create the costliest bugs. |
+| "We've used this architecture before" | A familiar architecture is not evidence that it fits this system. Name the specific fit. |
+| "The happy-path demo works" | A happy-path demo does not resolve failure behavior. What happens when it breaks? |
+| "The agent can figure it out" | Transferring an unresolved product decision to implementation is not delegation — it's abdication. |
+| "Let's just start and iterate" | Starting without clear decisions creates sunk-cost pressure to keep bad choices. |
+| "The risk matrix is done" | Generic entries are paperwork. Every row must tie to this specific proposal with concrete evidence. |
+
+### Red Flags — STOP
+
+- Proceeding to implementation with any `STOP` recommendation active
+- Risk matrix rows that could apply to any project (not this one)
+- "We can decide later" on a parent decision that blocks child decisions
+- Accepting "probably" as an answer to a requirement question
+- Skipping the risk matrix because "this is straightforward"
+
+All of these mean: return to the decision tree and resolve the ambiguity.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- This is a pre-execution gate — it does not produce implementation artifacts.
+- Effectiveness depends on the user's willingness to engage with hard questions; it cannot force resolution.
+- Does not replace domain-expert review for highly specialized fields (security, compliance, regulatory).
+- Stop and ask for clarification if the proposal scope, system boundary, or decision ownership is unclear.

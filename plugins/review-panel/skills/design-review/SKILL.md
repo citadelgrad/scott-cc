@@ -15,6 +15,12 @@ metadata:
 
 # Design Review Orchestrator
 
+## When to Use
+- Reviewing a file, module, or PR for overall design quality
+- Wanting a comprehensive, prioritized assessment through a diagnostic funnel
+- Running complexity triage through structural, interface, and surface checks
+- Orchestrating multiple design lenses in the correct sequence
+
 When invoked with $ARGUMENTS, scope the entire review to the specified target. Read the target code first, then proceed through the phases below in order. This skill orchestrates other skills from Clairvoyance (https://clairvoyance.fyi). It works best when the full collection is installed.
 
 This skill does not replace individual lenses. It sequences them into a diagnostic funnel that moves from broad to narrow, skipping work when early phases find nothing actionable.
@@ -80,3 +86,10 @@ Rank findings in this order:
 The funnel above is written for one target reviewed in-conversation. When the target is an entire codebase, a large PR spanning many files, or the user asks for a "thorough" or "comprehensive" review, running it once per file in a single conversation burns context fast and serializes work that has no reason to be serial.
 
 If Dynamic Workflows are available in this session (the user said "workflow," used the `ultracode` keyword, or `/effort ultracode` is set), build one instead of running the funnel manually file by file. See [references/workflow-builder.md](references/workflow-builder.md) for how to map these five phases onto a workflow script — what fans out, what needs a barrier, and where to add adversarial verification. If workflows aren't available, fall back to running the funnel per file or module in sequence, same as a single-target review.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Orchestrates other skills — works best when the full Clairvoyance collection is installed.
+- Context-intensive for large codebases; consider per-file reviews for big PRs.
+- Not for applying a single specific lens — invoke that skill directly instead.
+- Stop and ask for clarification if the review scope, target, or priority criteria are unclear.

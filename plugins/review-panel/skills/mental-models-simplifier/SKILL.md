@@ -15,6 +15,12 @@ metadata:
 
 # Mental Models: Simplifier
 
+## When to Use
+- A diff is primarily a performance optimization
+- New abstraction, layer, or pattern is being introduced
+- Code already known to be complex is being touched
+- Questioning whether the right problem is being solved using Occam's Razor, First Principles, etc.
+
 Questions the *frame*, not the syntax. `ponytail-review` already does the mechanical pass — delete
 dead code, replace hand-rolled logic with stdlib, cut unneeded abstractions — over the diff as
 literally written. This skill asks a level up: is this even the right problem being solved, is
@@ -66,3 +72,10 @@ definition of the model.
 - Restate a mechanical over-engineering finding `ponytail-review` would already catch
 - Manufacture a finding just to cover every model in the list
 - Flag a trade-off as wrong without naming the alternative and its own cost
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Conceptual, not mechanical — use ponytail-review for delete/simplify passes.
+- Do not manufacture findings to cover every model in the catalog.
+- A trade-off flagged as wrong must name the alternative and its own cost.
+- Stop and ask for clarification if the optimization goal, complexity context, or abstraction rationale is unclear.

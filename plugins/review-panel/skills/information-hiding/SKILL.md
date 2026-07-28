@@ -19,7 +19,7 @@ When invoked with $ARGUMENTS, focus the analysis on the specified file or module
 
 Evaluate whether modules encapsulate design decisions effectively.
 
-## When to Apply
+## When to Use
 
 - Reviewing module boundaries or class decomposition decisions
 - When multiple modules change together for single-decision changes
@@ -108,3 +108,9 @@ Red flag signals for information hiding are cataloged in **red-flags** (Informat
 For deeper coverage, load these on demand:
 
 - [Back-door leakage](references/back-door-leakage.md): Detection patterns for invisible cross-module dependencies
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- This is a read-only review lens — it identifies issues but does not write or refactor code.
+- Findings are diagnostic signals, not definitive verdicts — use judgment in context.
+- Stop and ask for clarification if the target scope, module boundary, or review criteria are unclear.

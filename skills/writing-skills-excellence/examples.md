@@ -1,3 +1,11 @@
+---
+description: >-
+  Complete copy-paste templates for each skill type (technique, reference,
+  discipline, pattern) with example frontmatter and structure.
+metadata:
+  tags: [templates, examples, skill-types, copy-paste]
+---
+
 # Skill Templates & Examples
 
 Complete, copy-paste templates for each skill type.

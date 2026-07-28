@@ -1,14 +1,14 @@
 ---
 name: c4-diagram
 description: >-
-  Use when generating C4 architecture diagrams or documenting system structure
-  at Context, Container, or Component levels. Produces standard Mermaid flowchart
-  syntax with short labels, companion legend tables, and sequence diagrams for
-  runtime behavior.
+  Use when generating C4 architecture diagrams, documenting system structure
+  at Context, Container, or Component levels, or adding sequence diagrams for
+  runtime behavior. Covers Mermaid flowchart syntax, node styling, legend
+  tables, and layout best practices.
 license: MIT
 metadata:
   category: technique
-  triggers: [architecture, diagrams, c4, mermaid, documentation]
+  triggers: [architecture-diagram, c4-model, c4-context, c4-container, c4-component, mermaid-flowchart, system-boundary, sequence-diagram, architecture-documentation]
 sources:
   - https://c4model.com/
   - https://mermaid.js.org/syntax/flowchart.html
@@ -20,7 +20,7 @@ Generate C4-model architecture diagrams using standard Mermaid `flowchart` synta
 
 **Why not the Mermaid C4 plugin?** The `C4Context`/`C4Container`/`C4Component` Mermaid plugin produces overlapping labels and broken layout. Use `flowchart TB` or `flowchart LR` with manual C4 styling instead.
 
-Use this skill when:
+## When to Use
 - Creating a new architecture diagram from scratch
 - Documenting a system at Context, Container, or Component level
 - Adding a sequence diagram to show runtime behavior
@@ -244,3 +244,10 @@ sequenceDiagram
     U-->>D: logged in
 \`\`\`
 ```
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Mermaid rendering varies across tools — always preview diagrams in the target renderer.
+- C4 diagrams show structure, not runtime timing — use sequence diagrams for behavioral flows.
+- Does not generate deployment diagrams (C4 Level 4) or infrastructure maps.
+- Stop and ask for clarification if the system boundary, scope, or level is unclear.

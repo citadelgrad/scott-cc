@@ -21,7 +21,7 @@ When invoked with $ARGUMENTS, focus the analysis on the specified file, module, 
 
 Evaluate whether code invests in design or just gets the job done.
 
-## When to Apply
+## When to Use
 
 - When reviewing code written under time pressure
 - When assessing technical debt in a codebase
@@ -93,3 +93,9 @@ This doesn't mean over-engineer. It means: do the simple, clean thing instead of
 5. **Recommend**: Specific investments with estimated effort
 
 Red flag signals for strategic mindset are cataloged in **red-flags** (Tactical Momentum).
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- This is a read-only review lens — it identifies issues but does not write or refactor code.
+- Findings are diagnostic signals, not definitive verdicts — use judgment in context.
+- Stop and ask for clarification if the target scope, module boundary, or review criteria are unclear.

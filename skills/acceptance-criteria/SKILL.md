@@ -18,6 +18,13 @@ AC are the specific, testable conditions that define when a story is **done** �
 they are story-specific (unlike the Definition of Done, which is a universal
 team checklist applied to every story).
 
+## When to Use
+
+- Writing AC for a new story, ticket, or feature spec
+- Reviewing existing AC for testability and completeness
+- Translating vague requirements into Gherkin, checklist, or rules format
+- Ensuring edge cases, error states, and boundaries are covered before implementation
+
 ## Parse Arguments
 
 Extract from `$ARGUMENTS`:
@@ -204,3 +211,9 @@ If you see these in existing AC (review mode) or catch yourself writing them, fi
 - **Passive outcomes** without observable effect — "The system processes the request" is not testable unless you say what "processed" looks like.
 - **Missing actor** — Who performs the When? Be explicit: user, admin, background job, external system.
 - **Scope creep bait** — "And also the user can export to PDF" buried in the Then. New behavior = new story.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- AC produced here are a starting point — they still need domain-expert review for correctness.
+- Does not replace team retrospectives on what "done" means (Definition of Done).
+- Stop and ask for clarification if the story, scope, or success criteria are ambiguous.

@@ -13,6 +13,11 @@ metadata:
 
 # Diagnose
 
+## When to Use
+- Someone describes a problem but doesn't know which skill or lens to reach for
+- A vague symptom or complaint needs routing to the most relevant review skill
+- Code feels wrong but the specific design issue is unclear
+
 When invoked with $ARGUMENTS, match the described symptom against the decision tree below and route to the appropriate skill. If code paths are referenced, read them first to confirm the match before routing. This skill routes to other skills from Clairvoyance (https://clairvoyance.fyi). It works best when the full collection is installed.
 
 ## Decision Tree
@@ -84,3 +89,10 @@ Route to the highest-priority match first. Mention the secondary matches so the 
 ## Fallback
 
 If the described symptom does not match any branch above, fall back to **red-flags**: a systematic scan will surface concrete signals to diagnose from.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Routes to other skills — works best when the full Clairvoyance collection is installed.
+- Routing accuracy depends on symptom description quality; vague complaints may match multiple branches.
+- Not for running a comprehensive review (use design-review) or a checklist scan (use red-flags).
+- Stop and ask for clarification if the symptom is too vague to match any decision tree branch.

@@ -1,13 +1,13 @@
 ---
 name: delegate-first
 description: >-
-  Use when tasks would otherwise flood context with file reads, shell output,
-  build logs, or multi-step execution details. Keeps the main conversation clean
-  by forking implementation work to sub-agents.
+  Use when a task involves multiple file reads, code edits, builds, or verbose
+  shell output that would flood the main conversation context. Also use when
+  work splits into parallel research or implementation tracks.
 license: MIT
 metadata:
   category: technique
-  triggers: [subagents, delegation, context-management, claude-code]
+  triggers: [subagent, delegation, fork, context-pollution, noisy-output, worktree, parallel-work, multi-file-edit, build-logs, verbose-output]
 ---
 
 # Delegate First
@@ -149,3 +149,10 @@ The user is always in control. If they ask for inline work, do it inline.
 | Forking without a concrete prompt | Always include goal, constraints, verification, and output format |
 | Working in the primary checkout during a fork | Use `.worktrees/<task-id>` to isolate changes |
 | Force-deleting unmerged worktrees | Preserve on failure; only remove clean, merged worktrees |
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Sub-agents have independent context — they cannot see prior conversation history unless explicitly passed.
+- Worktree management assumes git is available and the repository is clean enough for branching.
+- Parallel forks increase resource usage; prefer sequential delegation for resource-constrained environments.
+- Stop and ask for clarification if the task decomposition or delegation boundaries are unclear.

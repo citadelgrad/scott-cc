@@ -1,3 +1,11 @@
+---
+description: >-
+  Anthropic's official best practices for writing Skills that Claude can
+  discover and use effectively. Covers structure, naming, and testing.
+metadata:
+  tags: [anthropic, best-practices, skill-authoring, discovery, naming]
+---
+
 # Skill authoring best practices
 
 > Learn how to write effective Skills that Claude can discover and use successfully.

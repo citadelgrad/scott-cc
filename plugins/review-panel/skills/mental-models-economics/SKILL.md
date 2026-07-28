@@ -15,6 +15,12 @@ metadata:
 
 # Mental Models: Economics/Debt
 
+## When to Use
+- A diff adds a new dependency or vendor
+- A PR includes TODO/FIXME/HACK markers or discusses trade-offs or deferred work
+- Framing changes as resource-allocation decisions: debt, build-vs-buy, vendor lock-in
+- Evaluating whether effort is proportional to the value a change delivers
+
 Frames the change as a resource-allocation decision. No other seat in this plugin reasons about
 engineering economics specifically: technical debt taken on knowingly vs. silently, build-vs-buy,
 vendor lock-in, and whether effort is proportional to the value a change actually delivers.
@@ -68,3 +74,10 @@ restated definition of the model.
 - Manufacture a finding just to cover every model in the list
 - Flag debt without checking whether it's already tracked with an owner/ticket — that's a
   Strength, not an Issue
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Frames decisions as economics; does not replace financial analysis or cost accounting.
+- Do not manufacture findings to cover every model in the catalog.
+- Debt already tracked with an owner/ticket is a Strength, not an Issue.
+- Stop and ask for clarification if the trade-off context, dependency rationale, or cost data is unclear.

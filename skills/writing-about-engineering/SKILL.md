@@ -17,7 +17,7 @@ metadata:
 
 This skill produces first-person engineering writing in a specific voice: conversational and rigorous, peer-to-peer, debug-log oriented. Anchored on Julia Evans and Simon Willison's TIL/blog rhythm — curious, granular, low ego, claim-then-evidence — and away from packaged-takeaway blog tropes.
 
-## When to invoke
+## When to Use
 
 Invoke when the requested output is:
 
@@ -82,3 +82,10 @@ Reading the draft aloud is the last filter. If a sentence sounds like documentat
 ## Resources
 
 - `references/voice-samples.md` — Four canonical samples (short post, blog opener, postmortem, reflective post) that demonstrate the target voice across all supported formats. Read these before drafting; reach for them again during pressure-testing if a paragraph feels off.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Produces first-person, peer-to-peer voice only — not marketing copy, product announcements, or institutional writing.
+- Voice calibration depends on the voice-samples reference; without it, output may drift toward generic blog tone.
+- Does not handle multi-author or editorial voice coordination.
+- Stop and ask for clarification if the target format, audience, or specific friction moment is unclear.

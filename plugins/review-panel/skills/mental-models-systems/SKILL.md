@@ -15,6 +15,12 @@ metadata:
 
 # Mental Models: Systems/Boundaries
 
+## When to Use
+- A diff touches concurrency, queues/message buses, caching, retries/backoff, or rate limiting
+- Service-to-service calls, connection pooling, or distributed state is involved
+- Evaluating dynamic runtime behavior: feedback loops, bottlenecks, emergence, scale
+- Applying systems mental models: Feedback Loops, Equilibrium, Critical Mass, etc.
+
 Evaluates *dynamic* behavior — how components interact at runtime, under load, and over time —
 as opposed to `design-review`'s funnel, which evaluates *static* module and abstraction quality.
 Two components can each look well-designed in isolation while their combination produces behavior
@@ -70,3 +76,10 @@ definition of the model.
 - Manufacture a finding just to cover every model in the list
 - Apply this skill to a diff with no cross-component interaction to trace (e.g. a pure
   single-function utility) — say so and stop rather than forcing a finding
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Evaluates dynamic runtime behavior, not static module quality (use design-review for that).
+- Do not apply to diffs with no cross-component interaction — say so and stop rather than forcing a finding.
+- Do not manufacture findings to cover every model in the catalog.
+- Stop and ask for clarification if the system topology, interaction pattern, or runtime context is unclear.

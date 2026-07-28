@@ -22,7 +22,7 @@ When invoked with $ARGUMENTS, focus the analysis on the specified file or module
 
 Programmers are often taught that "the more errors detected, the better," but this produces an over-defensive style that throws exceptions for anything suspicious. Throwing is easy. Handling is hard. Each exception type in a module's interface is one more thing callers must understand and prepare for, making the class shallower than it needs to be. Exception handlers are rarely exercised in practice, which means bugs in them accumulate silently. When a handler is finally needed, it may not work.
 
-## When to Apply
+## When to Use
 
 - Reviewing error handling code or exception hierarchies
 - When a function has many error cases or throws many exception types
@@ -109,3 +109,9 @@ The system's value depends on handling that failure (e.g., a replicated storage 
 6. **Recommend simplification**: Propose specific reductions in error surface.
 
 Red flag signals for error design are cataloged in **red-flags** (Catch-and-Ignore, Overexposure, Shallow Module).
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- This is a read-only review lens — it identifies issues but does not write or refactor code.
+- Findings are diagnostic signals, not definitive verdicts — use judgment in context.
+- Stop and ask for clarification if the target scope, module boundary, or review criteria are unclear.

@@ -1,3 +1,11 @@
+---
+description: >-
+  How LLMs respond to persuasion principles (authority, commitment, scarcity,
+  social proof, unity) and how to apply them in skill design for compliance.
+metadata:
+  tags: [persuasion, psychology, compliance, anti-rationalization, Cialdini]
+---
+
 # Persuasion Principles for Skill Design
 
 ## Overview

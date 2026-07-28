@@ -13,6 +13,12 @@ metadata:
 
 # Property-Based Testing
 
+## When to Use
+- Implementing serialization/parsing with round-trip guarantees
+- Testing data transformations, algorithms, or mathematical properties
+- Verifying API contracts or state machine invariants
+- Any scenario where testing all edge cases manually is impractical but invariants are expressible
+
 ## Overview
 
 Instead of testing specific examples, describe **properties that must always hold** and let the framework generate hundreds of random inputs to find counterexamples. Think in invariants, not examples.
@@ -162,3 +168,11 @@ Before writing any data transformation or algorithm, ask:
 3. **Check idempotence** — normalization, formatting, and cleanup functions almost always have this
 4. **Add an oracle** — if you're optimizing an existing implementation, diff against it
 5. **Look for metamorphic relations** — "if I change input X, output changes predictably by Y"
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- PBT complements but does not replace example-based tests — use both.
+- Requires a PBT framework (Hypothesis, fast-check, proptest) to be available in the project.
+- Property generation can be slow for complex custom strategies; tune `max_examples` and `max_size`.
+- Not effective when invariants cannot be expressed — some behaviors are best tested with concrete examples.
+- Stop and ask for clarification if the invariants, data shapes, or testing framework choice are unclear.

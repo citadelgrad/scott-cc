@@ -114,3 +114,10 @@ def append_to(element, target=None):
 | Using bare `except:` | Catch specific exceptions |
 | Mutable default arguments | Use `None` sentinel pattern |
 | Over-typing simple code | Let inference work; add types where they clarify |
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Preserves exact functionality — does not add features, fix bugs, or change behavior.
+- Framework patterns are opinionated (FastAPI, Django, Flask) — verify they match the project's conventions.
+- Does not replace running tests and type checkers after refactoring.
+- Stop and ask for clarification if the codebase structure, framework choice, or refactoring scope is unclear.

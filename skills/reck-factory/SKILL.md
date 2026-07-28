@@ -7,7 +7,7 @@ description: >-
 license: MIT
 metadata:
   category: reference
-  triggers: [reck, automation, containers, factory, pas]
+  triggers: [reck, reckoner, reck-task, reck-add, reck-schedule, software-factory, container-tasks, repo-registration, background-pipeline, reck-doctor]
 ---
 
 # Reck Software Factory
@@ -16,7 +16,7 @@ Operates `reck` (Reckoner) — a software factory that wraps `pas`. It manages r
 
 **Architecture:** Reckoner is the factory layer. It never invokes Claude directly — all task execution routes through PAS. Foundry sits above as the platform quality layer (gates, schedules, CI-style profiles).
 
-Use this skill when:
+## When to Use
 - Running an AI-driven task against a registered repo (`reck task`)
 - Registering or managing repos in the factory
 - Setting up or troubleshooting scheduled background pipelines
@@ -212,6 +212,16 @@ The observability stack aggregates logs from all tasks. Run `reck infra` once to
 
 ---
 
+## Common Mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Forgetting `--no-pr` for exploratory tasks | Always use `--no-pr` when you want to review before committing to a PR |
+| Not running `reck sync` before a task | Reck does not auto-sync; run `reck sync` manually or schedule it |
+| Using crontab/launchd for scheduled pipelines | Use `reck schedule` for factory-level; `foundry.yaml` for project-level |
+| Skipping `reck doctor` when something fails | Run `reck doctor` first to check container runtime, repo integrity, infra health |
+| Not setting `working_dir` after `reck add` | Set it so PR branches can be checked out locally for review |
+
 ## Step 8: Diagnostics
 
 ```bash
@@ -225,3 +235,10 @@ reck config
 ```
 
 Shows current configuration (paths, defaults, active model). Useful for verifying what `reck task` will use before running a task.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Requires `reck` CLI to be installed and a container runtime (Docker/Podman) to be available.
+- Tasks execute inside containers — host filesystem access is limited to registered repo paths.
+- Does not manage CI/CD pipelines; use foundry.yaml for local quality gates and schedules.
+- Stop and ask for clarification if the repo registration, task scope, or execution environment is unclear.

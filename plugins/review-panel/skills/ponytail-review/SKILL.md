@@ -10,6 +10,12 @@ metadata:
   category: discipline
 ---
 
+## When to Use
+- Reviewing diffs or PRs for over-engineering and unnecessary complexity
+- Finding what to delete: reinvented stdlib, unneeded dependencies, speculative abstractions
+- The user says "review for over-engineering", "what can we delete", or "simplify review"
+- Getting a concise one-line-per-finding report focused on making code shorter
+
 Review diffs for unnecessary complexity. One line per finding: location, what
 to cut, what replaces it. The diff's best outcome is getting shorter.
 
@@ -55,3 +61,10 @@ pass, not this one. A single smoke test or `assert`-based
 self-check is the ponytail minimum, not bloat, never flag it for deletion.
 Does not apply the fixes, only lists them.
 "stop ponytail-review" or "normal mode": revert to verbose review style.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Lists findings only — does not apply fixes.
+- Focused exclusively on over-engineering; does not review for correctness, security, or performance.
+- Self-check code (tests, assertions) is the ponytail minimum — never flag it for deletion.
+- Stop and ask for clarification if the diff scope, review criteria, or deletion boundaries are unclear.

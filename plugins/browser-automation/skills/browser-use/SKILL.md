@@ -12,6 +12,12 @@ metadata:
 
 # Browser Automation with browser-use CLI
 
+## When to Use
+- Navigating websites, filling forms, or interacting with web pages programmatically
+- Taking screenshots or extracting information from web pages
+- Automating multi-step browser workflows with persistent sessions
+- Web testing, data extraction, or form submission tasks
+
 The `browser-use` command provides fast, persistent browser automation. It maintains browser sessions across commands, enabling complex multi-step workflows.
 
 ## Quick Start
@@ -222,3 +228,10 @@ browser-use open <url>                # Fresh start
 ```bash
 browser-use close
 ```
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Requires browser-use CLI to be installed and a browser instance available.
+- Sessions are ephemeral — data is lost when the browser is closed unless explicitly saved.
+- Cannot interact with desktop applications, only web pages.
+- Stop and ask for clarification if the target URL, interaction sequence, or expected outcome is unclear.

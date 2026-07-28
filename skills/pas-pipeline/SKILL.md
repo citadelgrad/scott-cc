@@ -7,7 +7,7 @@ description: >-
 license: MIT
 metadata:
   category: technique
-  triggers: [pas, pipeline, ai-workflows, automation]
+  triggers: [pas, pas-run, pas-launch, pas-generate, dot-pipeline, ai-pipeline, pipeline-budget, pipeline-resume, spec-to-pipeline, PRD-pipeline]
 ---
 
 # PAS Pipeline Management
@@ -16,7 +16,7 @@ Operates `pas` — the DOT-based AI pipeline runner. Version: 0.7.2.
 
 **Role in the stack:** PAS is the sole execution engine for AI tasks. Reckoner (the factory layer) wraps PAS — it never invokes Claude directly. Foundry sits above as the platform quality layer. All task execution ultimately calls `pas run` inside a container.
 
-Use this skill when:
+## When to Use
 - Launching a pipeline from spec/PRD documents (`pas launch`)
 - Running or resuming a `.dot` pipeline file (`pas run`)
 - Validating a pipeline before execution (`pas validate`)
@@ -160,6 +160,16 @@ Shows which specs were discovered, what `.dot` files would be generated, and the
 
 ---
 
+## Common Mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Running without `--max-budget-usd` | Always set a budget cap for non-trivial pipelines |
+| Using `--fresh` when you meant to resume | Default behavior resumes from checkpoint; `--fresh` discards all progress |
+| Guessing flags for `pas plan` / `pas info` | Run `pas <command> --help` first — flags change across versions |
+| Forgetting `--dry-run` for first-time pipeline testing | Always dry-run before committing to LLM calls |
+| Manually running pipelines that Reckoner should manage | Use `reck task` for repo-level pipeline execution |
+
 ## Step 5: Less-Common Commands
 
 `pas info`, `pas plan`, `pas plan --spec --from-prompt`, `pas decompose`, and `pas scaffold` are not detailed above. Do not guess their flags — run `pas <command> --help` first to confirm current syntax before invoking one of these.
@@ -173,3 +183,10 @@ pas init
 ```
 
 This creates a `pas.toml` with sensible defaults. Edit it to set default budget caps, working directory, and model preferences rather than passing flags every run.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Requires `pas` CLI to be installed and accessible in PATH.
+- Budget caps are advisory — actual spend depends on model pricing and task complexity.
+- Does not manage container orchestration directly; use `reck task` for repo-level pipeline execution.
+- Stop and ask for clarification if the pipeline structure, budget constraints, or execution environment are unclear.

@@ -13,6 +13,13 @@ metadata:
 
 # Context7
 
+## When to Use
+
+- Looking up documentation for any programming library or framework
+- Finding code examples for specific APIs or features
+- Verifying correct usage of library functions against current docs
+- Checking for API changes since training data cutoff
+
 ## Overview
 
 This skill enables retrieval of current documentation for software libraries and components. **Prefer the Context7 MCP tools** (`mcp__plugin_compound-engineering_context7__resolve-library-id` and `mcp__plugin_compound-engineering_context7__query-docs`) when they are available — they handle auth, rate limits, and error handling natively. Use the curl workflow below only when the MCP tools are not loaded.
@@ -103,3 +110,10 @@ curl -s "https://context7.com/api/v2/context?libraryId=/fastapi/fastapi&query=de
 | Skipping MCP tools when available | Always prefer MCP tools over curl fallback |
 | Not URL-encoding query params | Use `+` or `%20` for spaces in query strings |
 | Using only the first search result | Check multiple results if the first doesn't match |
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Context7 API availability is not guaranteed — fall back to official documentation websites if the API is unreachable.
+- Documentation snippets may be incomplete — always cross-reference with the library's official docs for critical implementations.
+- Rate-limited without an API key; heavy usage may be throttled.
+- Stop and ask for clarification if the target library or API surface is ambiguous.

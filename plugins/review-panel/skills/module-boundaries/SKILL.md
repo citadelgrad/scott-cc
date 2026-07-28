@@ -18,7 +18,7 @@ When invoked with $ARGUMENTS, focus the analysis on the specified file or module
 
 Evaluate where module boundaries are drawn: are related things together and unrelated things apart?
 
-## When to Apply
+## When to Use
 
 - Deciding whether to split a large class or merge small ones
 - When two modules seem tightly coupled
@@ -105,3 +105,9 @@ A well-placed boundary fully encloses a design decision. If two modules share kn
 This skill asks "where should the line between these two modules be?": merge, split, or find a third abstraction? **deep-modules** asks a narrower question about one module in isolation: is *its own* interface simple relative to what it does? **abstraction-quality** asks whether adjacent layers (a vertical relationship) are conceptually distinct, not whether two peer modules (a horizontal relationship) should be combined or separated. **information-hiding** picks up after boundaries are drawn: it checks whether a design decision leaks across a boundary that already exists, whereas this skill decides where that boundary should go in the first place. Use **module-boundaries** to decide the shape of the decomposition; use **information-hiding** to audit an existing decomposition for leakage.
 
 Red flag signals for module boundaries are cataloged in **red-flags** (Conjoined Methods).
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- This is a read-only review lens — it identifies issues but does not write or refactor code.
+- Findings are diagnostic signals, not definitive verdicts — use judgment in context.
+- Stop and ask for clarification if the target scope, module boundary, or review criteria are unclear.

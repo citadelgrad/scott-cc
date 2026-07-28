@@ -19,7 +19,7 @@ When invoked with $ARGUMENTS, focus the analysis on the specified file or module
 
 Evaluate whether modules provide powerful functionality through simple interfaces.
 
-## When to Apply
+## When to Use
 
 - Reviewing a new class, module, or API design
 - When a module feels like it "doesn't do enough" or has too many parameters
@@ -147,3 +147,9 @@ If callers see the same structure they'd see without the class, the class isn't 
 This skill asks "is the module deep enough?": does the interface justify what's behind it? **abstraction-quality** asks the prior question: "is the abstraction genuine?": does each layer provide a different way of thinking? A module can be deep but sit in a layer that duplicates the abstraction of its neighbor. When adjacent layers look suspiciously similar, hand off to **abstraction-quality**.
 
 Red flag signals for module depth are cataloged in **red-flags** (Shallow Module, Pass-Through Method).
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- This is a read-only review lens — it identifies issues but does not write or refactor code.
+- Findings are diagnostic signals, not definitive verdicts — use judgment in context.
+- Stop and ask for clarification if the target scope, module boundary, or review criteria are unclear.

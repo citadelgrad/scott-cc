@@ -418,3 +418,9 @@ Committed changes and updated beads issue.
 ---
 
 **This skill launches the test-quality-reviewer agent which orchestrates the full mutation testing workflow using 4 specialized sub-agents.**
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Requires a test suite that can be run repeatedly; slow test suites increase mutation testing time significantly.
+- Surviving mutants are not necessarily bugs — review each one for relevance.
+- Stop and ask for clarification if the test runner, target scope, or mutation budget is unclear.

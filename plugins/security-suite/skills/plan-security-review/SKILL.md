@@ -23,7 +23,7 @@ build-ready, before implementation starts.
 (review-panel's `Security` seat, which casts `security-suite:security-engineer`
 on diffs at review time). This skill only reads plan/PRD/spec documents.
 
-## When to Apply
+## When to Use
 
 - A planning or grilling session (e.g. `grill-with-docs`) has just concluded
   with a build-ready plan
@@ -120,3 +120,9 @@ how many findings triggered.
 This pass is designed to be schedulable as a pre-build gate (e.g. run against
 a plan doc before a build profile starts). It does not create or modify any
 Foundry recipe file itself — that wiring is a Foundry-side concern.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Produces a review plan, not a security audit — actual testing requires specialized tools and expertise.
+- Does not replace professional penetration testing or compliance audits.
+- Stop and ask for clarification if the threat model, compliance requirements, or review scope is unclear.

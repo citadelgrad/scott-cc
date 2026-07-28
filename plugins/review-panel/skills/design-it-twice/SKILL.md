@@ -19,7 +19,7 @@ When invoked with $ARGUMENTS, treat the argument as the design problem to explor
 
 **This skill has two modes.** Before a design exists, use it to generate and compare alternatives directly. After a design exists, dispatch the isolated agent described below to produce an independent second attempt that isn't anchored to the first. Either way, the first idea is unlikely to produce the best design, not because the designer isn't smart, but because the problems are genuinely hard.
 
-## When to Apply
+## When to Use
 
 - Before committing to a class, module, or API design
 - When choosing between architectural approaches
@@ -104,3 +104,9 @@ Sketching and comparing two alternatives costs a small fraction of the tokens a 
 5. **Check for synthesis**: Could the best elements be combined?
 
 Red flag signals for design comparison are cataloged in **red-flags** (No Alternatives Considered).
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Generates alternatives for comparison, not production-ready designs.
+- Clean-room isolation mode requires Task delegation capability.
+- Stop and ask for clarification if the design problem, constraints, or evaluation criteria are unclear.

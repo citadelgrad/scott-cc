@@ -7,7 +7,7 @@ description: >-
 license: MIT
 metadata:
   category: technique
-  triggers: [cli, agents, llm, design, tooling]
+  triggers: [cli-design, cli-audit, stdout-stderr, json-flag, exit-codes, NDJSON, machine-readable, agent-compatible-cli, composability, idempotent-cli, TOON]
 sources:
   - https://clig.dev/
   - https://developer.hashicorp.com/terraform/internals/machine-readable-ui
@@ -20,7 +20,7 @@ sources:
 Design or audit a CLI tool so that AI agents can invoke it reliably, parse its
 output without brittle text scraping, and compose it into pipelines.
 
-Use this skill when:
+## When to Use
 - Designing a new CLI from scratch
 - Auditing an existing CLI for agent/LLM compatibility
 - Adding machine-readable output to an existing tool
@@ -336,3 +336,10 @@ The minimum viable agent-compatible CLI is three things:
 
 Everything else (NDJSON, TOON, idempotency, schema versioning) adds value as
 the tool's agent usage grows. Ship the three-thing version first.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Covers CLI interface design, not internal implementation architecture.
+- Does not address GUI, TUI, or web-based tool interfaces.
+- TOON format support varies — verify target consumers can parse it.
+- Stop and ask for clarification if the CLI's target audience, platform constraints, or integration requirements are unclear.

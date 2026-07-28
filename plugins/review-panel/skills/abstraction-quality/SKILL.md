@@ -18,7 +18,7 @@ When invoked with $ARGUMENTS, focus the analysis on the specified file or module
 
 Evaluate whether abstractions are genuine (hiding complexity) or false (adding layers without reducing what callers must know).
 
-## When to Apply
+## When to Use
 
 - Reviewing class hierarchies or layered architectures
 - When an abstraction feels like it adds complexity rather than reducing it
@@ -68,3 +68,9 @@ See deep-modules' "Pass-Through Method Audit" fixes (Expose, Redistribute, Merge
 ## Relationship to Other Lenses
 
 This skill asks "is the abstraction genuine?": does each layer provide a different way of thinking? **deep-modules** asks the follow-up: "is the module deep enough?": does the interface justify what's behind it? A layer can provide a genuinely different abstraction and still be shallow. Use this skill first to evaluate layer structure, then **deep-modules** to evaluate depth within each layer.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- This is a read-only review lens — it identifies issues but does not write or refactor code.
+- Findings are diagnostic signals, not definitive verdicts — use judgment in context.
+- Stop and ask for clarification if the target scope, module boundary, or review criteria are unclear.

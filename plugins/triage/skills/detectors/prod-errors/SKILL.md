@@ -23,7 +23,7 @@ tail, a file of log lines, or a Sentry issue export is irrelevant to this skill'
 three reduce to the same "log line with a stack trace" shape below. This skill does not require a
 live Sentry API integration to function.
 
-## When to Apply
+## When to Use
 
 - Pointed at a log source (file, tail, or pasted excerpt) containing one or more error entries
 - Given a Sentry-shaped issue export (title, stack trace, occurrence count)
@@ -78,3 +78,9 @@ This detector is designed to be schedulable as a periodic Foundry check pointed 
 (see `../../../docs/foundry-recipes.md`). It does not create or modify any `foundry.yaml` file
 itself, nor does it establish a live Sentry integration — both are config/wiring concerns external
 to this skill.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Detection depends on error monitoring integration being configured.
+- Does not fix errors — produces triage output for human or agent follow-up.
+- Stop and ask for clarification if the error source, monitoring setup, or triage criteria is unclear.

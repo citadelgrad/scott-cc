@@ -15,6 +15,11 @@ metadata:
 
 # Triage Spine (System 2 v1)
 
+## When to Use
+- Running a full triage pipeline on detected issues (lib upgrades, prod errors, etc.)
+- Processing triage items through intake, validation, reproduction, diagnosis, and fix
+- Orchestrating the multi-phase triage workflow with beads tracking and review gates
+
 The one loop every detector feeds: **intake → reproduce → diagnose → fix → gate**. This skill
 does not detect anything itself — detectors (`skills/detectors/*/SKILL.md`) are separate,
 upstream producers of triage items. This skill's only job is to turn a valid triage item into a
@@ -205,3 +210,10 @@ If any step in this loop cannot run (e.g. `pas-pipeline` unavailable, `review-pa
 installed in this session, `bd` unavailable), say so explicitly on the bead and in the run's final
 output — never silently skip a phase and report the item as handled. This applies per Invariant 3
 across the whole pipeline, not just to this plugin.
+
+## Limitations
+- Use this skill only when the task clearly matches the scope described above.
+- Multi-phase pipeline — if any phase is missing dependencies (bd, PAS, review-panel), it reports the gap explicitly.
+- Does not silently skip phases; blocked phases halt the pipeline.
+- Reproduction must be E2E before any fix attempt — no skip shortcuts.
+- Stop and ask for clarification if the triage item contract, reproduction environment, or fix scope is unclear.
