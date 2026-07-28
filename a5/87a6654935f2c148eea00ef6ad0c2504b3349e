@@ -1,0 +1,31 @@
+foundry.yaml
+  s_7eff1a9e8acaf6::t_d914e81e02e006 12-21,27
+  s_7eff1a9e8acaf6::t_2bd6f878743252 26
+  s_7eff1a9e8acaf6::t_fc15243ad9ddfd 28
+skills/init/references/components.md
+  s_ec76c90ecd8320::t_f89becc1ebd5f3 1-277
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "a587a6654935f2c148eea00ef6ad0c2504b3349e",
+  "prompts": {},
+  "sessions": {
+    "s_7eff1a9e8acaf6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d30bb1c7-f69c-4c08-af1b-a55ce7bed030",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_ec76c90ecd8320": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "798478c3-f654-4bdf-8f4d-aa3bd256a15f",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
