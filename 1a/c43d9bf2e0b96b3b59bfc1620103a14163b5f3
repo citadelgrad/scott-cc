@@ -1,0 +1,31 @@
+.claude-plugin/marketplace.json
+  s_bedef90ef4c72c::t_4a4f597f48cc76 15
+.claude-plugin/plugin.json
+  s_bedef90ef4c72c::t_65fec6a44c4181 3
+QUICK-START.md
+  s_bedef90ef4c72c::t_25e91dcd3fe69b 14
+README.md
+  s_bedef90ef4c72c::t_645528d383837d 3,17-18,62,79-80,99
+commands/delegate-first.md
+  s_bedef90ef4c72c::t_0c0d867831a7d6 4,27-44,53,59-74,79-82
+hooks/hooks.json
+  s_bedef90ef4c72c::t_290c130df37504 3-22
+skills/delegate-first/SKILL.md
+  s_bedef90ef4c72c::t_2673ed9489b435 31,50-66,74,78-83,96-111
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "1ac43d9bf2e0b96b3b59bfc1620103a14163b5f3",
+  "prompts": {},
+  "sessions": {
+    "s_bedef90ef4c72c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "ce3e1b07-4ea0-429e-91f8-2c77cf56bce0",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
