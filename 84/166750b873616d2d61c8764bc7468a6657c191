@@ -1,0 +1,19 @@
+skills/writing-skills-excellence/references/templates/tier-3-platform.md
+  s_cbefd68c043fb7::t_5ec44663f7b5af 1-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "84166750b873616d2d61c8764bc7468a6657c191",
+  "prompts": {},
+  "sessions": {
+    "s_cbefd68c043fb7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "bafcc7b6-250d-4a69-a7fd-88b759ec931f",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
