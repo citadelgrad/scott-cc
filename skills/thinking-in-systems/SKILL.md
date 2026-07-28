@@ -1,12 +1,14 @@
 ---
 name: thinking-in-systems
 description: >-
-  Apply Donella Meadows' systems thinking framework to map, diagnose, and
-  redesign any system — organizational, technical, ecological, or policy.
-  Covers stocks/flows, feedback loops, system archetypes, leverage points,
+  Use when mapping, diagnosing, or redesigning any system — organizational,
+  technical, ecological, or policy. Applies Donella Meadows' systems thinking
+  framework: stocks/flows, feedback loops, system archetypes, leverage points,
   and concrete intervention recommendations.
 license: MIT
-tags: [systems-thinking, analysis, design, leverage-points, archetypes]
+metadata:
+  category: pattern
+  triggers: [systems-thinking, analysis, design, leverage-points, archetypes]
 sources:
   - "Meadows, Donella H. Thinking in Systems: A Primer. Chelsea Green Publishing, 2008."
 ---

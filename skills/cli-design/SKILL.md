@@ -1,8 +1,13 @@
 ---
 name: cli-design
-description: Design or audit CLI tools for agent compatibility. Covers stdout/stderr separation, --json flag, exit codes, NDJSON streaming, TOON format, composability, and idempotency. Use when building a new CLI or reviewing an existing one for LLM/agent use.
+description: >-
+  Use when building a new CLI or reviewing an existing one for LLM/agent
+  compatibility. Covers stdout/stderr separation, --json flag, exit codes,
+  NDJSON streaming, TOON format, composability, and idempotency.
 license: MIT
-tags: [cli, agents, llm, design, tooling]
+metadata:
+  category: technique
+  triggers: [cli, agents, llm, design, tooling]
 sources:
   - https://clig.dev/
   - https://developer.hashicorp.com/terraform/internals/machine-readable-ui

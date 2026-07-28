@@ -1,8 +1,14 @@
 ---
 name: c4-diagram
-description: Generate C4 architecture diagrams using standard Mermaid flowchart syntax. Covers Context, Container, and Component levels with short labels, companion legend tables, and sequence diagrams for runtime behavior.
+description: >-
+  Use when generating C4 architecture diagrams or documenting system structure
+  at Context, Container, or Component levels. Produces standard Mermaid flowchart
+  syntax with short labels, companion legend tables, and sequence diagrams for
+  runtime behavior.
 license: MIT
-tags: [architecture, diagrams, c4, mermaid, documentation]
+metadata:
+  category: technique
+  triggers: [architecture, diagrams, c4, mermaid, documentation]
 sources:
   - https://c4model.com/
   - https://mermaid.js.org/syntax/flowchart.html

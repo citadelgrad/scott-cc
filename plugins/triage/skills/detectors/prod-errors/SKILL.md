@@ -1,8 +1,14 @@
 ---
 name: prod-errors
-description: Consumes a log/Sentry-shaped production error source and emits one normalized triage item per distinct error, carrying the stack trace verbatim in the evidence field, per the triage-spine's Triage Item Contract. Use when pointed at a log source or Sentry export, or when asked to triage a production error.
+description: >-
+  Use when pointed at a log source or Sentry export, or when asked to triage
+  a production error. Consumes log/Sentry-shaped production error sources and
+  emits normalized triage items per distinct error, carrying stack traces
+  verbatim per the triage-spine's Triage Item Contract.
 argument-hint: "[log line/file path, or Sentry issue export]"
 allowed-tools: Read, Grep, Glob, Bash
+metadata:
+  category: technique
 ---
 
 # Prod-Errors Detector

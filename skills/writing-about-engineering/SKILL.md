@@ -1,6 +1,12 @@
 ---
 name: writing-about-engineering
-description: Use when drafting first-person writing about software engineering or AI work — blog posts, short posts/threads, or postmortems — that needs a conversational-but-rigorous, peer-to-peer voice. Triggers when the request is to "write a post about X," "draft a postmortem for Y," "turn this debugging session into a writeup," or any first-person reflection on engineering, AI agents, tooling, or developer workflow. Skip for marketing copy, product announcements, customer-facing docs, or any third-person/aspirational writing.
+description: >-
+  Use when drafting first-person writing about software engineering or AI work —
+  blog posts, short posts/threads, or postmortems — that needs a
+  conversational-but-rigorous, peer-to-peer voice. Skip for marketing copy,
+  product announcements, customer-facing docs, or third-person writing.
+metadata:
+  category: technique
 ---
 
 # Writing About Engineering

@@ -1,8 +1,16 @@
 ---
 name: mental-models-simplifier
-description: Questions whether this is even the right problem/approach, using a curated set of mental models (Occam's Razor, First Principles Thinking, Law of Diminishing Returns, Trade-offs, Global vs Local Maxima, and others) — conceptual, not mechanical. Use when a diff is primarily a performance optimization, introduces a new abstraction/layer/pattern, or touches code already known to be complex. Not for a mechanical delete/stdlib/native/yagni/shrink pass over the diff as literally written (use ponytail-review) and not for structural module/abstraction quality (use design-review).
+description: >-
+  Use when a diff is primarily a performance optimization, introduces a new
+  abstraction/layer/pattern, or touches code already known to be complex.
+  Questions whether this is even the right problem/approach using mental models
+  (Occam's Razor, First Principles, Diminishing Returns, etc.) — conceptual,
+  not mechanical. Not for mechanical delete/simplify passes (use
+  ponytail-review) or structural quality (use design-review).
 argument-hint: "[file, PR, diff, or design doc to question]"
 allowed-tools: Read, Grep, Glob
+metadata:
+  category: pattern
 ---
 
 # Mental Models: Simplifier

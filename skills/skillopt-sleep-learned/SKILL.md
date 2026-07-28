@@ -1,6 +1,10 @@
 ---
 name: skillopt-sleep-learned
-description: Preferences and procedures learned from past local agent sessions.
+description: >-
+  Use when applying learned preferences and procedures from past local agent
+  sessions. Auto-maintained by SkillOpt-Sleep.
+metadata:
+  category: reference
 ---
 
 # skillopt-sleep-learned

@@ -1,8 +1,16 @@
 ---
 name: mental-models-systems
-description: Evaluates dynamic, runtime system behavior — feedback loops, bottlenecks, emergent interaction between components, behavior under scale — using a curated set of mental models (Feedback Loops, Equilibrium, Bottlenecks, Critical Mass, Emergence, Interdependence, Scale, and others). Use when a diff touches concurrency, queues/message buses, caching, retries/backoff, rate limiting, service-to-service calls, or connection pooling. Not for static module/abstraction/boundary quality (use design-review) and not for reasoning about the decision's assumptions (use mental-models-adversarial).
+description: >-
+  Use when a diff touches concurrency, queues/message buses, caching,
+  retries/backoff, rate limiting, service-to-service calls, or connection
+  pooling. Evaluates dynamic runtime behavior — feedback loops, bottlenecks,
+  emergence, scale — using mental models (Feedback Loops, Equilibrium, Critical
+  Mass, etc.). Not for static module quality (use design-review) or assumption
+  pressure-testing (use mental-models-adversarial).
 argument-hint: "[file, PR, diff, or design doc touching runtime/systems behavior]"
 allowed-tools: Read, Grep, Glob
+metadata:
+  category: pattern
 ---
 
 # Mental Models: Systems/Boundaries

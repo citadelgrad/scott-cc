@@ -1,8 +1,13 @@
 ---
 name: init
-description: Initialize a new project with standard scaffolding. Sets up git repo, CLAUDE.md, AGENTS.md symlink, beads, .envrc, Makefile, pre-commit hooks, and foundry.yaml. All components are optional — pick what you need.
+description: >-
+  Use when initializing a new project with standard scaffolding. Sets up git
+  repo, CLAUDE.md, AGENTS.md symlink, beads, .envrc, Makefile, pre-commit hooks,
+  and foundry.yaml. All components are optional — pick what you need.
 license: MIT
-tags: [project-setup, scaffolding, templates]
+metadata:
+  category: technique
+  triggers: [project-setup, scaffolding, templates]
 uses:
   templates:
     - templates/CLAUDE.md

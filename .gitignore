@@ -50,3 +50,4 @@ agents/CLAUDE.md
 # that can land at repo root during interactive sessions — not produced by
 # any repo script; ignored as a backstop so they don't get committed
 text_*_archived_replacement_*.json
+.ralph/

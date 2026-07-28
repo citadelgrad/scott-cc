@@ -1,8 +1,16 @@
 ---
 name: mental-models-economics
-description: Frames a change as a resource-allocation decision — technical debt taken on knowingly vs silently, build-vs-buy, vendor/dependency lock-in, effort proportional to value — using a curated set of mental models (Scarcity, Trade-offs, Debt, Specialization, Efficiency, Creative Destruction, Monopoly and Competition, Gresham's Law). Use when a diff adds a new dependency or vendor, includes a TODO/FIXME/HACK marker or other explicit debt marker, or the PR description discusses a trade-off or deferred work. Not for code-level trade-offs about simplicity/approach (use mental-models-simplifier) and not for runtime/systems behavior (use mental-models-systems).
+description: >-
+  Use when a diff adds a new dependency or vendor, includes a TODO/FIXME/HACK
+  marker, or the PR description discusses a trade-off or deferred work. Frames
+  changes as resource-allocation decisions using mental models (Scarcity,
+  Trade-offs, Debt, Build-vs-Buy, etc.). Not for code-level simplicity
+  trade-offs (use mental-models-simplifier) or runtime behavior (use
+  mental-models-systems).
 argument-hint: "[file, PR, diff, or design doc with a resource/dependency/debt decision]"
 allowed-tools: Read, Grep, Glob
+metadata:
+  category: pattern
 ---
 
 # Mental Models: Economics/Debt

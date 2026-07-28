@@ -1,8 +1,16 @@
 ---
 name: strategic-mindset
-description: Assesses whether code reflects strategic or tactical thinking. Use when the user asks to evaluate design investment, when code was written under time pressure, when a developer consistently produces working code that degrades the system, or when assessing whether a codebase invests in design. Checks the 10-20% investment rule and tactical tornado patterns. Not for evaluating whether a specific change or diff looks designed-in or bolted-on (use code-evolution).
+description: >-
+  Use when the user asks to evaluate design investment, when code was written
+  under time pressure, when a developer consistently produces working code that
+  degrades the system, or when assessing whether a codebase invests in design.
+  Assesses whether code reflects strategic or tactical thinking using the 10-20%
+  investment rule and tactical tornado patterns. Not for evaluating specific
+  change-level design trajectory (use code-evolution).
 argument-hint: "[file, module, or codebase area]"
 allowed-tools: Read, Grep
+metadata:
+  category: pattern
 ---
 
 # Strategic Mindset Review Lens

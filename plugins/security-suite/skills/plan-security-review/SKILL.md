@@ -1,8 +1,16 @@
 ---
 name: plan-security-review
-description: Runs a lightweight threat-model checkpoint over a plan/PRD/spec document at the end of planning — trust boundaries crossed, new data flows, authn/authz surface changed, secrets introduced, third-party deps added — and produces a CLEAR/TRIGGERED/N/A findings report plus a one-paragraph go/no-go. Use when a planning or grilling session ends with a build-ready plan, or when the user asks for a "plan security review", "threat-model checkpoint", or "pre-build security pass". Not for reviewing code diffs (that is the panel's security seat, review-panel's Security seat casting security-suite:security-engineer), and not a comprehensive security audit.
+description: >-
+  Use when a planning or grilling session ends with a build-ready plan, or when
+  the user asks for a "plan security review", "threat-model checkpoint", or
+  "pre-build security pass". Runs a lightweight threat-model checkpoint over a
+  plan/PRD/spec — trust boundaries, data flows, authn/authz, secrets,
+  third-party deps — producing a CLEAR/TRIGGERED/N/A findings report. Not for
+  reviewing code diffs or comprehensive security audits.
 argument-hint: "[plan/PRD/spec document path, or none if already in conversation]"
 allowed-tools: Read, Grep, Glob, WebFetch
+metadata:
+  category: discipline
 ---
 
 # Plan Security Review (Planning-Stage Threat-Model Checkpoint)

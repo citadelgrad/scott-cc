@@ -1,6 +1,13 @@
 ---
 name: grill-my-taste
-description: Grilling session that elicits personal taste via forced choices between realistic alternatives — not introspective questions — distilling each pick into a Preference, Weighting, or Anti-preference and writing it to TASTE.md inline. Includes an evidence-mining mode that mines repo/PR history for places you rewrote agent or contributor output, and houses the --distill entry point for promoting Candidate rules. Use when the user wants to build or extend TASTE.md.
+description: >-
+  Use when the user wants to build or extend TASTE.md. Grilling session that
+  elicits personal taste via forced choices between realistic alternatives,
+  distilling each pick into a Preference, Weighting, or Anti-preference.
+  Includes evidence-mining mode and --distill entry point for promoting
+  Candidate rules.
+metadata:
+  category: technique
 ---
 
 <what-to-do>

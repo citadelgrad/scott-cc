@@ -1,8 +1,14 @@
 ---
 name: lib-upgrades
-description: Scans a project's dependency manifest/lockfile(s) for outdated or CVE-flagged libraries and emits one normalized triage item per finding, per the triage-spine's Triage Item Contract. Use when running a scheduled dependency-health sweep, or when asked to check for outdated/vulnerable dependencies.
+description: >-
+  Use when running a scheduled dependency-health sweep or checking for
+  outdated/vulnerable dependencies. Scans dependency manifests/lockfiles for
+  outdated or CVE-flagged libraries, emitting normalized triage items per the
+  triage-spine's Triage Item Contract.
 argument-hint: "[path to repo or manifest, or none for the current working tree]"
 allowed-tools: Read, Grep, Glob, Bash, WebFetch
+metadata:
+  category: technique
 ---
 
 # Lib-Upgrades Detector

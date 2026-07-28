@@ -1,8 +1,13 @@
 ---
 name: delegate-first
-description: Keep the main conversation clean by forking implementation work to sub-agents. Use when tasks would otherwise flood context with file reads, shell output, build logs, or multi-step execution details.
+description: >-
+  Use when tasks would otherwise flood context with file reads, shell output,
+  build logs, or multi-step execution details. Keeps the main conversation clean
+  by forking implementation work to sub-agents.
 license: MIT
-tags: [subagents, delegation, context-management, claude-code]
+metadata:
+  category: technique
+  triggers: [subagents, delegation, context-management, claude-code]
 ---
 
 # Delegate First

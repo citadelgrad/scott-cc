@@ -1,6 +1,13 @@
 ---
 name: adr-skill
-description: Create and maintain Architecture Decision Records (ADRs) optimized for agentic coding workflows. Use when you need to propose, write, update, accept/reject, deprecate, or supersede an ADR; bootstrap an adr folder and index; consult existing ADRs before implementing changes; or enforce ADR conventions. This skill uses Socratic questioning to capture intent before drafting, and validates output against an agent-readiness checklist.
+description: >-
+  Use when you need to propose, write, update, accept/reject, deprecate, or
+  supersede an ADR; bootstrap an adr folder and index; consult existing ADRs
+  before implementing changes; or enforce ADR conventions. Creates and maintains
+  Architecture Decision Records optimized for agentic coding workflows using
+  Socratic questioning and agent-readiness validation.
+metadata:
+  category: technique
 ---
 
 # ADR Skill

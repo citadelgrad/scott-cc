@@ -1,8 +1,13 @@
 ---
 name: pas-pipeline
-description: Run, validate, and manage PAS (Pascal's Discrete Attractor) DOT-based AI pipelines. Use when launching a pipeline end-to-end, resuming interrupted runs, capping spend, or generating pipelines from spec/PRD files.
+description: >-
+  Use when launching a PAS pipeline end-to-end, resuming interrupted runs,
+  capping spend, or generating pipelines from spec/PRD files. Manages PAS
+  (Pascal's Discrete Attractor) DOT-based AI pipelines.
 license: MIT
-tags: [pas, pipeline, ai-workflows, automation]
+metadata:
+  category: technique
+  triggers: [pas, pipeline, ai-workflows, automation]
 ---
 
 # PAS Pipeline Management

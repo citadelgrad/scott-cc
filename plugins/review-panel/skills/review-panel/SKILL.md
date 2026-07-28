@@ -1,8 +1,21 @@
 ---
 name: review-panel
-description: Orchestrates a full multi-reviewer code-review panel against one shared diff — casts a diverse set of reviewer seats by reading diff content (not paths), runs them concurrently, merges and deduplicates their findings with confidence scoring, independently validates each surviving finding, fixes everything in one pass, re-reviews for regressions and domain-intent coherence, and loops to convergence or a circuit-break. Use when a diff, PR, or branch needs a comprehensive verification pass before merge, when invoked as an automated foundry/CI gate (mode:agent), or whenever the user asks for a "review panel," "full review," or "panel review." Not for a single-lens check (invoke that reviewer skill directly, e.g. adversarial-reviewer, design-review, domain-modeling, ponytail-review) and not for generating a second independent design from scratch with no existing code to review (use design-it-twice).
+description: >-
+  Use when a diff, PR, or branch needs a comprehensive verification pass before
+  merge, when invoked as an automated foundry/CI gate (mode:agent), or when the
+  user asks for a "review panel" or "full review." Orchestrates a multi-reviewer
+  code-review panel — casts diverse reviewer seats, runs concurrently, merges
+  and deduplicates findings, validates, fixes, and loops to convergence. Not for
+  single-lens checks (invoke that reviewer directly) or generating alternative
+  designs (use design-it-twice).
+  deduplicates their findings with confidence scoring, independently validates
+  each surviving finding, fixes everything in one pass, re-reviews for
+  regressions and domain-intent coherence, and loops to convergence or a
+  circuit-break
 argument-hint: "[diff, PR, branch, or base..head range to review; --lite, --medium, or --auto to narrow the review tier; --mode=agent for machine output]"
 allowed-tools: Task, Read, Grep, Glob, Bash
+metadata:
+  category: technique
 ---
 
 # Review Panel

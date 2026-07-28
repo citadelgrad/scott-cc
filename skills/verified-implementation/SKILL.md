@@ -1,7 +1,14 @@
 ---
 name: verified-implementation
-description: Use when implementing security-critical code (auth, crypto, secrets, TLS, CORS), financial arithmetic, protocol parsers, deserialization of untrusted data, or any code the user wants to be "production-ready," "correct," or "verified." Requires citing authoritative sources — RFCs, NIST, OWASP, official library docs — before writing, not after.
+description: >-
+  Use when implementing security-critical code (auth, crypto, secrets, TLS,
+  CORS), financial arithmetic, protocol parsers, deserialization of untrusted
+  data, or any code the user wants to be "production-ready," "correct," or
+  "verified." Requires citing authoritative sources — RFCs, NIST, OWASP,
+  official library docs — before writing, not after.
 license: MIT
+metadata:
+  category: discipline
 ---
 
 # Verified Implementation

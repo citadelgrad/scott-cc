@@ -1,8 +1,20 @@
 ---
 name: data-steward
-description: Reviews diffs touching migrations, ORM/model definitions, schema files, or serialization formats against DATA-MODEL.md's Invariants and Agent boundary sections, plus a 7-item migration-safety checklist (reversibility, expand-migrate-contract sequencing, backfill strategy, lock behavior, index-creation strategy, nullable-then-tighten, dual-write windows). Use when a diff touches migration files, ORM/model definitions, schema files (*.sql, schema.*, prisma/, alembic/, migrations/), serialization formats, or any file DATA-MODEL.md maps an entity to. Findings may carry a sovereignty: human-required marker when the diff crosses a DATA-MODEL.md Agent boundary entry, or when DATA-MODEL.md is absent while the diff changes schema semantics — that marker is a contract extension FIX must never auto-resolve. Not for reviewing application-level domain types unrelated to persistence (use domain-modeling), and not a substitute for the data-layer guard hook (out of scope here — see references/data-steward-hook.md if installed).
+description: >-
+  Use when a diff touches migration files, ORM/model definitions, schema files,
+  serialization formats, or any file DATA-MODEL.md maps an entity to. Reviews
+  against DATA-MODEL.md's Invariants and Agent boundary sections plus a 7-item
+  migration-safety checklist. Not for application-level domain types (use
+  domain-modeling).
+  touching migrations, ORM/model definitions, schema files, or serialization
+  formats against DATA-MODEL.md's Invariants and Agent boundary sections, plus a
+  7-item migration-safety checklist (reversibility, expand-migrate-contract
+  sequencing, backfill strategy, lock behavior, index-creation strategy,
+  nullable-then-tighten, dual-write windows)
 argument-hint: "[diff, file, or directory to review]"
 allowed-tools: Read, Grep
+metadata:
+  category: discipline
 ---
 
 # Data Steward

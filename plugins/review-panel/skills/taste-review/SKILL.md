@@ -1,8 +1,15 @@
 ---
 name: taste-review
-description: Reviews diffs against TASTE.md's Preferences, Weightings, and Anti-preferences, citing the specific clause violated and mapping severity from the preference's declared strength (absolute/strong -> Important, weak -> Minor; never Critical). Use only when TASTE.md exists at the repo root — this seat never casts on its absence, and has no generic fallback. Ignores TASTE.md's Candidate rules section (unconfirmed, no strength assigned yet). A Preference missing a required field (most commonly strength) is reported as unusable in Coverage Honesty rather than guessed at. Findings never carry a sovereignty: human-required marker — that is a data-steward-only contract extension. Not a substitute for the Ousterhout/Karpathy universal-quality lenses (design-review, ponytail-review, etc.) — TASTE.md is explicitly scoped to this human's contested calibration on top of that baseline, not a restatement of it.
+description: >-
+  Use when TASTE.md exists at the repo root and diffs need reviewing against
+  the user's declared Preferences, Weightings, and Anti-preferences. Cites
+  specific clauses violated and maps severity from declared strength. Never
+  casts on TASTE.md absence; ignores Candidate rules. Not a substitute for
+  universal-quality lenses (design-review, ponytail-review).
 argument-hint: "[diff, file, or directory to review]"
 allowed-tools: Read, Grep
+metadata:
+  category: discipline
 ---
 
 # Taste Review

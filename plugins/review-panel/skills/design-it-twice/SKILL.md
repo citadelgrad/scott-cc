@@ -1,8 +1,16 @@
 ---
 name: design-it-twice
-description: Generates and compares design alternatives before committing. Use when the user asks to design something twice, before committing to any significant design. Applies to classes, modules, APIs and architectural approaches. Ensures at least two fundamentally different alternatives were considered and compared on concrete criteria before choosing. Not for assessing whether existing code reflects strategic vs. tactical investment (use strategic-mindset) or whether a specific change degrades design over time (use code-evolution).
+description: >-
+  Use when the user asks to design something twice, or before committing to any
+  significant design. Generates and compares at least two fundamentally
+  different alternatives on concrete criteria before choosing. Applies to
+  classes, modules, APIs, and architectural approaches. Not for assessing
+  strategic vs. tactical investment (use strategic-mindset) or change-level
+  design trajectory (use code-evolution).
 argument-hint: "[description of the design problem]"
 allowed-tools: Read, Grep, Task
+metadata:
+  category: technique
 ---
 
 # Design It Twice

@@ -1,8 +1,16 @@
 ---
 name: triage-spine
-description: Consumes normalized triage items from any registered detector (lib-upgrades, prod-errors, and three stubbed slots) and runs the one loop — intake → reproduce → diagnose → fix → gate — filing a bead per item, reproducing the issue E2E before any fix, producing a fix diff via pas-pipeline, and gating it through review-panel --mode=agent. Use when a detector has just run and produced triage item(s), or when scheduling a Foundry recipe that pipes detector output into this spine.
+description: >-
+  Use when a detector has just run and produced triage item(s), or when
+  scheduling a Foundry recipe that pipes detector output into this spine.
+  Consumes normalized triage items from registered detectors and runs the
+  intake → reproduce → diagnose → fix → gate loop, filing beads, reproducing
+  issues E2E, producing fix diffs via pas-pipeline, and gating through
+  review-panel.
 argument-hint: "[triage item(s) as JSON, or a detector name to run first]"
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob
+metadata:
+  category: technique
 ---
 
 # Triage Spine (System 2 v1)

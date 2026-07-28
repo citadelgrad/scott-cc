@@ -1,7 +1,12 @@
 ---
 name: mutation-test
-description: Run comprehensive mutation testing to audit test quality, find zombie tests, and propose refactoring
+description: >-
+  Use when auditing test quality, finding zombie tests, or identifying gaps
+  in test coverage. Runs comprehensive mutation testing and proposes
+  refactoring based on mutation survival analysis.
 allowed-tools: Task(scott-cc:test-quality-reviewer)
+metadata:
+  category: technique
 ---
 
 # Mutation Testing Skill

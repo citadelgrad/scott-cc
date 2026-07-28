@@ -1,6 +1,12 @@
 ---
 name: property-based-testing
-description: Use when implementing serialization/parsing, data transformations, algorithms with mathematical properties, API contracts, or state machines where testing all edge cases is impractical — especially when you can describe invariants rather than specific input/output pairs.
+description: >-
+  Use when implementing serialization/parsing, data transformations, algorithms
+  with mathematical properties, API contracts, or state machines where testing
+  all edge cases is impractical — especially when you can describe invariants
+  rather than specific input/output pairs.
+metadata:
+  category: technique
 ---
 
 # Property-Based Testing

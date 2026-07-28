@@ -1,8 +1,15 @@
 ---
 name: explore-variants
-description: Spawns N blind builders in isolated git worktrees against a spec + acceptance criteria, then judges the results against AC conformance, TASTE.md (when present), and simplicity, producing a ranked shortlist for the human to pick from. Use when the user wants to explore multiple independent implementation approaches in parallel rather than commit to one up front. N defaults to 3 (refuses at N=1, clamps at N>6). Depends on review-panel for the taste and simplicity judging axes; review-panel itself never depends on this plugin and never gains worktree-spawning code.
+description: >-
+  Use when the user wants to explore multiple independent implementation
+  approaches in parallel rather than commit to one up front. Spawns N blind
+  builders in isolated git worktrees against a spec + acceptance criteria, then
+  judges results against AC conformance, TASTE.md, and simplicity, producing a
+  ranked shortlist. N defaults to 3 (refuses N=1, clamps N>6).
 argument-hint: "[spec or design question, or path to one] [--n N] [--ac <path>]"
 allowed-tools: Task, Read, Write, Grep, Glob, Bash
+metadata:
+  category: technique
 ---
 
 # Explore Variants

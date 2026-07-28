@@ -1,8 +1,13 @@
 ---
 name: reck-factory
-description: Manage the Reck software factory — register repos, run AI tasks in containers, schedule background pipelines, and monitor results. Use when provisioning a new task, checking task status, or setting up recurring automation.
+description: >-
+  Use when provisioning a new task, checking task status, or setting up recurring
+  automation in the Reck software factory. Manages repo registration, AI tasks
+  in containers, scheduled background pipelines, and monitoring.
 license: MIT
-tags: [reck, automation, containers, factory, pas]
+metadata:
+  category: reference
+  triggers: [reck, automation, containers, factory, pas]
 ---
 
 # Reck Software Factory

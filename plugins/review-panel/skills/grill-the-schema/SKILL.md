@@ -1,6 +1,13 @@
 ---
 name: grill-the-schema
-description: Grilling session that interviews you to build DATA-MODEL.md — entities and their storage, invariants, lifecycle (soft-delete? audit? retention?), volume/access patterns, ownership/routing, and Agent boundaries — cross-referencing actual schema/migration files and updating the file inline as decisions crystallise. Use when user wants to stress-test their data layer or has no DATA-MODEL.md yet.
+description: >-
+  Use when the user wants to stress-test their data layer or has no
+  DATA-MODEL.md yet. Grilling session that interviews you to build DATA-MODEL.md
+  — entities, storage, invariants, lifecycle, volume/access patterns,
+  ownership/routing, and Agent boundaries — cross-referencing actual
+  schema/migration files.
+metadata:
+  category: technique
 ---
 
 <what-to-do>

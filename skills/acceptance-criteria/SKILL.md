@@ -1,11 +1,12 @@
 ---
 name: acceptance-criteria
 description: >-
-  Generate acceptance criteria for a user story or feature. Produces testable,
-  specific criteria in Gherkin (Given/When/Then), checklist, or rules-based
-  format with a completeness check. Use when writing or reviewing AC for any
-  story, ticket, or feature spec.
+  Use when writing or reviewing acceptance criteria for any story, ticket, or
+  feature spec. Generates testable, specific criteria in Gherkin
+  (Given/When/Then), checklist, or rules-based format with a completeness check.
 allowed-tools: Read, Write
+metadata:
+  category: technique
 ---
 
 # Acceptance Criteria Skill

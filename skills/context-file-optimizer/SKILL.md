@@ -1,6 +1,12 @@
 ---
 name: context-file-optimizer
-description: Audit and rewrite AGENTS.md, CLAUDE.md, and other AI agent context files to be minimal and effective. This skill should be used when creating, reviewing, or rewriting context files (AGENTS.md, CLAUDE.md, .cursorrules, etc.) to follow research-backed guidelines that improve agent performance and reduce costs. Based on findings from arxiv.org/abs/2602.11988.
+description: >-
+  Use when creating, reviewing, or rewriting AI agent context files (AGENTS.md,
+  CLAUDE.md, .cursorrules, etc.) to follow research-backed guidelines that
+  improve agent performance and reduce costs. Based on findings from
+  arxiv.org/abs/2602.11988.
+metadata:
+  category: technique
 ---
 
 # Context File Optimizer

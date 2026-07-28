@@ -1,8 +1,16 @@
 ---
 name: adversarial-reviewer
-description: Red-teams code, PRs, and designs by attacking them — hunting for bugs, security holes, hostile/malformed input handling, and weaknesses in existing design findings. Use whenever code, a PR, or a design needs an adversarial pass, whether standalone or as part of a larger review. Not gated behind any other workflow — always available on request. Not for constructive design-quality lenses with no attack framing (use design-review or red-flags) or for generating a second independent design from scratch (use design-it-twice).
+description: >-
+  Use when code, a PR, or a design needs an adversarial pass — red-teams by
+  attacking for bugs, security holes, hostile/malformed input handling, and
+  weaknesses in existing design findings. Always available on request, not gated
+  behind any other workflow. Not for constructive design-quality lenses (use
+  design-review or red-flags) or generating a second independent design (use
+  design-it-twice).
 argument-hint: "[file, PR, diff, or design doc to attack]"
 allowed-tools: Read, Grep, Glob, Task
+metadata:
+  category: discipline
 ---
 
 # Adversarial Reviewer

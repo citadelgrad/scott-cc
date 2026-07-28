@@ -1,6 +1,11 @@
 ---
 name: python-simplifier
-description: Simplifies and refines Python code for clarity, consistency, and maintainability. Applies KISS principles, Pythonic patterns, and framework best practices. Use when reviewing or refactoring Python code.
+description: >-
+  Use when reviewing or refactoring Python code for clarity, consistency, and
+  maintainability. Applies KISS principles, Pythonic patterns, and framework
+  best practices to simplify and refine code.
+metadata:
+  category: technique
 ---
 
 # Python Code Simplifier
