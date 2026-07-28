@@ -1,6 +1,6 @@
 # Scott's Claude Code Setup
 
-Modular Claude Code plugin suite for productive development. The core plugin provides **4 slash commands**, **8 specialized AI agents**, **17 skills**, **3 hooks**, and **3 project templates**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, multi-persona code review, and more.
+Modular Claude Code plugin suite for productive development. The core plugin provides **4 slash commands**, **8 specialized AI agents**, **20 skills**, **5 hooks**, and **3 project templates**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, multi-persona code review, and more.
 
 ## Quick Install
 
@@ -14,8 +14,8 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 |------|------:|-------|
 | Commands | 4 | `delegate-first`, `gha`, `handoff`, `security-cheatsheet` |
 | Agents | 8 | `api-debugger`, `backend-architect`, `deep-research-agent`, `find-emergent-behavior`, `frontend-architect`, `refactoring-expert`, `requirements-analyst`, `system-architect` |
-| Skills | 17 | `init`, `acceptance-criteria`, `cli-design`, `delegate-first`, `python-simplifier`, `typescript-simplifier`, `karpathy-guidelines`, `property-based-testing`, `verified-implementation`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory`, `thinking-in-systems` |
-| Hooks | 4 | `terminal-bell` (Stop), `toon-post-hook` (PostToolUse), `prefer-modern-tools` (PreToolUse), `data-layer-guard` (PreToolUse) |
+| Skills | 20 | `init`, `acceptance-criteria`, `cli-design`, `delegate-first`, `grill-me`, `tdd`, `python-simplifier`, `typescript-simplifier`, `karpathy-guidelines`, `property-based-testing`, `verified-implementation`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory`, `thinking-in-systems`, `skillopt-sleep-learned` |
+| Hooks | 5 | `terminal-bell` (Stop), `toon-post-hook` (PostToolUse), `prefer-modern-tools` (PreToolUse), `data-layer-guard` (PreToolUse), `post-compaction` (SessionStart after compact/clear) |
 | Templates | 3 | `.pre-commit-config.yaml`, `CLAUDE.md`, `AGENTS.md` |
 | Sub-plugins | 9 | `beads-epic-builder`, `browser-automation`, `research-tools`, `security-suite`, `performance-optimization`, `mutation-testing`, `review-panel`, `variant-explorer`, `triage` |
 
@@ -59,7 +59,7 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 
 ---
 
-## Skills (17)
+## Skills (20)
 
 ### Project Setup
 
@@ -76,6 +76,8 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 | `typescript-simplifier` | Simplifies and refines TypeScript/JavaScript code for clarity, consistency, and maintainability. Applies KISS principles, modern ES features, and framework best practices. Use when reviewing or refactoring TS/JS code. |
 | `cli-design` | Design patterns and conventions for building agent-compatible CLI tools. Covers flag design, output formatting, exit codes, and composability with AI-driven workflows. |
 | `delegate-first` | Keep the parent conversation clean by forking noisy implementation, validation, and multi-file work to sub-agents. |
+| `grill-me` | Socratically stress-test requirements, architecture, edge cases, failure modes, and trade-offs before execution; emits a required risk matrix. |
+| `tdd` | Enforce observed Red → Green → Refactor vertical slices and hand surviving behaviors to the mutation-testing sub-plugin. |
 | `karpathy-guidelines` | Behavioral guidelines to reduce common LLM coding mistakes. Helps avoid overcomplication, make surgical changes, surface assumptions, and define verifiable success criteria. |
 | `property-based-testing` | Use when implementing serialization/parsing, data transformations, algorithms with mathematical properties, API contracts, or state machines where testing all edge cases is impractical. Describe invariants instead of specific input/output pairs. |
 | `verified-implementation` | Require authoritative sources for security-critical, financial, protocol, and production-ready implementation decisions. |
@@ -94,6 +96,7 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 |-------|-------------|
 | `writing-about-engineering` | Use when drafting first-person engineering writing — blog posts, short posts/threads, or postmortems. Produces a conversational-but-rigorous, peer-to-peer voice anchored on the Julia Evans / Simon Willison TIL/blog rhythm. |
 | `writing-skills-excellence` | Framework for creating, updating, or improving agent skills. Covers structure, frontmatter, when-to-use clauses, and quality principles. |
+| `skillopt-sleep-learned` | Locally learned agent preferences and procedures maintained by SkillOpt-Sleep. |
 
 ### Automation & Pipelines
 
