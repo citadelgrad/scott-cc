@@ -9,7 +9,20 @@ profiles:
         allow_failure: false
         decision_on_failure: fail
 
+  triage:
+    parallel: false
+    gates:
+      - id: ruff
+        run: uv run ruff check .
+        timeout: 5m
+      - id: test
+        run: uv run pytest
+        timeout: 10m
+
 schedules:
   plugin-staleness-audit-weekly:
     profile: plugin-staleness-audit
     cron: '0 6 * * 1'
+  triage-scott-cc:
+    profile: triage
+    cron: '0 11 * * 2'
