@@ -7,6 +7,7 @@ description: >-
 license: MIT
 metadata:
   category: discipline
+  triggers: [overcomplication, over-engineering, surgical-changes, simplicity, assumptions, LLM-mistakes, code-review, refactoring]
 ---
 
 # Karpathy Guidelines
@@ -36,6 +37,8 @@ Before implementing:
 - If you write 200 lines and it could be 50, rewrite it.
 
 Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+**Violating the letter of these rules is violating the spirit of these rules.** Don't rationalize "I'm following the spirit" while adding speculative code.
 
 ## 3. Surgical Changes
 
@@ -70,3 +73,33 @@ For multi-step tasks, state a brief plan:
 ```
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
+
+## Common Rationalizations
+
+| Rationalization | Reality |
+|---|---|
+| "I'll add this abstraction for future flexibility" | YAGNI. Single-use abstractions add complexity without value. Remove it. |
+| "While I'm here, I'll clean up this other code" | Surgical changes only. File a separate issue for unrelated cleanup. |
+| "This is too simple to state assumptions for" | Simple tasks have hidden assumptions. State them. 30 seconds of clarity prevents 30 minutes of rework. |
+| "I already know what they want" | Multiple interpretations exist more often than you think. Present options, don't pick silently. |
+| "I'll just refactor this adjacent function too" | Every changed line must trace to the user's request. If it doesn't, revert it. |
+
+## Red Flags — STOP
+
+- Adding code the user didn't ask for
+- "Improving" adjacent code, comments, or formatting
+- Writing 200 lines when 50 would do
+- Skipping assumptions because the task "seems obvious"
+- No verifiable success criteria defined before starting
+
+All of these mean: pause, re-read the request, and simplify.
+
+## Common Mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Treating guidelines as "nice to have" | These are constraints, not suggestions |
+| Adding error handling for impossible states | Trust your types and validation |
+| Refactoring unrelated code in the same PR | Touch only what the request requires |
+| Defining success as "it works" | Define specific, testable criteria before starting |
+| Adding configuration/flexibility not requested | Ship the simplest thing that solves the problem |

@@ -1,3 +1,11 @@
+---
+description: >-
+  Authoritative source URLs organized by domain: authentication, cryptography,
+  payments, distributed systems, and protocols.
+metadata:
+  tags: [sources, auth, crypto, payments, protocols, RFC, NIST, OWASP]
+---
+
 # Authoritative Sources by Domain
 
 Quick lookup for Step 2 (FETCH) of the verified-implementation workflow.

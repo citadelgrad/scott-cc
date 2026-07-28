@@ -4,8 +4,10 @@ description: >-
   Use when reviewing or refactoring TypeScript/JavaScript code for clarity,
   consistency, and maintainability. Applies KISS principles, modern ES features,
   and framework best practices to simplify and refine code.
+license: MIT
 metadata:
   category: technique
+  triggers: [typescript, javascript, refactoring, simplify, DRY, duplicate-code, React, Next.js, Express, code-review]
 ---
 
 # TypeScript/JavaScript Code Simplifier
@@ -96,11 +98,21 @@ function process(data: ProcessableData) {
 - [Code Patterns](references/code-patterns.md) — Deduplication examples, modern ES idioms
 - [Framework Patterns](references/framework-patterns.md) — React, Next.js, Express patterns
 
-## When to Use This Skill
+## When to Use
 
-Invoke when:
 - **Finding and removing duplicate code** across modules
 - Reviewing recently written TypeScript/JavaScript code
 - Extracting repeated patterns into shared functions, hooks, or components
 - Refactoring existing code for clarity
 - Checking if code follows framework patterns (React, Next.js, Express, Node)
+
+## Common Mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Using `any` to fix type errors | Use `unknown` and narrow, or fix the types |
+| Disabling ESLint rules inline | Fix the underlying issue instead |
+| Over-typing with explicit types everywhere | Let inference work; add types where they clarify |
+| Creating abstractions for 1-2 uses | Wait for 3+ similar patterns before extracting |
+| Adding logging everywhere | Only add logging where it provides concrete value |
+| Changing behavior while simplifying | Only change *how*, never *what* |

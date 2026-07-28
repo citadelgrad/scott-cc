@@ -1,3 +1,11 @@
+---
+description: >-
+  Canonical voice samples for engineering writing: short posts, blog openers,
+  postmortems, and reflective posts with annotated moves.
+metadata:
+  tags: [writing, voice, samples, blog, postmortem, engineering]
+---
+
 # Voice Samples
 
 These are the canonical rhythm references for the `writing-about-engineering` skill. They were drafted, edited, and approved as exemplars of the target voice. Read them before drafting; return to them when pressure-testing a paragraph that feels off.

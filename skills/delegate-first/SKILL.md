@@ -138,3 +138,14 @@ Do not fork when:
 - The next step is a user decision, not implementation.
 
 The user is always in control. If they ask for inline work, do it inline.
+
+## Common Mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Forking trivial one-line questions | Keep inline if no tool output is needed |
+| Narrating the fork's work in the parent | Stop after the one-sentence launch. Summarize on return. |
+| Pasting fork's verbose output into parent | Summarize in 2-3 sentences; user can ask for details |
+| Forking without a concrete prompt | Always include goal, constraints, verification, and output format |
+| Working in the primary checkout during a fork | Use `.worktrees/<task-id>` to isolate changes |
+| Force-deleting unmerged worktrees | Preserve on failure; only remove clean, merged worktrees |

@@ -1,3 +1,11 @@
+---
+description: >-
+  How to write skill descriptions that agents discover correctly. Covers
+  trigger-only descriptions, keyword strategy, and naming conventions.
+metadata:
+  tags: [CSO, discovery, description, triggers, naming, search-optimization]
+---
+
 # CSO Guide - Claude Search Optimization
 
 Advanced techniques for making skills discoverable by agents.

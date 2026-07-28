@@ -9,6 +9,7 @@ description: >-
 license: MIT
 metadata:
   category: discipline
+  triggers: [security, crypto, auth, TLS, CORS, financial, RFC, NIST, OWASP, production-ready, verified, correct]
 ---
 
 # Verified Implementation

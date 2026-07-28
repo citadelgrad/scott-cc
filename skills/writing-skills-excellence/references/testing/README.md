@@ -1,3 +1,11 @@
+---
+description: >-
+  How to test agent skills using the RED-GREEN-REFACTOR cycle across all
+  skill types: technique, discipline, reference, and pattern.
+metadata:
+  tags: [testing, skills, TDD, validation, quality]
+---
+
 # Testing Guide - TDD for Skills
 
 Complete methodology for testing skills using RED-GREEN-REFACTOR cycle.

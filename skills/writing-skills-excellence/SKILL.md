@@ -1,10 +1,12 @@
 ---
 name: writing-skills-excellence
 description: "Use when creating, updating, or improving agent skills."
-category: meta
-risk: unknown
-source: community
-date_added: "2026-02-27"
+license: MIT
+metadata:
+  category: meta
+  triggers: [skill-creation, skill-improvement, SKILL.md, agent-skills, skill-structure, skill-quality]
+  source: community
+  date_added: "2026-02-27"
 ---
 
 # Writing Skills (Excellence)

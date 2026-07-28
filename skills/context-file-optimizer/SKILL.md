@@ -5,8 +5,10 @@ description: >-
   CLAUDE.md, .cursorrules, etc.) to follow research-backed guidelines that
   improve agent performance and reduce costs. Based on findings from
   arxiv.org/abs/2602.11988.
+license: MIT
 metadata:
   category: technique
+  triggers: [CLAUDE.md, AGENTS.md, cursorrules, context-file, agent-instructions, token-optimization, context-bloat]
 ---
 
 # Context File Optimizer

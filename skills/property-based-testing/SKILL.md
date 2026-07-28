@@ -5,8 +5,10 @@ description: >-
   with mathematical properties, API contracts, or state machines where testing
   all edge cases is impractical — especially when you can describe invariants
   rather than specific input/output pairs.
+license: MIT
 metadata:
   category: technique
+  triggers: [property-based, hypothesis, fast-check, proptest, invariants, round-trip, fuzz-testing, edge-cases, serialization]
 ---
 
 # Property-Based Testing

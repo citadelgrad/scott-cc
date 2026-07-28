@@ -5,8 +5,10 @@ description: >-
   blog posts, short posts/threads, or postmortems — that needs a
   conversational-but-rigorous, peer-to-peer voice. Skip for marketing copy,
   product announcements, customer-facing docs, or third-person writing.
+license: MIT
 metadata:
   category: technique
+  triggers: [blog-post, engineering-writing, postmortem, retrospective, TIL, short-post, thread, first-person]
 ---
 
 # Writing About Engineering

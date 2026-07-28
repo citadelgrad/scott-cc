@@ -5,8 +5,10 @@ description: >-
   finding code examples for specific APIs or features, verifying correct usage
   of library functions, or obtaining current information about library APIs that
   may have changed since training. Retrieves up-to-date docs via the Context7 API.
+license: MIT
 metadata:
   category: reference
+  triggers: [library-docs, framework-docs, API-reference, outdated-docs, library-usage, code-examples, current-docs]
 ---
 
 # Context7
@@ -91,3 +93,13 @@ curl -s "https://context7.com/api/v2/context?libraryId=/fastapi/fastapi&query=de
 - If the first search result is not correct, check additional results in the array
 - URL-encode query parameters containing spaces (use `+` or `%20`)
 - No API key is required for basic usage (rate-limited)
+
+## Common Mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Proceeding with null/empty library ID | Check `jq '.results'` is non-empty before Step 2 |
+| Using vague `query` like "usage" | Be specific: "useState hook" not "hooks" |
+| Skipping MCP tools when available | Always prefer MCP tools over curl fallback |
+| Not URL-encoding query params | Use `+` or `%20` for spaces in query strings |
+| Using only the first search result | Check multiple results if the first doesn't match |

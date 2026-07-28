@@ -4,9 +4,11 @@ description: >-
   Use when writing or reviewing acceptance criteria for any story, ticket, or
   feature spec. Generates testable, specific criteria in Gherkin
   (Given/When/Then), checklist, or rules-based format with a completeness check.
+license: MIT
 allowed-tools: Read, Write
 metadata:
   category: technique
+  triggers: [acceptance-criteria, AC, gherkin, given-when-then, user-story, testable, done-criteria, story-spec]
 ---
 
 # Acceptance Criteria Skill

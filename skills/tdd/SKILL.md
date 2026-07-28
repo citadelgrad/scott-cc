@@ -80,8 +80,31 @@ Report:
 
 ## Anti-Rationalization
 
-- “The change is trivial” is not permission to skip Red.
-- “I will add tests afterward” is test-after development, not TDD.
-- Existing coverage is not proof that the new behavior was driven by a failing test.
-- A large implementation followed by one test is not a vertical slice.
-- Refactoring while red destroys the diagnostic signal.
+| Rationalization | Reality |
+|---|---|
+| "The change is trivial" | Trivial changes break. Test takes 30 seconds. Not permission to skip Red. |
+| "I will add tests afterward" | Test-after is not TDD. Tests passing immediately prove nothing about the new behavior. |
+| "Existing coverage already covers this" | Existing coverage is not proof the new behavior was driven by a failing test. |
+| "I'll write all the tests first, then implement" | That's horizontal slicing. TDD is vertical: one test, one implementation, repeat. |
+| "Refactoring while red is fine if I'm careful" | Refactoring while red destroys the diagnostic signal. Get green first. |
+| "This is about spirit, not ritual" | The letter IS the spirit. TDD's value comes from the specific sequence. |
+
+## Red Flags — STOP and Restart
+
+- Implementation code written before a test failed
+- "I already manually tested it"
+- Multiple tests written before any implementation
+- Refactoring while tests are failing
+- "This is different because..."
+
+All of these mean: delete the unverified code, start over with a failing test.
+
+## Common Mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Testing private methods | Test behavior through public interfaces only |
+| Over-mocking everything | Mock at owned boundaries; verify real contracts |
+| Batching all tests before implementation | One test → one implementation → repeat |
+| Chasing mutation score blindly | Review surviving mutations; meaningful survivors become new Red tests |
+| Skipping the Refactor step | Refactor while green to maintain code quality |

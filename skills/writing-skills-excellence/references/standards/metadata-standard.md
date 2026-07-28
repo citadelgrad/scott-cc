@@ -1,3 +1,11 @@
+---
+description: >-
+  Complete reference for SKILL.md YAML frontmatter fields, required and
+  optional metadata, and naming conventions.
+metadata:
+  tags: [standards, metadata, frontmatter, YAML, naming]
+---
+
 # SKILL.md Metadata Standard
 
 Frontmatter fields for Claude Code skills.

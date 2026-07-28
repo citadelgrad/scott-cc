@@ -1,3 +1,11 @@
+---
+description: >-
+  Techniques for bulletproofing discipline skills against agent rationalization.
+  Covers loophole closing, rationalization tables, red flags, and strong language.
+metadata:
+  tags: [anti-rationalization, discipline, bulletproofing, compliance, enforcement]
+---
+
 # Anti-Rationalization Guide
 
 Techniques for bulletproofing skills against agent rationalization.

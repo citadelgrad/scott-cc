@@ -1,3 +1,11 @@
+---
+description: >-
+  Template for complex Tier 3 platform skills with modular architecture,
+  multiple products, and progressive disclosure via references.
+metadata:
+  tags: [template, tier-3, platform, skill-creation, modular]
+---
+
 # Platform Name Skill
 
 Template for complex Tier 3 skills.

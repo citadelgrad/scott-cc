@@ -1,3 +1,11 @@
+---
+description: >-
+  Experimental data from "Do Context Files Help Coding Agents?" showing
+  performance impact of verbose vs. minimal context files.
+metadata:
+  tags: [research, context-files, agent-performance, token-optimization]
+---
+
 # Research Findings: Context Files for Coding Agents
 
 Source: "Do Context Files Help Coding Agents?" (arxiv.org/abs/2602.11988)

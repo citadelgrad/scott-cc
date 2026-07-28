@@ -5,6 +5,7 @@ description: >-
   sessions. Auto-maintained by SkillOpt-Sleep.
 metadata:
   category: reference
+  triggers: [skillopt, learned-preferences, agent-procedures, session-habits]
 ---
 
 # skillopt-sleep-learned
