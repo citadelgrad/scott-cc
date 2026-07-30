@@ -118,6 +118,17 @@
       },
       "tags": ["triage", "foundry", "automation", "detectors", "beads"],
       "status": "experimental"
+    },
+    {
+      "name": "refactoring",
+      "source": "./plugins/refactoring",
+      "description": "Fowler-style refactoring suite: code smell diagnosis, a refactoring mechanics catalog, and a planner that sequences a safe cleanup across both (3 skills)",
+      "version": "1.0.0",
+      "author": {
+        "name": "Scott Nixon"
+      },
+      "tags": ["refactoring", "code-smells", "design", "quality"],
+      "status": "stable"
     }
   ]
 }
