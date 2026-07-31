@@ -3,9 +3,10 @@ name: acceptance-criteria
 description: >-
   Use when writing or reviewing acceptance criteria for any story, ticket, or
   feature spec. Generates testable, specific criteria in Gherkin
-  (Given/When/Then), checklist, or rules-based format with a completeness check.
+  (Given/When/Then), checklist, or rules-based format with a completeness
+  check, then writes an automated test for every criterion.
 license: MIT
-allowed-tools: Read, Write
+allowed-tools: Read, Write, Edit, Bash
 metadata:
   category: technique
   triggers: [acceptance-criteria, AC, gherkin, given-when-then, user-story, testable, done-criteria, story-spec]
@@ -24,6 +25,7 @@ team checklist applied to every story).
 - Reviewing existing AC for testability and completeness
 - Translating vague requirements into Gherkin, checklist, or rules format
 - Ensuring edge cases, error states, and boundaries are covered before implementation
+- Producing an automated test for every criterion, not just the criteria text
 
 ## Parse Arguments
 
@@ -37,6 +39,7 @@ Extract from `$ARGUMENTS`:
 | `--format rules` | Output as "The system must..." rules (good for business logic) |
 | `--review` | Review existing AC instead of generating new ones |
 | `--story "<text>"` | Inline story — skip the prompt |
+| `--no-tests` | Skip Phase 7 (test generation). Default: tests are generated. |
 
 ---
 
@@ -192,12 +195,56 @@ Present the final AC with this structure:
 ### Completeness Notes
 [any gaps identified in Phase 5, or "All categories covered."]
 
+### Tests
+[file path(s) written, criterion → test name mapping, and which — if any —
+are stubs pending implementation (see Phase 7). Omit only if `--no-tests`.]
+
 ### Out of Scope
 [anything explicitly excluded and why — prevents scope creep disputes]
 ```
 
 If in `--review` mode: present the original AC, then a critique against the
 testability gate and completeness check, then a revised version.
+
+---
+
+## Phase 7: Generate Automated Tests
+
+Unless `--no-tests` was passed, every criterion produced in Phase 3 gets a
+matching automated test. AC define what "done" means; a test is what proves
+it. Do not stop at the AC document — implement the tests.
+
+This does not contradict the Phase 5 DoD-exclusion rule. That rule bans
+writing "tests pass" as an AC *line item*. This phase is a separate,
+required deliverable: for each AC line item, produce a runnable test.
+
+1. **Detect the test setup.** Find the project's test framework, file
+   naming convention, and directory layout (e.g. `pytest` + `tests/`,
+   Jest/Vitest + `*.test.ts`, Go's `_test.go`). Match existing conventions —
+   do not introduce a new framework.
+   - No test setup and no code to test yet (pure planning/ticket context)?
+     Say so explicitly and emit test **stubs** (skipped/pending tests named
+     after each scenario) instead of full implementations, so the mapping
+     from AC to test exists even before the feature is built.
+2. **Map 1:1 from criteria to tests.**
+   - Gherkin: each `Scenario:` → one test function. Given/When/Then map to
+     arrange/act/assert.
+   - Checklist: each `☐` item → one test case.
+   - Rules: each "must" → a positive test; each "must not" → a test that
+     asserts the forbidden behavior does not occur.
+3. **Write real assertions.** Assert the exact observable outcome named in
+   the criterion (the Phase 4 testability gate applies here too — if you
+   can't assert it precisely, the criterion wasn't specific enough; fix the
+   criterion, then the test).
+4. **Cover failure paths as real tests**, not comments — error and boundary
+   criteria need tests that trigger the failure and assert the system's
+   actual response.
+5. **Run the suite** and confirm the new tests execute (failing red against
+   unbuilt functionality is expected and correct; a test that errors out
+   for the wrong reason — typo, bad import, wrong API — is not).
+
+Report which criteria got full tests, which got stubs, and why, in the
+Output section below.
 
 ---
 
@@ -217,3 +264,4 @@ If you see these in existing AC (review mode) or catch yourself writing them, fi
 - AC produced here are a starting point — they still need domain-expert review for correctness.
 - Does not replace team retrospectives on what "done" means (Definition of Done).
 - Stop and ask for clarification if the story, scope, or success criteria are ambiguous.
+- Generated tests encode the criteria as written — a test only proves the criterion was implemented correctly, not that the criterion itself was the right requirement.
