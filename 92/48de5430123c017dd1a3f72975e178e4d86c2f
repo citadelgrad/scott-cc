@@ -1,0 +1,23 @@
+skills/delegate-first/SKILL.md
+  s_ffb661fa82c0a0::t_0310fb5cfda95d 17-44
+skills/pas-pipeline/SKILL.md
+  s_ffb661fa82c0a0::t_1cfad8f30c3d05 19-26
+skills/reck-factory/SKILL.md
+  s_ffb661fa82c0a0::t_92e66e7dcea1b4 19-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.18",
+  "base_commit_sha": "9248de5430123c017dd1a3f72975e178e4d86c2f",
+  "prompts": {},
+  "sessions": {
+    "s_ffb661fa82c0a0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "92f2f846-fcd5-47ce-91f3-23d952cf918c",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
