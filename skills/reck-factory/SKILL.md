@@ -16,6 +16,27 @@ Operates `reck` (Reckoner) — a software factory that wraps `pas`. It manages r
 
 **Architecture:** Reckoner is the factory layer. It never invokes Claude directly — all task execution routes through PAS. Foundry sits above as the platform quality layer (gates, schedules, CI-style profiles).
 
+## Prerequisites & Known Limitations
+
+- **Required:** `reck` CLI tool (version 0.1.0 or compatible)
+  - Verify installation: `reck --version`
+  - If not installed, consult your project's setup documentation or contact your platform team
+- **Required:** Container runtime available (Docker or Podman)
+  - Verify: `docker info` or `podman info`
+- **Required:** Network access for repo cloning and task execution
+
+### ⚠️ Intent Flags Not Yet Functional
+
+The following flags are **currently non-functional** and should not be relied upon:
+- `--prompt "..."` (intended for inline task descriptions)
+- `--spec <path>` (intended for spec-file-based generation)
+- `--epic <beads-id>` (intended for epic-based scaffolding)
+- `--prd <path>` (intended for PRD-based generation)
+
+**These flags are wired in the CLI but resolution to `.dot` pipeline generation has not been completed.**
+
+**Current requirement:** Always provide `--pipeline <file>` explicitly until intent resolution lands.
+
 ## When to Use
 - Running an AI-driven task against a registered repo (`reck task`)
 - Registering or managing repos in the factory

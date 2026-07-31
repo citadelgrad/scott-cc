@@ -16,6 +16,14 @@ Operates `pas` — the DOT-based AI pipeline runner. Version: 0.7.2.
 
 **Role in the stack:** PAS is the sole execution engine for AI tasks. Reckoner (the factory layer) wraps PAS — it never invokes Claude directly. Foundry sits above as the platform quality layer. All task execution ultimately calls `pas run` inside a container.
 
+## Prerequisites
+
+- **Required:** `pas` CLI tool (version 0.7.2 or compatible)
+  - Verify installation: `pas --version`
+  - If not installed, consult your project's setup documentation or contact your platform team
+- **Required:** Ability to run shell commands and access `.dot` pipeline files
+- **Optional:** `pas.toml` configuration file in project root (auto-created by `pas init` if missing)
+
 ## When to Use
 - Launching a pipeline from spec/PRD documents (`pas launch`)
 - Running or resuming a `.dot` pipeline file (`pas run`)

@@ -14,6 +14,34 @@ metadata:
 
 The main thread is for coordination, decisions, and user-visible summaries. Implementation work should run in forked sub-agents by default when it would produce noisy tool output.
 
+## Prerequisites & API Reference
+
+- **Required:** Claude Code SDK with `Agent()` helper function and support for `subagent_type: "fork"`
+- **Required:** Git worktree feature (standard in Git 2.7+)
+- **Assumed:** Repository uses Git and has a clean working tree suitable for branching
+
+### Agent API Contract
+
+The `Agent()` helper accepts the following parameters for fork-based delegation:
+
+```javascript
+Agent({
+  subagent_type: "fork",           // Required: must be "fork"
+  description: "string",            // Required: human-readable task label
+  prompt: "string",                 // Required: task instructions; may reference {absolute-worktree-path}
+  // Optional:
+  cwd?: "absolute-path",           // Working directory for forked execution
+  model?: "model-name",            // Model override
+  timeout?: number                 // Timeout in seconds (if supported)
+})
+```
+
+**Return Contract:** Fork returns a structured result containing:
+- `changed_files: string[]` — list of modified file paths
+- `git_status: string` — output of `git status --short`
+- `verification_results: string` — validation/test output
+- `blockers: string[]` — array of unresolved issues or failures
+
 ## When to Use
 
 Use this skill when:
