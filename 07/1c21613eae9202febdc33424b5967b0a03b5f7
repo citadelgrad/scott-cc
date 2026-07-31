@@ -1,0 +1,24 @@
+skills/acceptance-criteria/SKILL.md
+  s_c63797dedf1de9::t_fa1761a1d0a8be 267
+  s_c63797dedf1de9::t_f5d78b12909265 28
+  s_c63797dedf1de9::t_8ff89bb67a3465 42
+  s_c63797dedf1de9::t_c8141705ed274e 198-201
+  s_c63797dedf1de9::t_737dbf5c52a27f 6-7,9
+  s_c63797dedf1de9::t_23965dbaa78f23 211-250
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "071c21613eae9202febdc33424b5967b0a03b5f7",
+  "prompts": {},
+  "sessions": {
+    "s_c63797dedf1de9": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "229a6825-6fda-46ff-b8b2-84d51a3e5ecc",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
