@@ -1,0 +1,29 @@
+skills/thinking-in-systems/SKILL.md
+  s_54ba86848bf980::t_3675d443a4f789 163,165,167,173,175,177,183,191,197
+skills/thinking-in-systems/references/anti-patterns.md
+  s_54ba86848bf980::t_34909fd272ebe3 1-15
+skills/thinking-in-systems/references/archetypes.md
+  s_54ba86848bf980::t_728d91134a7a33 1-26
+skills/thinking-in-systems/references/design-mode.md
+  s_54ba86848bf980::t_08a5b099e5d9ad 1-44
+skills/thinking-in-systems/references/interventions-and-checklists.md
+  s_54ba86848bf980::t_de61be57d850e2 1-62
+skills/thinking-in-systems/references/leverage-points.md
+  s_54ba86848bf980::t_763383e4d599dd 1-50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "30993727dcb6f4a3c385202132538e60a47c1d7c",
+  "prompts": {},
+  "sessions": {
+    "s_54ba86848bf980": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "db2d412b-bfa1-4f58-8f9d-ec3ec244d812",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
