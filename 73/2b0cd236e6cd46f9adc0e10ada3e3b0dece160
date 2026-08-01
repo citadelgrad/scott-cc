@@ -1,0 +1,38 @@
+.claude-plugin/plugin.json
+  s_54ba86848bf980::t_daa358673463f6 3-4
+skills/polyglot-idiom/SKILL.md
+  s_54ba86848bf980::t_0a991a73ebb87e 1-173
+commands/google-standard.md
+  s_54ba86848bf980::t_fd2a64095fd1c2 1-47
+skills/google-standard/SKILL.md
+  s_54ba86848bf980::t_12f7cf69034423 1-138
+commands/thermo-nuclear.md
+  s_54ba86848bf980::t_0ab796e3486485 1-46
+commands/polyglot-idiom.md
+  s_54ba86848bf980::t_76a66f0eac46fe 1-50
+README.md
+  s_54ba86848bf980::t_cff152307045fd 24,32-34
+  s_54ba86848bf980::t_701fa7d28ed840 65
+  s_54ba86848bf980::t_0b1441f3d55a0b 15,17
+  s_54ba86848bf980::t_0581cf2b23b3f9 117-125
+  s_54ba86848bf980::t_aeba21cd5a8744 3
+  s_54ba86848bf980::t_e76427a910dd4a 116
+skills/thermo-nuclear/SKILL.md
+  s_54ba86848bf980::t_dd656141d5cce9 1-112
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "732b0cd236e6cd46f9adc0e10ada3e3b0dece160",
+  "prompts": {},
+  "sessions": {
+    "s_54ba86848bf980": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "db2d412b-bfa1-4f58-8f9d-ec3ec244d812",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
