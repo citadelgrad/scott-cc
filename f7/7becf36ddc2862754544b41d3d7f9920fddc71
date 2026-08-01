@@ -1,0 +1,29 @@
+README.md
+  s_54ba86848bf980::t_d63137500d55ee 15,17
+  s_54ba86848bf980::t_bea552b974d095 3
+  s_54ba86848bf980::t_e25b086c7c1efc 24,35
+  s_54ba86848bf980::t_63ab586d6ae470 66
+  s_54ba86848bf980::t_f757eaa7d71aed 127
+.claude-plugin/plugin.json
+  s_54ba86848bf980::t_3317409554d877 3
+skills/concurrency-atomicity/SKILL.md
+  s_54ba86848bf980::t_372ec32b846c8b 1-213
+commands/concurrency-atomicity.md
+  s_54ba86848bf980::t_412cda20c14cb2 1-48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "f77becf36ddc2862754544b41d3d7f9920fddc71",
+  "prompts": {},
+  "sessions": {
+    "s_54ba86848bf980": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "db2d412b-bfa1-4f58-8f9d-ec3ec244d812",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
