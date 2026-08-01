@@ -1,0 +1,19 @@
+skills/swift-simplifier/SKILL.md
+  s_65ce304c2c83de::t_2fde3489ca2cfc 1-134
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "c3790733fe3129f29e5ed3813e01d9dfd09f2315",
+  "prompts": {},
+  "sessions": {
+    "s_65ce304c2c83de": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fe72ecb-0148-49ab-aaf3-42296a813713",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
