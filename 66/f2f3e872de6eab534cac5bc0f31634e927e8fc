@@ -1,0 +1,43 @@
+skills/concurrency-atomicity/SKILL.md
+  s_54ba86848bf980::t_56604f67debb28 4-8,10-14
+  s_54ba86848bf980::t_7e2aa8fd8d96b3 53-56
+  s_54ba86848bf980::t_c9316c379fd04b 194-196
+skills/google-standard/SKILL.md
+  s_54ba86848bf980::t_00a7919a55b5fb 40-43
+  s_54ba86848bf980::t_5b08d0101a9769 124-126
+  s_54ba86848bf980::t_94679556ef888a 4-7,11
+commands/polyglot-idiom.md
+  s_54ba86848bf980::t_a7c49283476f9f 35-37
+README.md
+  s_54ba86848bf980::t_6604fd4b429f8b 120
+skills/polyglot-idiom/SKILL.md
+  s_54ba86848bf980::t_379d6b11b8e5f4 43-46
+  s_54ba86848bf980::t_25655be72d6c5f 4-10
+  s_54ba86848bf980::t_95cdd212a9fb9a 159-161
+commands/concurrency-atomicity.md
+  s_54ba86848bf980::t_028971de132e31 35-37
+commands/google-standard.md
+  s_54ba86848bf980::t_a1e003ad4ebd1a 34-36
+skills/thermo-nuclear/SKILL.md
+  s_54ba86848bf980::t_10d6ca82d98d43 4-7,10-13
+  s_54ba86848bf980::t_7f72b750307b10 39-42
+  s_54ba86848bf980::t_765475e4f7a0ed 101-103
+commands/thermo-nuclear.md
+  s_54ba86848bf980::t_f590d02ca2f463 33-35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "66f2f3e872de6eab534cac5bc0f31634e927e8fc",
+  "prompts": {},
+  "sessions": {
+    "s_54ba86848bf980": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "db2d412b-bfa1-4f58-8f9d-ec3ec244d812",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
