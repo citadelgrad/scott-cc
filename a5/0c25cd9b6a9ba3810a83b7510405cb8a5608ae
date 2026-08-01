@@ -1,0 +1,29 @@
+skills/init/SKILL.md
+  s_54ba86848bf980::t_3675d443a4f789 33,35,39,56,58-59,63,65,67-74,76-77
+skills/init/references/bash-helpers.md
+  s_54ba86848bf980::t_e838cfeefc67cf 1-130
+skills/init/references/beads-config.md
+  s_54ba86848bf980::t_f24036a20dd71e 1-50
+skills/init/references/foundry-template.md
+  s_54ba86848bf980::t_86040f24a22639 1-71
+skills/init/references/makefile-templates.md
+  s_54ba86848bf980::t_6742adae4003b0 1-87
+skills/init/references/pre-commit-setup.md
+  s_54ba86848bf980::t_81b8c7853cc80d 1-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "a50c25cd9b6a9ba3810a83b7510405cb8a5608ae",
+  "prompts": {},
+  "sessions": {
+    "s_54ba86848bf980": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "db2d412b-bfa1-4f58-8f9d-ec3ec244d812",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
