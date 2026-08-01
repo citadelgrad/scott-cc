@@ -175,7 +175,7 @@ Create the Makefile based on the **detected project type** from Step 1. Use tabs
 
 **Python project** (`pyproject.toml` detected):
 ```makefile
-.PHONY: up down restart status logs test lint
+.PHONY: up down restart status logs logs-tail test lint
 
 up:
 	docker compose up -d
@@ -190,6 +190,9 @@ status:
 
 logs:
 	docker compose logs -f
+
+logs-tail:
+	docker compose logs --tail=20
 
 test:
 	uv run pytest
@@ -200,7 +203,7 @@ lint:
 
 **Node/TS project** (`package.json` or `tsconfig.json` detected):
 ```makefile
-.PHONY: up down restart status logs test lint
+.PHONY: up down restart status logs logs-tail test lint
 
 up:
 	docker compose up -d
@@ -215,6 +218,9 @@ status:
 
 logs:
 	docker compose logs -f
+
+logs-tail:
+	docker compose logs --tail=20
 
 test:
 	npm test
@@ -225,7 +231,7 @@ lint:
 
 **Unknown project type** (none of the above detected):
 ```makefile
-.PHONY: up down restart status logs
+.PHONY: up down restart status logs logs-tail
 
 up:
 	docker compose up -d
@@ -240,9 +246,12 @@ status:
 
 logs:
 	docker compose logs -f
+
+logs-tail:
+	docker compose logs --tail=20
 ```
 
-Note: `logs` intentionally streams (`-f`). Do not chain it from other targets.
+Note: `logs` intentionally streams (`-f`) and shows every container's output combined — do not chain it from other targets. `logs-tail` is the non-blocking counterpart: it prints a recent snapshot from all containers and returns, so it's safe to run right after `make up` to verify startup without hanging the terminal.
 
 If `Makefile` already exists, skip it — do not overwrite, do not ask.
 

@@ -15,9 +15,9 @@ See `templates/CLAUDE.md`'s CLI Tool Preferences section for the canonical, up-t
 
 ## Service Management Lifecycle
 - All background service executions must be managed strictly via the root `Makefile`.
-- Standard required targets: `make up`, `make down`, `make restart`, `make status`, `make logs`.
+- Standard required targets: `make up`, `make down`, `make restart`, `make status`, `make logs`, `make logs-tail`.
 - Services must execute in detached/background processes.
-- Sequencing rule: Immediately following a `make up` invocation, execute `make status` or `docker compose logs --tail=20` to verify runtime health (`make logs` streams with `-f` and will hang).
+- Sequencing rule: Immediately following a `make up` invocation, execute `make status` or `make logs-tail` to verify runtime health (`make logs` streams with `-f` and will hang — `make logs-tail` prints a recent snapshot from all containers and returns).
 
 ## Port Constraints
 - Never bind to default development ports (e.g., 3000, 5000, 8000, 8080).

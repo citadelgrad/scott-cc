@@ -33,11 +33,12 @@ Prefer these modern CLI tools when available:
 **Always use a Makefile as the primary interface for starting, stopping, and managing services.** Every project with services should have a Makefile with standard targets.
 
 - Services must run in the background (detached mode) — never block the terminal
-- Standard targets: `make up`, `make down`, `make restart`, `make status`, `make logs`
+- Standard targets: `make up`, `make down`, `make restart`, `make status`, `make logs`, `make logs-tail`
 - For Docker Compose services, use `docker compose up -d` (detached) in Make targets
 - If a project is missing a Makefile, create one with the standard targets
 - All service lifecycle commands should go through Make — avoid raw `docker compose` or direct process management in normal workflows
-- When initiating a background service via `make up`, always follow up with `make status` or `docker compose logs --tail=20` to verify the service didn't immediately crash on startup (`make logs` streams with `-f` and will hang — use the raw docker command for a quick tail)
+- `make logs` streams every container's combined output with `-f` and will hang the terminal; `make logs-tail` prints a recent snapshot from all containers and returns immediately
+- When initiating a background service via `make up`, always follow up with `make status` or `make logs-tail` to verify the service didn't immediately crash on startup
 
 ## Port Selection: Avoid Defaults
 
