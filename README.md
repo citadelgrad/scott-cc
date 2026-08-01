@@ -1,6 +1,6 @@
 # Scott's Claude Code Setup
 
-Modular Claude Code plugin suite for productive development. The core plugin provides **4 slash commands**, **8 specialized AI agents**, **20 skills**, **5 hooks**, and **3 project templates**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, multi-persona code review, and more.
+Modular Claude Code plugin suite for productive development. The core plugin provides **7 slash commands**, **8 specialized AI agents**, **23 skills**, **5 hooks**, and **3 project templates**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, multi-persona code review, and more.
 
 ## Quick Install
 
@@ -12,16 +12,16 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 
 | Type | Count | Names |
 |------|------:|-------|
-| Commands | 4 | `delegate-first`, `gha`, `handoff`, `security-cheatsheet` |
+| Commands | 7 | `delegate-first`, `gha`, `handoff`, `security-cheatsheet`, `thermo-nuclear`, `google-standard`, `polyglot-idiom` |
 | Agents | 8 | `api-debugger`, `backend-architect`, `deep-research-agent`, `find-emergent-behavior`, `frontend-architect`, `refactoring-expert`, `requirements-analyst`, `system-architect` |
-| Skills | 20 | `init`, `acceptance-criteria`, `cli-design`, `delegate-first`, `grill-me`, `tdd`, `python-simplifier`, `typescript-simplifier`, `karpathy-guidelines`, `property-based-testing`, `verified-implementation`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory`, `thinking-in-systems`, `skillopt-sleep-learned` |
+| Skills | 23 | `init`, `acceptance-criteria`, `cli-design`, `delegate-first`, `grill-me`, `tdd`, `python-simplifier`, `typescript-simplifier`, `karpathy-guidelines`, `property-based-testing`, `verified-implementation`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory`, `thinking-in-systems`, `skillopt-sleep-learned`, `thermo-nuclear`, `google-standard`, `polyglot-idiom` |
 | Hooks | 5 | `terminal-bell` (Stop), `toon-post-hook` (PostToolUse), `prefer-modern-tools` (PreToolUse), `data-layer-guard` (PreToolUse), `post-compaction` (SessionStart after compact/clear) |
 | Templates | 3 | `.pre-commit-config.yaml`, `CLAUDE.md`, `AGENTS.md` |
 | Sub-plugins | 9 | `beads-epic-builder`, `browser-automation`, `research-tools`, `security-suite`, `performance-optimization`, `mutation-testing`, `review-panel`, `variant-explorer`, `triage` |
 
 ---
 
-## Commands (4)
+## Commands (7)
 
 | Command | Description |
 |---------|-------------|
@@ -29,6 +29,9 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 | `/scott-cc:gha` | Debug failing GitHub Actions runs and audit workflow YAML. Fetches logs via `gh` CLI, analyzes errors, suggests fixes. |
 | `/scott-cc:handoff` | Generate a compact session handoff with git state, active work, key files, and concrete next actions. |
 | `/scott-cc:security-cheatsheet` | Look up OWASP security cheatsheets by topic. Comprehensive security reference for common vulnerabilities and mitigations. |
+| `/scott-cc:thermo-nuclear` | Zero-mercy structural-simplification review grounded in Cursor's thermo-nuclear-code-quality-review doctrine. Biases toward ambitious rewrites over preserving imperfect-but-working code. |
+| `/scott-cc:google-standard` | Review against Google's published Standard of Code Review. Favors approving once a change definitely improves code health, even if imperfect, using the Nit:/blocking distinction. |
+| `/scott-cc:polyglot-idiom` | Per-language idiom review for Java, C++, C#, Ruby, or PHP. Excludes Python, TypeScript, Go, Rust, and Swift, which have dedicated simplifier skills. |
 
 ---
 
@@ -59,7 +62,7 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 
 ---
 
-## Skills (20)
+## Skills (23)
 
 ### Project Setup
 
@@ -110,6 +113,16 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 | Skill | Description |
 |-------|-------------|
 | `thinking-in-systems` | Apply Donella Meadows' systems thinking framework to map, diagnose, and redesign any system — organizational, technical, ecological, or policy. Covers stocks/flows, feedback loops, system archetypes, leverage points, and concrete intervention recommendations. Use with `--design` to build a new system, or `--focus map/archetypes/leverage` to run a partial analysis. |
+
+### Code Review
+
+Each of these runs only via its own slash command (`disable-model-invocation: true`) — they never fire from automatic keyword matching.
+
+| Skill | Description |
+|-------|-------------|
+| `thermo-nuclear` | Zero-mercy structural-simplification doctrine grounded in Cursor's thermo-nuclear-code-quality-review skill. Biased against approval by default; blocks on file-size growth, spaghetti-branching, and missed simplification opportunities that other reviewers would let pass. |
+| `google-standard` | Google's published Standard of Code Review. Biased toward approval once a change definitely improves code health, even if imperfect; separates blocking findings from optional `Nit:` findings. |
+| `polyglot-idiom` | Per-language idiom checkpoints for Java, C++, C#, Ruby, and PHP, grounded in the Gemini code-quality research. Excludes Python, TypeScript, Go, Rust, and Swift, which have (or will have) dedicated simplifier skills. |
 
 ---
 
