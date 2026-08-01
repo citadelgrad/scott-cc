@@ -1,0 +1,19 @@
+foundry.yaml
+  s_54ba86848bf980::t_6a796e8239664d 15-27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "a882e9c24d00989fd06e1b8bf662ca03b6c958c9",
+  "prompts": {},
+  "sessions": {
+    "s_54ba86848bf980": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "db2d412b-bfa1-4f58-8f9d-ec3ec244d812",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
