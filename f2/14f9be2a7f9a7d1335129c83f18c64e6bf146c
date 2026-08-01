@@ -1,0 +1,19 @@
+skills/rust-simplifier/SKILL.md
+  s_65ce304c2c83de::t_bb34518d265a88 1-135
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "f214f9be2a7f9a7d1335129c83f18c64e6bf146c",
+  "prompts": {},
+  "sessions": {
+    "s_65ce304c2c83de": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7fe72ecb-0148-49ab-aaf3-42296a813713",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
