@@ -1,14 +1,15 @@
 ---
 name: google-standard
 description: >-
-  Use only when explicitly invoked via /scott-cc:google-standard. Applies Google's
-  published "Standard of Code Review" to a diff, branch, or PR, grounded in a fresh fetch
-  of https://google.github.io/eng-practices/review/reviewer/standard.html. Favors
+  Use when a general code review wants a pragmatic, ship-oriented code-health bar
+  rather than a zero-mercy or multi-lens pass. Applies Google's published "Standard
+  of Code Review" to a diff, branch, or PR, grounded in a fresh fetch of
+  https://google.github.io/eng-practices/review/reviewer/standard.html. Favors
   approving a change once it definitely improves overall code health, even if
   imperfect — the deliberate opposite pole from thermo-nuclear's zero-mercy doctrine, and
   a pragmatic, mentoring-oriented alternative to review-panel and adversarial-reviewer.
+  Also runnable directly via /scott-cc:google-standard for an explicit standalone pass.
 license: MIT
-disable-model-invocation: true
 metadata:
   category: technique
   triggers: [code-review, code-health, google-standard, mentoring]
@@ -36,7 +37,10 @@ fetched 2026-07-31.
 
 Use google-standard when you want a pragmatic, ship-oriented review that will not block
 progress over polish — the reviewer-standard equivalent of "don't let perfect be the
-enemy of good."
+enemy of good." This skill can be invoked automatically by the model, or by another
+orchestrating skill or agent (e.g. review-panel), whenever a review calls for this
+pragmatic code-health bar — it is not limited to explicit invocation via its slash
+command, though that remains available for a standalone pass.
 
 ## Core Principle
 
@@ -117,8 +121,9 @@ When the author and reviewer disagree:
 
 ## When to Use
 
-- Only via `/scott-cc:google-standard` — this skill sets `disable-model-invocation: true`
-  and never fires from automatic keyword matching.
+- Runnable directly via `/scott-cc:google-standard`, or automatically by the model or an
+  orchestrating skill/agent (e.g. review-panel) when a review calls for this pragmatic
+  code-health bar.
 - Best when review velocity matters and the goal is "does this leave the codebase
   better," not "is this the ideal implementation."
 - Pair with `thermo-nuclear` when you want both poles represented: one review biased

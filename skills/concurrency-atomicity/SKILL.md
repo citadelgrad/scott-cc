@@ -1,16 +1,18 @@
 ---
 name: concurrency-atomicity
 description: >-
-  Use only when explicitly invoked via /scott-cc:concurrency-atomicity. Applies a
-  narrow, four-checkpoint concurrency-correctness review to a diff, branch, or PR:
-  race conditions/shared mutable state, TOCTOU non-atomicity, deadlock/lock-ordering
+  Use when a diff, branch, or PR touches threads, async/concurrent code, shared
+  mutable state, locks/mutexes/semaphores, check-then-act logic, or multi-step state
+  transitions that must be all-or-nothing (payments, inventory, multi-table writes).
+  Applies a narrow, four-checkpoint concurrency-correctness review: race
+  conditions/shared mutable state, TOCTOU non-atomicity, deadlock/lock-ordering
   violations, and transactional atomicity. Grounded in fetched CWE reference entries
-  (CWE-362, CWE-367, CWE-833, CWE-667, CWE-662), not general security review. Not for
-  broad security/hostile-input review (use adversarial-reviewer) or general structural,
-  code-health, or per-language idiom review (use thermo-nuclear, google-standard, or
-  polyglot-idiom).
+  (CWE-362, CWE-367, CWE-833, CWE-667, CWE-662), not general security review. Also
+  runnable directly via /scott-cc:concurrency-atomicity for an explicit standalone
+  pass. Not for broad security/hostile-input review (use adversarial-reviewer) or
+  general structural, code-health, or per-language idiom review (use thermo-nuclear,
+  google-standard, or polyglot-idiom).
 license: MIT
-disable-model-invocation: true
 metadata:
   category: technique
   triggers: [code-review, concurrency, race-condition, deadlock, atomicity, toctou]
@@ -48,6 +50,10 @@ naming, style, structure, or hostile-input handling outside of concurrency corre
   multi-step check-then-act logic, lock acquisition/release, or multi-step state
   transitions that must be all-or-nothing (e.g. financial transfers, inventory
   decrements, multi-table writes).
+- This skill can be invoked automatically by the model, or by another orchestrating
+  skill or agent (e.g. review-panel), whenever a diff shows this kind of concurrency
+  or atomicity surface area — it is not limited to explicit invocation via its slash
+  command, though that remains available for a standalone pass.
 
 ## Checkpoints
 
@@ -185,8 +191,9 @@ Flag:
 
 ## When to Use
 
-- Only via `/scott-cc:concurrency-atomicity` — this skill sets
-  `disable-model-invocation: true` and never fires from automatic keyword matching.
+- Runnable directly via `/scott-cc:concurrency-atomicity`, or automatically by the
+  model or an orchestrating skill/agent (e.g. review-panel) when a diff's surface area
+  warrants this lens.
 - Use when a diff touches threads, async/concurrent code, shared caches or singletons,
   file/resource check-then-act logic, explicit locks/mutexes/semaphores, or multi-step
   state transitions that must succeed or fail as a unit (payments, inventory, multi-

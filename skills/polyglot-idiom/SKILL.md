@@ -1,15 +1,14 @@
 ---
 name: polyglot-idiom
 description: >-
-  Use only when explicitly invoked via /scott-cc:polyglot-idiom, and only for Java, C++,
-  C#, Ruby, or PHP code. Applies per-language idiom and code-review checkpoints for these
-  five languages, grounded in the language-checkpoint reference tables of the Gemini
-  "Code Quality Review Research" PDF. Deliberately excludes Python, TypeScript/JavaScript,
-  Go, Rust, and Swift, which have (or will have) dedicated simplifier skills
-  (python-simplifier, typescript-simplifier, go-simplifier, rust-simplifier,
-  swift-simplifier) — do not use this skill for those five languages.
+  Use when a diff, branch, or PR touches Java, C++, C#, Ruby, or PHP code and needs
+  per-language idiom and code-review checkpoints, grounded in the language-checkpoint
+  reference tables of the Gemini "Code Quality Review Research" PDF. Deliberately
+  excludes Python, TypeScript/JavaScript, Go, Rust, and Swift, which have (or will have)
+  dedicated simplifier skills (python-simplifier, typescript-simplifier, go-simplifier,
+  rust-simplifier, swift-simplifier) — do not use this skill for those five languages.
+  Also runnable directly via /scott-cc:polyglot-idiom for an explicit standalone pass.
 license: MIT
-disable-model-invocation: true
 metadata:
   category: technique
   triggers: [code-review, java, c++, csharp, ruby, php, polyglot]
@@ -41,6 +40,10 @@ matching simplifier skill instead of proceeding here.
 - It is a checklist reviewer, not a structural-doctrine reviewer (unlike thermo-nuclear)
   and not a code-health-bar reviewer (unlike google-standard). It exists to fill the
   idiom-coverage gap for languages this plugin otherwise has no dedicated eyes on.
+- This skill can be invoked automatically by the model, or by another orchestrating
+  skill or agent (e.g. review-panel), whenever a diff touches Java, C++, C#, Ruby, or
+  PHP — it is not limited to explicit invocation via its slash command, though that
+  remains available for a standalone pass.
 
 ## Per-Language Checkpoints
 
@@ -153,8 +156,9 @@ attribute-based routing, and explicit object mappers.
 
 ## When to Use
 
-- Only via `/scott-cc:polyglot-idiom` — this skill sets `disable-model-invocation: true`
-  and never fires from automatic keyword matching.
+- Runnable directly via `/scott-cc:polyglot-idiom`, or automatically by the model or an
+  orchestrating skill/agent (e.g. review-panel) when a diff touches one of its five
+  in-scope languages.
 - Use for Java, C++, C#, Ruby, or PHP code specifically.
 - For Python or TypeScript/JavaScript, use `python-simplifier` or `typescript-simplifier`
   instead. For Go, Rust, or Swift, use the matching `*-simplifier` skill once available.

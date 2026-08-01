@@ -1,15 +1,17 @@
 ---
 name: thermo-nuclear
 description: >-
-  Use only when explicitly invoked via /scott-cc:thermo-nuclear. Applies a zero-mercy
-  structural-simplification doctrine to a diff, branch, or PR, grounded in Cursor's
+  Use when a diff, branch, or PR shows structural bloat: oversized files, spaghetti
+  branching, ad-hoc conditionals, or code that works but leaves the codebase messier
+  than before — cases worth an ambitious rewrite rather than a patch. Applies a
+  zero-mercy structural-simplification doctrine grounded in Cursor's
   thermo-nuclear-code-quality-review skill (cursor-team-kit). Biases toward ambitious
   rewrites over preserving imperfect-but-working code, and blocks on structural
-  regressions that review-panel and adversarial-reviewer would let pass. Not for
-  security/hostile-input review (use adversarial-reviewer) or multi-lens consensus
-  review (use review-panel).
+  regressions that review-panel and adversarial-reviewer would let pass. Also
+  runnable directly via /scott-cc:thermo-nuclear for an explicit standalone pass. Not
+  for security/hostile-input review (use adversarial-reviewer) or multi-lens
+  consensus review (use review-panel).
 license: MIT
-disable-model-invocation: true
 metadata:
   category: technique
   triggers: [code-review, structural-review, simplification, thermo-nuclear]
@@ -34,7 +36,10 @@ It treats "the code works" as necessary but not sufficient for approval.
   "does this leave the codebase simpler than it found it."
 
 Use thermo-nuclear when you specifically want the structural-only, zero-mercy lens — not
-as a replacement for the other two.
+as a replacement for the other two. This skill can be invoked automatically by the model,
+or by another orchestrating skill or agent (e.g. review-panel), whenever a diff shows
+structural bloat or a missed simplification opportunity — it is not limited to explicit
+invocation via its slash command, though that remains available for a standalone pass.
 
 ## Core Doctrine (7 non-negotiable criteria)
 
@@ -93,8 +98,9 @@ the author explicitly and specifically justifies the exception in the CL descrip
 
 ## When to Use
 
-- Only via `/scott-cc:thermo-nuclear` — this skill sets `disable-model-invocation: true`
-  and never fires from automatic keyword matching.
+- Runnable directly via `/scott-cc:thermo-nuclear`, or automatically by the model or an
+  orchestrating skill/agent (e.g. review-panel) when a diff's structural surface area
+  warrants this lens.
 - Best for legacy files, load-bearing modules with a history of accreted complexity, or
   when the author explicitly wants an unflinching structural pass.
 - Not the right first pass for a small, isolated bug fix with no structural surface area

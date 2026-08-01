@@ -30,9 +30,9 @@ skill:
 - Produces a report of doctrine violations, at least one named ambitious restructuring
   recommendation, and an explicit approve/block verdict.
 
-This skill sets `disable-model-invocation: true` — it only ever runs via this command,
-never by automatic keyword matching, so it never fires unexpectedly alongside
-`/review-panel` or `adversarial-reviewer`.
+This skill can also be invoked automatically by the model, or by another orchestrating
+skill or agent (e.g. `/review-panel`), when a diff's structural surface area warrants
+this lens — in addition to running via this explicit command.
 
 ## Example usage
 

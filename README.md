@@ -117,7 +117,7 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 
 ### Code Review
 
-Each of these runs only via its own slash command (`disable-model-invocation: true`) — they never fire from automatic keyword matching.
+Each of these is runnable directly via its own slash command, and can also be invoked automatically by the model or by another orchestrating skill/agent (e.g. review-panel) when its checkpoints are relevant to the diff under review.
 
 | Skill | Description |
 |-------|-------------|

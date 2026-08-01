@@ -32,9 +32,9 @@ command file. The skill:
 - Categorizes each finding by severity and by which CWE checkpoint it violates.
 - Produces a report grouped by checkpoint, with an explicit approve/block verdict.
 
-This skill sets `disable-model-invocation: true` — it only ever runs via this command,
-never by automatic keyword matching, so it never fires unexpectedly alongside
-`/review-panel` or `adversarial-reviewer`.
+This skill can also be invoked automatically by the model, or by another orchestrating
+skill or agent (e.g. `/review-panel`), when a diff's concurrency or atomicity surface
+area warrants this lens — in addition to running via this explicit command.
 
 ## Example usage
 

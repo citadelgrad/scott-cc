@@ -31,9 +31,9 @@ skill:
 - Categorizes every finding as blocking or `Nit:`.
 - Produces a report with an explicit approve/request-changes verdict.
 
-This skill sets `disable-model-invocation: true` — it only ever runs via this command,
-never by automatic keyword matching, so it never fires unexpectedly alongside
-`/review-panel` or `adversarial-reviewer`.
+This skill can also be invoked automatically by the model, or by another orchestrating
+skill or agent (e.g. `/review-panel`), when a review calls for this pragmatic
+code-health bar — in addition to running via this explicit command.
 
 ## Example usage
 

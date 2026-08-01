@@ -32,9 +32,9 @@ The skill:
 - Applies each touched file's language-specific checkpoint list.
 - Produces a report grouped by language and checkpoint, with any excluded files noted.
 
-This skill sets `disable-model-invocation: true` — it only ever runs via this command,
-never by automatic keyword matching, so it never fires unexpectedly alongside
-`/review-panel` or `adversarial-reviewer`.
+This skill can also be invoked automatically by the model, or by another orchestrating
+skill or agent (e.g. `/review-panel`), when a diff touches one of its five in-scope
+languages — in addition to running via this explicit command.
 
 ## Example usage
 
