@@ -1,0 +1,21 @@
+CLAUDE.md
+  s_5a6850f1771dc1::t_af9e4628907ec5 81,85-86
+  s_5a6850f1771dc1::t_d6bf8781372bcd 66,68-70
+  s_5a6850f1771dc1::t_6914bd02cdbaf3 87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "9a3227c82ed1afc9d2cc496d1dc85457a3614293",
+  "prompts": {},
+  "sessions": {
+    "s_5a6850f1771dc1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f76e9e54-01c5-4226-960f-e8d16318c4f4",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
