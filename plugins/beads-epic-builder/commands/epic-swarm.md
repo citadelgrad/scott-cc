@@ -154,7 +154,11 @@ Show the user:
 **Code review after:** Yes/No
 ```
 
-If `--dry-run`, stop here. Otherwise, ask: "Ready to start building? (yes/no)"
+If `--dry-run`, stop here. Otherwise, proceed straight to Step 1.5 — naming
+`epic_id` on the command line is already the user's go-ahead to build it.
+Do not ask a "ready to start?" confirmation; that turns an already-explicit
+instruction into a redundant menu. (`--dry-run` remains the way to preview
+the plan without building.)
 
 ### Step 1.5: Create Feature Branch
 
