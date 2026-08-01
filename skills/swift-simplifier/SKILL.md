@@ -101,12 +101,6 @@ func loadUser(id: String) throws -> User {
 5. **Run tests** - Ensure `swift test` (or the Xcode test plan) still passes
 6. **Check linting** - Run `swiftlint` if the project uses it
 
-## Detailed Reference
-
-- [Deduplication Patterns](references/deduplication-patterns.md) — Extracting shared functions, protocol extensions, generics, reusable view modifiers
-- [Swift Idioms](references/swift-idioms.md) — Guard clauses, optionals, `Result`, `Codable`, value types, protocol-oriented design
-- [Framework Patterns](references/framework-patterns.md) — Vapor services/controllers, UIKit MVVM, SwiftUI state management
-
 ## When to Use
 
 - **Finding and removing duplicate code** across modules
