@@ -1,6 +1,6 @@
 # Scott's Claude Code Setup
 
-Modular Claude Code plugin suite for productive development. The core plugin provides **7 slash commands**, **8 specialized AI agents**, **23 skills**, **5 hooks**, and **3 project templates**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, multi-persona code review, and more.
+Modular Claude Code plugin suite for productive development. The core plugin provides **8 slash commands**, **8 specialized AI agents**, **24 skills**, **5 hooks**, and **3 project templates**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, multi-persona code review, and more.
 
 ## Quick Install
 
@@ -12,16 +12,16 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 
 | Type | Count | Names |
 |------|------:|-------|
-| Commands | 7 | `delegate-first`, `gha`, `handoff`, `security-cheatsheet`, `thermo-nuclear`, `google-standard`, `polyglot-idiom` |
+| Commands | 8 | `delegate-first`, `gha`, `handoff`, `security-cheatsheet`, `thermo-nuclear`, `google-standard`, `polyglot-idiom`, `concurrency-atomicity` |
 | Agents | 8 | `api-debugger`, `backend-architect`, `deep-research-agent`, `find-emergent-behavior`, `frontend-architect`, `refactoring-expert`, `requirements-analyst`, `system-architect` |
-| Skills | 23 | `init`, `acceptance-criteria`, `cli-design`, `delegate-first`, `grill-me`, `tdd`, `python-simplifier`, `typescript-simplifier`, `karpathy-guidelines`, `property-based-testing`, `verified-implementation`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory`, `thinking-in-systems`, `skillopt-sleep-learned`, `thermo-nuclear`, `google-standard`, `polyglot-idiom` |
+| Skills | 24 | `init`, `acceptance-criteria`, `cli-design`, `delegate-first`, `grill-me`, `tdd`, `python-simplifier`, `typescript-simplifier`, `karpathy-guidelines`, `property-based-testing`, `verified-implementation`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory`, `thinking-in-systems`, `skillopt-sleep-learned`, `thermo-nuclear`, `google-standard`, `polyglot-idiom`, `concurrency-atomicity` |
 | Hooks | 5 | `terminal-bell` (Stop), `toon-post-hook` (PostToolUse), `prefer-modern-tools` (PreToolUse), `data-layer-guard` (PreToolUse), `post-compaction` (SessionStart after compact/clear) |
 | Templates | 3 | `.pre-commit-config.yaml`, `CLAUDE.md`, `AGENTS.md` |
 | Sub-plugins | 9 | `beads-epic-builder`, `browser-automation`, `research-tools`, `security-suite`, `performance-optimization`, `mutation-testing`, `review-panel`, `variant-explorer`, `triage` |
 
 ---
 
-## Commands (7)
+## Commands (8)
 
 | Command | Description |
 |---------|-------------|
@@ -32,6 +32,7 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 | `/scott-cc:thermo-nuclear` | Zero-mercy structural-simplification review grounded in Cursor's thermo-nuclear-code-quality-review doctrine. Biases toward ambitious rewrites over preserving imperfect-but-working code. |
 | `/scott-cc:google-standard` | Review against Google's published Standard of Code Review. Favors approving once a change definitely improves code health, even if imperfect, using the Nit:/blocking distinction. |
 | `/scott-cc:polyglot-idiom` | Per-language idiom review for Java, C++, C#, Ruby, or PHP. Excludes Python, TypeScript, Go, Rust, and Swift, which have dedicated simplifier skills. |
+| `/scott-cc:concurrency-atomicity` | Concurrency-correctness review for race conditions, TOCTOU, deadlock/lock-ordering, and transactional atomicity, grounded in real CWE reference entries. |
 
 ---
 
@@ -62,7 +63,7 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 
 ---
 
-## Skills (23)
+## Skills (24)
 
 ### Project Setup
 
@@ -123,6 +124,7 @@ Each of these runs only via its own slash command (`disable-model-invocation: tr
 | `thermo-nuclear` | Zero-mercy structural-simplification doctrine grounded in Cursor's thermo-nuclear-code-quality-review skill. Biased against approval by default; blocks on file-size growth, spaghetti-branching, and missed simplification opportunities that other reviewers would let pass. |
 | `google-standard` | Google's published Standard of Code Review. Biased toward approval once a change definitely improves code health, even if imperfect; separates blocking findings from optional `Nit:` findings. |
 | `polyglot-idiom` | Per-language idiom checkpoints for Java, C++, C#, Ruby, and PHP, grounded in the Gemini code-quality research. Excludes Python, TypeScript, Go, Rust, and Swift, which have (or will have) dedicated simplifier skills. |
+| `concurrency-atomicity` | Four-checkpoint concurrency-correctness review — race conditions, TOCTOU, deadlock/lock-ordering, and transactional atomicity — grounded in fetched CWE reference entries (CWE-362, CWE-367, CWE-833, CWE-667, CWE-662). |
 
 ---
 
