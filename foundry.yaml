@@ -12,6 +12,19 @@ profiles:
   triage:
     parallel: false
     gates:
+      - id: file-size
+        run: |
+          fail=0
+          for f in $(git diff --name-only --diff-filter=d main...HEAD); do
+            [ -f "$f" ] || continue
+            lines=$(wc -l < "$f")
+            if [ "$lines" -gt 1000 ]; then
+              echo "FAIL: $f has $lines lines (limit 1000)"
+              fail=1
+            fi
+          done
+          exit $fail
+        timeout: 2m
       - id: ruff
         run: uv run ruff check .
         timeout: 5m
