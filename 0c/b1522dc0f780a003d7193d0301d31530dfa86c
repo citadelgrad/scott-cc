@@ -1,0 +1,31 @@
+hooks/data_layer_guard.py
+  s_12a6b6605fbc61::t_bbb613c987c7ae 20-21,47-66,68-69,116-117,122-125
+plugins/beads-epic-builder/commands/epic-swarm.md
+  s_12a6b6605fbc61::t_e62957f9e40e19 203-205,220-227
+plugins/triage/docs/foundry-recipes.md
+  s_12a6b6605fbc61::t_75dfb6a769134d 4-6,28,39-40,52,54-56,110-114
+plugins/triage/tests/PRESSURE-TEST.md
+  s_12a6b6605fbc61::t_2df4db40c37e0e 46-48,188-189,225-229
+plugins/variant-explorer/agents/variant-judge.md
+  s_12a6b6605fbc61::t_b913f89bbf52fb 23,28
+skills/init/references/components.md
+  s_12a6b6605fbc61::t_856672ede149f8 11-23,75-79,81,234
+skills/init/references/foundry-template.md
+  s_12a6b6605fbc61::t_ed88b8ee3c15d8 11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.19",
+  "base_commit_sha": "0cb1522dc0f780a003d7193d0301d31530dfa86c",
+  "prompts": {},
+  "sessions": {
+    "s_12a6b6605fbc61": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b2c6f09d-8aee-4975-bb20-d46ba0cbe52e",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
