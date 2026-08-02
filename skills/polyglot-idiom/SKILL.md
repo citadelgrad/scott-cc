@@ -4,7 +4,7 @@ description: >-
   Use when a diff, branch, or PR touches Java, C++, C#, Ruby, or PHP code and needs
   per-language idiom and code-review checkpoints, grounded in the language-checkpoint
   reference tables of the Gemini "Code Quality Review Research" PDF. Deliberately
-  excludes Python, TypeScript/JavaScript, Go, Rust, and Swift, which have (or will have)
+  excludes Python, TypeScript/JavaScript, Go, Rust, and Swift, which have
   dedicated simplifier skills (python-simplifier, typescript-simplifier, go-simplifier,
   rust-simplifier, swift-simplifier) — do not use this skill for those five languages.
   Also runnable directly via /scott-cc:polyglot-idiom for an explicit standalone pass.
@@ -26,8 +26,8 @@ PDF `Code Quality Review Research - Google Docs.pdf`.
 **In scope:** Java, C++, C#, Ruby, PHP only.
 
 **Out of scope:** Python, TypeScript/JavaScript, Go, Rust, and Swift. These languages
-have dedicated `python-simplifier` and `typescript-simplifier` skills today, and
-`go-simplifier`, `rust-simplifier`, and `swift-simplifier` skills are tracked separately.
+have dedicated `python-simplifier`, `typescript-simplifier`, `go-simplifier`,
+`rust-simplifier`, and `swift-simplifier` skills.
 If the target code is in one of those five languages, stop and point the user to the
 matching simplifier skill instead of proceeding here.
 
@@ -160,8 +160,8 @@ attribute-based routing, and explicit object mappers.
   orchestrating skill/agent (e.g. review-panel) when a diff touches one of its five
   in-scope languages.
 - Use for Java, C++, C#, Ruby, or PHP code specifically.
-- For Python or TypeScript/JavaScript, use `python-simplifier` or `typescript-simplifier`
-  instead. For Go, Rust, or Swift, use the matching `*-simplifier` skill once available.
+- For Python, TypeScript/JavaScript, Go, Rust, or Swift, use the matching dedicated
+  `*-simplifier` skill instead.
 
 ## Limitations
 

@@ -12,8 +12,8 @@
     {
       "name": "scott-cc",
       "source": "./",
-      "description": "Core development tools with 4 commands, 8 agents, 27 skills, 5 hooks, and 3 templates for productive modern web development",
-      "version": "5.0.1",
+      "description": "Core development tools with 8 commands, 8 AI agents, 27 skills, 5 hooks, and 2 stored templates producing 3 project artifacts",
+      "version": "5.1.0",
       "author": {
         "name": "Scott Nixon"
       },
@@ -51,7 +51,7 @@
         "name": "Scott Nixon"
       },
       "tags": ["research", "learning", "documentation", "writing"],
-      "status": "unmaintained"
+      "status": "stable"
     },
     {
       "name": "performance-optimization",
@@ -73,12 +73,12 @@
         "name": "Scott Nixon"
       },
       "tags": ["testing", "mutation-testing", "test-quality", "tdd", "quality-assurance"],
-      "status": "unmaintained"
+      "status": "stable"
     },
     {
       "name": "beads-epic-builder",
       "source": "./plugins/beads-epic-builder",
-      "description": "Plan, build, and swarm beads epics - sequential and parallel epic execution with CE code review (2 agents, 3 commands)",
+      "description": "Plan, build, and swarm beads epics - sequential and parallel epic execution with CE code review (2 agents, 2 commands)",
       "version": "1.0.0",
       "author": {
         "name": "Scott Nixon"
@@ -106,7 +106,7 @@
         "name": "Scott Nixon"
       },
       "tags": ["variants", "worktree", "parallel", "exploration", "review"],
-      "status": "experimental"
+      "status": "stable"
     },
     {
       "name": "triage",
@@ -117,7 +117,7 @@
         "name": "Scott Nixon"
       },
       "tags": ["triage", "foundry", "automation", "detectors", "beads"],
-      "status": "experimental"
+      "status": "stable"
     }
   ]
 }

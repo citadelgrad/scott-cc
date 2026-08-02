@@ -42,13 +42,11 @@ env dumps, leaked credentials copied into an error report).
 
 Per the `docs/skillopt-sleep-occurrence-gate.md` precedent: this repo
 (`scott-cc`) has no editable SkillOpt-Sleep *engine* source. The engine
-lives in the separate repo `/Volumes/qwiizlab/projects/oss/SkillOpt`
+lives in the separate [`microsoft/SkillOpt`](https://github.com/microsoft/SkillOpt) repo
 (remote: `microsoft/SkillOpt`, branch `main`), which the `skillopt-sleep`
 plugin's marketplace entry points at directly
-(`{"source": "directory", "path": "/Volumes/qwiizlab/projects/oss/SkillOpt/plugins/claude-code"}`).
-That repo's working tree currently carries uncommitted changes from a
-concurrent sibling task (scc-ncs.16's occurrence-gate, and possibly
-scc-ncs.23's periodic re-derivation work) touching
+(`{"source": "directory", "path": "<local SkillOpt clone>/plugins/claude-code"}`).
+Historical local work for sibling tasks touched
 `skillopt_sleep/harvest_sources.py`-adjacent files
 (`consolidate.py`, `dream.py`, `types.py`, `__main__.py`, `config.py`); this
 spec intentionally does **not** touch that live external tree, to avoid
@@ -82,7 +80,7 @@ tested in this commit:
 ## Required engine-side behavior (SkillOpt, not yet implemented there)
 
 This is the spec for whoever lands the corresponding change in
-`/Volumes/qwiizlab/projects/oss/SkillOpt`:
+[`microsoft/SkillOpt`](https://github.com/microsoft/SkillOpt):
 
 1. **Input corpus, `skillopt_sleep/harvest_sources.py` /
    `harvest.py`**: `harvest_for_config()` must merge in two additional
@@ -94,7 +92,7 @@ This is the spec for whoever lands the corresponding change in
    - **circuit-breaker escalations**: read `foundry.yaml`-produced run
      artifacts (the `{run_dir}/explanation.md` and gate results Foundry
      already writes on a `fail`/`needs_human` decision — see this repo's
-     root `CLAUDE.md` "Scheduling & Automation" section for the Foundry
+     root `foundry.yaml` and `skills/init/references/foundry-template.md` for the Foundry
      contract) for the invoked project, and any other circuit-breaker trip
      record the host environment exposes. Each escalation becomes one
      digest whose "transcript" is the gate id, command, exit status, and
@@ -149,11 +147,9 @@ passed.
   committed — this is the one piece of scc-ncs.24 that legitimately lives
   here, since it is the reusable redaction logic itself (per scc-ncs.5),
   not engine plumbing.
-- SkillOpt engine (`/Volumes/qwiizlab/projects/oss/SkillOpt`): the harvest-
+- SkillOpt engine ([`microsoft/SkillOpt`](https://github.com/microsoft/SkillOpt)): the harvest-
   source and call-site wiring described above is **not yet implemented**
-  there. That repo's working tree already has uncommitted, in-flight
-  changes from concurrent sibling tasks (scc-ncs.16, possibly scc-ncs.23);
-  landing this spec's engine-side change as an uncoordinated edit into that
+  there. Landing this spec's engine-side change as an uncoordinated edit into that
   live tree was judged out of scope for this task, matching the scc-ncs.16
   precedent of leaving engine-side implementation as a separately-scoped,
   explicitly authorized contribution to that external project.

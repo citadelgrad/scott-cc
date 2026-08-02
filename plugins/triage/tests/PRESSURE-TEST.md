@@ -43,9 +43,9 @@ All under `plugins/triage/tests/fixtures/`:
   rules: item 1 missing `evidence`, item 2 `severity: "urgent"`, item 3 `affected-paths` as a
   string instead of an array, item 4 `source: "iac-drift"` (a registered stub slot), item 5 fully
   valid. For AC5.
-- **`panel-status/`** — four hand-crafted JSON fixtures (`converged.json`, `escalated.json`,
-  `circuit-broken.json`, `error.json`) matching `review-panel`'s `dual-mode-contract.md` schema
-  exactly, forcing each of the four possible gate statuses. `escalated.json` carries a realistic
+- **`panel-status/`** — five hand-crafted JSON fixtures (`converged.json`, `escalated.json`,
+  `circuit-broken.json`, `error.json`, `capped.json`) matching `review-panel`'s
+  `dual-mode-contract.md` schema, forcing each gate status. `escalated.json` carries a realistic
   DATA-MODEL.md ownership-boundary finding (`sovereignty: "human-required"`, widening a
   billing-owned column) with `sovereignty_finding_ids: ["f-001"]`. For AC2/AC3.
 
@@ -185,8 +185,8 @@ taken at all, satisfying the ordering constraint by construction — nothing occ
 ## 5. AC2 — End-to-end status handling / AC3 — Escalated status handling
 
 **AC2 requirement:** detector → fix diff → `mode:agent` panel run returns JSON whose status is one
-of `converged | escalated | circuit_broken | error`; bead updated per the resolved status handling.
-PASS bar: all four statuses produce their documented bead/PR outcome (fixtures may force each).
+of `converged | escalated | circuit_broken | error | capped`; bead updated per the resolved status
+handling. PASS bar: all five statuses produce their documented bead/PR outcome.
 
 **AC3 requirement:** given a panel run returning `escalated`, the bead is not parked and the
 pipeline does not halt; the produced PR carries an explicit `sovereignty: human sign-off required`
@@ -222,9 +222,11 @@ finding `f-001` rather than a bare status echo:
 > payments.token's type changes a column DATA-MODEL.md marks as owned by the billing service;
 > requires explicit sign-off from that service's steward before merge`
 
-**AC2: confirmed** — all four statuses produced their documented, distinct bead outcome (2 unparked,
-2 parked-for-human), independently verified via `bd show` and `bd human list`, not just the
-dispatch's self-report.
+**AC2: partial after contract expansion** — the original four statuses produced their documented,
+distinct bead outcomes (2 unparked, 2 parked-for-human), independently verified via `bd show` and
+`bd human list`. The later-added `capped` fixture now matches the schema and the skill documents its
+branch, but this historical pressure run did not create and independently verify a fifth capped
+bead. Do not cite it as runtime evidence for that branch.
 
 **AC3: confirmed** — the escalated bead was never parked, the pipeline did not halt (immediately
 proceeded to producing the drafted PR annotation), and the annotation is present, verbatim, sourced

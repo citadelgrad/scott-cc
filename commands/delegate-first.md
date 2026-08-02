@@ -44,7 +44,7 @@ Never `cd` a persistent parent shell into a disposable worktree. Use the tool's 
 
 ## How to fork
 
-Use `subagent_type: "fork"`. The fork inherits full conversation context so it knows what has been happening, but its tool output stays out of the main thread.
+Use `subagent_type: "fork"`. The fork inherits full conversation context so it knows what has been happening, but its tool output stays out of the main thread. Agent-spawned forks are experimental; if the running Claude Code does not expose fork mode, use a named or `general-purpose` subagent and put all required context in the prompt instead.
 
 ```
 Agent({
@@ -57,6 +57,9 @@ Agent({
 After launching: tell the user what is running, then stop. Do not fill the thread while waiting.
 
 When the fork returns, independently inspect the worktree diff and run the required gates there. A worker saying “done” is not verification.
+
+Do not assume the worker returns a fixed JSON or object schema. Request the
+summary fields in its prompt and validate them against the worktree.
 
 ## Integration and teardown
 

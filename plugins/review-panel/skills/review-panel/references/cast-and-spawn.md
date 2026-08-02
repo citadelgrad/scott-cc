@@ -167,7 +167,7 @@ After Step 3 produces the primary cast list from the catalog, run a secondary en
 
 **Procedural takeaway:** live-scan must enumerate both sources in item 1, not skills directories
 alone — some installed review-capable plugins (verified for `compound-engineering`; see
-[CREDITS.md](../CREDITS.md) for the verification detail) expose their review personas *only* as
+[CREDITS.md](../../../CREDITS.md) for the verification detail) expose their review personas *only* as
 `<plugin>:review:<persona>` dispatchable agent types under `agents/review/`, not as `skills/*/
 SKILL.md` files, so a live-scan that only walks `skills/` directories will silently undercount (or
 entirely miss) that plugin's personas. A live-scan on a session without such a plugin installed

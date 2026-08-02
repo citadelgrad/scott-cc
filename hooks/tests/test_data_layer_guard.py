@@ -87,6 +87,24 @@ def test_matching_path_without_data_model_asks(tmp_path):
     assert "**/migrations/**" in hook_output["permissionDecisionReason"]
 
 
+def test_relative_target_is_resolved_from_payload_cwd(tmp_path):
+    repo_root = init_repo(tmp_path)
+    (repo_root / "migrations").mkdir()
+    (repo_root / "migrations" / "0001_init.sql").write_text("-- migration")
+    payload = edit_payload(repo_root, "migrations/0001_init.sql")
+    payload["tool_input"]["file_path"] = "migrations/0001_init.sql"
+
+    result = run_hook(repo_root, payload)
+
+    assert result.returncode == 0
+    output = json.loads(result.stdout)
+    assert output["hookSpecificOutput"]["permissionDecision"] == "ask"
+    assert (
+        "migrations/0001_init.sql"
+        in output["hookSpecificOutput"]["permissionDecisionReason"]
+    )
+
+
 def test_matching_path_with_todays_change_log_entry_is_silent_noop(tmp_path):
     repo_root = init_repo(tmp_path)
     (repo_root / "migrations").mkdir()
@@ -142,3 +160,20 @@ def test_data_guard_override_replaces_default_globs(tmp_path):
 
     assert default_glob_now_ignored.returncode == 0
     assert default_glob_now_ignored.stdout == ""
+
+
+def test_recursive_override_glob_matches_zero_one_and_many_directories(tmp_path):
+    repo_root = init_repo(tmp_path)
+    (repo_root / ".data-guard.json").write_text(json.dumps({"globs": ["db/**/*.sql"]}))
+
+    for relative_path in ("db/root.sql", "db/a/one.sql", "db/a/b/many.sql"):
+        path = repo_root / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("-- guarded")
+
+        result = run_hook(repo_root, edit_payload(repo_root, relative_path))
+
+        assert result.returncode == 0
+        output = json.loads(result.stdout)
+        assert output["hookSpecificOutput"]["permissionDecision"] == "ask"
+        assert "db/**/*.sql" in output["hookSpecificOutput"]["permissionDecisionReason"]

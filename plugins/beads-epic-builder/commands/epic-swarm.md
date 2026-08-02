@@ -200,7 +200,9 @@ bd update <task-id> --status=in_progress
 
 ### Step 2.2: Spawn ONE Wave Coordinator
 
-**Do not** spawn workers directly, and do not merge or run tests yourself. Both dump large amounts of output — `git merge` logs, full test suite runs — straight into your context, which is the thing that fills it up on large epics. Instead, spawn a single coordinator agent for the wave that does that noisy work in its **own** context and hands you back a small JSON summary.
+Prefer a single coordinator agent for the wave when the runtime allows subagents to dispatch
+workers. Do not merge or run tests in the top-level context; both dump large outputs into the
+context that must survive the whole epic.
 
 ```
 Agent(
@@ -214,6 +216,14 @@ Agent(
 Do **not** set `isolation: "worktree"` on the coordinator itself — it needs to run in the real checkout on `<feature-branch>` so its merges land there directly. (The workers it spawns get `isolation: "worktree"`.)
 
 If the wave has more tasks than `--max-parallel`, tell the coordinator that limit and let it sub-batch its worker spawns internally — it still returns one summary for the whole wave.
+
+**Required fallback when nested Agent dispatch is unavailable:** launch the wave's worker Agents
+directly from this top-level command, in bounded parallel batches, with `isolation: "worktree"`.
+After they return, launch one non-isolated general-purpose integration agent with only the returned
+branch names and the path to `tasks.json`; that agent performs steps 2–4 of the coordinator prompt
+(merge, one test run with redirected logs, compact JSON result). Never ask a coordinator lacking
+nested-dispatch capability to spawn workers, and never abandon the wave merely because that
+optional capability is absent.
 
 ### Wave Coordinator Prompt Template
 

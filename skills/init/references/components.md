@@ -8,6 +8,19 @@ metadata:
 
 Execute each selected component in this order. For each one, print what you're doing.
 
+Resolve the installed plugin root once before running any selected component:
+
+```bash
+SCOTT_CC_DIR="${CLAUDE_PLUGIN_ROOT:?CLAUDE_PLUGIN_ROOT is not set}"
+test -d "$SCOTT_CC_DIR/templates" || {
+  echo "scott-cc templates not found under $SCOTT_CC_DIR" >&2
+  exit 1
+}
+```
+
+Do not search `$HOME` for a clone named `scott-cc`; marketplace installs may live elsewhere, and
+multiple clones make that lookup ambiguous.
+
 ### git
 
 Condition: `.git/` directory does not exist.
@@ -22,11 +35,6 @@ If `.git/` already exists, skip and note it. All other components that touch `.g
 
 Source: `templates/CLAUDE.md` in the scott-cc repo
 Destination: `./CLAUDE.md`
-
-First, locate the scott-cc repo on this machine:
-```bash
-SCOTT_CC_DIR=$(fd -HI -t d -g 'scott-cc' ~ 2>/dev/null | grep -E '/scott-cc$' | head -1)
-```
 
 Steps:
 1. If `CLAUDE.md` already exists, ask the user: "CLAUDE.md already exists — overwrite? (y/n)"
@@ -64,8 +72,13 @@ command -v bd >/dev/null 2>&1 || { echo "bd not found — install beads before c
 
 Condition: `.beads/` directory does not exist.
 
+Before initialization, disclose that some supported `bd` versions create a Git commit as part of
+`bd init`, then ask: **"Allow beads initialization to create a Git commit if this installed bd
+version does so? (y/n)"** If the answer is no, skip the beads component. The later optional
+"initial commit" prompt does not control commits made internally by `bd init`.
+
 ```bash
-bd init
+bd init --skip-agents --non-interactive
 bd config set validation.on-create warn
 ```
 
@@ -218,7 +231,7 @@ Condition: `foundry.yaml` does not exist (never overwrite an existing one).
 Create the file with this exact content:
 ```yaml
 # foundry.yaml — scheduling & automation control layer for this project.
-# See CLAUDE.md's "Scheduling & Automation" section for the full schema.
+# See skills/init/references/foundry-template.md for the documented template.
 # `foundry run <profile>` runs one locally; `foundry run <profile> --dry-run`
 # previews its gates; `foundry schedule install <name>` installs its cron entry.
 

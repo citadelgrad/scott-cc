@@ -1,6 +1,6 @@
 # Scott's Claude Code Setup
 
-Modular Claude Code plugin suite for productive development. The core plugin provides **8 slash commands**, **8 specialized AI agents**, **24 skills**, **5 hooks**, and **3 project templates**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, multi-persona code review, and more.
+Modular Claude Code plugin suite for productive development. The core plugin provides **8 slash commands**, **8 specialized AI agents**, **27 skills**, **5 hooks**, and **2 stored templates that produce 3 project artifacts**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, multi-persona code review, and more.
 
 ## Quick Install
 
@@ -149,7 +149,7 @@ Each of these is runnable directly via its own slash command, and can also be in
 
 ## Templates (3)
 
-Stored in `templates/` — copy to your project or use the `/init` skill to deploy them.
+Two templates are stored in `templates/`; the `/init` skill uses them to produce three project artifacts.
 
 | Template | Deployed by | Description |
 |----------|-------------|-------------|
@@ -172,20 +172,20 @@ Install from the marketplace:
 | Status | Rule |
 |--------|------|
 | `stable` | 3+ commits and a commit within the last 60 days |
-| `experimental` | Fewer than 3 commits (too new/unproven to call stable), regardless of recency |
-| `unmaintained` | No commits in 90+ days |
+| `experimental` | Fewer than 3 commits, or 3+ commits with the latest activity 61–89 days ago |
+| `unmaintained` | No history or 90+ days since the latest commit |
 
 | Plugin | Status | Description |
 |--------|--------|-------------|
 | `beads-epic-builder` | `stable` | Plan, build, and swarm beads epics — sequential and parallel execution with CE code review. |
 | `browser-automation` | `stable` | Browser testing and validation with E2E test generation and UI validation. |
-| `research-tools` | `unmaintained` | Learning guides, tech stack research, and technical writing assistance. |
+| `research-tools` | `stable` | Learning guides, tech stack research, and technical writing assistance. |
 | `security-suite` | `stable` | Security advisory and vulnerability scanning. |
 | `performance-optimization` | `unmaintained` | Performance engineering with bottleneck analysis and profiling. |
-| `mutation-testing` | `unmaintained` | Comprehensive mutation testing with zombie test detection and automated refactoring. |
+| `mutation-testing` | `stable` | Comprehensive mutation testing with zombie test detection and automated refactoring. |
 | `review-panel` | `stable` | Multi-persona adversarial code and design review panel. |
-| `variant-explorer` | `experimental` | Parallel blind-builder variant exploration with AC/taste/simplicity judging. |
-| `triage` | `experimental` | Foundry-resident triage spine: detect → bead → reproduce → fix → gate loop. |
+| `variant-explorer` | `stable` | Parallel blind-builder variant exploration with AC/taste/simplicity judging. |
+| `triage` | `stable` | Foundry-resident triage spine: detect → bead → reproduce → fix → gate loop. |
 
 ---
 

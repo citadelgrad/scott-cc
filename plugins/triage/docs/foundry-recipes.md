@@ -1,9 +1,9 @@
 # Foundry Recipes for the Triage Spine
 
 Consolidates every schedulable entry this Two-System Architecture epic has produced, in one place,
-using this repo's `foundry.yaml` schema (see the root `CLAUDE.md`'s "Scheduling & Automation"
-section). No `foundry.yaml` file exists in this repo yet — everything below is documentation for a
-project that adopts one, not a live config this plugin installs or modifies.
+using the same shape as this repository's root `foundry.yaml` and
+`skills/init/references/foundry-template.md`. The root config exercises scott-cc itself; everything below is a
+separate example for an adopting project, not config this plugin installs or modifies.
 
 ## What's scheduled here
 
@@ -25,8 +25,7 @@ each detector's Output Contract, is what a gate script should grep for):
 version: 1
 
 profiles:
-  triage-detectors:
-    parallel: true
+  lib-upgrades-detector:
     gates:
       - id: lib-upgrades
         run: |
@@ -37,6 +36,8 @@ profiles:
         allow_failure: false
         decision_on_failure: fail
 
+  prod-errors-detector:
+    gates:
       - id: prod-errors
         run: |
           claude -p "Run the prod-errors detector skill over the last 24h of production logs at
@@ -48,8 +49,11 @@ profiles:
 
 schedules:
   weekly-lib-upgrades:
-    profile: triage-detectors
+    profile: lib-upgrades-detector
     cron: '0 6 * * 1'
+  hourly-prod-errors:
+    profile: prod-errors-detector
+    cron: '0 * * * *'
 ```
 
 Each detector gate's `run` command is a full request in one `claude -p` call — the detector skill
@@ -94,12 +98,6 @@ profiles:
         allow_failure: true
         decision_on_failure: warn   # go/no-go is advisory, per Phase 1b's own scope
 
-schedules:
-  monthly-taste-distill-nudge:
-    profile: taste-distill-reminder
-    cron: '0 9 1 * *'
-
-profiles:
   taste-distill-reminder:
     gates:
       - id: distill-nudge
@@ -109,6 +107,11 @@ profiles:
           unattended (Invariant 5: human artifacts are human-owned)."
         allow_failure: true
         decision_on_failure: warn
+
+schedules:
+  monthly-taste-distill-nudge:
+    profile: taste-distill-reminder
+    cron: '0 9 1 * *'
 ```
 
 ## Notes

@@ -229,12 +229,15 @@ Field notes for an agent emitting this:
   are outstanding); `pending: false` with an empty array otherwise. `sovereignty_finding_ids`
   references the `id` field of each still-pending finding in the `findings` array above, so a
   consumer can cross-reference without re-parsing evidence text.
-- `convergence.capped.diagnosis`: null unless `status` is `capped`; when present, a tier-specific
+- `convergence.capped.diagnosis`: null unless `status` is `capped`, or `status` is `escalated` and
+  ordinary findings also exhausted a narrowed-tier cap. When present, it is a tier-specific
   human-readable string naming which tier and cap was hit (e.g. "lite mode capped at 1 iteration;
   findings remain...") — see [converge-and-pipeline.md](converge-and-pipeline.md)'s "Narrowed-tier
   iteration cap" section for the exact per-tier wording. Mutually exclusive with
   `convergence.circuit_breaker.diagnosis` being non-null on the same run — a run is capped or
-  circuit-broken, never both.
+  circuit-broken, never both. In the combined sovereignty-plus-cap case, `status` remains
+  `escalated`, `convergence.escalation.pending` remains true, and this diagnosis records the
+  independent cap outcome.
 - `coverage`: never omit this object even when nothing was skipped — an explicit empty
   `skipped_seats`/`fallbacks_used`/`notes` is itself the coverage-honesty signal ("checked, found
   nothing to report") as opposed to the field being absent (which would leave a `foundry` gate
@@ -298,6 +301,7 @@ profiles:
             # or park the gate" note above.
             echo "review-panel: sovereignty finding(s) pending human sign-off — see review-panel.json convergence.escalation"
             jq -r '.convergence.escalation.sovereignty_finding_ids[]' "$FOUNDRY_RUN_DIR/review-panel.json"
+            jq -r '.convergence.capped.diagnosis // empty' "$FOUNDRY_RUN_DIR/review-panel.json"
           elif [ "$status" = "capped" ]; then
             # This example invokes full mode (no --lite/--medium flag), so capped should never
             # occur here — this branch only matters if the gate is adapted to call --lite/--medium.

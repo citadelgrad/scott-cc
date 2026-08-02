@@ -15,11 +15,11 @@ the engine, not part of it. The `skillopt-sleep` plugin's marketplace entry
 points at a live directory, not a vendored copy:
 
 ```json
-{"source": "directory", "path": "/Volumes/qwiizlab/projects/oss/SkillOpt/plugins/claude-code"}
+{"source": "directory", "path": "<local SkillOpt clone>/plugins/claude-code"}
 ```
 
-The actual engine lives in the separate repo
-`/Volumes/qwiizlab/projects/oss/SkillOpt` (remote: `microsoft/SkillOpt`,
+The actual engine lives in the separate
+[`microsoft/SkillOpt`](https://github.com/microsoft/SkillOpt) repo (remote: `microsoft/SkillOpt`,
 branch `main`). The occurrence-count gate was implemented there, since that is
 the only place the mechanism can be real, enforced, and tested. That change is
 a legitimate, self-contained contribution to that project and is intentionally
@@ -63,10 +63,7 @@ Full suite: `python3.12 -m unittest tests.test_sleep_engine tests.test_run_sleep
 
 ## Status
 
-- SkillOpt-side implementation: complete, verified green, **left uncommitted**
-  in that external repo's working tree (`origin` = `microsoft/SkillOpt.git`,
-  on `main`). Committing to that unrelated upstream OSS project as a side
-  effect of this internal task was judged out of scope without separate,
-  explicit authorization — the diff is inspectable in place at
-  `/Volumes/qwiizlab/projects/oss/SkillOpt`.
+- SkillOpt-side implementation described here was verified only in an **uncommitted local working
+  tree** and is not shipped by scott-cc or available from the linked upstream repository. Treat
+  this document as a historical design/work log, not release evidence.
 - This doc is the scott-cc-side record of scc-ncs.16 for this worktree/branch.

@@ -1,7 +1,12 @@
 {
-  "status": "converged",
-  "tier": "full",
-  "narrowed_guarantees": [],
+  "status": "capped",
+  "tier": "lite",
+  "narrowed_guarantees": [
+    "SPAWN restricted to the Adversarial seat plus any seat forced in by fail-closed cast-when criteria.",
+    "VALIDATE capped at one validator per finding, flat, with no Critical escalation.",
+    "RE-REVIEW's regression re-cast limited to Adversarial (if it was the fixing seat) plus the fixed fail-closed seats.",
+    "CONVERGE capped at 1 total iteration."
+  ],
   "tier_source": "explicit",
   "rounds": 1,
   "cast": [
@@ -21,8 +26,8 @@
         "line": 2,
         "normalized_title": "missing null check on payment token"
       },
-      "severity": "Critical",
-      "confidence": 100,
+      "severity": "Important",
+      "confidence": 75,
       "contributing_seats": ["Correctness/Adversarial"],
       "evidence_quote": "token = payment[\"token\"].strip()",
       "recommendation": "guard payment[\"token\"] for None before calling .strip()",
@@ -33,17 +38,17 @@
         "tally": "1-0"
       },
       "fix": {
-        "applied": true,
-        "skipped_reason": null
+        "applied": false,
+        "skipped_reason": "lite iteration cap reached before another fix pass"
       },
       "re_review": {
-        "regression_clean": true,
+        "regression_clean": false,
         "coherence_clean": true
       }
     }
   ],
   "convergence": {
-    "final_round_clean": true,
+    "final_round_clean": false,
     "circuit_breaker": {
       "tripped": false,
       "consecutive_no_progress_rounds": 0,
@@ -54,12 +59,12 @@
       "sovereignty_finding_ids": []
     },
     "capped": {
-      "diagnosis": null
+      "diagnosis": "lite mode capped at 1 iteration; findings remain in app/checkout.py"
     }
   },
   "coverage": {
     "skipped_seats": [],
     "fallbacks_used": [],
-    "notes": []
+    "notes": ["Lite tier intentionally bounded the panel to one round."]
   }
 }

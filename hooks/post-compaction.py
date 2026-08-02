@@ -152,7 +152,16 @@ def main() -> int:
         if plan is None:
             return 0
         relative_path, text = plan
-        print(json.dumps({"additionalContext": summarize(text, relative_path)}))
+        print(
+            json.dumps(
+                {
+                    "hookSpecificOutput": {
+                        "hookEventName": "SessionStart",
+                        "additionalContext": summarize(text, relative_path),
+                    }
+                }
+            )
+        )
     except (OSError, TypeError, ValueError):
         return 0
     return 0

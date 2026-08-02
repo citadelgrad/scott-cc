@@ -17,6 +17,8 @@ with a {"globs": [...]} shape, which replaces this default set):
 import datetime
 import json
 import sys
+from fnmatch import fnmatchcase
+from functools import lru_cache
 from pathlib import Path
 
 from _guard_base import (
@@ -42,36 +44,29 @@ def load_globs(repo_root: Path) -> list[str]:
 
 def matches_glob(rel_path: str, pattern: str) -> bool:
     if "/" not in pattern:
-        return Path(rel_path).match(pattern)
+        return fnmatchcase(Path(rel_path).name, pattern)
 
-    core = pattern
-    any_prefix = core.startswith("**/")
-    if any_prefix:
-        core = core[len("**/") :]
-    any_suffix = core.endswith("/**")
-    if any_suffix:
-        core = core[: -len("/**")]
+    path_parts = tuple(rel_path.split("/"))
+    pattern_parts = tuple(pattern.split("/"))
 
-    parts = rel_path.split("/")
-    core_parts = core.split("/")
-    n = len(core_parts)
+    @lru_cache(maxsize=None)
+    def match(path_index: int, pattern_index: int) -> bool:
+        if pattern_index == len(pattern_parts):
+            return path_index == len(path_parts)
 
-    if any_prefix and any_suffix:
-        return any(
-            all(Path(parts[i + j]).match(core_parts[j]) for j in range(n))
-            for i in range(len(parts) - n + 1)
+        component = pattern_parts[pattern_index]
+        if component == "**":
+            return match(path_index, pattern_index + 1) or (
+                path_index < len(path_parts) and match(path_index + 1, pattern_index)
+            )
+
+        return (
+            path_index < len(path_parts)
+            and fnmatchcase(path_parts[path_index], component)
+            and match(path_index + 1, pattern_index + 1)
         )
-    if any_prefix:
-        return len(parts) >= n and all(
-            Path(parts[len(parts) - n + j]).match(core_parts[j]) for j in range(n)
-        )
-    if any_suffix:
-        return len(parts) >= n and all(
-            Path(parts[j]).match(core_parts[j]) for j in range(n)
-        )
-    return len(parts) == n and all(
-        Path(parts[j]).match(core_parts[j]) for j in range(n)
-    )
+
+    return match(0, 0)
 
 
 def matches_data_layer(rel_path: str, globs: list[str]) -> str | None:
@@ -118,12 +113,16 @@ def main() -> None:
     if not target:
         sys.exit(0)
 
-    repo_root = find_repo_root(payload.get("cwd", "."))
+    cwd = payload.get("cwd", ".")
+    repo_root = find_repo_root(cwd)
     if repo_root is None:
         sys.exit(0)
 
     try:
-        rel_path = str(Path(target).resolve().relative_to(repo_root))
+        target_path = Path(target)
+        if not target_path.is_absolute():
+            target_path = Path(cwd) / target_path
+        rel_path = str(target_path.resolve().relative_to(repo_root))
     except ValueError:
         sys.exit(0)
 

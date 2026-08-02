@@ -16,31 +16,33 @@ The main thread is for coordination, decisions, and user-visible summaries. Impl
 
 ## Prerequisites & API Reference
 
-- **Required:** Claude Code SDK with `Agent()` helper function and support for `subagent_type: "fork"`
+- **Required:** A Claude Code release with forked-subagent support. `/subtask`
+  requires v2.1.212 or later; agent-spawned forks are still experimental and
+  may require `CLAUDE_CODE_FORK_SUBAGENT=1`.
 - **Required:** Git worktree feature (standard in Git 2.7+)
 - **Assumed:** Repository uses Git and has a clean working tree suitable for branching
 
 ### Agent API Contract
 
-The `Agent()` helper accepts the following parameters for fork-based delegation:
+Request the `fork` subagent type through Claude Code's `Agent` tool. The exact
+tool schema is supplied by the running Claude Code version; do not invent
+optional parameters such as `cwd`, `model`, or `timeout` if they are not present
+in that schema.
 
 ```javascript
 Agent({
-  subagent_type: "fork",           // Required: must be "fork"
-  description: "string",            // Required: human-readable task label
-  prompt: "string",                 // Required: task instructions; may reference {absolute-worktree-path}
-  // Optional:
-  cwd?: "absolute-path",           // Working directory for forked execution
-  model?: "model-name",            // Model override
-  timeout?: number                 // Timeout in seconds (if supported)
+  subagent_type: "fork",
+  description: "string",
+  prompt: "string"
 })
 ```
 
-**Return Contract:** Fork returns a structured result containing:
-- `changed_files: string[]` — list of modified file paths
-- `git_status: string` — output of `git status --short`
-- `verification_results: string` — validation/test output
-- `blockers: string[]` — array of unresolved issues or failures
+Claude Code does not guarantee a structured fork result. Ask for the desired
+fields in the prompt, then treat the response as a self-report and verify the
+worktree independently. A fork inherits the parent conversation and tools, runs
+in the background, and cannot spawn another fork. If fork mode is unavailable,
+fall back to a named or `general-purpose` subagent and pass all required context
+explicitly; do not pretend that it inherited the conversation.
 
 ## When to Use
 

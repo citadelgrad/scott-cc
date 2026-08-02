@@ -8,7 +8,7 @@ Create this file when foundry.yaml doesn't already exist:
 
 ```yaml
 # foundry.yaml — scheduling & automation control layer for this project.
-# See CLAUDE.md's "Scheduling & Automation" section for the full schema.
+# Compare the repository's root foundry.yaml for a live, validated example.
 # `foundry run <profile>` runs one locally; `foundry run <profile> --dry-run`
 # previews its gates; `foundry schedule install <name>` installs its cron entry.
 

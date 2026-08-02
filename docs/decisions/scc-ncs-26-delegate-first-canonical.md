@@ -1,6 +1,6 @@
 # ADR: Canonical source for "delegate-first"
 
-- Status: Decided
+- Status: Amended
 - Issue: scc-ncs.26
 - Date: 2026-07-24
 
@@ -60,3 +60,11 @@ discarding it would be a regression with no offsetting benefit.
   `commands/delegate-first.md` and the global skill copy to match/point at the
   canonical `skills/delegate-first/SKILL.md`, and confirm the plugin
   marketplace/cache copies pick up the change on next publish/install.
+
+## Implementation note (2026-07-31)
+
+The repository command and canonical skill were both expanded after this decision, so the line
+counts and "left untouched" statement above describe the decision-time snapshot, not the current
+files. The canonical-source decision still stands. Current fork guidance intentionally documents
+only the supported Agent fields and treats structured child output as a prompt-level convention,
+not a guaranteed SDK return schema.

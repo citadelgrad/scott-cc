@@ -7,7 +7,8 @@ of commits touching that path.
 
 - unmaintained: 90+ days since the last commit touching that path
   (age check takes precedence over commit count)
-- experimental: fewer than 3 commits (too new/unproven)
+- experimental: fewer than 3 commits, or 3+ commits with the latest activity
+  between 60 and 90 days ago
 - stable: 3+ commits AND last commit within 60 days
 
 This is the gate `run:` command wired into foundry.yaml's
@@ -87,7 +88,8 @@ def derive_status(source: str, *, now: datetime.datetime) -> str:
        which have only 1-2 commits, were still called "unmaintained"
        rather than "experimental").
     2. Otherwise, fewer than 3 commits -> experimental (too new/unproven).
-    3. Otherwise (3+ commits, last commit within 60 days) -> stable.
+    3. Otherwise, 3+ commits and activity within 60 days -> stable; activity
+       between 60 and 90 days -> experimental pending renewed maintenance.
     """
     age_days = last_commit_age_days(source, now=now)
     if age_days is None or age_days >= UNMAINTAINED_MIN_AGE_DAYS:
@@ -100,12 +102,7 @@ def derive_status(source: str, *, now: datetime.datetime) -> str:
     if age_days <= STABLE_MAX_AGE_DAYS:
         return "stable"
 
-    # 3+ commits, but last commit is between the stable window (60 days)
-    # and the unmaintained threshold (90 days): enough history to not be
-    # "experimental", not fresh enough for "stable". The documented rule
-    # doesn't name this band explicitly; treat it as unmaintained since it
-    # no longer satisfies stable's recency requirement.
-    return "unmaintained"
+    return "experimental"
 
 
 def main() -> int:

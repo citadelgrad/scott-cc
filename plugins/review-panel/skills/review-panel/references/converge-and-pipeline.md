@@ -209,9 +209,9 @@ resolving findings correctly but slowly, or whether MERGE/VALIDATE are systemati
 under-batching findings per round"). This is a second, independent stop condition, not a
 replacement for the 3-strikes breaker — whichever triggers first ends the loop.
 
-### Context-budget circuit breaker → fresh orchestrator dispatch
+### Context-budget checkpoint
 
-The mechanisms above decide *whether* to loop; this one decides *who* runs the next loop. The
+The mechanisms above decide *whether* to loop; this one preserves restartable state. The
 orchestrator's own context accumulates round over round — every CAST/SPAWN/MERGE/VALIDATE/FIX/
 RE-REVIEW dispatch prompt and return value it has issued or received since the run began, on top
 of whatever the invoking conversation held before this skill was ever invoked. A skill's own
@@ -232,14 +232,15 @@ medium at 2 (Decision rule step 2), so neither ever reaches a 3rd loop-back — 
 structurally unreachable under either narrowed tier, exactly as the 3-strikes breaker and round-8
 cap already are (see "Tier exclusivity, both directions" above).
 
-**On crossing the threshold, do not dispatch SPAWN in the current orchestrating conversation.**
-Instead:
+**On crossing the threshold, checkpoint state before dispatching SPAWN in the current orchestrating
+conversation.** A skill is not an Agent `subagent_type`, so this procedure must not try to dispatch
+the `review-panel` skill itself through `Task`. Instead:
 
 1. **Write a state-handoff file** to the run's scratch workspace (the same
    `.review-panel/workspace/` directory `scripts/workspace` resolves for the packaged diff — see
    SKILL.md's Setup step 2), named `converge-state-round<N>.json` where `N` is the next round
-   about to start. This file, not the conversation so far, is the complete record of what the next
-   orchestrator needs to resume the loop. It must contain at minimum:
+   about to start. This file is the recovery record if the session compacts or the user resumes the
+   loop later. It must contain at minimum:
    - `round`: the next round number to run.
    - `tier` and `tier_source` (as resolved in Setup).
    - `strikes`: the current consecutive-no-progress count (per the 3-strikes circuit-breaker
@@ -257,42 +258,20 @@ Instead:
      have or haven't shown progress that a bare finding-count table wouldn't convey (e.g. "the same
      Important finding at foo.ts:42 has survived 2 fix attempts using different approaches each
      time").
-2. **Dispatch a fresh orchestrator via `Task`**, the same dispatch mechanism this file's own
-   orchestrator already uses to hand work to CAST/SPAWN/FIX subagents — the only difference is
-   that this dispatch target is the `review-panel` skill itself (re-entered mid-loop), not a
-   reviewer seat. The dispatch prompt must contain only: an instruction to resume the review-panel
-   CONVERGE loop, and the state-handoff file's path. It must **not** contain a transcript, summary,
-   or restatement of the conversation so far — the file is the only permitted channel for round
-   history, finding state, and tier context crossing into the new dispatch. This mirrors the
-   packaged-diff rule elsewhere in this skill (SKILL.md Setup step 4, `cast-and-spawn.md`'s CAST
-   dispatch): large or accumulating state moves via a file path, never inlined into a prompt or
-   carried in conversation.
-3. **The fresh dispatch reads the state file first**, reconstructs `round`, `tier`, `strikes`, the
-   sovereignty list, and the cast list from it, then re-enters the loop at SPAWN for the round
-   number the file names — exactly the re-entry point decision-rule step 3 already specifies for
-   an ordinary same-conversation loop-back. From SPAWN onward, every stage's existing procedure
-   (this file, `cast-and-spawn.md`, `merge-and-validate.md`, `fix-and-rereview.md`) applies
-   unmodified; only the *conversation* the loop runs in has changed, not the loop's mechanics,
-   its stage order, or any decision rule.
-4. **Every subsequent 3rd loop-back repeats this**, not just the first: after round 3 forces a
-   fresh dispatch, round 6 (the next multiple of 3 within the round-8 hard cap) forces another one
-   the same way, writing `converge-state-round7.json` from whatever orchestrator is running the
-   loop by then. The breaker is defined relative to round number, not "the first time this fires
-   in a run," so it recurs every 3 rounds for as long as the loop continues.
-5. **This is a housekeeping handoff, not a terminal state.** Unlike `circuit_broken`, `capped`, or
-   `escalated`, crossing this threshold does not stop the loop, does not get reported as the run's
-   final status, and is not itself evidence of stagnation — it is orthogonal to the progress
-   measurement the 3-strikes breaker uses. A run can cross this threshold while showing progress
-   every round; note the handoff in the final report's coverage-honesty statement (e.g. "loop
-   continued via a fresh orchestrator dispatch at round 4, state handed off via
-   `.review-panel/workspace/converge-state-round4.json`") so a reader can see the loop's full
-   provenance, but do not conflate it with any of the three terminal statuses above.
+2. **Continue in the current orchestrator** by dispatching the next SPAWN round. Keep bulky state
+   in the checkpoint and packaged-diff files rather than inlining it into prompts. If compaction or
+   an explicit resume occurs, read the checkpoint first and reconstruct `round`, `tier`, `strikes`,
+   sovereignty findings, and the cast list before re-entering at SPAWN.
+3. **Every subsequent 3rd loop-back repeats the checkpoint**, so round 6 writes
+   `converge-state-round7.json` before round 7 begins.
+4. **This is housekeeping, not a terminal state.** It does not stop the loop or alter status.
+   Mention the checkpoint in coverage notes without claiming a fresh orchestrator was dispatched.
 
 **Below this threshold — i.e. every loop-back that isn't a multiple of 3 — behavior is exactly
 what decision-rule step 2/3 already describe: the same orchestrating conversation dispatches the
-next SPAWN round directly, no state file, no fresh dispatch.** This breaker changes nothing about
-rounds 1, 2, 4, 5, 7, or 8; it only inserts a fresh-dispatch handoff at the round-3 and round-6
-boundaries within full mode's existing loop.
+next SPAWN round directly, with no checkpoint.** This mechanism changes nothing about
+rounds 1, 2, 4, 5, 7, or 8; it only inserts checkpoints at the round-3 and round-6 boundaries
+within full mode's existing loop.
 
 ---
 

@@ -51,9 +51,15 @@ repos:
     hooks:
       - id: gitleaks
 
-  # review-panel: verify skill cross-references still resolve
+  # Repository contracts: plugin metadata and review-panel cross-references
   - repo: local
     hooks:
+      - id: plugin-manifest-contract
+        name: plugin manifest contract
+        entry: python3 scripts/verify_plugin.py
+        language: system
+        pass_filenames: false
+        files: ^(?:\.claude-plugin/.*\.json|plugins/.*/\.claude-plugin/plugin\.json|hooks/hooks\.json|scripts/verify_plugin\.py)$
       - id: skill-xref-check
         name: review-panel skill cross-reference check
         entry: python3 hooks/skill_xref_check.py

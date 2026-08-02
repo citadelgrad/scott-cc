@@ -12,30 +12,26 @@ metadata:
 
 # Reck Software Factory
 
-Operates `reck` (Reckoner) — a software factory that wraps `pas`. It manages repos, provisions containers, runs PAS pipelines, and collects results. Version: 0.1.0.
+Operates `reck` (Reckoner) — a software factory that wraps `pas`. It manages repos, provisions containers, runs PAS pipelines, and collects results. Version: 0.2.0.
 
 **Architecture:** Reckoner is the factory layer. It never invokes Claude directly — all task execution routes through PAS. Foundry sits above as the platform quality layer (gates, schedules, CI-style profiles).
 
 ## Prerequisites & Known Limitations
 
-- **Required:** `reck` CLI tool (version 0.1.0 or compatible)
+- **Required:** `reck` CLI tool (version 0.2.0 or compatible)
   - Verify installation: `reck --version`
   - If not installed, consult your project's setup documentation or contact your platform team
 - **Required:** Container runtime available (Docker or Podman)
   - Verify: `docker info` or `podman info`
 - **Required:** Network access for repo cloning and task execution
 
-### ⚠️ Intent Flags Not Yet Functional
+### Intent and pipeline contract
 
-The following flags are **currently non-functional** and should not be relied upon:
-- `--prompt "..."` (intended for inline task descriptions)
-- `--spec <path>` (intended for spec-file-based generation)
-- `--epic <beads-id>` (intended for epic-based scaffolding)
-- `--prd <path>` (intended for PRD-based generation)
-
-**These flags are wired in the CLI but resolution to `.dot` pipeline generation has not been completed.**
-
-**Current requirement:** Always provide `--pipeline <file>` explicitly until intent resolution lands.
+Every `reck task` requires exactly one intent source: `--prompt`, `--spec`, or
+`--epic`. `--prd` is optional and valid only with `--spec`. Reckoner derives a
+PAS pipeline from that intent unless `--pipeline <file>` overrides derivation.
+`--pipeline` is therefore an escape hatch, not a replacement for the required
+intent source.
 
 ## When to Use
 - Running an AI-driven task against a registered repo (`reck task`)
@@ -53,7 +49,7 @@ The following flags are **currently non-functional** and should not be relied up
 | Initialize Reckoner | `reck init` |
 | Register a repo | `reck add <repo-url>` |
 | List registered repos | `reck list` |
-| Run a task | `reck task <repo> --pipeline <file>` |
+| Run a task | `reck task <repo> --prompt "<work>"` |
 | Set repo working directory | `reck repo set-working-dir <repo> <path>` |
 | Check task status | `reck status` |
 | View task logs | `reck logs <task-id>` |
@@ -73,38 +69,44 @@ The following flags are **currently non-functional** and should not be relied up
 `reck task` is the primary command. It handles container provisioning, PAS pipeline execution, and result collection.
 
 ```bash
-# Current: --pipeline is required
-reck task my-repo --pipeline path/to/pipeline.dot
+# One-off prompt — pipeline is derived automatically
+reck task my-repo --prompt "Fix the auth bug"
 ```
 
-### Intent flags (wired, resolution pending)
+### Intent sources
 
-`reck task` accepts mutually exclusive `IntentSource` flags. These are wired to the CLI but not yet fully resolved to `.dot` files — until resolution is complete, `--pipeline` is required.
+Choose exactly one:
 
 ```bash
---prompt "Fix the auth bug"     # → pas plan --spec --from-prompt → pas generate → run (pending)
---spec path/to/spec.md          # → pas generate <spec> → run (pending)
---epic beads-123                # → pas scaffold <epic-id> → run (pending)
---prd path/to/prd.md            # → pas generate <prd> → run (pending)
+reck task my-repo --prompt "Fix the auth bug"
+reck task my-repo --spec path/to/spec.md
+reck task my-repo --spec path/to/spec.md --prd path/to/prd.md
+reck task my-repo --epic beads-123
 ```
 
-When intent resolution lands, `--pipeline` will become optional for prompt/spec/epic/prd workflows.
+Prompt intent runs `pas plan --spec --from-prompt` then `pas generate`; spec
+intent runs `pas generate`; epic intent runs `pas scaffold`.
 
 ### Other flags
 
 ```bash
 # Skip PR creation, just collect logs
-reck task my-repo --pipeline my.dot --no-pr
+reck task my-repo --prompt "Audit N+1 queries" --no-pr
+
+# Override auto-derivation with a pre-built pipeline; intent is still required
+reck task my-repo --prompt "Fix the login bug" --pipeline my.dot
 ```
 
 **Always use `--no-pr` for exploratory or debugging tasks** where you want to review results before committing to a PR.
 
 ### What happens under the hood
 
-1. Provisions an isolated container for the repo
-2. Runs the PAS pipeline (`.dot` file) inside the container
-3. Collects results and creates a PR by default
-4. After a successful PR, automatically fires `foundry run post-feature` (see §5)
+1. Resolves the intent into a PAS pipeline, unless `--pipeline` overrides it
+2. Provisions an isolated worktree and container for the repo
+3. Runs the PAS pipeline inside the container
+4. Runs format, lint, and type checks, with bounded automatic remediation
+5. Collects results and creates a PR by default
+6. After a successful PR, automatically fires `foundry run post-feature` (see §5)
 
 ---
 
@@ -150,7 +152,8 @@ Use `reck schedule` for recurring automation. This is the correct interface for 
 
 ```bash
 # Add a schedule
-reck schedule add
+reck schedule add --name nightly-cleanup --repo my-repo \
+  --pipeline pipelines/cleanup.dot --cron "0 3 * * *"
 
 # List active schedules
 reck schedule list
@@ -223,7 +226,7 @@ Runs toolchain + architectural linters against the repo without provisioning a f
 
 ```bash
 # Start Loki + Grafana infra (run once per machine)
-reck infra
+reck infra up
 
 # Open dashboard in browser
 reck observe
@@ -237,6 +240,7 @@ The observability stack aggregates logs from all tasks. Run `reck infra` once to
 
 | Mistake | Fix |
 |---------|-----|
+| Passing `--pipeline` without an intent source | Add exactly one of `--prompt`, `--spec`, or `--epic` |
 | Forgetting `--no-pr` for exploratory tasks | Always use `--no-pr` when you want to review before committing to a PR |
 | Not running `reck sync` before a task | Reck does not auto-sync; run `reck sync` manually or schedule it |
 | Using crontab/launchd for scheduled pipelines | Use `reck schedule` for factory-level; `foundry.yaml` for project-level |

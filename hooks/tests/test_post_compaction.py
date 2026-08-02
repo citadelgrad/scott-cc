@@ -59,7 +59,9 @@ Ship reliable plan recovery.
 
     assert result.returncode == 0
     output = json.loads(result.stdout)
-    context = output["additionalContext"]
+    hook_output = output["hookSpecificOutput"]
+    assert hook_output["hookEventName"] == "SessionStart"
+    context = hook_output["additionalContext"]
     assert "Active plan: .claude/plan.md" in context
     assert "Objective: Ship reliable plan recovery." in context
     assert "Completed:" in context
@@ -80,9 +82,10 @@ def test_active_plan_path_takes_precedence(tmp_path: Path):
     result = run_hook(tmp_path, session_payload(tmp_path, source="clear"))
 
     output = json.loads(result.stdout)
-    assert ".scott-cc/active-plan.md" in output["additionalContext"]
-    assert "Preferred plan" in output["additionalContext"]
-    assert "Wrong plan" not in output["additionalContext"]
+    context = output["hookSpecificOutput"]["additionalContext"]
+    assert ".scott-cc/active-plan.md" in context
+    assert "Preferred plan" in context
+    assert "Wrong plan" not in context
 
 
 def test_explicitly_inactive_plan_is_silent(tmp_path: Path):

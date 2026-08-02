@@ -20,7 +20,7 @@ Same split as scc-ncs.16: this repo (`scott-cc`) has no editable SkillOpt-Sleep
 engine source — only the output artifact
 `skills/skillopt-sleep-learned/SKILL.md`, written by the engine, not part of
 it. The actual engine lives in the separate repo
-`/Volumes/qwiizlab/projects/oss/SkillOpt` (remote: `microsoft/SkillOpt`,
+[`microsoft/SkillOpt`](https://github.com/microsoft/SkillOpt) (remote: `microsoft/SkillOpt`,
 branch `main`). The full re-derivation pass was implemented there, since that
 is the only place the mechanism can be real, enforced, and tested. That change
 is a legitimate, self-contained contribution to that project and is
@@ -124,10 +124,7 @@ unchanged). Full suite:
 
 ## Status
 
-- SkillOpt-side implementation: complete, verified green, **left uncommitted**
-  in that external repo's working tree (`origin` = `microsoft/SkillOpt.git`,
-  on `main`), consistent with scc-ncs.16's precedent. Committing to that
-  unrelated upstream OSS project as a side effect of this internal task was
-  judged out of scope without separate, explicit authorization — the diff is
-  inspectable in place at `/Volumes/qwiizlab/projects/oss/SkillOpt`.
+- SkillOpt-side implementation described here was verified only in an **uncommitted local working
+  tree** and is not shipped by scott-cc or available from the linked upstream repository. Treat
+  this document as a historical design/work log, not release evidence.
 - This doc is the scott-cc-side record of scc-ncs.23 for this worktree/branch.

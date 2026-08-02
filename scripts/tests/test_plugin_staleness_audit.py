@@ -143,6 +143,24 @@ def test_derive_status_unmaintained_takes_precedence_over_low_commit_count(
     assert status == "unmaintained"
 
 
+def test_derive_status_experimental_in_maintenance_gap(tmp_path, monkeypatch):
+    repo_root = init_repo(tmp_path)
+    now = datetime.datetime.now().astimezone()
+    for i in range(3):
+        _commit(
+            repo_root,
+            "plugins/foo/file.txt",
+            content=f"v{i}",
+            when=now - datetime.timedelta(days=77 - i),
+        )
+
+    monkeypatch.setattr(plugin_staleness_audit, "ROOT", repo_root)
+
+    assert (
+        plugin_staleness_audit.derive_status("plugins/foo", now=now) == "experimental"
+    )
+
+
 def test_main_fails_on_drift_and_passes_when_in_sync(tmp_path, monkeypatch, capsys):
     repo_root = init_repo(tmp_path)
     now = datetime.datetime.now().astimezone()

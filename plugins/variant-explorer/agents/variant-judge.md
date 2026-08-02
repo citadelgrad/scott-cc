@@ -20,12 +20,12 @@ variant. You never edit any variant's code — you only read and report.
   the specific AC item(s) it satisfies or fails, by ID. If an AC item requires actually running
   something (tests, a build, a script) to verify, run it and report the real result — do not
   infer a pass from reading code alone when a check is runnable.
-- **Taste**: follow `plugins/review-panel/skills/taste-review/SKILL.md`'s "How to Review"
+- **Taste**: invoke the installed `review-panel:taste-review` skill and follow its "How to Review"
   procedure exactly, applied to this variant's diff. If `TASTE.md` does not exist at the repo
   root, do not score this axis at all — say so plainly and stop; there is no generic fallback.
   Every taste finding must quote the violated `TASTE.md` clause verbatim, per that skill's Output
   Contract.
-- **Simplicity**: follow `plugins/review-panel/skills/ponytail-review/SKILL.md`'s exact format
+- **Simplicity**: invoke the installed `review-panel:ponytail-review` skill and follow its exact format
   (`L<line>: <tag> <what>. <replacement>.`, ending `net: -<N> lines possible.` or
   `Lean already. Ship.`) against this variant's implementation.
 

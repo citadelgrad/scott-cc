@@ -1,5 +1,8 @@
 {
   "status": "circuit_broken",
+  "tier": "full",
+  "narrowed_guarantees": [],
+  "tier_source": "explicit",
   "rounds": 8,
   "cast": [
     {
@@ -19,7 +22,7 @@
         "normalized_title": "missing null check on payment token"
       },
       "severity": "Critical",
-      "confidence": 80,
+      "confidence": 75,
       "contributing_seats": ["Correctness/Adversarial"],
       "evidence_quote": "token = payment[\"token\"].strip()",
       "recommendation": "guard payment[\"token\"] for None before calling .strip()",
@@ -49,6 +52,9 @@
     "escalation": {
       "pending": false,
       "sovereignty_finding_ids": []
+    },
+    "capped": {
+      "diagnosis": null
     }
   },
   "coverage": {

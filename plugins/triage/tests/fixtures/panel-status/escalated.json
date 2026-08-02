@@ -1,5 +1,8 @@
 {
   "status": "escalated",
+  "tier": "full",
+  "narrowed_guarantees": [],
+  "tier_source": "explicit",
   "rounds": 1,
   "cast": [
     {
@@ -19,7 +22,7 @@
         "normalized_title": "column type change crosses DATA-MODEL.md ownership boundary"
       },
       "severity": "Critical",
-      "confidence": 90,
+      "confidence": 100,
       "contributing_seats": ["Data Steward"],
       "evidence_quote": "ALTER TABLE payments ALTER COLUMN token TYPE text;",
       "recommendation": "widening payments.token's type changes a column DATA-MODEL.md marks as owned by the billing service; requires explicit sign-off from that service's steward before merge",
@@ -49,6 +52,9 @@
     "escalation": {
       "pending": true,
       "sovereignty_finding_ids": ["f-001"]
+    },
+    "capped": {
+      "diagnosis": null
     }
   },
   "coverage": {

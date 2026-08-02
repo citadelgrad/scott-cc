@@ -9,17 +9,20 @@
 ## What You Get
 
 **Core Plugin (scott-cc)**
-- 4 slash commands (delegate-first, handoff, security-cheatsheet, gha)
+- 8 slash commands (concurrency-atomicity, delegate-first, gha, google-standard, handoff, polyglot-idiom, security-cheatsheet, thermo-nuclear)
 - 8 AI agents (api-debugger, backend-architect, deep-research-agent, emergent-behavior, frontend-architect, refactoring-expert, requirements-analyst, system-architect)
-- 20 skills (delegate-first, grill-me, tdd, acceptance-criteria, verified-implementation, python-simplifier, typescript-simplifier, context7, thinking-in-systems, and more)
+- 27 skills (delegate-first, grill-me, tdd, acceptance-criteria, verified-implementation, python-simplifier, typescript-simplifier, context7, thinking-in-systems, and more)
 
 **Sub-Plugins**
 - beads-epic-builder - Plan, build, and swarm beads epics (2 agents, 2 commands)
 - browser-automation - Browser testing & validation (2 agents, 2 skills)
 - research-tools - Learning guides, tech stack research (3 agents, 1 skill)
-- security-suite - Security advisory and scanning (2 agents)
+- security-suite - Security advisory and scanning (2 agents, 1 skill)
 - performance-optimization - Performance engineering (1 agent)
 - mutation-testing - Mutation testing suite (5 agents, 1 skill)
+- review-panel - Multi-persona adversarial code and design review
+- variant-explorer - Parallel blind-builder implementation exploration
+- triage - Foundry-resident detect, reproduce, fix, and gate loop
 
 ## Usage
 

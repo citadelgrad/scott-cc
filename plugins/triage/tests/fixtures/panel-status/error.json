@@ -1,5 +1,8 @@
 {
   "status": "error",
+  "tier": "full",
+  "narrowed_guarantees": [],
+  "tier_source": "explicit",
   "rounds": 0,
   "cast": [],
   "findings": [],
@@ -13,6 +16,9 @@
     "escalation": {
       "pending": false,
       "sovereignty_finding_ids": []
+    },
+    "capped": {
+      "diagnosis": null
     }
   },
   "coverage": {

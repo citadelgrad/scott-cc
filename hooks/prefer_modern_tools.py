@@ -33,6 +33,11 @@ REWRITES = [
     (r"(?<![/\w])ps\s+-e\b", "procs"),
 ]
 
+COMMAND_PREFIX_RE = re.compile(
+    r"^\s*(?:(?:[A-Za-z_][A-Za-z0-9_]*=\S+|"
+    r"(?:sudo|env|command|builtin|time)(?:\s+-\S+)*)\s+)*$"
+)
+
 
 def _quote_mask(cmd: str) -> list[bool]:
     """Per-character mask; True where the character sits inside a quoted
@@ -54,14 +59,39 @@ def _quote_mask(cmd: str) -> list[bool]:
     return mask
 
 
+def _is_command_position(cmd: str, start: int, quote_mask: list[bool]) -> bool:
+    """Return whether ``start`` follows a shell command boundary or wrapper."""
+    boundary = -1
+    for index in range(start - 1, -1, -1):
+        if not quote_mask[index] and cmd[index] in ";&|(\n":
+            boundary = index
+            break
+    return COMMAND_PREFIX_RE.fullmatch(cmd[boundary + 1 : start]) is not None
+
+
 def rewrite(cmd: str) -> str:
+    # Raw regex rewriting is only safe for uncomplicated shell commands. Keep
+    # heredocs, substitutions, comments, multiline scripts, and escaped shell
+    # syntax untouched rather than risk changing data or nested program text.
+    unsafe_syntax = ("\n", "\r", "`", "$(", "<(", ">(", "<<", "\\")
+    if any(token in cmd for token in unsafe_syntax):
+        return cmd
+
+    initial_mask = _quote_mask(cmd)
+    if any(ch == "#" and not initial_mask[index] for index, ch in enumerate(cmd)):
+        return cmd
+
     for pattern, replacement in REWRITES:
         mask = _quote_mask(cmd)
 
         def _sub(m: re.Match, mask=mask, replacement=replacement) -> str:
-            # Skip (leave untouched) any match that falls inside a quoted
-            # string; only rewrite bare tool-name tokens used as commands.
-            if any(mask[m.start() : m.end()]):
+            # Skip quoted strings and argument/subcommand positions. A token
+            # such as ``grep`` is only a tool invocation at the start of a
+            # shell command (possibly after wrappers such as sudo/env), not in
+            # ``git grep`` or ``printf run grep``.
+            if any(mask[m.start() : m.end()]) or not _is_command_position(
+                cmd, m.start(), mask
+            ):
                 return m.group(0)
             return replacement
 
@@ -84,7 +114,16 @@ def main() -> None:
     rewritten = rewrite(original)
 
     if rewritten != original:
-        print(json.dumps({"tool_input": {"command": rewritten}}))
+        print(
+            json.dumps(
+                {
+                    "hookSpecificOutput": {
+                        "hookEventName": "PreToolUse",
+                        "updatedInput": {**tool_input, "command": rewritten},
+                    }
+                }
+            )
+        )
 
     sys.exit(0)
 
