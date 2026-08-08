@@ -1,0 +1,31 @@
+docs/reports/DEV-13-orchestration-contracts.md
+  s_0321454a7ecd19::t_589f0b58a61bb3 1-167
+.gitignore
+  s_0321454a7ecd19::t_cf85e4b4ad09e6 53-55,57-60
+scripts/tests/test_verify_orchestration_contracts.py
+  s_0321454a7ecd19::t_589f0b58a61bb3 1-80
+scripts/verify_orchestration_contracts.py
+  s_0321454a7ecd19::t_589f0b58a61bb3 1-226
+plugins/mutation-testing/agents/test-auditor.md
+  s_0321454a7ecd19::t_f6c04ee9004c01 42,44-46,51,53-55,70-73,94,98-99,187,190,244-249
+plugins/mutation-testing/agents/test-executor.md
+  s_0321454a7ecd19::t_c18d6cd5b1f5f8 151,159-162,170-174,280
+plugins/mutation-testing/agents/test-quality-reviewer.md
+  s_0321454a7ecd19::t_836aa6d1159ec4 110,166,182,185-197,202-204,207-210,225,236-238,240-244,246-249,257-260,271
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "9b6b3786df5e7728198a481fa894c9d80b6b7242",
+  "prompts": {},
+  "sessions": {
+    "s_0321454a7ecd19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a62045e6-0887-4fd4-9597-1deb9beb1508",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
