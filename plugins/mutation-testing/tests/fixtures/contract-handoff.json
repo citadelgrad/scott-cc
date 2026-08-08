@@ -1,0 +1,151 @@
+{
+  "request": {
+    "target": "src/payment.py",
+    "test_file": "tests/test_payment.py",
+    "mode": "quick",
+    "focus": "retry_logic",
+    "auto_approve": false
+  },
+  "handoffs": [
+    {
+      "subagent_type": "mutation-testing:test-saboteur",
+      "input": {
+        "source_file": "src/payment.py",
+        "mutation_count": 2,
+        "focus": "retry_logic"
+      },
+      "output": {
+        "mutations": [
+          {
+            "id": "mut-001",
+            "type": "boundary",
+            "file": "src/payment.py",
+            "line": 47,
+            "original": "retry_count >= 3",
+            "mutated": "retry_count > 3",
+            "worktree": "/scratch/test-mutation-001",
+            "expected_impact": "retry_count=3 should fail"
+          },
+          {
+            "id": "mut-002",
+            "type": "boolean",
+            "file": "src/payment.py",
+            "line": 52,
+            "original": "active and subscribed",
+            "mutated": "active or subscribed",
+            "worktree": "/scratch/test-mutation-002",
+            "expected_impact": "inactive subscribers should fail"
+          }
+        ]
+      }
+    },
+    {
+      "subagent_type": "mutation-testing:test-executor",
+      "input": {
+        "mutation_id": "mut-001",
+        "worktree": "/scratch/test-mutation-001",
+        "test_command": "pytest tests/test_payment.py -v --tb=short --no-cov"
+      },
+      "output": {
+        "mutation_id": "mut-001",
+        "worktree": "/scratch/test-mutation-001",
+        "status": "COMPLETED",
+        "test_results": {
+          "total": 2,
+          "passed": 1,
+          "failed": 1,
+          "errors": 0,
+          "skipped": 0
+        },
+        "test_outcomes": {
+          "tests/test_payment.py::test_retry_boundary": "failed",
+          "tests/test_payment.py::test_happy_path": "passed"
+        },
+        "failures": [
+          {
+            "test": "tests/test_payment.py::test_retry_boundary",
+            "error": "AssertionError"
+          }
+        ],
+        "execution_time_seconds": 0.2,
+        "test_command": "pytest tests/test_payment.py -v --tb=short --no-cov",
+        "exit_code": 1
+      }
+    },
+    {
+      "subagent_type": "mutation-testing:test-executor",
+      "input": {
+        "mutation_id": "mut-002",
+        "worktree": "/scratch/test-mutation-002",
+        "test_command": "pytest tests/test_payment.py -v --tb=short --no-cov"
+      },
+      "output": {
+        "mutation_id": "mut-002",
+        "status": "INVALID_MUTATION",
+        "error": "SyntaxError: invalid syntax",
+        "recommendation": "Skip and report the coverage gap"
+      }
+    },
+    {
+      "subagent_type": "mutation-testing:test-auditor",
+      "input": {
+        "source_file": "src/payment.py",
+        "test_file": "tests/test_payment.py",
+        "mutation_ids": [
+          "mut-001",
+          "mut-002"
+        ],
+        "executor_result_ids": [
+          "mut-001",
+          "mut-002"
+        ]
+      },
+      "output": {
+        "mutation_score": 1.0,
+        "quality_rating": "Excellent",
+        "mutations_total": 2,
+        "mutations_evaluated": 1,
+        "mutations_caught": 1,
+        "mutations_survived": 0,
+        "execution_gaps": [
+          {
+            "mutation_id": "mut-002",
+            "status": "INVALID_MUTATION",
+            "reason": "SyntaxError: invalid syntax"
+          }
+        ],
+        "zombie_tests": [],
+        "redundant_groups": [],
+        "over_mocked_tests": [],
+        "missing_coverage": [],
+        "summary": {
+          "total_tests": 2,
+          "zombie_count": 0,
+          "sample_size_note": "1 of 2 mutations evaluated; 1 coverage gap"
+        }
+      }
+    },
+    {
+      "subagent_type": "mutation-testing:test-refactor-specialist",
+      "input": {
+        "source_file": "src/payment.py",
+        "test_file": "tests/test_payment.py",
+        "audit_mutations_evaluated": 1
+      },
+      "output": {
+        "refactored_test_code": null,
+        "changes": {
+          "removed": [],
+          "consolidated": [],
+          "added": []
+        },
+        "metrics": {
+          "old_test_count": 2,
+          "new_test_count": 2,
+          "estimated_mutation_score": 1.0
+        },
+        "diff": ""
+      }
+    }
+  ]
+}

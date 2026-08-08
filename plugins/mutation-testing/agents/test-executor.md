@@ -148,6 +148,7 @@ Return JSON to orchestrator:
 {
   "mutation_id": "mut-001",
   "worktree": "/Users/scott/projects/test-mutation-001",
+  "status": "COMPLETED",
   "test_results": {
     "total": 200,
     "passed": 200,
@@ -155,12 +156,21 @@ Return JSON to orchestrator:
     "errors": 0,
     "skipped": 0
   },
+  "test_outcomes": {
+    "tests/test_stripe.py::test_retry_boundary": "failed",
+    "tests/test_stripe.py::test_happy_path": "passed"
+  },
   "failures": [],
   "execution_time_seconds": 12.4,
   "test_command": "pytest tests/ -v --tb=short",
   "exit_code": 0
 }
 ```
+
+`test_outcomes` is required for every test the command ran. Values are exactly
+`passed`, `failed`, `error`, or `skipped`. The auditor uses this map to distinguish a
+test that passed every executable mutation from a test that simply did not run; counts
+alone are not sufficient for zombie-test classification.
 
 **Critical**: If `passed == total` (all tests passed despite mutation), this is a **zombie test alert**!
 
@@ -267,7 +277,7 @@ The orchestrator launches N test-executor agents in parallel:
 # Orchestrator launches 15 agents at once
 for mutation in mutations:
     Task(
-      subagent_type="scott-cc:test-executor",
+      subagent_type="mutation-testing:test-executor",
       prompt=f"Run tests for mutation {mutation['id']} in {mutation['worktree']}",
       run_in_background=False  # Wait for all to complete
     )

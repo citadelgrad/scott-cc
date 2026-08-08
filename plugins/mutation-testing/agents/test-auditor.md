@@ -39,12 +39,20 @@ You receive:
 [
   {
     "mutation_id": "mut-001",
+    "status": "COMPLETED",
     "test_results": {"total": 200, "passed": 200, "failed": 0},
+    "test_outcomes": {
+      "tests/test_stripe.py::test_retry_boundary": "passed"
+    },
     "failures": []
   },
   {
     "mutation_id": "mut-002",
+    "status": "COMPLETED",
     "test_results": {"total": 200, "passed": 195, "failed": 5},
+    "test_outcomes": {
+      "tests/test_stripe.py::test_retry_boundary": "failed"
+    },
     "failures": [
       {"test": "test_retry_boundary", "error": "..."},
       ...
@@ -59,9 +67,10 @@ You receive:
 ### 1. Calculate Mutation Score
 
 ```python
-mutations_caught = count(results where failed > 0)
-mutations_survived = count(results where failed == 0)
-mutation_score = mutations_caught / total_mutations
+executable = [result for result in results if result['status'] == 'COMPLETED']
+mutations_caught = count(executable where test_results.failed > 0)
+mutations_survived = count(executable where test_results.failed == 0)
+mutation_score = mutations_caught / len(executable)
 
 # Example:
 # 15 mutations total
@@ -82,17 +91,12 @@ Zombie test = test that **never failed** across all mutations.
 
 ```python
 # Algorithm
-all_tests = get_all_test_names_from_results()
+all_tests = intersection(result['test_outcomes'].keys() for result in executable)
 zombie_tests = []
 
 for test_name in all_tests:
-    failed_for_any_mutation = False
-    for result in test_results:
-        if test_name in result['failures']:
-            failed_for_any_mutation = True
-            break
-
-    if not failed_for_any_mutation:
+    statuses = [result['test_outcomes'][test_name] for result in executable]
+    if all(status == 'passed' for status in statuses):
         zombie_tests.append(test_name)
 
 # Example:
@@ -180,8 +184,10 @@ Return comprehensive JSON report:
   "mutation_score": 0.23,
   "quality_rating": "Poor",
   "mutations_total": 15,
+  "mutations_evaluated": 15,
   "mutations_caught": 3,
   "mutations_survived": 12,
+  "execution_gaps": [],
 
   "zombie_tests": [
     {
@@ -234,6 +240,12 @@ Return comprehensive JSON report:
   }
 }
 ```
+
+If any executor returns `ERROR` or `INVALID_MUTATION`, add
+`{"mutation_id": "...", "status": "...", "reason": "..."}` to
+`execution_gaps`, exclude it from `mutations_evaluated` and the score denominator,
+and state the reduced sample size in `summary`. If `mutations_evaluated` is zero,
+set `mutation_score` and `quality_rating` to `null`; never manufacture a score.
 
 ## Detailed Analysis Examples
 

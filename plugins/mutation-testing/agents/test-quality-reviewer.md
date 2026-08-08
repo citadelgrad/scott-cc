@@ -107,7 +107,7 @@ Launch the test-saboteur agent to create semantic mutations:
 
 ```
 Task(
-  subagent_type="scott-cc:test-saboteur",
+  subagent_type="mutation-testing:test-saboteur",
   description="Create semantic mutations",
   prompt="""Create [N] semantic mutations for: {file_path}
 
@@ -163,7 +163,7 @@ Launch one test-executor agent per mutation **in parallel**:
 # Launch all executors in a single message (parallel execution)
 for mutation in mutations:
     Task(
-      subagent_type="scott-cc:test-executor",
+      subagent_type="mutation-testing:test-executor",
       description=f"Run tests for mutation {mutation['id']}",
       prompt=f"""
       Execute test suite for mutation: {mutation['id']}
@@ -179,21 +179,35 @@ for mutation in mutations:
       - Coverage percentage
       - Execution time
 
-      Return JSON:
+      Return JSON matching test-executor's documented Output Format:
       {{
         "mutation_id": "{mutation['id']}",
-        "tests_run": 200,
-        "passed": 195,
-        "failed": 5,
+        "worktree": "{mutation['worktree']}",
+        "status": "COMPLETED",
+        "test_results": {{
+          "total": 200,
+          "passed": 195,
+          "failed": 5,
+          "errors": 0,
+          "skipped": 0
+        }},
+        "test_outcomes": {{
+          "tests/test_payments.py::test_retry_boundary": "failed",
+          "tests/test_payments.py::test_happy_path": "passed"
+        }},
         "failures": [
           {{"test": "test_retry_boundary", "error": "AssertionError: ..."}},
           ...
         ],
-        "coverage": "87%",
-        "execution_time_seconds": 12.4
+        "execution_time_seconds": 12.4,
+        "test_command": "pytest tests/ -v --tb=short --no-cov",
+        "exit_code": 1
       }}
 
-      If all tests pass (passed == tests_run), this mutation survived → zombie tests!
+      If all tests pass (test_results.passed == test_results.total), this
+      mutation survived. If the suite cannot execute or the mutation is invalid,
+      return the documented ERROR or INVALID_MUTATION shape instead; those
+      results are coverage gaps and must not enter the mutation-score denominator.
       """
     )
 ```
@@ -208,7 +222,7 @@ Launch test-auditor with aggregated results:
 
 ```
 Task(
-  subagent_type="scott-cc:test-auditor",
+  subagent_type="mutation-testing:test-auditor",
   description="Analyze mutation testing results",
   prompt="""
   Analyze mutation test results to identify test quality issues.
@@ -219,13 +233,20 @@ Task(
   Test Results:
   {json.dumps(all_test_results)}
 
-  Calculate:
-  1. Mutation score: (mutations_caught / total_mutations) * 100
-     - mutations_caught = mutations where at least 1 test failed
-     - Total mutations = len(mutations)
+  Source File: {source_file}
+  Test File: {test_file}
 
-  2. Zombie tests: Tests that never failed across all mutations
-     - If test_name appears in passed list for ALL mutations → zombie
+  Calculate:
+  1. Mutation score: (mutations_caught / executable_mutations) * 100
+     - mutations_caught = COMPLETED results where at least 1 test failed
+     - executable_mutations = COMPLETED results only
+     - ERROR and INVALID_MUTATION results are coverage gaps; report them
+       separately and never count them as survived mutations
+
+  2. Zombie tests: Tests that never failed across all executable mutations
+     - Derive test names and statuses from each result's test_outcomes map
+     - If a test did not run for every executable mutation, mark it unevaluated;
+       do not label it a zombie
 
   3. Redundant test groups: Tests that always fail together
      - If test_A and test_B fail for exact same mutations → redundant
@@ -233,25 +254,10 @@ Task(
   4. Over-mocked tests: Tests with >5 mock objects
      - Read test file, count unittest.mock or @patch decorators
 
-  Return JSON:
-  {
-    "mutation_score": 0.23,
-    "mutations_caught": 3,
-    "mutations_survived": 12,
-    "zombie_tests": [
-      {"test": "test_retry_validation_1", "file": "tests/test_stripe.py", "line": 47},
-      ...
-    ],
-    "redundant_groups": [
-      {
-        "pattern": "Django model field validation",
-        "tests": ["test_status_valid", "test_status_invalid", ...],
-        "count": 150,
-        "recommendation": "Consolidate into parameterized test"
-      }
-    ],
-    "quality_rating": "Poor" | "Fair" | "Good" | "Excellent"
-  }
+  Return exactly the JSON shape in your documented Output Format, including
+  mutation_score, mutations_total, mutations_evaluated, mutations_caught,
+  mutations_survived, execution_gaps, zombie_tests, redundant_groups,
+  over_mocked_tests, missing_coverage, quality_rating, and summary.
   """
 )
 ```
@@ -262,7 +268,7 @@ Launch refactor specialist with audit results:
 
 ```
 Task(
-  subagent_type="scott-cc:test-refactor-specialist",
+  subagent_type="mutation-testing:test-refactor-specialist",
   description="Propose test suite refactoring",
   prompt="""
   Generate refactored test suite based on mutation analysis.

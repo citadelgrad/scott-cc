@@ -50,4 +50,11 @@ agents/CLAUDE.md
 # that can land at repo root during interactive sessions — not produced by
 # any repo script; ignored as a backstop so they don't get committed
 text_*_archived_replacement_*.json
+
+# ralph loop scratch state (audit notes, run-state json) — working notes for
+# an in-progress session, not durable project documentation
 .ralph/
+
+# ad hoc task scratch (baselines, plans, conflict matrices) — working notes
+# for an in-progress session, not durable project documentation
+.work/
