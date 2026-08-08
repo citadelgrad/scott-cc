@@ -13,7 +13,7 @@
       "name": "scott-cc",
       "source": "./",
       "description": "Core development tools with 8 commands, 8 AI agents, 27 skills, 5 hooks, and 2 stored templates producing 3 project artifacts",
-      "version": "5.1.0",
+      "version": "5.2.0",
       "author": {
         "name": "Scott Nixon"
       },
@@ -67,8 +67,8 @@
     {
       "name": "mutation-testing",
       "source": "./plugins/mutation-testing",
-      "description": "Comprehensive mutation testing with zombie test detection and auto-generated refactoring (5 agents, 1 skill)",
-      "version": "1.0.0",
+      "description": "Comprehensive mutation testing with zombie test detection and auto-generated refactoring (1 command, 5 agents, 1 skill)",
+      "version": "1.1.0",
       "author": {
         "name": "Scott Nixon"
       },
