@@ -1,0 +1,24 @@
+plugins/mutation-testing/.claude-plugin/plugin.json
+  s_0321454a7ecd19::t_316f1a3c26b3c9 4
+.claude-plugin/marketplace.json
+  s_0321454a7ecd19::t_0dfdb3bfbc01af 16
+  s_0321454a7ecd19::t_c027dc672bcdca 70-71
+.claude-plugin/plugin.json
+  s_0321454a7ecd19::t_bf28ebcdfddd36 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "1ebb637c4b0b0ad57e975766fa87341f383754ca",
+  "prompts": {},
+  "sessions": {
+    "s_0321454a7ecd19": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a62045e6-0887-4fd4-9597-1deb9beb1508",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
