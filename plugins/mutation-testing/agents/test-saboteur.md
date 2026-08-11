@@ -112,13 +112,25 @@ Read the source file and use semantic understanding (not just AST parsing) to id
 
 ### Step 2: Create Git Worktrees
 
-For each mutation, create an isolated worktree:
+Resolve the main repository root **once**, before creating any worktree, and record it as
+`main_repo_root`. Every safety check below depends on this exact path:
 
 ```bash
-git worktree add ../test-mutation-001 HEAD
-git worktree add ../test-mutation-002 HEAD
+main_repo_root=$(git rev-parse --show-toplevel)
+```
+
+For each mutation, create an isolated worktree as a sibling of `main_repo_root`, using
+`git -C` instead of `cd` so the command cannot be affected by whatever directory a prior
+tool call left you in:
+
+```bash
+git -C "$main_repo_root" worktree add "$main_repo_root/../test-mutation-001" HEAD
+git -C "$main_repo_root" worktree add "$main_repo_root/../test-mutation-002" HEAD
 # ... etc
 ```
+
+Record each worktree's path as an **absolute** path in the manifest (see Step 4) — never a
+bare relative path like `../test-mutation-001`.
 
 **Why worktrees?**
 - Isolation: No race conditions
@@ -127,16 +139,42 @@ git worktree add ../test-mutation-002 HEAD
 
 ### Step 3: Apply Mutations
 
-In each worktree, apply ONE mutation:
+**Critical safety rule: `cd` does not make the Edit tool isolated.** The Edit and Write
+tools require an absolute `file_path` and resolve it independently of any Bash shell's
+current directory — a prior `cd ../test-mutation-001` in a Bash call has **no effect** on
+where Edit writes. An agent that `cd`s into a worktree and then passes Edit the bare
+relative filename from Step 1 (e.g. `stripe_handler.py`) will silently edit that file in
+the main working tree instead. This is the exact failure mode this section exists to
+prevent.
+
+Always build the full absolute path yourself and pass that to Edit:
+
+```
+edit_target = f"{worktree_abs_path}/{file}"
+# e.g. /Users/x/projects/test-mutation-001/mlb_fantasy_jobs/dunning/stripe_handler.py
+```
+
+Use `edit_target` — never the bare `file` value from Step 1 — as the Edit tool's
+`file_path` argument. `cd` is fine for read-only verification commands, just not for Edit:
 
 ```bash
-cd ../test-mutation-001
-# Use Edit tool to apply mutation
-# Verify syntax: python -m py_compile {file_path}
-cd -
+# Verify syntax against the worktree copy, using its absolute path
+python -m py_compile "{worktree_abs_path}/{file}"
 ```
 
 **Critical**: One mutation per worktree. Never mix multiple mutations.
+
+**Mandatory post-mutation check**: immediately after every Edit call, confirm the main
+tree is still untouched before moving on:
+
+```bash
+git -C "$main_repo_root" status --short
+```
+
+This must print nothing related to `{file}`. If it does, the mutation landed in the wrong
+tree — stop immediately, restore the main tree with
+`git -C "$main_repo_root" checkout -- {file}`, and report the failure to the orchestrator
+instead of continuing to the next mutation.
 
 ### Step 4: Return Mutation Manifest
 
@@ -154,6 +192,7 @@ Return structured JSON for the orchestrator:
       "original": "retry_count >= 3",
       "mutated": "retry_count > 3",
       "worktree": "/Users/scott/projects/test-mutation-001",
+      "absolute_target_path": "/Users/scott/projects/test-mutation-001/mlb_fantasy_jobs/dunning/stripe_handler.py",
       "description": "Changed >= to > to test boundary condition handling",
       "expected_impact": "Tests with retry_count=3 should fail if tests are good"
     },
@@ -166,6 +205,7 @@ Return structured JSON for the orchestrator:
       "original": "return subscription.status",
       "mutated": "return None",
       "worktree": "/Users/scott/projects/test-mutation-002",
+      "absolute_target_path": "/Users/scott/projects/test-mutation-002/mlb_fantasy_jobs/dunning/stripe_handler.py",
       "description": "Return None to test if callers validate return value",
       "expected_impact": "Tests asserting return value should fail"
     }
@@ -173,9 +213,15 @@ Return structured JSON for the orchestrator:
   "total_mutations": 15,
   "files_mutated": ["mlb_fantasy_jobs/dunning/stripe_handler.py"],
   "mutation_strategy": "semantic",
-  "worktree_base": "/Users/scott/projects"
+  "worktree_base": "/Users/scott/projects",
+  "main_repo_root": "/Users/scott/projects/mlb_fantasy_jobs"
 }
 ```
+
+`worktree` and `absolute_target_path` are always absolute. `absolute_target_path` is
+exactly `worktree + "/" + file` — it is the value that was actually passed to Edit for
+this mutation. The orchestrator and test-executor must treat `file` as informational only
+(for display) and never re-derive a filesystem path from it without the `worktree` prefix.
 
 ## Example Invocation
 

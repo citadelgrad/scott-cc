@@ -401,6 +401,23 @@ Use AskUserQuestion to get approval before applying refactoring.
 - Always clean up worktrees after analysis (even on error)
 - Never mutate the main working tree
 
+**Mandatory main-tree integrity check (defense in depth)**: do this yourself as the
+orchestrator — do not rely solely on test-saboteur's own per-mutation check, since that
+check runs inside the sub-agent whose own instructions could be the thing that failed.
+
+1. Before Phase 1, run `git status --short` on the main repository (the directory you were
+   invoked in, i.e. `git rev-parse --show-toplevel`) and save the output as the baseline.
+2. After test-saboteur returns its manifest (end of Phase 1), re-run `git status --short`
+   on that same main repository path.
+3. If it differs from the baseline in any way, STOP. Do not launch any test-executor
+   agents. Report to the user exactly which files changed and that mutation-testing's
+   worktree isolation failed, then restore the main tree (`git checkout -- <file>` for
+   tracked files already known-good, or preserve via `git stash` if unsure) before doing
+   anything else.
+4. Repeat the same check after Phase 4 (refactor-specialist), since that agent also edits
+   files and must only ever touch the real test file the user approved, never anything
+   else.
+
 **User Approval Gates**:
 - ✅ Ask before deleting tests (even zombies)
 - ✅ Ask before applying refactoring
