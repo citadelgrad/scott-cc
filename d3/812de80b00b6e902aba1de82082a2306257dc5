@@ -1,0 +1,27 @@
+plugins/mutation-testing/agents/test-saboteur.md
+  s_ac329efa20149b::t_65337b1762537c 115-116,119-128,132-134,142-158,161-162,167-177
+  s_ac329efa20149b::t_a3c8f1f2935ba1 195,208,216-217,221-224
+  s_ac329efa20149b::t_ac69d9e0064196 178
+  s_ac329efa20149b::t_cb3ea4feecaf73 225
+plugins/mutation-testing/tests/verify-worktree-isolation.sh
+  s_ac329efa20149b::t_87f5d19a9f12d0 1-84,86-95
+  s_ac329efa20149b::t_ec20b5fd4c8752 85
+plugins/mutation-testing/agents/test-quality-reviewer.md
+  s_ac329efa20149b::t_e36320f5ba197f 404-420
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "d3812de80b00b6e902aba1de82082a2306257dc5",
+  "prompts": {},
+  "sessions": {
+    "s_ac329efa20149b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f254d660-2ab6-47d5-a0d0-e179a9e88fee",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
