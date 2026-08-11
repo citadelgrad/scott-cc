@@ -1,0 +1,21 @@
+.claude-plugin/plugin.json
+  s_e6ba0c8523e326::t_7dc1ac1fa09b1c 4
+.claude-plugin/marketplace.json
+  s_e6ba0c8523e326::t_1a9f0d4bfc0d81 16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "d1a0ef2aa5dc7748626b8a99e2c8b612801fd2cb",
+  "prompts": {},
+  "sessions": {
+    "s_e6ba0c8523e326": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a6c92c77-bb63-47f0-a283-c9ce8afd2f72",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
