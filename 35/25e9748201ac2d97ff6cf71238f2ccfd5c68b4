@@ -1,0 +1,28 @@
+.claude-plugin/marketplace.json
+  h_12ee2b2686c122 15-16
+.claude-plugin/plugin.json
+  h_12ee2b2686c122 3-4
+PUBLISHING.md
+  h_12ee2b2686c122 109
+QUICK-START.md
+  h_12ee2b2686c122 13-14
+README.md
+  h_12ee2b2686c122 3,16-17,39,65,80-82,119
+scripts/tests/test_verify_plugin.py
+  h_12ee2b2686c122 13,21-29
+skills.sh.json
+  h_12ee2b2686c122 68,70-71
+skills/emergent-behavior/SKILL.md
+  h_12ee2b2686c122 1-161
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "3525e9748201ac2d97ff6cf71238f2ccfd5c68b4",
+  "prompts": {},
+  "humans": {
+    "h_12ee2b2686c122": {
+      "author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
