@@ -65,9 +65,10 @@
     },
     {
       "title": "Systems Thinking",
-      "description": "Map, diagnose, and redesign complex systems using Donella Meadows' framework.",
+      "description": "Map complex systems and analyze behavior arising from component interactions.",
       "skills": [
-        "thinking-in-systems"
+        "thinking-in-systems",
+        "emergent-behavior"
       ]
     }
   ]

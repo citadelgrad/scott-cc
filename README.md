@@ -1,6 +1,6 @@
 # Scott's Claude Code Setup
 
-Modular Claude Code plugin suite for productive development. The core plugin provides **8 slash commands**, **8 specialized AI agents**, **27 skills**, **5 hooks**, and **2 stored templates that produce 3 project artifacts**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, multi-persona code review, and more.
+Modular Claude Code plugin suite for productive development. The core plugin provides **8 slash commands**, **7 specialized AI agents**, **28 skills**, **5 hooks**, and **2 stored templates that produce 3 project artifacts**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, multi-persona code review, and more.
 
 ## Quick Install
 
@@ -13,8 +13,8 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 | Type | Count | Names |
 |------|------:|-------|
 | Commands | 8 | `delegate-first`, `gha`, `handoff`, `security-cheatsheet`, `thermo-nuclear`, `google-standard`, `polyglot-idiom`, `concurrency-atomicity` |
-| Agents | 8 | `api-debugger`, `backend-architect`, `deep-research-agent`, `find-emergent-behavior`, `frontend-architect`, `refactoring-expert`, `requirements-analyst`, `system-architect` |
-| Skills | 24 | `init`, `acceptance-criteria`, `cli-design`, `delegate-first`, `grill-me`, `tdd`, `python-simplifier`, `typescript-simplifier`, `karpathy-guidelines`, `property-based-testing`, `verified-implementation`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory`, `thinking-in-systems`, `skillopt-sleep-learned`, `thermo-nuclear`, `google-standard`, `polyglot-idiom`, `concurrency-atomicity` |
+| Agents | 7 | `api-debugger`, `backend-architect`, `deep-research-agent`, `frontend-architect`, `refactoring-expert`, `requirements-analyst`, `system-architect` |
+| Skills | 28 | `init`, `acceptance-criteria`, `cli-design`, `delegate-first`, `grill-me`, `tdd`, `python-simplifier`, `typescript-simplifier`, `go-simplifier`, `rust-simplifier`, `swift-simplifier`, `karpathy-guidelines`, `property-based-testing`, `verified-implementation`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory`, `thinking-in-systems`, `emergent-behavior`, `skillopt-sleep-learned`, `thermo-nuclear`, `google-standard`, `polyglot-idiom`, `concurrency-atomicity` |
 | Hooks | 5 | `terminal-bell` (Stop), `toon-post-hook` (PostToolUse), `prefer-modern-tools` (PreToolUse), `data-layer-guard` (PreToolUse), `post-compaction` (SessionStart after compact/clear) |
 | Templates | 3 | `.pre-commit-config.yaml`, `CLAUDE.md`, `AGENTS.md` |
 | Sub-plugins | 9 | `beads-epic-builder`, `browser-automation`, `research-tools`, `security-suite`, `performance-optimization`, `mutation-testing`, `review-panel`, `variant-explorer`, `triage` |
@@ -36,7 +36,7 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 
 ---
 
-## Agents (8)
+## Agents (7)
 
 ### Engineering
 
@@ -52,7 +52,6 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 |-------|-------------|
 | `deep-research-agent` | Specialist for comprehensive research with adaptive strategies and intelligent exploration. |
 | `requirements-analyst` | Transform ambiguous project ideas into concrete specifications through systematic requirements discovery and structured analysis. |
-| `find-emergent-behavior` | Analyze codebases, documents, or systems to identify instances of emergence — behaviors, properties, or functions that arise from component interaction rather than being explicitly hard-coded. |
 
 ### Debugging & Quality
 
@@ -63,7 +62,7 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 
 ---
 
-## Skills (24)
+## Skills (28)
 
 ### Project Setup
 
@@ -78,6 +77,9 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 |-------|-------------|
 | `python-simplifier` | Simplifies and refines Python code for clarity, consistency, and maintainability. Applies KISS principles, Pythonic patterns, and framework best practices. Use when reviewing or refactoring Python code. |
 | `typescript-simplifier` | Simplifies and refines TypeScript/JavaScript code for clarity, consistency, and maintainability. Applies KISS principles, modern ES features, and framework best practices. Use when reviewing or refactoring TS/JS code. |
+| `go-simplifier` | Simplifies Go code using idiomatic error handling, interfaces, concurrency patterns, and standard-library conventions. |
+| `rust-simplifier` | Simplifies Rust code using idiomatic ownership, error handling, traits, iterators, and concurrency patterns. |
+| `swift-simplifier` | Simplifies Swift code using idiomatic optionals, protocols, value semantics, concurrency, and API design. |
 | `cli-design` | Design patterns and conventions for building agent-compatible CLI tools. Covers flag design, output formatting, exit codes, and composability with AI-driven workflows. |
 | `delegate-first` | Keep the parent conversation clean by forking noisy implementation, validation, and multi-file work to sub-agents. |
 | `grill-me` | Socratically stress-test requirements, architecture, edge cases, failure modes, and trade-offs before execution; emits a required risk matrix. |
@@ -114,6 +116,7 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 | Skill | Description |
 |-------|-------------|
 | `thinking-in-systems` | Apply Donella Meadows' systems thinking framework to map, diagnose, and redesign any system — organizational, technical, ecological, or policy. Covers stocks/flows, feedback loops, system archetypes, leverage points, and concrete intervention recommendations. Use with `--design` to build a new system, or `--focus map/archetypes/leverage` to run a partial analysis. |
+| `emergent-behavior` | Identify system-level behavior arising from component interactions, test whether it is genuinely emergent, seek disconfirming evidence, and recommend measurable interaction-level interventions. |
 
 ### Code Review
 

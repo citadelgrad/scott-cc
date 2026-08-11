@@ -106,7 +106,7 @@ Example post:
 ```
 Just published my Claude Code setup as a plugin!
 
-8 commands + 8 agents + 27 skills + beads epic builder for productive web development
+8 commands + 7 agents + 28 skills + beads epic builder for productive web development
 
 Install with:
 /plugin install citadelgrad/scott-cc

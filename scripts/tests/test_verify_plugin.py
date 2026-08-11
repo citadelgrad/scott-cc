@@ -10,11 +10,21 @@ from pathlib import Path
 import pytest
 
 SCRIPT_PATH = Path(__file__).resolve().parents[1] / "verify_plugin.py"
+REPO_ROOT = Path(__file__).resolve().parents[2]
 spec = importlib.util.spec_from_file_location("verify_plugin", SCRIPT_PATH)
 assert spec is not None and spec.loader is not None
 verify_plugin = importlib.util.module_from_spec(spec)
 sys.modules["verify_plugin"] = verify_plugin
 spec.loader.exec_module(verify_plugin)
+
+
+def test_emergent_behavior_is_a_skill_not_an_agent() -> None:
+    skill = REPO_ROOT / "skills" / "emergent-behavior" / "SKILL.md"
+    former_agent = REPO_ROOT / "agents" / "emergent-behavior.md"
+
+    assert skill.is_file()
+    assert "name: emergent-behavior" in skill.read_text()
+    assert not former_agent.exists()
 
 
 def write_contract(tmp_path: Path, *, marketplace_description: str) -> None:
