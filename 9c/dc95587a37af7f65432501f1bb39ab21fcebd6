@@ -1,0 +1,16 @@
+.claude-plugin/marketplace.json
+  h_12ee2b2686c122 16
+.claude-plugin/plugin.json
+  h_12ee2b2686c122 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "9cdc95587a37af7f65432501f1bb39ab21fcebd6",
+  "prompts": {},
+  "humans": {
+    "h_12ee2b2686c122": {
+      "author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
