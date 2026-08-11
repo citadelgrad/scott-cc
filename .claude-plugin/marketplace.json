@@ -90,7 +90,7 @@
       "name": "review-panel",
       "source": "./plugins/review-panel",
       "description": "Multi-persona adversarial code and design review panel, vendoring and adapting patterns from compound-engineering, clairvoyance, superpowers, ponytail, and mattpocock/skills",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "author": {
         "name": "Scott Nixon"
       },
