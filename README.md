@@ -1,12 +1,24 @@
-# Scott's Claude Code Setup
+# Scott's Agent Skills and Claude Code Setup
 
-Modular Claude Code plugin suite for productive development. The core plugin provides **8 slash commands**, **7 specialized AI agents**, **28 skills**, **5 hooks**, and **2 stored templates that produce 3 project artifacts**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, multi-persona code review, and more.
+Portable agent skills plus a modular Claude Code plugin suite for productive development. The core plugin provides **8 slash commands**, **7 specialized AI agents**, **28 skills**, **5 hooks**, and **2 stored templates that produce 3 project artifacts**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, multi-persona code review, and more.
 
 ## Quick Install
+
+Install selected skills for Codex, Hermes Agent, Claude Code, or another supported agent:
+
+```bash
+npx skills add citadelgrad/scott-cc
+```
+
+The interactive installer lets you choose individual skills and target agents. For exact non-interactive commands, paths, verification, and the skills-only boundary, see **[Install Skills with `npx skills`](docs/skills-cli.md)**.
+
+Install the complete Claude Code plugin, including agents, slash commands, and hooks:
 
 ```bash
 /plugin marketplace add citadelgrad/scott-cc
 ```
+
+`npx skills add` installs portable skills only. It does not install the Claude-specific agents, slash commands, hooks, or sub-plugin runtime wiring.
 
 ## At a Glance
 
@@ -108,7 +120,7 @@ Modular Claude Code plugin suite for productive development. The core plugin pro
 
 | Skill | Description |
 |-------|-------------|
-| `pas-pipeline` | Run, validate, and manage PAS (Pascal's Discrete Attractor) DOT-based AI pipelines. Covers `pas launch`, `pas run`, budget/step caps, checkpoint resumption, and common failure modes. |
+| `pas-pipeline` | Author, validate, and run PAS DOT pipelines across Codex, Claude Code, and Gemini. Detects authenticated subscription CLIs and current models, enforces the conditional-label contract, and covers bounded execution and checkpoint resumption. |
 | `reck-factory` | Manage the Reck software factory — register repos, run AI tasks in containers, schedule background pipelines, and monitor results via Loki/Grafana. |
 
 ### Systems Thinking
@@ -131,7 +143,7 @@ Each of these is runnable directly via its own slash command, and can also be in
 
 ---
 
-## Hooks (4)
+## Hooks (5)
 
 | Hook | Event | Description |
 |------|-------|-------------|
@@ -139,6 +151,7 @@ Each of these is runnable directly via its own slash command, and can also be in
 | `toon-post-hook` | `PostToolUse` | Encodes large tool responses to TOON format (a compact alternative to JSON) before they enter the context window. Reduces token consumption on verbose MCP and built-in tool outputs. No-op if `toon` is not installed. |
 | `prefer-modern-tools` | `PreToolUse` | Rewrites legacy CLI commands to faster modern equivalents at runtime: `grep`/`egrep` → `rg`, `cat` → `bat --style=plain --paging=never`, `ls` → `lsd`, `ps aux`/`ps -ef` → `procs`. Safe near-drop-ins only — tools with incompatible flag syntax (`fd`, `dust`, `choose`) are excluded and documented in CLAUDE.md for native use. |
 | `data-layer-guard` | `PreToolUse` | Warns and asks for confirmation before an Edit/Write/NotebookEdit touches a data-layer path (migrations, schemas, ORM models — default globs overridable via `.data-guard.json`) without a same-day `DATA-MODEL.md` change-log entry. Interactive/planning-time only: silently no-ops in unattended contexts (`--dangerously-skip-permissions`/`mode:agent`), deferring to the data-steward review seat for unattended enforcement. |
+| `post-compaction` | `SessionStart` (`compact`, `clear`) | Restores the active plan and compact recovery context after Claude Code compacts or clears a session. |
 
 > **Hooks only run when this repo is installed as a plugin.** The hook wiring lives in [`hooks/hooks.json`](hooks/hooks.json), which Claude Code loads and expands `${CLAUDE_PLUGIN_ROOT}` from automatically — but only for plugins installed via `/plugin marketplace add` (or `/plugin install`). The root [`.claude/settings.json`](.claude/settings.json) in this repo ships `"hooks": {}` on purpose: it is the config Claude Code reads if you just `git clone` this repo and open it as a plain project, and `${CLAUDE_PLUGIN_ROOT}` has no meaning there.
 >
@@ -430,9 +443,10 @@ This plugin is one layer of a three-layer setup system:
 
 | Layer | What | How |
 |-------|------|-----|
-| 1 — Machine | Ansible `ai-tools` role | `./bootstrap.sh` in macOS-config — clones this repo, symlinks skills into Hermes/Codex, installs tools, deploys security configs |
-| 2 — Plugin | This repo (`scott-cc`) | `/plugin marketplace add citadelgrad/scott-cc` in Claude Code |
-| 3 — Project | `/init` skill | Run per-project to scaffold `CLAUDE.md`, `AGENTS.md`, `.envrc`, `Makefile`, pre-commit hooks |
+| 1 — Machine | Ansible `ai-tools` role | `./bootstrap.sh` in macOS-config — clones this repo, installs tools, deploys security configs |
+| 2 — Portable skills | This repo (`scott-cc`) | `npx skills add citadelgrad/scott-cc` — select skills and Codex, Hermes Agent, Claude Code, or other targets |
+| 3 — Claude plugin | This repo (`scott-cc`) | `/plugin marketplace add citadelgrad/scott-cc` in Claude Code |
+| 4 — Project | `/init` skill | Run per-project to scaffold `CLAUDE.md`, `AGENTS.md`, `.envrc`, `Makefile`, pre-commit hooks |
 
 Full bootstrap instructions and Ansible configuration: **[citadelgrad/macOS-config](https://github.com/citadelgrad/macOS-config)**
 
@@ -462,7 +476,27 @@ All code follows these principles (enforced by simplifier skills):
 
 ## Installation
 
-### From Plugins Marketplace (Recommended)
+### Portable Skills for Codex, Hermes Agent, and Other Agents
+
+```bash
+npx skills add citadelgrad/scott-cc
+```
+
+For a scripted global install into both Codex and Hermes Agent:
+
+```bash
+npx skills add citadelgrad/scott-cc \
+  --skill acceptance-criteria \
+  --skill tdd \
+  --agent codex \
+  --agent hermes-agent \
+  --global \
+  --yes
+```
+
+See [docs/skills-cli.md](docs/skills-cli.md) for the complete guide.
+
+### Complete Claude Code Plugin
 
 ```bash
 /plugin marketplace add citadelgrad/scott-cc

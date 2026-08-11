@@ -1,4 +1,4 @@
-# Publishing Guide: Scott's Claude Code Plugin
+# Publishing Guide: Scott's Agent Skills and Claude Code Plugin
 
 Complete step-by-step instructions for publishing your Claude Code plugin to GitHub and making it available for others to install.
 
@@ -48,7 +48,7 @@ Test that your plugin can be installed:
 /plugin install citadelgrad/scott-cc
 
 # Verify commands are available (note: commands are namespaced)
-/scott-cc:new-task
+/scott-cc:handoff
 
 # Verify agents are available (they'll activate automatically based on context)
 ```
@@ -56,6 +56,41 @@ Test that your plugin can be installed:
 To uninstall and test again:
 ```bash
 /plugin uninstall scott-cc
+```
+
+### 2.1 Verify cross-agent skills distribution
+
+The same public repository is also a source for the Vercel `skills` CLI. This path installs portable skills, not Claude-specific agents, slash commands, hooks, or sub-plugin wiring.
+
+```bash
+# Static manifest, metadata, grouping, and documentation contract
+uv run python scripts/verify_skills_distribution.py
+
+# Public default-branch discovery
+npx --yes skills@latest add citadelgrad/scott-cc --list
+```
+
+Before publishing, test a local working-tree install without touching real agent configuration:
+
+```bash
+tmp_home="$(mktemp -d)"
+mkdir -p "$tmp_home/.codex" "$tmp_home/.hermes"
+HOME="$tmp_home" CODEX_HOME="$tmp_home/.codex" HERMES_HOME="$tmp_home/.hermes" \
+  npx --yes skills@latest add . \
+  --skill acceptance-criteria \
+  --agent codex \
+  --agent hermes-agent \
+  --global \
+  --yes
+test -f "$tmp_home/.agents/skills/acceptance-criteria/SKILL.md"
+test -f "$tmp_home/.hermes/skills/acceptance-criteria/SKILL.md"
+rm -r -- "$tmp_home"
+```
+
+The interactive user entry point remains deliberately short:
+
+```bash
+npx skills add citadelgrad/scott-cc
 ```
 
 ## Step 3: Share Your Plugin
@@ -134,6 +169,7 @@ cd /path/to/scott-cc
 
 # Make your changes to commands/, hooks/, agents/, skills/, etc.
 python3 scripts/verify_plugin.py
+python3 scripts/verify_skills_distribution.py
 
 # Commit your functional changes
 git add .
@@ -144,6 +180,7 @@ git commit -m "Add new command: scott-cc:new-command-name"
 #   .claude-plugin/plugin.json
 #   .claude-plugin/marketplace.json
 python3 scripts/verify_plugin.py
+python3 scripts/verify_skills_distribution.py
 
 git add .claude-plugin/plugin.json .claude-plugin/marketplace.json scripts/verify_plugin.py
 # include any new/changed hook files too, e.g. hooks/toon_post_hook.sh
@@ -157,6 +194,12 @@ What `scripts/verify_plugin.py` checks:
 - `.claude-plugin/marketplace.json` parses
 - root plugin version matches in both files
 - every `${CLAUDE_PLUGIN_ROOT}/...` file referenced from `hooks/hooks.json` actually exists in the repo
+
+What `scripts/verify_skills_distribution.py` checks:
+- `skills.sh.json` parses and uses the expected schema
+- every core skill is grouped exactly once and points to a real skill directory
+- each core `SKILL.md` has matching `name` metadata and a description
+- README, quick-start, and detailed docs retain the interactive command plus the `codex` and `hermes-agent` target IDs
 
 Users can update to the latest version:
 ```bash

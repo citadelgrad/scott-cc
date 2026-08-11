@@ -1,0 +1,45 @@
+digraph CodexFeaturePipeline {
+    label="Codex feature pipeline"
+    goal="Implement one bounded change and verify it before completion"
+
+    start [shape="Mdiamond", label="Start"]
+    done  [shape="Msquare", label="Done"]
+
+    investigate [
+        shape="box"
+        label="Investigate"
+        llm_provider="codex"
+        timeout=600s
+        prompt="Read the task and relevant code. Record a concrete implementation plan in .pas/investigation.md. Do not modify product code."
+    ]
+
+    implement [
+        shape="box"
+        label="Implement"
+        llm_provider="codex"
+        timeout=900s
+        prompt="Read .pas/investigation.md and implement the bounded change. Run the relevant focused tests."
+    ]
+
+    verify [
+        shape="diamond"
+        label="Verify"
+        node_type="conditional"
+        llm_provider="codex"
+        timeout=600s
+        prompt="Review the diff and test results against the task. End with exactly PASS or FAIL on its own final line."
+    ]
+
+    fixup [
+        shape="box"
+        label="Fix Issues"
+        llm_provider="codex"
+        timeout=900s
+        prompt="Fix the issues found by verification, then rerun the focused tests."
+    ]
+
+    start -> investigate -> implement -> verify
+    verify -> done  [label="PASS", condition="preferred_label=PASS"]
+    verify -> fixup [label="FAIL", condition="preferred_label=FAIL"]
+    fixup -> verify [loop_restart=true]
+}

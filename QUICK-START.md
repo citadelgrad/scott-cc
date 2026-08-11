@@ -2,9 +2,35 @@
 
 ## Install
 
+### Skills for Codex, Hermes Agent, Claude Code, and others
+
+```bash
+npx skills add citadelgrad/scott-cc
+```
+
+Use Space to select skills, then choose target agents such as Codex and Hermes Agent. Their automation IDs are `codex` and `hermes-agent`.
+
+For a non-interactive global install into both:
+
+```bash
+npx skills add citadelgrad/scott-cc \
+  --skill acceptance-criteria \
+  --skill tdd \
+  --agent codex \
+  --agent hermes-agent \
+  --global \
+  --yes
+```
+
+This route installs skills only. See [docs/skills-cli.md](docs/skills-cli.md) for all options, locations, verification, and removal.
+
+### Complete Claude Code plugin
+
 ```bash
 /plugin marketplace add citadelgrad/scott-cc
 ```
+
+Use the plugin route when you also want Claude-specific agents, slash commands, hooks, and sub-plugins.
 
 ## What You Get
 
@@ -49,7 +75,7 @@
 
 ## Hooks Need a Real Plugin Install
 
-The 4 hooks (`terminal-bell`, `toon-post-hook`, `prefer-modern-tools`, `data-layer-guard`) only activate when Claude Code loads this repo as an installed plugin — that's what makes `${CLAUDE_PLUGIN_ROOT}` resolve in `hooks/hooks.json`. If you `git clone` this repo instead of installing it via `/plugin marketplace add`, the shipped `.claude/settings.json` has `"hooks": {}` and none of them run — including `data-layer-guard`, so nothing warns you before an Edit/Write touches a migration or schema file. See the note in [README.md](README.md#hooks-4) for how to wire hooks up manually from a plain clone.
+The 5 hooks (`terminal-bell`, `toon-post-hook`, `prefer-modern-tools`, `data-layer-guard`, `post-compaction`) only activate when Claude Code loads this repo as an installed plugin — that's what makes `${CLAUDE_PLUGIN_ROOT}` resolve in `hooks/hooks.json`. Installing through `npx skills`, or cloning the repo without plugin wiring, does not activate them. See the note in [README.md](README.md#hooks-5) for how to wire hooks up manually from a plain clone.
 
 ## Links
 

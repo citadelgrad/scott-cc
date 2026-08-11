@@ -1,14 +1,15 @@
 # Setup Architecture
 
-This plugin is one layer of a three-layer setup system. Full machine bootstrap and configuration details live in the companion repo: **[citadelgrad/macOS-config](https://github.com/citadelgrad/macOS-config)**.
+This repository participates in a four-layer setup system. Full machine bootstrap and configuration details live in the companion repo: **[citadelgrad/macOS-config](https://github.com/citadelgrad/macOS-config)**.
 
-## The Three Layers
+## The Four Layers
 
 | Layer | What | How |
 |-------|------|-----|
-| 1 — Machine | Ansible `ai-tools` role | `./bootstrap.sh` in macOS-config — clones this repo, symlinks skills into Hermes/Codex, installs tools, deploys security configs |
-| 2 — Plugin | This repo (scott-cc) | `/plugin marketplace add citadelgrad/scott-cc` in Claude Code |
-| 3 — Project | `/init` skill | Run per-project to scaffold CLAUDE.md, AGENTS.md, .envrc, Makefile, pre-commit hooks |
+| 1 — Machine | Ansible `ai-tools` role | `./bootstrap.sh` in macOS-config — clones this repo, installs tools, deploys security configs |
+| 2 — Portable skills | This repo (scott-cc) | `npx skills add citadelgrad/scott-cc` — select skills for Codex, Hermes Agent, Claude Code, or other agents |
+| 3 — Claude plugin | This repo (scott-cc) | `/plugin marketplace add citadelgrad/scott-cc` in Claude Code |
+| 4 — Project | `/init` skill | Run per-project to scaffold CLAUDE.md, AGENTS.md, .envrc, Makefile, pre-commit hooks |
 
 ## Where This Plugin Fits
 
@@ -26,12 +27,15 @@ flowchart TB
     codex[Codex]:::external
 
     scott -->|bootstrap.sh| ansible
-    ansible -->|clones + symlinks skills| plugin
+    ansible -->|clones + configures tools| plugin
+    scott -->|npx skills add| plugin
     scott -->|/plugin marketplace add| plugin
     plugin -->|skills, agents, commands| cc
-    plugin -->|skills via symlinks| hermes
-    plugin -->|skills via symlinks| codex
+    plugin -->|portable skills| hermes
+    plugin -->|portable skills| codex
 ```
+
+The portable path installs only `SKILL.md` packages. Claude-specific agents, commands, hooks, and sub-plugin wiring require the Claude plugin path. See [skills-cli.md](skills-cli.md).
 
 ## Project Init Sequence
 

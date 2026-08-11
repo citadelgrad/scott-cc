@@ -20,10 +20,13 @@
     },
     {
       "title": "Code Quality",
-      "description": "Simplify, test, and enforce coding standards across Python and TypeScript.",
+      "description": "Simplify, test, and enforce coding standards across supported languages.",
       "skills": [
         "python-simplifier",
         "typescript-simplifier",
+        "go-simplifier",
+        "rust-simplifier",
+        "swift-simplifier",
         "tdd",
         "property-based-testing",
         "karpathy-guidelines",
@@ -32,9 +35,13 @@
     },
     {
       "title": "Planning & Review",
-      "description": "Stress-test proposals and gate implementation behind explicit decisions.",
+      "description": "Stress-test proposals and review changes through focused quality lenses.",
       "skills": [
-        "grill-me"
+        "grill-me",
+        "thermo-nuclear",
+        "google-standard",
+        "polyglot-idiom",
+        "concurrency-atomicity"
       ]
     },
     {

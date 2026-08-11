@@ -60,6 +60,12 @@ repos:
         language: system
         pass_filenames: false
         files: ^(?:\.claude-plugin/.*\.json|plugins/.*/\.claude-plugin/plugin\.json|hooks/hooks\.json|scripts/verify_plugin\.py)$
+      - id: skills-distribution-contract
+        name: skills CLI distribution contract
+        entry: python3 scripts/verify_skills_distribution.py
+        language: system
+        pass_filenames: false
+        files: ^(?:skills\.sh\.json|skills/.*/SKILL\.md|README\.md|QUICK-START\.md|docs/skills-cli\.md|scripts/verify_skills_distribution\.py)$
       - id: skill-xref-check
         name: review-panel skill cross-reference check
         entry: python3 hooks/skill_xref_check.py
