@@ -1,0 +1,19 @@
+QUICK-START.md
+  s_1df3aae75067be::t_823ee066790f1b 5-28,33-34,78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "b21c38614d80984aa0717a2e7cb34f40f3953008",
+  "prompts": {},
+  "sessions": {
+    "s_1df3aae75067be": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fef5a-f142-71d0-88e9-c4fa063ed867",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
