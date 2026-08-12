@@ -1,0 +1,24 @@
+.claude-plugin/marketplace.json
+  h_12ee2b2686c122 16
+.claude-plugin/plugin.json
+  h_12ee2b2686c122 4
+scripts/tests/test_pas_skill.py
+  h_12ee2b2686c122 22-26,28-58,65-71
+skills/pas-pipeline/SKILL.md
+  h_12ee2b2686c122 4-5,9,14-16,18,20-23,25,29-75,78-136,139-141,144,146,148-171
+skills/pas-pipeline/assets/codex-pipeline.dot
+  h_12ee2b2686c122 3,13,21,24-34,36,40,48,51-56
+skills/pas-pipeline/references/provider-and-dot-authoring.md
+  h_12ee2b2686c122 1,3-4,6,8,16-22,24-27,29,31-32,34-36,38-39,41-43,45,47,49-58,60-62,64,66-69,71,74-82,85-87,89,91-103,105,110-111,114-123,125-155,158-162,165-184,186-191,193,195-196,198-200
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "325f497b7233722fa62852f08d8e2840fd0fa192",
+  "prompts": {},
+  "humans": {
+    "h_12ee2b2686c122": {
+      "author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
