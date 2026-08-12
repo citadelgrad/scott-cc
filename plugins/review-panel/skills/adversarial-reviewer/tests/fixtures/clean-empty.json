@@ -1,0 +1,130 @@
+{
+  "audit": {
+    "generated_candidates": 0,
+    "raw_finding_count_reward": 0,
+    "rejected_candidates": 0
+  },
+  "diagnostics": [],
+  "findings": [],
+  "outcome": "completed",
+  "residual_risks": [
+    {
+      "blocking": false,
+      "description": "Live service behavior was outside scope.",
+      "evidence_status": "hypothesis",
+      "id": "risk-1"
+    }
+  ],
+  "run": {
+    "base_sha": "1111111111111111111111111111111111111111",
+    "head_sha": "2222222222222222222222222222222222222222",
+    "limitations": [],
+    "model": {
+      "name": "frozen",
+      "provider": "fixture",
+      "version": "1"
+    },
+    "prompt": {
+      "name": "adversarial-reviewer",
+      "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "version": "1.0.0"
+    },
+    "repository": "https://example.invalid/repo",
+    "reviewed_paths": [
+      "src/token.py"
+    ],
+    "target": {
+      "content_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "kind": "git_diff"
+    },
+    "tools": [
+      {
+        "name": "pytest",
+        "version": "fixture"
+      }
+    ]
+  },
+  "schema_version": "1.0.0",
+  "scope": {
+    "bugs": {
+      "status": "examined"
+    },
+    "existing_findings": {
+      "reason": "No prior findings supplied.",
+      "status": "not_applicable"
+    },
+    "hostile_input": {
+      "status": "examined"
+    },
+    "security": {
+      "status": "examined"
+    }
+  },
+  "threat_model": {
+    "abuse_cases": [
+      "malformed token"
+    ],
+    "actors": [
+      "remote caller"
+    ],
+    "applicability": "applicable",
+    "assets": [
+      "request integrity"
+    ],
+    "deployment_assumptions": [
+      "isolated test environment"
+    ],
+    "entry_points": [
+      "API"
+    ],
+    "out_of_scope": [],
+    "privileges": [
+      "untrusted"
+    ],
+    "security_objectives": [
+      "fail safely"
+    ],
+    "taxonomy": [
+      {
+        "class": "authorization",
+        "status": "examined"
+      },
+      {
+        "class": "injection",
+        "status": "examined"
+      },
+      {
+        "class": "paths_files",
+        "reason": "Not relevant to this fixture.",
+        "status": "not_applicable"
+      },
+      {
+        "class": "secrets",
+        "status": "examined"
+      },
+      {
+        "class": "deserialization",
+        "reason": "Not relevant to this fixture.",
+        "status": "not_applicable"
+      },
+      {
+        "class": "ssrf",
+        "reason": "Not relevant to this fixture.",
+        "status": "not_applicable"
+      },
+      {
+        "class": "resource_exhaustion",
+        "status": "examined"
+      },
+      {
+        "class": "races_state",
+        "status": "examined"
+      }
+    ],
+    "trust_boundaries": [
+      "HTTP to application"
+    ],
+    "unknowns": []
+  },
+  "verdict": "ready"
+}

@@ -1,6 +1,6 @@
 # Scott's Agent Skills and Claude Code Setup
 
-Portable agent skills plus a modular Claude Code plugin suite for productive development. The core plugin provides **8 slash commands**, **7 specialized AI agents**, **28 skills**, **5 hooks**, and **2 stored templates that produce 3 project artifacts**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, multi-persona code review, and more.
+Portable agent skills plus a modular Claude Code plugin suite for productive development. The core plugin provides **8 slash commands**, **7 specialized AI agents**, **29 skills**, **5 hooks**, and **2 stored templates that produce 3 project artifacts**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, multi-persona code review, and more.
 
 ## Quick Install
 
@@ -26,7 +26,7 @@ Install the complete Claude Code plugin, including agents, slash commands, and h
 |------|------:|-------|
 | Commands | 8 | `delegate-first`, `gha`, `handoff`, `security-cheatsheet`, `thermo-nuclear`, `google-standard`, `polyglot-idiom`, `concurrency-atomicity` |
 | Agents | 7 | `api-debugger`, `backend-architect`, `deep-research-agent`, `frontend-architect`, `refactoring-expert`, `requirements-analyst`, `system-architect` |
-| Skills | 28 | `init`, `acceptance-criteria`, `cli-design`, `delegate-first`, `grill-me`, `tdd`, `python-simplifier`, `typescript-simplifier`, `go-simplifier`, `rust-simplifier`, `swift-simplifier`, `karpathy-guidelines`, `property-based-testing`, `verified-implementation`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory`, `thinking-in-systems`, `emergent-behavior`, `skillopt-sleep-learned`, `thermo-nuclear`, `google-standard`, `polyglot-idiom`, `concurrency-atomicity` |
+| Skills | 29 | `init`, `acceptance-criteria`, `cli-design`, `delegate-first`, `grill-me`, `adversarial-reviewer`, `tdd`, `python-simplifier`, `typescript-simplifier`, `go-simplifier`, `rust-simplifier`, `swift-simplifier`, `karpathy-guidelines`, `property-based-testing`, `verified-implementation`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory`, `thinking-in-systems`, `emergent-behavior`, `skillopt-sleep-learned`, `thermo-nuclear`, `google-standard`, `polyglot-idiom`, `concurrency-atomicity` |
 | Hooks | 5 | `terminal-bell` (Stop), `toon-post-hook` (PostToolUse), `prefer-modern-tools` (PreToolUse), `data-layer-guard` (PreToolUse), `post-compaction` (SessionStart after compact/clear) |
 | Templates | 3 | `.pre-commit-config.yaml`, `CLAUDE.md`, `AGENTS.md` |
 | Sub-plugins | 9 | `beads-epic-builder`, `browser-automation`, `research-tools`, `security-suite`, `performance-optimization`, `mutation-testing`, `review-panel`, `variant-explorer`, `triage` |
@@ -74,7 +74,7 @@ Install the complete Claude Code plugin, including agents, slash commands, and h
 
 ---
 
-## Skills (28)
+## Skills (29)
 
 ### Project Setup
 
@@ -95,6 +95,7 @@ Install the complete Claude Code plugin, including agents, slash commands, and h
 | `cli-design` | Design patterns and conventions for building agent-compatible CLI tools. Covers flag design, output formatting, exit codes, and composability with AI-driven workflows. |
 | `delegate-first` | Keep the parent conversation clean by forking noisy implementation, validation, and multi-file work to sub-agents. |
 | `grill-me` | Socratically stress-test requirements, architecture, edge cases, failure modes, and trade-offs before execution; emits a required risk matrix. |
+| [`adversarial-reviewer`](skills/adversarial-reviewer/README.md) | Evidence-based falsification review: validate candidate defects against known controls, separate evidence from severity, and fail closed on unsupported or stale claims. |
 | `tdd` | Enforce observed Red → Green → Refactor vertical slices and hand surviving behaviors to the mutation-testing sub-plugin. |
 | `karpathy-guidelines` | Behavioral guidelines to reduce common LLM coding mistakes. Helps avoid overcomplication, make surgical changes, surface assumptions, and define verifiable success criteria. |
 | `property-based-testing` | Use when implementing serialization/parsing, data transformations, algorithms with mathematical properties, API contracts, or state machines where testing all edge cases is impractical. Describe invariants instead of specific input/output pairs. |

@@ -24,6 +24,28 @@ COMPONENTS = (
     Component("plugins/review-panel/skills/review-panel/SKILL.md", "review-panel"),
     Component("plugins/review-panel/reviewers/persona-catalog.md"),
     Component("plugins/review-panel/contracts/reviewer-output.md"),
+    Component(
+        "plugins/review-panel/skills/adversarial-reviewer/references/agent-contract.md"
+    ),
+    Component(
+        "plugins/review-panel/skills/adversarial-reviewer/references/clean-room-protocol.md"
+    ),
+    Component(
+        "plugins/review-panel/skills/adversarial-reviewer/references/control-backed-findings.md"
+    ),
+    Component(
+        "plugins/review-panel/skills/adversarial-reviewer/references/threat-model-taxonomy.md"
+    ),
+    Component(
+        "plugins/review-panel/skills/adversarial-reviewer/references/benchmark-methodology.md"
+    ),
+    Component(
+        "plugins/review-panel/skills/adversarial-reviewer/schemas/adversarial-report-v1.schema.json"
+    ),
+    Component(
+        "plugins/review-panel/skills/adversarial-reviewer/scripts/adversarial_contract.py"
+    ),
+    Component("plugins/review-panel/skills/adversarial-reviewer/benchmark/corpus.json"),
     Component("plugins/review-panel/scripts/review-package"),
     Component("plugins/review-panel/scripts/workspace"),
     *(

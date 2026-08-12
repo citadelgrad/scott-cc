@@ -96,9 +96,9 @@ the risk of missing what they catch, and each covers a review angle none of the 
 - **Model tier:** Top-tier. This seat's entire value is finding the bug, exploit, or hostile-input
   failure other reviewers miss, and (per its Scope item 4) attacking prior findings for false
   confidence — both require adversarial rigor a weaker model is less reliable at.
-- **Notes:** Uses the `clean-room-alternative` blind-subagent isolation pattern internally when
+- **Notes:** Uses the adversarial reviewer's two-phase clean-room protocol internally when
   attacking existing findings, so it does not anchor to a prior reviewer's framing. See its own
-  SKILL.md "Independence via clean-room-alternative" section.
+  `references/clean-room-protocol.md` two-phase isolation contract.
 
 ### Simplicity
 

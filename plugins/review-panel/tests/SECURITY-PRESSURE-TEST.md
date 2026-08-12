@@ -230,7 +230,7 @@ Section 5, where this is exactly the fallback path that fires.
 > blocks merge, and together they compound into a complete auth/data-access bypass.
 
 *(Live dispatch: `subagent_type: general-purpose`, 25 tool uses, 112.9s, ~45.5k tokens. Per this
-skill's own "Independence via clean-room-alternative" mechanism, this seat internally ran its own
+skill's own `references/clean-room-protocol.md` mechanism, this seat internally ran its own
 blind first-read subagent before synthesizing the above — an internal sub-dispatch, which
 `references/merge-and-validate.md`'s Step 3 explicitly says does NOT count as a second independent
 seat for the 2+-agreement bump; it's treated as one seat's raw output below.)*

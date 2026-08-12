@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import sys
 from pathlib import Path
 from typing import cast
@@ -144,6 +145,25 @@ def validate(root: Path = ROOT) -> list[str]:
         if missing:
             errors.append(
                 f"{doc_path.relative_to(root)} is missing: {', '.join(missing)}"
+            )
+
+    plugin_adversarial = root / "plugins/review-panel/skills/adversarial-reviewer"
+    portable_adversarial = root / "skills/adversarial-reviewer"
+    if plugin_adversarial.is_dir() and portable_adversarial.is_dir():
+
+        def tree_hash(path: Path) -> str:
+            digest = hashlib.sha256()
+            for file_path in sorted(item for item in path.rglob("*") if item.is_file()):
+                if "__pycache__" in file_path.parts or file_path.suffix == ".pyc":
+                    continue
+                digest.update(str(file_path.relative_to(path)).encode())
+                digest.update(file_path.read_bytes())
+            return digest.hexdigest()
+
+        if tree_hash(plugin_adversarial) != tree_hash(portable_adversarial):
+            errors.append(
+                "portable adversarial-reviewer drift: skills/adversarial-reviewer "
+                "must match the review-panel plugin source"
             )
 
     return errors

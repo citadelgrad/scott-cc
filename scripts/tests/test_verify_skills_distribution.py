@@ -90,3 +90,19 @@ def test_installation_docs_are_required(tmp_path: Path) -> None:
     errors = verify.validate(tmp_path)
 
     assert any(error.startswith("README.md is missing:") for error in errors)
+
+
+def test_portable_adversarial_reviewer_must_match_plugin_source(tmp_path: Path) -> None:
+    write_repo(tmp_path)
+    plugin_skill = (
+        tmp_path / "plugins/review-panel/skills/adversarial-reviewer" / "SKILL.md"
+    )
+    plugin_skill.parent.mkdir(parents=True)
+    plugin_skill.write_text("canonical\n", encoding="utf-8")
+    portable_skill = tmp_path / "skills/adversarial-reviewer/SKILL.md"
+    portable_skill.parent.mkdir(parents=True)
+    portable_skill.write_text("drifted\n", encoding="utf-8")
+
+    errors = verify.validate(tmp_path)
+
+    assert any("portable adversarial-reviewer drift" in error for error in errors)
