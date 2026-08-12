@@ -1,0 +1,128 @@
+.claude-plugin/marketplace.json
+  h_12ee2b2686c122 15-16,93
+.claude-plugin/plugin.json
+  h_12ee2b2686c122 3-4
+PUBLISHING.md
+  h_12ee2b2686c122 144
+QUICK-START.md
+  h_12ee2b2686c122 40
+README.md
+  h_12ee2b2686c122 3,29,77,98
+plugins/review-panel/.claude-plugin/plugin.json
+  h_12ee2b2686c122 4
+plugins/review-panel/reviewers/persona-catalog.md
+  h_12ee2b2686c122 99,101
+plugins/review-panel/skills/adversarial-reviewer/README.md
+  h_12ee2b2686c122 1-137
+plugins/review-panel/skills/adversarial-reviewer/SKILL.md
+  h_12ee2b2686c122 3-5,8,13,15,17,19-26,28,30-33,35,37,39,41,43,45-51,53,55,57-60,62,64,66,68,70
+plugins/review-panel/skills/adversarial-reviewer/benchmark/baseline-metrics.json
+  h_12ee2b2686c122 1-18
+plugins/review-panel/skills/adversarial-reviewer/benchmark/baseline-results.json
+  h_12ee2b2686c122 1-488
+plugins/review-panel/skills/adversarial-reviewer/benchmark/corpus.json
+  h_12ee2b2686c122 1-502
+plugins/review-panel/skills/adversarial-reviewer/benchmark/noisy-results.json
+  h_12ee2b2686c122 1-488
+plugins/review-panel/skills/adversarial-reviewer/references/agent-contract.md
+  h_12ee2b2686c122 1-58
+plugins/review-panel/skills/adversarial-reviewer/references/benchmark-methodology.md
+  h_12ee2b2686c122 1-23
+plugins/review-panel/skills/adversarial-reviewer/references/clean-room-protocol.md
+  h_12ee2b2686c122 1-35
+plugins/review-panel/skills/adversarial-reviewer/references/control-backed-findings.md
+  h_12ee2b2686c122 1-59
+plugins/review-panel/skills/adversarial-reviewer/references/threat-model-taxonomy.md
+  h_12ee2b2686c122 1-20
+plugins/review-panel/skills/adversarial-reviewer/schemas/adversarial-report-v1.schema.json
+  h_12ee2b2686c122 1-838
+plugins/review-panel/skills/adversarial-reviewer/scripts/adversarial_contract.py
+  h_12ee2b2686c122 1-683
+plugins/review-panel/skills/adversarial-reviewer/tests/fixtures/agent-tool-threat-model.json
+  h_12ee2b2686c122 1-146
+plugins/review-panel/skills/adversarial-reviewer/tests/fixtures/clean-empty.json
+  h_12ee2b2686c122 1-130
+plugins/review-panel/skills/adversarial-reviewer/tests/fixtures/clean-room-handoff.json
+  h_12ee2b2686c122 1-36
+plugins/review-panel/skills/adversarial-reviewer/tests/fixtures/introduced-regression.json
+  h_12ee2b2686c122 1-186
+plugins/review-panel/skills/adversarial-reviewer/tests/fixtures/known-good-sibling.json
+  h_12ee2b2686c122 1-186
+plugins/review-panel/skills/adversarial-reviewer/tests/fixtures/known-vulnerable-pair.json
+  h_12ee2b2686c122 1-186
+plugins/review-panel/skills/adversarial-reviewer/tests/fixtures/missing-credentials.json
+  h_12ee2b2686c122 1-186
+plugins/review-panel/skills/adversarial-reviewer/tests/fixtures/pre-existing-defect.json
+  h_12ee2b2686c122 1-186
+plugins/review-panel/skills/adversarial-reviewer/tests/fixtures/rejected-sql-injection.json
+  h_12ee2b2686c122 1-123
+plugins/review-panel/skills/review-panel/references/merge-and-validate.md
+  h_12ee2b2686c122 74-77,216-222
+plugins/review-panel/tests/SECURITY-PRESSURE-TEST.md
+  h_12ee2b2686c122 233
+scripts/tests/test_adversarial_reviewer_contract.py
+  h_12ee2b2686c122 1-417
+scripts/tests/test_verify_skills_distribution.py
+  h_12ee2b2686c122 93-108
+scripts/verify_orchestration_contracts.py
+  h_12ee2b2686c122 27-48
+scripts/verify_skills_distribution.py
+  h_12ee2b2686c122 7,150-168
+skills.sh.json
+  h_12ee2b2686c122 41
+skills/adversarial-reviewer/README.md
+  h_12ee2b2686c122 1-137
+skills/adversarial-reviewer/SKILL.md
+  h_12ee2b2686c122 1-70
+skills/adversarial-reviewer/benchmark/baseline-metrics.json
+  h_12ee2b2686c122 1-18
+skills/adversarial-reviewer/benchmark/baseline-results.json
+  h_12ee2b2686c122 1-488
+skills/adversarial-reviewer/benchmark/corpus.json
+  h_12ee2b2686c122 1-502
+skills/adversarial-reviewer/benchmark/noisy-results.json
+  h_12ee2b2686c122 1-488
+skills/adversarial-reviewer/references/agent-contract.md
+  h_12ee2b2686c122 1-58
+skills/adversarial-reviewer/references/benchmark-methodology.md
+  h_12ee2b2686c122 1-23
+skills/adversarial-reviewer/references/clean-room-protocol.md
+  h_12ee2b2686c122 1-35
+skills/adversarial-reviewer/references/control-backed-findings.md
+  h_12ee2b2686c122 1-59
+skills/adversarial-reviewer/references/threat-model-taxonomy.md
+  h_12ee2b2686c122 1-20
+skills/adversarial-reviewer/schemas/adversarial-report-v1.schema.json
+  h_12ee2b2686c122 1-838
+skills/adversarial-reviewer/scripts/adversarial_contract.py
+  h_12ee2b2686c122 1-683
+skills/adversarial-reviewer/tests/fixtures/agent-tool-threat-model.json
+  h_12ee2b2686c122 1-146
+skills/adversarial-reviewer/tests/fixtures/clean-empty.json
+  h_12ee2b2686c122 1-130
+skills/adversarial-reviewer/tests/fixtures/clean-room-handoff.json
+  h_12ee2b2686c122 1-36
+skills/adversarial-reviewer/tests/fixtures/introduced-regression.json
+  h_12ee2b2686c122 1-186
+skills/adversarial-reviewer/tests/fixtures/known-good-sibling.json
+  h_12ee2b2686c122 1-186
+skills/adversarial-reviewer/tests/fixtures/known-vulnerable-pair.json
+  h_12ee2b2686c122 1-186
+skills/adversarial-reviewer/tests/fixtures/missing-credentials.json
+  h_12ee2b2686c122 1-186
+skills/adversarial-reviewer/tests/fixtures/pre-existing-defect.json
+  h_12ee2b2686c122 1-186
+skills/adversarial-reviewer/tests/fixtures/rejected-sql-injection.json
+  h_12ee2b2686c122 1-123
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "0853b083c862cac00c44c5570268490b5fa054d1",
+  "prompts": {},
+  "humans": {
+    "h_12ee2b2686c122": {
+      "author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
