@@ -1,6 +1,6 @@
 digraph CodexFeaturePipeline {
     label="Codex feature pipeline"
-    goal="Implement one bounded change and verify it before completion"
+    goal="Implement one bounded change and pass objective and semantic verification"
 
     start [shape="Mdiamond", label="Start"]
     done  [shape="Msquare", label="Done"]
@@ -10,7 +10,7 @@ digraph CodexFeaturePipeline {
         label="Investigate"
         llm_provider="codex"
         timeout=600s
-        prompt="Read the task and relevant code. Record a concrete implementation plan in .pas/investigation.md. Do not modify product code."
+        prompt="Read the task and relevant code. Record a concrete implementation plan in .pas/investigation.md. Do not modify product code or Git state."
     ]
 
     implement [
@@ -18,16 +18,26 @@ digraph CodexFeaturePipeline {
         label="Implement"
         llm_provider="codex"
         timeout=900s
-        prompt="Read .pas/investigation.md and implement the bounded change. Run the relevant focused tests."
+        prompt="Read .pas/investigation.md and implement only the bounded change. Run focused tests. Do not commit or push."
     ]
 
-    verify [
+    quality [
+        shape="box"
+        type="quality"
+        label="Objective Quality Gate"
+        timeout=900s
+        quality_checks="git diff --check"
+        goal_gate=true
+        retry_target="fixup"
+    ]
+
+    review [
         shape="diamond"
-        label="Verify"
+        label="Semantic Review"
         node_type="conditional"
         llm_provider="codex"
         timeout=600s
-        prompt="Review the diff and test results against the task. End with exactly PASS or FAIL on its own final line."
+        prompt="Review the diff and available test evidence against the task. Do not edit files or Git state. End with exactly PASS or FAIL on its own final line."
     ]
 
     fixup [
@@ -35,11 +45,13 @@ digraph CodexFeaturePipeline {
         label="Fix Issues"
         llm_provider="codex"
         timeout=900s
-        prompt="Fix the issues found by verification, then rerun the focused tests."
+        prompt="Fix the objective or semantic verification failures using the recorded evidence, then rerun focused tests. Do not commit or push."
     ]
 
-    start -> investigate -> implement -> verify
-    verify -> done  [label="PASS", condition="preferred_label=PASS"]
-    verify -> fixup [label="FAIL", condition="preferred_label=FAIL"]
-    fixup -> verify [loop_restart=true]
+    start -> investigate -> implement -> quality
+    quality -> review [label="PASS", condition="outcome=success"]
+    quality -> fixup [label="FAIL", condition="outcome=fail"]
+    review -> done  [label="PASS", condition="preferred_label=PASS"]
+    review -> fixup [label="FAIL", condition="preferred_label=FAIL"]
+    fixup -> quality [loop_restart=true]
 }

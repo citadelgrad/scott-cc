@@ -1,229 +1,171 @@
 ---
 name: pas-pipeline
 description: >-
-  Use when authoring, validating, launching, or resuming PAS DOT pipelines;
-  selecting an authenticated Codex, Claude, or Gemini subscription CLI and
-  compatible model; capping execution; or generating pipelines from specs.
+  Use when authoring, validating, generating, launching, or resuming PAS DOT
+  pipelines; selecting an authenticated subscription CLI; or bounding execution.
 license: MIT
 metadata:
   category: technique
-  triggers: [pas, pas-run, pas-launch, pas-generate, dot-pipeline, dot-authoring, ai-pipeline, pipeline-budget, pipeline-resume, model-selection, subscription-detection, spec-to-pipeline, PRD-pipeline]
+  triggers: [pas, pas-run, pas-launch, pas-generate, dot-pipeline, pipeline-budget, pipeline-resume, model-selection, subscription-detection]
 ---
 
 # PAS Pipeline Management
 
-Operates `pas` — the DOT-based AI pipeline runner. Verified against version 0.9.4; inspect current command help rather than assuming flags are unchanged.
+Operates PAS CLI, the DOT-based AI pipeline runner. Verified against PAS 0.9.4,
+stable tag `v0.9.4`, commit `62ef831` on 2026-08-12. Run current command help
+before relying on flags from this skill.
 
-**Role in the stack:** PAS is the sole execution engine for AI tasks. Reckoner (the factory layer) wraps PAS — it never invokes Claude directly. Foundry sits above as the platform quality layer. All task execution ultimately calls `pas run` inside a container.
+## Required References
 
-## Prerequisites
+Before creating, changing, generating, or running DOT, read
+`references/provider-and-dot-authoring.md`. It contains the provider boundary,
+strict DOT contract, trust model, Claude isolation controls, and checkpoint rules.
+Start Codex pipelines from `assets/codex-pipeline.dot`.
 
-- **Required:** `pas` CLI tool (version 0.9.4 or compatible)
-  - Verify installation: `pas --version`
-  - If not installed, consult your project's setup documentation or contact your platform team
-- **Required:** Ability to run shell commands and access `.dot` pipeline files
-- **Optional:** `pas.toml` configuration file in project root (auto-created by `pas init` if missing)
-
-## When to Use
-- Launching a pipeline from spec/PRD documents (`pas launch`)
-- Running or resuming a `.dot` pipeline file (`pas run`)
-- Validating a pipeline before execution (`pas validate`)
-- Generating `.dot` files from spec documents (`pas generate`)
-- Hand-authoring a `.dot` pipeline for Codex, Claude Code, or Gemini
-- Detecting which subscription-backed provider CLI and model are actually available
-- Debugging a stalled or budget-exceeded pipeline
-
-## Required Reference for DOT Authoring
-
-Before creating or editing a `.dot` file, read `references/provider-and-dot-authoring.md`. It defines provider/auth detection, model selection, PAS's strict DOT subset, and the exact conditional-label contract. Start Codex pipelines from `assets/codex-pipeline.dot`; do not reconstruct the syntax from memory.
-
----
-
-## Step 1: Identify the Operation
-
-Ask or infer from context which command applies:
+## Choose the Operation
 
 | Goal | Command |
 |---|---|
-| End-to-end from docs | `pas launch <docs-dir>` |
-| Run existing pipeline | `pas run <pipeline>` |
-| Resume interrupted run | `pas run <pipeline>` (resumes automatically) |
-| Fresh start (discard checkpoints) | `pas run <pipeline> --fresh` |
-| Validate only | `pas validate <file>` |
-| Generate `.dot` from specs | `pas generate <docs-dir>` |
-| Hand-author `.dot` | Read `references/provider-and-dot-authoring.md`, copy the matching asset, then validate |
-| Inspect a pipeline | `pas info <file>` |
-| Create PRD/spec stubs | `pas plan` |
-| Create spec from a prompt | `pas plan --spec --from-prompt` |
-| Decompose spec to beads epic | `pas decompose` |
-| Scaffold pipeline from epic | `pas scaffold` |
-| Initialize `pas.toml` | `pas init` |
+| Run or resume DOT | `pas run <pipeline>` |
+| Discard checkpoint and restart | `pas run <pipeline> --fresh` |
+| Validate / inspect | `pas validate <file>` / `pas info <file>` |
+| Generate from specs | `pas generate <docs-dir>` |
+| End-to-end generation and execution | `pas launch <docs-dir>` |
+| Create PRD/spec template | `pas plan --prd` / `pas plan --spec` |
+| Create spec with Claude | `pas plan --spec --from-prompt "Describe the required change" -o docs/change-spec.md` |
+| Decompose to Beads / scaffold | `pas decompose <spec>` / `pas scaffold <epic-id>` |
+| Preview project manifest | `pas init --dry-run --non-interactive --workdir .` |
 
----
+Run `pas <command> --help` before using less-common flags.
 
-## Step 2: Detect Provider and Model
+## Provider Boundary
 
-Before generating or running agent nodes:
+PAS 0.9.4 has two separate provider surfaces:
 
-1. Check the candidate CLI's version and authentication status using the commands in `references/provider-and-dot-authoring.md`.
-2. If this skill is running in Codex and `codex login status` succeeds, write `llm_provider="codex"` on every agent node.
-3. Omit `model` and `llm_model` by default so the authenticated provider uses its configured model.
-4. Only pin Codex to a model slug returned by the current `codex debug models` catalog. Never pass Claude aliases such as `sonnet` to Codex.
-5. Remember that Hermes Agent is the skill host, not a PAS provider; never emit `llm_provider="hermes"`.
+- `pas generate`, `pas launch` generation, and `pas plan --from-prompt` use
+  Claude CLI; generation is Claude-only and exposes no provider/model flag.
+- Runtime agent nodes can select `claude`, `codex`, or `gemini` with
+  `llm_provider`.
 
-If more than one provider is authenticated and neither the current host nor the user establishes a preference, ask before choosing a subscription surface.
+Provider detection does not configure generated DOT. Before execution, inspect
+every generated graph/node provider, graph `model`, node `llm_model`, timeout,
+tool surface, and commit/push behavior. In particular, generated pipelines may
+contain an automatic Git commit node; remove it unless Git mutation was explicitly
+authorized.
 
----
+For hand-authored Codex nodes, omit `model` and `llm_model` by default. If a model
+must be pinned, use an exact slug from `codex debug models`. Hermes Agent hosts the
+skill but is not a PAS provider; never emit `llm_provider="hermes"`.
 
-## Step 3: Apply Flags
+## Safe Workflow
 
-Always review these flags before running — they prevent runaway spend and enable safe testing.
+Do not use `pas launch` when provider, model, permissions, or generated DOT need
+human review. Use this staged path instead:
 
-### Budget and safety flags
+1. Record `git status`; use an isolated worktree.
+2. Generate into a dedicated empty output directory.
+3. Inspect every new/changed DOT file and remove partial output after failures.
+4. Reject unexpected providers/models, destructive commands, and
+   unauthorized commit/push nodes.
+5. Run `pas validate` and review warnings.
+6. Run `pas info` and confirm nodes, edges, start, exit, and loops.
+7. Run a bounded traversal dry run after reviewing non-LLM handlers.
+8. Run live only after all previous checks pass.
 
-```bash
-# Cap total LLM spend (recommended for any non-trivial pipeline)
-pas run my-pipeline.dot --max-budget-usd 5.00
-
-# Abort after N node executions (default: 200)
-pas run my-pipeline.dot --max-steps 50
-
-# Dry run — no LLM calls, validates graph traversal only
-pas run my-pipeline.dot --dry-run
-
-# Verbose logging for debugging
-pas run my-pipeline.dot -v
-```
-
-**Rule:** Set `--max-budget-usd` for providers that report cost. Codex and Gemini CLI currently report no per-call dollar cost to PAS, so the cap cannot enforce their real spend. For those providers, require `--max-steps`, node timeouts, bounded prompts, and an isolated worktree.
-
-### Working directory
+In short: generate → review → validate → info → bounded dry-run → live run.
 
 ```bash
-# Execute tools relative to a specific directory
-pas run my-pipeline.dot -w /path/to/project
+pas generate docs/ -o .pas/generated/reviewed
+pas validate .pas/generated/reviewed/phase-01.dot
+pas info .pas/generated/reviewed/phase-01.dot
+pas run .pas/generated/reviewed/phase-01.dot -w . \
+  --logs .pas/logs/reviewed-phase-01 --dry-run --max-steps 20
+pas run .pas/generated/reviewed/phase-01.dot -w . \
+  --logs .pas/logs/reviewed-phase-01 --max-steps 50
 ```
 
----
+`pas launch --dry-run` still calls Claude during generation and writes generated
+files. During execution, dry-run skips provider CLI calls but may still execute
+non-LLM handlers such as objective quality commands. It is not a zero-side-effect
+preview: inspect every tool/quality/human handler first and use a disposable
+worktree.
 
-## Step 4: Launch vs Run
+## Bounds and Isolation
 
-### `pas launch` — end-to-end from documents
+- Always set `--max-steps`; the default is 200, which is too loose for small jobs.
+- Set `--max-budget-usd` for providers that report cost.
+- Codex and Gemini report no per-call dollar cost to PAS, so their nodes count as
+  `$0`; bound them with steps, node timeouts, narrow prompts, tools, and worktree.
+- Every work/conditional node should have an explicit timeout.
+- Restrict Claude nodes with `allowed_tools`. PAS 0.9.4 ignores that attribute for
+  Codex and Gemini and invokes both in YOLO mode, so prompts are not a security
+  boundary; contain those providers with a disposable isolated worktree and review.
+- Prefer objective quality nodes (`type="quality"`) backed by reviewed,
+  trusted `pas.toml` hooks. AI semantic review may follow, but should not be the
+  only completion gate.
+- For Claude, default to `subscription-bare`; use `inherit` only when ambient
+  hooks/settings are explicitly intended. See the required reference.
+
+## Ordering and Generated Directories
+
+Spec files and directory-mode DOT files are sorted lexically. There is no
+“numbered files first” rule. Prefix every file consistently with zero-padded
+numbers when order matters.
+
+`pas launch` generates files and then runs every `*.dot` in its output directory,
+including stale files. Always use a dedicated empty output directory rather than
+reusing a shared `pipelines/` directory.
+
+## Checkpoints
+
+`pas run` resumes automatically. Default checkpoint identity is path-based, not content-based:
+editing a DOT in place can resume stale state. Resume only when the
+DOT and worktree are unchanged. After editing or moving the pipeline, use a new
+`--logs` directory or deliberately use `--fresh` after confirming which progress
+will be discarded.
+
+## `pas.toml` and Trust
+
+`pas init` is explicit; it does not auto-create a manifest. It targets the nearest
+Git root, refuses overwrite without `--force`, and exits 4 in non-interactive mode
+outside Git unless deliberately forced. PAS 0.9.4 supports project/toolchain,
+ordered quality stages/hooks, and Claude codergen isolation config—not run-level
+budget, workdir, or generic model defaults.
+
+Treat repository `pas.toml` as executable configuration because quality hooks run
+commands. Inspect it before trust:
 
 ```bash
-pas launch <docs-dir>
+pas trust list
+pas trust add <path-to-pas.toml> <reviewed-blake3-hash>
+pas trust remove <path-to-pas.toml> <hash>
 ```
 
-What it does in order:
-1. Discovers `*-spec.md` and `*-prd.md` files in `<docs-dir>`
-2. Calls `pas generate` to produce `.dot` files
-3. Validates each generated pipeline
-4. Runs them in discovery order
+Never casually use `PAS_TRUST_THIS=1`; it bypasses manifest verification.
 
-**Ordering:** Name spec files with zero-padded numeric prefixes to control execution order:
-```
-phase-01-auth-spec.md
-phase-02-api-spec.md
-phase-03-ui-spec.md
-```
-Files without a numeric prefix run after numbered ones, in alphabetical order.
+## Failure Diagnosis
 
-**PRD pairing:** A `*-prd.md` alongside a `*-spec.md` is optional but recommended. PRDs provide product context that improves generated pipeline quality:
-```
-auth-prd.md      ← paired with →   auth-spec.md
-```
+| Symptom | Action |
+|---|---|
+| Validation error | Fix all errors; inspect warnings too |
+| Conditional misroutes | Align exact prompt token, edge label, and `preferred_label` condition |
+| Max steps reached | Inspect the loop with `pas info`; do not blindly raise the limit |
+| Budget reached | Resume only with unchanged DOT/worktree; then adjust deliberately |
+| Untrusted manifest | Review `pas.toml`, calculate/obtain its verified BLAKE3 hash, then add trust |
+| Generated provider/model wrong | Edit and revalidate DOT; `pas generate` has no runtime-provider selector |
+| Gemini CLI merely exists | Authentication remains unverified; do not infer auth from `gemini --version` |
 
-### `pas run` — direct pipeline execution
+## Citadelgrad Stack Convention
 
-```bash
-pas run my-pipeline.dot
-pas run pipelines/              # runs all .dot files in directory
-```
+Within the citadelgrad stack, Reckoner is the factory layer and should normally
+own repository-level execution through `reck task`; Foundry supplies platform
+quality controls. This is an organizational convention, not PAS CLI behavior.
 
-**Checkpoint behavior:** `pas run` automatically resumes from the last successful checkpoint. If a run was interrupted (crash, budget exceeded, timeout), re-running the same command picks up where it left off. Use `--fresh` to discard all checkpoints and start over.
+## Done When
 
----
-
-## Step 5: Common Failure Modes
-
-### Budget exceeded mid-run
-
-```
-Error: budget cap reached ($5.00)
-```
-
-The pipeline checkpointed at the last successful node. Increase the cap and re-run — it resumes:
-
-```bash
-pas run my-pipeline.dot --max-budget-usd 10.00
-```
-
-### Max steps hit
-
-```
-Error: max steps reached (200)
-```
-
-Either increase `--max-steps` or investigate why the pipeline is taking more steps than expected (`pas info` to inspect the graph).
-
-### Validation failures
-
-```bash
-pas validate my-pipeline.dot
-```
-
-Common issues:
-- Unreachable nodes (disconnected subgraph)
-- Missing required node attributes (`prompt` on task/conditional nodes, `node_type="conditional"` on explicit conditional nodes)
-- Missing or duplicate start/exit nodes (`shape="Mdiamond"` / `shape="Msquare"`)
-- Conditional routing tokens that disagree between the prompt, edge `label`, and `preferred_label=<TOKEN>` condition
-- Cycles without a termination condition
-
-Node `label` is optional and falls back to the node ID, but explicit labels are strongly recommended for readable logs. Fix the `.dot` file using `references/provider-and-dot-authoring.md` or re-run `pas generate` if it was auto-generated.
-
-### Dry run to test ordering
-
-```bash
-pas launch docs/ --dry-run -v
-```
-
-Shows which specs were discovered, what `.dot` files would be generated, and the execution order — without any LLM calls.
-
----
-
-## Common Mistakes
-
-| Mistake | Fix |
-|---------|-----|
-| Running without execution bounds | Use `--max-budget-usd` where cost is reported; always bound steps and node timeouts |
-| Using `--fresh` when you meant to resume | Default behavior resumes from checkpoint; `--fresh` discards all progress |
-| Guessing flags for `pas plan` / `pas info` | Run `pas <command> --help` first — flags change across versions |
-| Forgetting `--dry-run` for first-time pipeline testing | Always dry-run before committing to LLM calls |
-| Writing `model="sonnet"` for Codex nodes | Omit the model or use an exact slug from `codex debug models` |
-| Treating Hermes Agent as a PAS provider | Hermes hosts the skill; select an authenticated `codex`, `claude`, or `gemini` CLI |
-| Assuming `--max-budget-usd` tracks Codex subscription usage | PAS receives no Codex dollar cost; bound steps, timeouts, scope, and worktree instead |
-| Letting conditional labels drift | Use the same exact uppercase token in the prompt, edge `label`, and `preferred_label` condition |
-| Manually running pipelines that Reckoner should manage | Use `reck task` for repo-level pipeline execution |
-
-## Step 6: Less-Common Commands
-
-`pas info`, `pas plan`, `pas plan --spec --from-prompt`, `pas decompose`, and `pas scaffold` are not detailed above. Do not guess their flags — run `pas <command> --help` first to confirm current syntax before invoking one of these.
-
-## Step 7: Project Setup
-
-If `pas.toml` doesn't exist in the project root:
-
-```bash
-pas init
-```
-
-This creates a `pas.toml` with sensible defaults. Edit it to set default budget caps, working directory, and model preferences rather than passing flags every run.
-
-## Limitations
-- Use this skill only when the task clearly matches the scope described above.
-- Requires `pas` CLI to be installed and accessible in PATH.
-- Budget caps are advisory — actual spend depends on model pricing and task complexity.
-- Codex and Gemini CLI nodes are uncosted in PAS, so their real usage cannot currently be enforced by `--max-budget-usd`.
-- PAS invokes Codex non-interactively with broad execution permissions; use an isolated worktree and review the pipeline before running it.
-- Does not manage container orchestration directly; use `reck task` for repo-level pipeline execution.
-- Stop and ask for clarification if the pipeline structure, budget constraints, or execution environment are unclear.
+- Provider authentication and generation/runtime boundaries are explicit.
+- Generated DOT was reviewed, not merely validated.
+- Objective quality checks and least-privilege tools are present.
+- Every node and whole-pipeline execution are bounded.
+- Validation, info, and bounded dry-run passed.
+- Live execution used an isolated worktree and explicit logs.
