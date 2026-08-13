@@ -1,0 +1,22 @@
+skills/tdd/SKILL.md
+  s_a3a6d5b98f72dc::t_b9f3ede47dd33d 116-117
+  s_a3a6d5b98f72dc::t_5846f47620b14b 80-87,93,99-102,104
+  s_a3a6d5b98f72dc::t_f671b2105dd5a7 136,138-139,145-146
+  s_a3a6d5b98f72dc::t_3405304b4727ce 27-28,31-38,42,45,49-50,54,58,60,66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "165e0bba55b8f7dbd2920d152fed4ff1194b8933",
+  "prompts": {},
+  "sessions": {
+    "s_a3a6d5b98f72dc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "94274f27-e4be-4052-9c4d-f6937283daea",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
