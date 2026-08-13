@@ -1,0 +1,47 @@
+skills/delegate-first/SKILL.md
+  s_ea69919c65fd28::t_847f04477f0f53 4-7,16-109,113-119,121,123-126,136-143,145-146,148,150,152,154-159,167-169,171-174,182,188-195,199,201-204,206-207,211-227,234-235,237,239-243,249-253,256,258-265,268-269,275-283,287-297
+skills/delegate-first/references/lifecycle.md
+  s_ea69919c65fd28::t_35fdec64711817 1-66
+skills/delegate-first/references/decision-policy.md
+  s_ea69919c65fd28::t_7b85fb5f5152ad 32
+  s_ea69919c65fd28::t_2799c66d9d104b 1-31,33-76
+skills/delegate-first/scripts/delegate_first_policy.py
+  s_ea69919c65fd28::t_6c93b0f2ab24fa 209-212,214-220,223-229
+  s_ea69919c65fd28::t_303453ae765c1c 1-208,213,221-222,230-547
+  s_ea69919c65fd28::t_3f7cbcd7ccd327 548-550
+  s_4dd52a48385dbf::t_f029d104a4a655 551-557
+skills/delegate-first/references/task-manifest.md
+  s_ea69919c65fd28::t_57cbc40930cf80 1-63
+skills/delegate-first/references/runtime-adapters.md
+  s_ea69919c65fd28::t_13b664b314bb51 1-81
+skills/delegate-first/tests/test_delegate_first_policy.py
+  s_ea69919c65fd28::t_88d75dc600dc36 1-427
+  s_ea69919c65fd28::t_b150ee216fc56e 428-430
+  s_4dd52a48385dbf::t_324f54447caca4 431-458
+commands/delegate-first.md
+  s_ea69919c65fd28::t_91ce6afd3139c5 3,7,9-13,15,17,19-31,33-36,38,40-54,66,70-74,76-83,89,93-95,97-99,101-102,121-125,127,129-130
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "4ff8913664f96e099258ab6d506e08ec9101c281",
+  "prompts": {},
+  "sessions": {
+    "s_4dd52a48385dbf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0cb3d7ba-b8c9-40ae-a913-809724e2945e",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_ea69919c65fd28": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "cb7ec11d-9d1a-44c4-ac84-8e82b7aa0cb1",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
