@@ -1,0 +1,19 @@
+scripts/tests/test_verify_orchestration_contracts.py
+  s_4dd52a48385dbf::t_18efc3fa76f6fc 52-61,67,70-74,76-86,88-93,96-102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "70982cbe9e3b04861151e56bba4a53527fa79870",
+  "prompts": {},
+  "sessions": {
+    "s_4dd52a48385dbf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0cb3d7ba-b8c9-40ae-a913-809724e2945e",
+        "model": "unknown"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
