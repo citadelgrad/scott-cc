@@ -1,0 +1,49 @@
+plugins/review-panel/skills/review-panel/tests/fixtures/partial.json
+  s_b47bee9bb4b9e2::t_e0ef480cf42674 42
+  s_b47bee9bb4b9e2::t_fe5f1a3295c4d8 1-41,43-128
+plugins/review-panel/skills/review-panel/tests/fixtures/failed.json
+  s_b47bee9bb4b9e2::t_e1343ce9f422f4 1-77
+plugins/review-panel/skills/review-panel/tests/fixtures/circuit-broken.json
+  s_b47bee9bb4b9e2::t_ad7db7eadda803 1-74
+plugins/review-panel/skills/review-panel/tests/fixtures/budget-exceeded.json
+  s_b47bee9bb4b9e2::t_aaa07458a7f7b1 1-76
+plugins/review-panel/skills/review-panel/tests/fixtures/clean-complete.json
+  s_b47bee9bb4b9e2::t_df5d3e1ffc4a60 1-66
+plugins/review-panel/skills/review-panel/tests/fixtures/empty-diff.json
+  s_b47bee9bb4b9e2::t_5c303de8a4b05d 1-65
+plugins/review-panel/skills/review-panel/tests/fixtures/capped.json
+  s_b47bee9bb4b9e2::t_984ca580f00da0 1-74
+plugins/review-panel/skills/review-panel/schemas/review-panel-report-v1.schema.json
+  s_b47bee9bb4b9e2::t_d655366c1ec924 1-386,391-408,413-427,432-446,451-473,478-501,506-532,537-1029
+  s_b47bee9bb4b9e2::t_11c4a287e2c97b 387-390,409-412,428-431,447-450,474-477,502-505,533-536
+plugins/review-panel/skills/review-panel/tests/fixtures/skipped.json
+  s_b47bee9bb4b9e2::t_fc4588b02c4c7d 1-60
+plugins/review-panel/skills/review-panel/scripts/review_panel_contract.py
+  s_b47bee9bb4b9e2::t_eb5ca56e980ee2 1-214,241-460
+  s_b47bee9bb4b9e2::t_2bd33d84853fbe 215-240
+  s_b47bee9bb4b9e2::t_190cff7b4104b9 461-463
+plugins/review-panel/skills/review-panel/tests/fixtures/reproduced-finding.json
+  s_b47bee9bb4b9e2::t_dcbd734cf3bdf6 1-133
+plugins/review-panel/skills/review-panel/references/dual-mode-contract.md
+  s_b47bee9bb4b9e2::t_4105e9119dabc3 374-436
+scripts/tests/test_review_panel_contract.py
+  s_b47bee9bb4b9e2::t_ceb7d10a5c27b0 1-368,377-378,385,388-392
+  s_b47bee9bb4b9e2::t_1eb950e67ecafd 369-376,379-384,386-387
+  s_b47bee9bb4b9e2::t_f8cc04575fbadd 393-395
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "2bb1feedb895a2fed343b22aa629082d54475a7b",
+  "prompts": {},
+  "sessions": {
+    "s_b47bee9bb4b9e2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "da6182e0-9b27-407b-8f2d-e6a2d8c4769d",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
