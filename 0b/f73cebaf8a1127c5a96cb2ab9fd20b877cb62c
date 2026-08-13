@@ -1,0 +1,22 @@
+skills/acceptance-criteria/tests/test_skill_contract.py
+  s_ae0ee530ee8986::t_9f216cecae59d6 1-24,29-38,43-60,64-86,90-107
+  s_ae0ee530ee8986::t_3f71e3b583717a 25-28,39-42,61-63,87-89
+skills/acceptance-criteria/SKILL.md
+  s_ae0ee530ee8986::t_ce12d7a68266f2 5-9,14,22-24,32,44,46,58-81,102-125,140,145,157-228,237-239,252-253,256,282-299,302-306,308-322,338-342,353-356,358-359,361-363,370-470,474-496,510-514,520-522
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "0bf73cebaf8a1127c5a96cb2ab9fd20b877cb62c",
+  "prompts": {},
+  "sessions": {
+    "s_ae0ee530ee8986": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8da48aa4-b890-40ef-810a-2622b92762bd",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
