@@ -1,0 +1,39 @@
+plugins/review-panel/skills/domain-modeling/TECHNIQUES.md
+  s_5a84433f66799b::t_450457d97d82e1 346-359
+  s_5a84433f66799b::t_5cf97abdcc911f 135,142-143,147
+  s_5a84433f66799b::t_153d4ac5d7c13a 153-159
+  s_5a84433f66799b::t_f49a7323098331 3,5
+  s_5a84433f66799b::t_865cf06cfb59c7 54
+  s_5a84433f66799b::t_83f8a009078f1e 207
+  s_5a84433f66799b::t_3174fd37468d06 232-234
+plugins/review-panel/skills/domain-modeling/SKILL.md
+  s_5a84433f66799b::t_bb39ab414c9863 35-36
+  s_5a84433f66799b::t_24fbca48f2bab2 44
+  s_5a84433f66799b::t_6caa7178d02734 4-12,25
+  s_5a84433f66799b::t_62e5848bea94ce 67
+plugins/review-panel/skills/domain-modeling/RED-FLAGS.md
+  s_5a84433f66799b::t_80732877307f38 41,43,46
+  s_5a84433f66799b::t_9183157afc29bd 82-85,87-94,96-103,105-112,121
+  s_5a84433f66799b::t_168952def015ff 28-29
+  s_5a84433f66799b::t_a5387be72a882f 36-39
+  s_5a84433f66799b::t_ba3bd893ffc284 20
+  s_5a84433f66799b::t_c5ef580fb2b6eb 95
+  s_5a84433f66799b::t_fdc4492c7e8add 73-81,86
+  s_5a84433f66799b::t_76faae2090ba4e 104
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "c5ef7c0ebc7423761a94aa777c32971d87ff3616",
+  "prompts": {},
+  "sessions": {
+    "s_5a84433f66799b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "21d522c4-8ff7-457d-a7bd-f638753861ab",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
