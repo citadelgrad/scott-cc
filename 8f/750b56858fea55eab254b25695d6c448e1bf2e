@@ -1,0 +1,20 @@
+README.md
+  h_12ee2b2686c122 5-6
+SKILL-AUTHORSHIP.md
+  h_12ee2b2686c122 1-95
+scripts/tests/test_verify_skills_distribution.py
+  h_12ee2b2686c122 49-57,104-140
+scripts/verify_skills_distribution.py
+  h_12ee2b2686c122 8,16,67,93-134
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "8f750b56858fea55eab254b25695d6c448e1bf2e",
+  "prompts": {},
+  "humans": {
+    "h_12ee2b2686c122": {
+      "author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
