@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import hashlib
+import re
 import sys
 from pathlib import Path
 from typing import cast
@@ -12,6 +13,7 @@ from typing import cast
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "skills.sh.json"
 SKILLS_ROOT = ROOT / "skills"
+AUTHORSHIP_PATH = ROOT / "SKILL-AUTHORSHIP.md"
 DOC_PATHS = (
     ROOT / "README.md",
     ROOT / "QUICK-START.md",
@@ -62,6 +64,7 @@ def validate(root: Path = ROOT) -> list[str]:
     errors: list[str] = []
     manifest_path = root / "skills.sh.json"
     skills_root = root / "skills"
+    authorship_path = root / "SKILL-AUTHORSHIP.md"
     doc_paths = (
         root / "README.md",
         root / "QUICK-START.md",
@@ -86,6 +89,48 @@ def validate(root: Path = ROOT) -> list[str]:
     )
     if not skill_dirs:
         errors.append("skills/ must contain at least one skill directory")
+
+    installable_skill_paths = {
+        path.relative_to(root).as_posix()
+        for base in (root / "skills", root / "plugins")
+        if base.is_dir()
+        for path in base.rglob("SKILL.md")
+    }
+
+    if not authorship_path.is_file():
+        errors.append("missing SKILL-AUTHORSHIP.md")
+    else:
+        authorship = authorship_path.read_text(encoding="utf-8")
+        documented_paths = re.findall(
+            r"^- `((?:skills|plugins)/[^`]+/SKILL\.md)`$",
+            authorship,
+            flags=re.MULTILINE,
+        )
+        duplicates = sorted(
+            path for path in set(documented_paths) if documented_paths.count(path) > 1
+        )
+        if duplicates:
+            errors.append(
+                "SKILL-AUTHORSHIP.md duplicates skill paths: " + ", ".join(duplicates)
+            )
+        missing_authorship = sorted(installable_skill_paths - set(documented_paths))
+        if missing_authorship:
+            errors.append(
+                "SKILL-AUTHORSHIP.md omits installable skills: "
+                + ", ".join(missing_authorship)
+            )
+        stale_authorship = sorted(set(documented_paths) - installable_skill_paths)
+        if stale_authorship:
+            errors.append(
+                "SKILL-AUTHORSHIP.md lists unknown skills: "
+                + ", ".join(stale_authorship)
+            )
+        if "Scott Nixon" not in authorship:
+            errors.append("SKILL-AUTHORSHIP.md must credit Scott Nixon")
+        if "plugins/review-panel/CREDITS.md" not in authorship:
+            errors.append(
+                "SKILL-AUTHORSHIP.md must preserve the review-panel credits link"
+            )
 
     for skill_name, skill_dir in sorted(skill_dirs.items()):
         skill_path = skill_dir / "SKILL.md"

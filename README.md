@@ -2,6 +2,8 @@
 
 Portable agent skills plus a modular Claude Code plugin suite for productive development. The core plugin provides **8 slash commands**, **7 specialized AI agents**, **29 skills**, **5 hooks**, and **2 stored templates that produce 3 project artifacts**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, multi-persona code review, and more.
 
+Created and maintained by **Scott Nixon ([@citadelgrad](https://github.com/citadelgrad))**. See [Skill Authorship and Provenance](SKILL-AUTHORSHIP.md) for the per-skill inventory and [review-panel credits](plugins/review-panel/CREDITS.md) for original creators of vendored and adopted work.
+
 ## Quick Install
 
 Install selected skills for Codex, Hermes Agent, Claude Code, or another supported agent:

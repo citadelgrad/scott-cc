@@ -46,6 +46,15 @@ def write_repo(tmp_path: Path, *, grouped_skills: list[str] | None = None) -> No
             encoding="utf-8",
         )
 
+    (tmp_path / "SKILL-AUTHORSHIP.md").write_text(
+        "# Skill Authorship and Provenance\n\n"
+        "Scott Nixon is the author or adaptation author. Original creators are retained in "
+        "[credits](plugins/review-panel/CREDITS.md).\n\n"
+        + "\n".join(f"- `skills/{name}/SKILL.md`" for name in skill_names)
+        + "\n",
+        encoding="utf-8",
+    )
+
 
 def test_valid_distribution_contract_passes(tmp_path: Path) -> None:
     write_repo(tmp_path)
@@ -90,6 +99,43 @@ def test_installation_docs_are_required(tmp_path: Path) -> None:
     errors = verify.validate(tmp_path)
 
     assert any(error.startswith("README.md is missing:") for error in errors)
+
+
+def test_authorship_inventory_must_cover_every_installable_skill(
+    tmp_path: Path,
+) -> None:
+    write_repo(tmp_path)
+    authorship = tmp_path / "SKILL-AUTHORSHIP.md"
+    authorship.write_text(
+        authorship.read_text(encoding="utf-8").replace(
+            "- `skills/beta/SKILL.md`\n", ""
+        ),
+        encoding="utf-8",
+    )
+
+    errors = verify.validate(tmp_path)
+
+    assert (
+        "SKILL-AUTHORSHIP.md omits installable skills: skills/beta/SKILL.md" in errors
+    )
+
+
+def test_authorship_inventory_preserves_scott_and_upstream_credit(
+    tmp_path: Path,
+) -> None:
+    write_repo(tmp_path)
+    authorship = tmp_path / "SKILL-AUTHORSHIP.md"
+    authorship.write_text(
+        authorship.read_text(encoding="utf-8")
+        .replace("Scott Nixon", "Anonymous")
+        .replace("plugins/review-panel/CREDITS.md", "credits.md"),
+        encoding="utf-8",
+    )
+
+    errors = verify.validate(tmp_path)
+
+    assert "SKILL-AUTHORSHIP.md must credit Scott Nixon" in errors
+    assert "SKILL-AUTHORSHIP.md must preserve the review-panel credits link" in errors
 
 
 def test_portable_adversarial_reviewer_must_match_plugin_source(tmp_path: Path) -> None:
