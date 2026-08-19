@@ -1,0 +1,24 @@
+.claude-plugin/marketplace.json
+  s_fdf5b8cbabc0d0::t_c01fc6c6ca71b0 16
+  s_fdf5b8cbabc0d0::t_bb34ee96d635f6 81-82
+plugins/beads-epic-builder/.claude-plugin/plugin.json
+  s_fdf5b8cbabc0d0::t_6b99b5d0447d25 4
+.claude-plugin/plugin.json
+  s_fdf5b8cbabc0d0::t_769d0cf2ef36ed 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "1a2730ef21115dade7e0f02f9fba56fe06c1ce74",
+  "prompts": {},
+  "sessions": {
+    "s_fdf5b8cbabc0d0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "54bb2e51-67ae-46ea-84c9-c1c914d054cd",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
