@@ -1,0 +1,21 @@
+README.md
+  s_fdf5b8cbabc0d0::t_41d87ebf8d04bc 222,226
+plugins/beads-epic-builder/commands/epic-planner.md
+  s_fdf5b8cbabc0d0::t_1890b90e3f3551 1-61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "6208179ff137605c5c8a4ccef80aeeb9d9c672c5",
+  "prompts": {},
+  "sessions": {
+    "s_fdf5b8cbabc0d0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "54bb2e51-67ae-46ea-84c9-c1c914d054cd",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
