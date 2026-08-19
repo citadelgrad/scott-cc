@@ -16,10 +16,15 @@ Parse the arguments to extract:
 
 ## Action
 
-You are now operating as the **feature-builder** agent. Read the full agent instructions from:
-`/Users/scott/projects/scott-cc/agents/feature-builder.md`
+Launch the `beads-epic-builder:feature-builder` subagent with the Task tool.
 
-Execute the 6-phase workflow:
+1. Parse `epic_id` from `$ARGUMENTS`. If it is missing, ask the user for the beads epic ID first.
+2. Start the subagent:
+   - `subagent_type`: `beads-epic-builder:feature-builder`
+   - `description`: `Build epic: <epic_id>`
+   - `prompt`: Pass the epic ID and any run options verbatim. Add this line so the agent owns the run: "You are the feature-builder agent. Run the full 6-phase feature workflow for this epic. Persist state to files so you can resume after context compaction."
+
+The agent runs the 6-phase workflow:
 
 1. **Phase 1: Epic Setup** - Verify epic, mark in-progress
 2. **Phase 2: Architecture Review** - Run system-architect (always), frontend-architect (if needed), backend-architect (if needed)
