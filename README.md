@@ -219,10 +219,11 @@ Plan, build, and swarm beads epics — sequential and parallel execution with CE
 | `epic-planner` | Plan complete features from initial concept through implementation-ready beads tasks. Orchestrates research, documentation, and task breakdown with approval gates. |
 | `feature-builder` | Orchestrate complete feature development from epic to deployment. Manages architecture review, implementation, quality gates, and validation using beads for task tracking. |
 
-**Commands (2)**
+**Commands (3)**
 
 | Command | Description |
 |---------|-------------|
+| `/epic-planner <feature description>` | Plan a feature from concept to implementation-ready beads tasks. Starts the `epic-planner` agent: research → approval → PRD/SPEC → approval → task decomposition, with human approval gates. |
 | `/build-feature <epic-id>` | Build a complete feature from a beads epic with sequential architecture review, implementation, and validation. Supports `--resume` for interrupted runs. |
 | `/epic-swarm <epic-id>` | Build all tasks in a beads epic using parallel worker agents in isolated git worktrees, with CE code review after. Options: `--max-parallel 3`, `--no-review`, `--dry-run`. |
 
