@@ -1,0 +1,58 @@
+.claude-plugin/marketplace.json
+  h_12ee2b2686c122 15-16,93
+.claude-plugin/plugin.json
+  h_12ee2b2686c122 3-4
+README.md
+  h_12ee2b2686c122 3,32,205,327,333
+docs/reports/review-panel-context-hardening.html
+  h_12ee2b2686c122 1-280
+docs/review-panel-context-hardening.md
+  h_12ee2b2686c122 1-117
+hooks/hooks.json
+  h_12ee2b2686c122 4-11
+hooks/tests/test_session_identity.py
+  h_12ee2b2686c122 1-75
+plugins/review-panel/.claude-plugin/plugin.json
+  h_12ee2b2686c122 4
+plugins/review-panel/commands/review-panel.md
+  h_12ee2b2686c122 4,36-47,52-55,60-61,76-82,87-88,92-98,116
+plugins/review-panel/hooks/hooks.json
+  h_12ee2b2686c122 1-14
+plugins/review-panel/hooks/session-identity.py
+  h_12ee2b2686c122 1-42
+plugins/review-panel/scripts/checkpoint-claim
+  h_12ee2b2686c122 1-113
+plugins/review-panel/skills/review-panel/SKILL.md
+  h_12ee2b2686c122 11,52-84,112-113,122,177-192,196-198,204
+plugins/review-panel/skills/review-panel/references/cast-and-spawn.md
+  h_12ee2b2686c122 17-18,23-24,28,30-35,37-39,42,44-46,100,136,142-143,192-195,206-216,222,260-261,276-278,283,285-287,290-292,315,317-320,322,324-328
+plugins/review-panel/skills/review-panel/references/converge-and-pipeline.md
+  h_12ee2b2686c122 1,3,35-39,41,48,54-64,208-214,216-217,222-228,232-234,238-256,260,265-271
+plugins/review-panel/skills/review-panel/references/design-lineage.md
+  h_12ee2b2686c122 61-63
+plugins/review-panel/skills/review-panel/references/dual-mode-contract.md
+  h_12ee2b2686c122 10,14-27,33-35,67,71,73,75,78,87,90-91,94-95,98-101,104-114,122,127-133,172-176,202-211,223-231,266-267,270,275-276,285-286,327-378,382-387,393-396,405-411,433-435
+plugins/review-panel/skills/review-panel/references/fix-and-rereview.md
+  h_12ee2b2686c122 41-43,88-92,115-117,119-122,125-127,183-184,189-194,222,254-258
+plugins/review-panel/skills/review-panel/references/lite-mode.md
+  h_12ee2b2686c122 61,68-69
+plugins/review-panel/skills/review-panel/references/merge-and-validate.md
+  h_12ee2b2686c122 13-20,138-141,186-203,276,304,312
+plugins/review-panel/tests/TIER-VERIFICATION.md
+  h_12ee2b2686c122 110-111,315-322
+scripts/tests/test_review_panel_checkpoint_claim.py
+  h_12ee2b2686c122 1-111
+scripts/tests/test_review_panel_context_budget.py
+  h_12ee2b2686c122 1-203
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "e54c44c2d5efd1923f23f175e4eb45445f1c1ab6",
+  "prompts": {},
+  "humans": {
+    "h_12ee2b2686c122": {
+      "author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
