@@ -12,8 +12,8 @@
     {
       "name": "scott-cc",
       "source": "./",
-      "description": "Core development tools with 8 commands, 7 AI agents, 29 skills, 5 hooks, and 2 stored templates producing 3 project artifacts",
-      "version": "5.6.0",
+      "description": "Core development tools with 8 commands, 7 AI agents, 29 skills, 6 hooks, and 2 stored templates producing 3 project artifacts",
+      "version": "5.7.0",
       "author": {
         "name": "Scott Nixon"
       },
@@ -90,7 +90,7 @@
       "name": "review-panel",
       "source": "./plugins/review-panel",
       "description": "Multi-persona adversarial code and design review panel, vendoring and adapting patterns from compound-engineering, clairvoyance, superpowers, ponytail, and mattpocock/skills",
-      "version": "0.4.0",
+      "version": "1.0.0",
       "author": {
         "name": "Scott Nixon"
       },

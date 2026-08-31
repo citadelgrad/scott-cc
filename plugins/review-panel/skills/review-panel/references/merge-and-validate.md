@@ -10,6 +10,14 @@ VALIDATE independently checks each survivor before it's allowed into FIX.
 **Goal:** take every seat's raw `contracts/reviewer-output.md` output (from SPAWN) and produce one
 deduplicated list of findings, each with a confidence score, ready for VALIDATE.
 
+### Artifact boundary
+
+Dispatch one MERGE worker with the paths under `$WORKSPACE/seat-artifacts/`; do not load those raw
+reports into the orchestrator. The worker executes Steps 1-5 below, writes the complete result to
+`$WORKSPACE/merged-findings.json`, and returns only a bounded manifest containing that path,
+finding counts by severity/confidence, rejected count, and coverage gaps. A write failure fails
+MERGE rather than returning the findings inline.
+
 ### Step 1 — Fingerprint every finding
 
 For every Issue (Critical/Important/Minor) across every seat's output, compute a fingerprint:
@@ -127,10 +135,10 @@ Concretely: cross-reference each finding's cited file:line against the packaged 
 current file content) and confirm the quoted text is verbatim present at that location (allowing
 for the ±3 line tolerance in citation drift, same as fingerprinting). This is a targeted check —
 read just the few lines around each finding's claimed location (via `Read`/`Grep` on the current
-file, or the specific hunk in the packaged diff), not the whole packaged diff. MERGE runs in the
-orchestrator's own context, which per SKILL.md's Setup step 4 must never hold the diff's full
-content — a small per-finding read stays well within that budget across even a long findings list,
-which is what makes this check compatible with that discipline.
+file, or the specific hunk in the packaged diff), not the whole packaged diff. The **MERGE worker**
+performs these per-finding reads in its disposable context and writes the results into
+`merged-findings.json`; the parent receives only MERGE's bounded manifest and never performs quote
+verification itself.
 
 - **Passes the gate**: finding includes a verbatim (or trivially-whitespace-normalized) quote of
   the code it's about, and that quote is actually found at or within 3 lines of the claimed
@@ -174,6 +182,24 @@ said so) is structurally prevented.
 Dispatch one validator subagent per surviving finding (post-MERGE, post-dedup — NOT one per raw
 seat report; a finding two seats agreed on gets one validator, not two). Default: **1 validator**
 per finding.
+
+### Bounded validator batches and artifact output
+
+The orchestrator passes `merged-findings.json` by path. A validator subagent may process **at most
+5 findings** in one batch, provided it was not an original finder for any finding in that batch.
+VALIDATE accepts **at most 25 total validator assignments** and dispatches **at most 5 total
+validator batches** for the whole stage, as well as at most **5 concurrent validator subagents**.
+Before dispatch, compute assignments after applying the tier's Critical multiplier. If that total
+exceeds 25 — even when there are 25 or fewer findings — stop with `finding_scope_too_large` and
+require the target to be split; do not truncate, prioritize, under-validate, or silently defer
+findings. Critical findings that require multiple
+validators must appear in distinct validator batches so each verdict remains independent.
+
+Each validator writes blind restatements, reconciliations, evidence, and verdicts to
+`$WORKSPACE/validator-artifacts/<batch-id>.json` and returns only its artifact path and hash. Once
+all batches finish, one reducer reads those paths, writes `$WORKSPACE/validated-findings.json`, and
+returns **one bounded VALIDATE manifest** of at most 2 KiB with the final path and counts. The
+orchestrator never accumulates per-validator finding IDs, verdicts, reasoning, or the full list.
 
 ### Escalate to 2-3 validators for CRITICAL findings — tier conditional
 
@@ -247,8 +273,7 @@ rather than independently arriving at a severity).
    framing as a challenge, not a confirmation request — ask the validator to try to show the
    finding is WRONG (no bug here, the "issue" is actually handled elsewhere, the input claimed to
    be hostile is actually validated upstream) before concluding it's right. This framing matches
-   the challenger framing in Step 4 below and in the pipeline-not-barrier reference's
-   majority-survives-challenge principle.
+   the challenger framing in Step 4 below and the majority-survives-challenge principle.
 4. Each validator returns: its **blind restatement** (title/severity/rationale, Phase 1), its
    **match/partial-match/contradicts** call against the original claim (Phase 2), and a final
    verdict of either **SURVIVES** (the finding is real, as stated or with minor correction) or
@@ -276,7 +301,7 @@ rather than independently arriving at a severity).
 
 ### Output
 
-VALIDATE emits the final validated findings list — every finding that survived its
+VALIDATE persists the final validated findings list to `validated-findings.json` — every finding that survived its
 challenge(s) — annotated with its confidence anchor, severity, evidence quote, and (for
 transparency in the final report) how many validators checked it and the verdict tally. For every
 finding, the record includes **both** the validator's blind restatement (title/severity/rationale,
@@ -284,7 +309,7 @@ recorded before the original claim was revealed) **and** the original finder's c
 (title/severity/rationale), shown side by side, plus the match/partial-match/contradicts call that
 reconciled them — this pair is retained in the audit trail even for SURVIVES findings, not just
 disputed ones, so a reader of the final report can see the independent read that produced the
-verdict. This list is FIX's entire input.
+verdict. This artifact path is FIX's input; the list itself does not enter the orchestrator context.
 
 The `sovereignty` marker (see MERGE Step 5) carries through VALIDATE unchanged as well — a
 validator judges whether the finding's underlying claim is real (survives/refuted), not whether the

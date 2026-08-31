@@ -38,8 +38,9 @@ findings, and do not dispatch fixers serially one-finding-at-a-time either.
 ### Fixer dispatch contract
 
 Give the fixer:
-1. The full validated findings list (fingerprint, severity, confidence, evidence quote, original
-   recommendation, contributing seats) — the complete VALIDATE output, not a filtered subset.
+1. The path to `validated-findings.json`, containing the full validated findings list
+   (fingerprint, severity, confidence, evidence quote, original recommendation, contributing
+   seats) — the complete VALIDATE output, not a filtered subset. The fixer reads it itself.
 2. The packaged diff's **path** (from Setup, or the freshly re-packaged one if this is a second+
    loop iteration), not its content — the fixer reads it itself in its own disposable context, the
    same discipline CAST and SPAWN use (see [cast-and-spawn.md](cast-and-spawn.md)'s "Why CAST is
@@ -84,9 +85,11 @@ Give the fixer:
 
 ### Output
 
-The fixer returns: a list of {finding → fix applied, or fix skipped + reason}, plus a summary of
-what changed. This becomes RE-REVIEW's context for what to check, and CONVERGE's raw material for
-measuring progress (see [converge-and-pipeline.md](converge-and-pipeline.md)).
+The fixer reads `$WORKSPACE/validated-findings.json` by path and writes
+`$WORKSPACE/fix-report.json`: a list of {finding → fix applied, or fix skipped + reason}, plus a
+summary of what changed. It returns only a bounded manifest containing the artifact path, fixed/
+skipped counts, touched paths, and verification status. The artifact becomes RE-REVIEW's input and
+CONVERGE's raw material; fixer reasoning never enters the orchestrator context.
 
 **Evidence before claims.** Before the fixer reports any finding as "fixed," it must have actually
 re-read the edited location (or, where the project has one, run the relevant lint/typecheck/test
@@ -109,19 +112,19 @@ outcome when sovereignty findings simply remain unresolved by design; this guard
 underlying model doing something it was never allowed to do at all, regardless of what it claims in
 its return report.
 
-This step runs in the **orchestrator's own context**, not the fixer's — the fixer cannot be trusted
-to self-police the boundary it was just told to respect, so the check must happen independently of
-its output.
+This step runs in an independent **sovereignty guard worker**, not the fixer or parent. The fixer
+cannot be trusted to self-police the boundary it was just told to respect, and the parent must not
+load VALIDATE's full findings output.
 
-1. **Before dispatching the fixer**, for every finding in VALIDATE's output carrying
-   `sovereignty: human-required`, capture a content hash of its target file (e.g.
-   `git hash-object <file>`) and record it alongside the finding's fingerprint. If the file does not
-   yet exist (a sovereignty finding about a file the diff proposes to create), record its absence
-   explicitly instead of a hash.
+1. **Before dispatching the fixer**, dispatch the guard worker with the path to
+   `validated-findings.json`. It records every sovereignty target's fingerprint and content hash
+   (or explicit absence) in `$WORKSPACE/sovereignty-guard.json`, then returns only path, hash, and
+   count in a manifest of at most 2 KiB.
 2. **Dispatch the fixer** per the contract above, including item 7's explicit do-not-touch
    instruction naming these same files.
-3. **After FIX returns**, re-hash every one of those same files (or re-check existence for files
-   recorded as absent).
+3. **After FIX returns**, re-dispatch the independent guard worker with
+   `sovereignty-guard.json`; it re-hashes every recorded file and writes the verdict to the same
+   artifact. The parent receives only a bounded pass/fail manifest.
 4. **Any mismatch fails the round loudly.** If a hash changed, or a file recorded as absent now
    exists, the round does not proceed to RE-REVIEW. Instead:
    - Halt the loop immediately.
@@ -177,11 +180,17 @@ RE-REVIEW always operates on a freshly packaged diff reflecting FIX's actual out
 pre-fix diff, and never a stale package from an earlier loop iteration.
 
 Same discipline as the first packaging in Setup (see SKILL.md's step 4): capture the new diff's
-path and a stat summary into the orchestrator's context and stop there — do not `Read` the
-repackaged diff itself. Every consumer below (the Axis (a) re-cast seats, the Domain-Intent seat
+path, re-run the disposable scope resolver, and retain only bounded `scope.json` in the parent — do
+not `Read` the repackaged diff or per-file stats itself. Every consumer below (the Axis (a) re-cast seats, the Domain-Intent seat
 for Axis (b)) reads it by path in its own disposable context.
 
 ### Axis (a) — Regression check
+
+Before dispatching re-review seats, the reducer reads `$WORKSPACE/fix-report.json` and carries
+every non-sovereignty finding with `fix.applied=false` into `rereview-report.json` as an unresolved
+finding. Skipped fixes are never treated as absent merely because no fixing seat can be re-cast.
+Any such finding forces `clean=false`; only sovereignty-marked skips follow the separate escalation
+path.
 
 Re-run a subset of the panel against the new diff, dispatched the same way as SPAWN — each
 re-cast seat gets the new diff's **path**, never its content, in its own disposable context (see
@@ -210,7 +219,7 @@ catching regressions FIX itself introduced:
   RE-REVIEW's own tier never used. Full mode (no tier flag, or `--auto` resolved to full) is
   unaffected — the broad-surface judgment call still applies exactly as before.
 - This is a smaller re-cast than a full CAST-stage run — CAST's full judgment-based casting only
-  runs again if CONVERGE decides to loop back to SPAWN for a genuinely new full round (see
+  runs again if a fresh resumed invocation requires it for a genuinely new full round (see
   [converge-and-pipeline.md](converge-and-pipeline.md) for the loop-back decision between SPAWN
   and MERGE).
 
@@ -242,7 +251,8 @@ Check whether the fixed code still matches documented domain decisions, wiring i
 
 ### Output
 
-RE-REVIEW emits: a clean/dirty verdict per axis, any new findings surfaced (regressions or
-coherence drift), and — critically — the finding counts and severities needed for CONVERGE's
-progress measurement. Pass this directly into CONVERGE; do not summarize it away, since CONVERGE's
-3-strikes circuit-breaker depends on comparing round-over-round counts precisely.
+RE-REVIEW writes `$WORKSPACE/rereview-report.json`: a clean/dirty verdict per axis, any new
+findings surfaced, and the exact finding counts/severities needed for CONVERGE. Each re-review seat
+writes its own artifact and returns a bounded manifest; a reducer produces `rereview-report.json`.
+Pass that artifact path to CONVERGE. The parent retains only its clean/dirty flag and counts, not
+raw reports or finding prose.

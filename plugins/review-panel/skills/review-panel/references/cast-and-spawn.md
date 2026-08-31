@@ -14,37 +14,36 @@ reading the catalog and the full diff itself, and not by free-recall of "the usu
 
 ### Why CAST is delegated, not inline
 
-The orchestrator's own context has to survive the entire 7-stage loop, across however many
-iterations CONVERGE requires. Reading `persona-catalog.md` in full plus the packaged diff in full
+The orchestrator's own context has to survive the entire 7-stage round until CONVERGE checkpoints
+any continuation. Reading `persona-catalog.md` in full plus the packaged diff in full
 directly into that context — just to decide *who* reviews, before any review has even happened —
 burns a large fraction of the context budget on setup alone: observed panel runs have hit context
 compaction from this alone, before the first reviewer seat was even dispatched. CAST's actual
 output (Step 6's cast list) is small, a dozen short lines. So CAST runs as ONE dispatched subagent
-(`Task`, read-only tools: `Read`, `Grep`, `Glob`) whose large inputs — the catalog and the diff —
-live and die in its own disposable context; only the small cast list returns to the orchestrator.
+(`Task`, tools: `Read`, `Grep`, `Glob`, plus workspace-only `Write` for `cast.json`) whose large inputs — the catalog and the diff —
+live and die in its own disposable context; only the bounded `cast.json` manifest returns.
 
 Dispatch this subagent with:
 - The path to `reviewers/persona-catalog.md` (it reads this itself — Step 1).
-- The path to the packaged diff from Setup, plus the orchestrator's stat summary as a hint — never
+- The path to the packaged diff from Setup, plus `$WORKSPACE/scope.json` as a bounded hint — never
   the diff's full content in the dispatch prompt (it reads the file itself — Step 2).
-- The current session's list of available `Task`/Agent-tool agent types and their one-line
-  descriptions, copied directly into the dispatch prompt. The CAST subagent's own tool grant is
-  `Read`/`Grep`/`Glob` only (no `Task` — see below), so it cannot discover this list itself the way
-  the orchestrator can; Step 4's live-scan needs it handed over verbatim.
+- The path to `$WORKSPACE/agent-types.json`, never the available agent-type list inline. Before
+  dispatch, mechanically filter available types to review/security/test/performance/design/data/
+  domain candidates, truncate names to 80 characters and descriptions to 120 characters, sort
+  deterministically, and retain at most 12 entries so the artifact is at most 2 KiB. If more than
+  12 candidates match, record `agent_type_scan_truncated` as a coverage gap; never copy the
+  unbounded source list into a model prompt or parent-visible tool result.
 - Steps 1 through 6 below as its literal instructions.
-- A firm instruction that its ONLY return value is Step 6's cast list and considered-and-excluded
-  list — no diff commentary, no restated catalog content, nothing that would re-inflate the
-  orchestrator's context with the material this dispatch exists to keep out of it.
+- A firm instruction to write Step 6's cast and considered-and-excluded lists to `cast.json` and
+  return only its bounded manifest — no diff commentary, restated catalog content, or raw list in
+  the return value.
 
 Everything in Steps 1-6 below is what the CAST subagent does internally. The orchestrator's part
-in CAST is just: dispatch it, receive the cast list (and the considered-and-excluded list), move
-to SPAWN.
+in CAST is just: dispatch it, receive the `cast.json` manifest, move to SPAWN.
 
-**If this session's runtime has no `Task`/subagent support at all**, CAST cannot be dispatched as a
-subagent in the first place. Fall back to the orchestrator performing Steps 1-6 inline against the
-catalog and diff directly, accepting the context cost this delegation exists to avoid, and note the
-fallback explicitly in the coverage-honesty statement — this mirrors the Fresh-Eyes seat's own
-no-`Task` fallback (see SPAWN's "Fresh-Eyes seat specifics" below).
+**If this session's runtime has no `Task`/subagent support at all**, stop with error code
+`subagents_unavailable`. Never perform CAST or SPAWN inline: doing so loads the catalog, diff, and
+seat outputs into the parent and violates the hard context contract.
 
 ### Step 1 — Read the catalog
 
@@ -98,7 +97,7 @@ names. Concretely:
   validation at a trust boundary, deserialization, dependency manifests/lockfiles, IaC, CI config)
   is a content question — read whether the diff's logic actually crosses one of those boundaries,
   not whether a file path contains the word "auth."
-- **Concrete threshold, not a vibe call:** check the stat summary first, before deciding how to
+- **Concrete threshold, not a vibe call:** check `scope.json` first, before deciding how to
   read the rest. If the packaged diff exceeds roughly 1,500 changed lines or 25 files, do NOT read
   it in full. Instead read the stat summary (file list + line counts) plus the actual diff hunks
   only for files whose stat suggests non-trivial logic change (exclude clearly-mechanical hunks:
@@ -134,14 +133,14 @@ After Step 3 produces the primary cast list from the catalog, run a secondary en
    (e.g. `architecture-strategist.md`, `security-sentinel.md`, `code-simplicity-reviewer.md`) and
    are surfaced to the orchestrator as dispatchable agent types named
    `compound-engineering:review:<persona>` (visible in the session's available Task/Agent-tool
-   agent-type list, not by directory-listing a `skills/` folder).** So this enumeration step must
+   bounded `agent-types.json`, not by directory-listing a `skills/` folder).** So this enumeration step must
    cover two distinct sources, not one: (a) skill directories under `~/.claude/skills` and any
    plugin's `skills/` tree, matched by reading each `SKILL.md`'s description — the CAST subagent
    discovers this source itself via its own `Read`/`Glob` access; and (b) agent types available via
    the `Task`/Agent tool whose name is namespaced `<plugin>:review:*` or otherwise self-describes as
    a review persona, matched by reading their one-line description the same way — the CAST subagent
-   cannot discover source (b) on its own (it isn't granted `Task`), so this list arrives as part of
-   its dispatch prompt from the orchestrator (see "Why CAST is delegated, not inline" above).
+   cannot discover source (b) on its own (it isn't granted `Task`), so it reads the bounded artifact
+   path supplied by the orchestrator (see "Why CAST is delegated, not inline" above).
    A live-scan that only walks `skills/` directories will silently miss (b) and undercount
    compound-engineering's actual review-persona roster.
 2. For each skill found that is NOT already represented by a catalog seat (check the catalog's
@@ -190,12 +189,10 @@ verifying core ones exist):
 
 ### Step 6 — Emit the cast list
 
-Produce a concrete list: `{seat name, target skill path, model tier, one-line cast rationale}`
-for every seat that will be dispatched. **This is the CAST subagent's entire return value** —
-SPAWN's input and MERGE's provenance record (which seat produced which finding). Return nothing
-else: not the diff content, not the catalog text, not a restatement of the reasoning beyond the
-one-line rationale per seat — the whole point of dispatching CAST as a subagent is that none of
-that material re-enters the orchestrator's context.
+Write the concrete list to `$WORKSPACE/cast.json`: `{seat name, target skill path, model tier,
+one-line cast rationale}` for every seat that will be dispatched. This artifact is SPAWN's input
+and MERGE's provenance record. Return only its bounded manifest — not the diff content, catalog
+text, or a restatement of reasoning.
 
 **Alongside the cast list, also emit a considered-and-excluded list**: `{seat name, one-line
 exclusion rationale}` for every catalog seat that Step 2's full pass decided "no" on. This is the
@@ -206,15 +203,23 @@ a cast rationale; this list stays short (a skip is usually a one-clause reason) 
 reopen the context-budget problem "Why CAST is delegated, not inline" above describes. Live-scan
 supplementary skills (Step 4) that were found but judged not to apply are recorded the same way,
 alongside catalog seats; live-scan skills never even considered (nothing found beyond the catalog
-roster, per Step 4 item 5) have nothing to list. Both lists — cast and considered-and-excluded —
-are the CAST subagent's entire return value; still nothing else re-enters the orchestrator's
-context.
+roster, per Step 4 item 5) have nothing to list. Both lists live in `cast.json`. The CAST subagent
+returns only the artifact-only parent contract's bounded manifest: artifact path, cast count,
+excluded count, and coverage-gap count. Nothing else re-enters the orchestrator's context.
+
+### Finite enrichment and total-seat bounds
+
+Full mode may add **at most 2 supplementary seats**, and only for distinct lenses not already
+represented by the catalog cast. Rank applicable supplements by risk relevance; record every
+applicable-but-deferred supplement in coverage honesty. Every tier dispatches at most 8 total
+seats in one round. If mandatory catalog seats alone would exceed 8, stop with
+`scope_too_broad` and ask for a narrower target rather than silently trimming fail-closed coverage.
 
 ---
 
 ## SPAWN
 
-**Goal:** the orchestrator (having received the cast list back from CAST's subagent) dispatches
+**Goal:** the orchestrator (having received the path to CAST's artifact) dispatches
 every cast seat concurrently against the ONE shared packaged diff, bounded by a concrete
 concurrency cap, with read-only tool access.
 
@@ -252,15 +257,8 @@ Every seat's dispatch prompt references the SAME packaged diff artifact (the fil
 wrote in Setup). **Pass its path, not its content** — each seat subagent reads the file itself in
 its own disposable context, for the same reason CAST's subagent reads it rather than the
 orchestrator (see "Why CAST is delegated, not inline" above). The orchestrator should not hold the
-diff's content at any point during SPAWN either. The one exception: if Setup's fallback step is in
-effect (`scripts/workspace`/`scripts/review-package` unavailable — SKILL.md's Setup step 5; this is
-about missing vendored scripts/bash, nothing to do with `Task`), there is no packaged file to point
-seats at, so the in-conversation fallback diff text must be included directly in each seat's prompt
-— note this in the coverage-honesty statement, since in that path the orchestrator ends up holding
-full diff content too, not just each seat. A session with no `Task` support at all is a separate,
-more fundamental constraint (nothing in SPAWN can be dispatched at all, packaged file or not) — see
-CAST's no-`Task` fallback above and Fresh-Eyes' below; it has no bearing on whether a packaged file
-exists.
+diff's content at any point during SPAWN either. There is no inline-diff fallback: missing
+packaging or subagent support is a terminal execution error.
 
 Do not let any seat run its own `git diff` against possibly-different refs; that would let seats
 silently review different code and break MERGE's ability to correlate findings by file:line against
@@ -275,28 +273,23 @@ silent throttling or dropped dispatches that would corrupt the panel's provenanc
 never ran but isn't reported as skipped). 5 is a conservative bound comfortably under typical
 observed concurrent-subagent limits, while still getting real wall-clock benefit over serial
 dispatch — a minimal panel (6 core seats, no risk-triggered or live-scan additions) fits in two
-batches. **Live-scan supplementary seat count is not bounded to a small constant** — it scales with
-whatever review-capable skills and agent types are actually installed in the session. In
-particular, with `compound-engineering` installed, live-scan (Step 4 above) can surface on the
-order of a dozen or more additional dispatchable `compound-engineering:review:<persona>` agent
-types, several of which may plausibly apply to the same diff simultaneously — a fully-enriched
-panel can run to 3+ batches, not "one or two." Size the batch count off the actual cast list Step 6
-produces, not off an assumed small constant. If a specific runtime is known to support higher
-bounded concurrency reliably, that's an acceptable deviation; document the chosen bound and why in
-the coverage-honesty statement if it differs from 5.
+batches. The finite-enrichment rule above keeps a round at 8 seats or fewer. Do not raise this bound because
+the runtime advertises more concurrency; the bound protects parent context, not merely process
+capacity.
 
 Within a batch, all seats run concurrently. Across batches, run sequentially (batch 2 does not
 start until batch 1's dispatches have returned or been confirmed failed).
 
-### Read-only tool access
+### Read-only code access with a workspace-artifact exception
 
-Every seat subagent dispatched as one of this plugin's own skills gets read-only tools only:
-`Read`, `Grep`, `Glob`, and — for seats whose own SKILL.md specifies it (e.g.
+Every seat subagent dispatched as one of this plugin's own skills gets read-only code access:
+`Read`, `Grep`, `Glob`, plus `Write` solely for its preassigned new file under
+`$WORKSPACE/seat-artifacts/`, and — for seats whose own SKILL.md specifies it (e.g.
 `adversarial-reviewer`'s internal `clean-room-alternative` dispatch, `design-it-twice`'s
 alternative-design generation) — `Task`, so a seat can itself dispatch a nested clean-room subagent
-for its own independence needs. No seat gets `Edit`, `Write`, or `Bash` with mutation capability
-during SPAWN — findings are gathered here, fixes happen later in FIX, under a single fixer with
-full context, not scattered across N seats each making uncoordinated edits.
+for its own independence needs. No seat gets `Edit` or `Bash` with mutation capability during
+SPAWN. A seat must not use `Write` anywhere else, overwrite another seat's artifact, or edit
+reviewed code. Findings are gathered here; code fixes happen later in FIX under one fixer.
 
 This rule is enforced directly for every seat this orchestrator dispatches via a raw prompt (all
 catalog seats, all live-scan skill-file finds). It is **not** something this orchestrator can
@@ -319,18 +312,17 @@ Fresh-Eyes cannot be cast in isolation; report it as skipped in the coverage-hon
 rather than faking independence by running it in shared context with other seats (this mirrors
 `adversarial-reviewer`'s own documented fallback for the same constraint).
 
-### Pipeline-not-barrier applies here too
+### Artifact-path barrier applies here too
 
-SPAWN does not wait for every seat to finish before MERGE can begin working on the seats that
-have already returned. See
-[references/converge-and-pipeline.md](converge-and-pipeline.md) for the full pipeline-not-barrier
-mechanism — the short version: a seat that returns "no findings" should be marked done and free
-MERGE to start consuming other seats' results immediately, not held until the slowest seat in the
-batch also returns.
+SPAWN records each completed seat's artifact path and hash in the workspace index. MERGE starts
+only after every seat is accounted for as completed or as a coverage gap, then consumes that index
+without returning raw reports to the parent. See the artifact-path barrier in
+[references/converge-and-pipeline.md](converge-and-pipeline.md).
 
-### Collect raw output
+### Persist seat output; return manifests only
 
-Each seat returns its findings in the shared `contracts/reviewer-output.md` structure (Strengths /
-Issues: Critical, Important, Minor with file:line / Recommendations / Assessment). Collect all
-seats' raw output, tagged with which seat produced it, as MERGE's input. A seat that errors out
-(subagent failure, tool denial, timeout) is recorded as a coverage gap, not silently dropped.
+Each seat writes its shared `contracts/reviewer-output.md` result to
+`$WORKSPACE/seat-artifacts/<seat-id>.json`. It returns only a bounded manifest with the artifact
+path, seat ID, completion status, finding counts by severity, and any coverage gap. The
+orchestrator passes the list of artifact paths to MERGE and never collects raw seat output in its
+own context. A seat that errors out is recorded as a coverage gap, not silently dropped.

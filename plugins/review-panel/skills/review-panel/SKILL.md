@@ -8,7 +8,7 @@ description: >-
   and loops to convergence or a circuit-break. Not for single-lens checks or
   generating alternative designs (use design-it-twice).
 argument-hint: '[diff, PR, branch, or base..head range to review; --lite, --medium,
-  or --auto to narrow the review tier; --mode=agent for machine output]'
+  or --auto to narrow the review tier; --mode=agent for machine output; --resume PATH --checkpoint-sha256 HEX]'
 allowed-tools: Task, Read, Grep, Glob, Bash
 metadata:
   category: technique
@@ -49,6 +49,39 @@ hand or a `foundry` gate invokes unattended.
   question once you're inside a panel run — the choice above is only about whether to enter a
   panel run at all.
 
+## Hard context preflight
+
+These checks run before CAST and override the normal loop:
+
+1. **Exactly one review target per invocation.** Resolve exactly one review target and finish or
+   checkpoint it. Never chain a second panel automatically, even when two related repositories or
+   PRs were changed together. A second target requires a separate invocation in a fresh Claude Code
+   orchestration context.
+2. **Reject oversized monolithic scope.** After packaging and reading only bounded `scope.json`, stop
+   with error code `scope_too_large` when the target exceeds **25 files** or **1,500 changed lines**
+   (generated, vendored, and lockfile-only changes may be excluded with disclosure). Do this before
+   CAST. Report the measured counts and provide concrete commit ranges or coherent path groups that
+   each fit under both limits. Sensitive files still require full-tier coverage, but not a single
+   unbounded run.
+3. **Artifact-only parent contract.** CAST, SPAWN, MERGE, VALIDATE, FIX, and RE-REVIEW write bulky
+   output beneath the run workspace. Each dispatched worker returns only a manifest of at most
+   **2 KiB** containing artifact path, status, counts, IDs, and coverage gaps. The parent never
+   receives raw seat reports, validator reasoning, full findings lists, fixer reasoning, or diff
+   content. If a worker cannot persist its artifact, the stage fails; it must not fall back to
+   returning the bulky payload inline.
+4. **Resume, do not accumulate.** `--resume PATH --checkpoint-sha256 HEX` is valid only when both
+   arguments are present and the process has
+   `REVIEW_PANEL_FRESH_RESUME=1` and its `REVIEW_PANEL_SESSION_ID` exists and differs from the
+   checkpoint's `origin_session_id`; otherwise fail with `fresh_context_unverifiable`. It reads a
+   checkpoint produced by CONVERGE, verifies its target hashes and artifact paths, and re-enters at
+   the recorded stage in a fresh orchestration context. Before review work it invokes
+   `scripts/checkpoint-claim PATH "$REVIEW_PANEL_SESSION_ID" HEX`; hash mismatch fails before the
+   claim, and an existing content-hash claim fails with `checkpoint_already_consumed`. A resume
+   invocation cannot also name a new target or tier.
+5. **Terminal means stop.** Once any terminal status/report is emitted, perform no more tool calls,
+   follow-up issue creation, acceptance-criteria generation, fixes, or additional review rounds.
+   Never reinterpret residual findings as permission to continue after `capped` or `checkpointed`.
+
 ## The 7-stage loop
 
 ```
@@ -76,8 +109,8 @@ CONVERGE    clean round → done. Else loop to SPAWN with the new diff. 3-strike
 Full procedural detail for each stage lives in `references/` — this file is the entry point and
 spine, not the complete procedure. **Read references one at a time, just-in-time**: read only the
 file for the stage you are about to execute, immediately before executing it — never batch-read
-multiple reference files at the start of a run. The orchestrator's own context has to survive the
-entire loop, potentially across several CONVERGE iterations, so it is the one place in this skill
+multiple reference files at the start of a run. The orchestrator's own context has to survive one
+complete round before CONVERGE checkpoints any permitted continuation, so it is the one place in this skill
 that must stay lean; a stage's reference is cheap to re-read next time you need it but expensive to
 hold unused for the many tool calls between, say, CAST and CONVERGE.
 
@@ -86,7 +119,7 @@ hold unused for the many tool calls between, say, CAST and CONVERGE.
 | CAST, SPAWN | [references/cast-and-spawn.md](references/cast-and-spawn.md) |
 | MERGE, VALIDATE | [references/merge-and-validate.md](references/merge-and-validate.md) |
 | FIX, RE-REVIEW | [references/fix-and-rereview.md](references/fix-and-rereview.md) |
-| CONVERGE, pipeline-not-barrier | [references/converge-and-pipeline.md](references/converge-and-pipeline.md) |
+| CONVERGE, artifact-path barrier | [references/converge-and-pipeline.md](references/converge-and-pipeline.md) |
 | Dual-mode (human + `mode:agent` JSON) | [references/dual-mode-contract.md](references/dual-mode-contract.md) — only if invoked with `mode:agent` |
 | Design Lineage / provenance | [references/design-lineage.md](references/design-lineage.md) — only if a CONTEXT.md/ADR exists to check against |
 | Narrowed-tier parameters | [references/lite-mode.md](references/lite-mode.md) — only if invoked with `--lite`, `--medium`, or `--auto` |
@@ -141,35 +174,34 @@ rather than re-deriving diffs ad hoc:
    prompt.
    - Bare invocation: `plugins/review-panel/scripts/review-package --worktree "$WORKSPACE/review.diff"`.
    - Range/branch invocation: `plugins/review-panel/scripts/review-package BASE HEAD "$WORKSPACE/review.diff"`.
-4. **Do not `Read` this file into the orchestrator's own context.** The packaged diff can be large
-   (real panel runs have seen 100K+ characters), and the orchestrator's context has to survive the
-   whole loop, so it is the one context that must not hold full diff content. Capture only the
-   path plus a stat summary (`git diff --stat BASE..HEAD`, or `git diff --stat HEAD` for the bare
-   working-tree case: file list + added/removed line counts per file) directly into the
-   orchestrator's context — that's enough to sanity-check scope (e.g. flagging a 79-commit,
-   112-file diff before spending a full CAST pass on it) without paying for full hunk content.
-   Every stage that needs the diff's actual content — CAST's dispatched subagent, each SPAWN seat,
-   the FIX fixer, RE-REVIEW's re-cast seats — reads the file itself in its own disposable context,
-   never in the orchestrator's. See `references/cast-and-spawn.md` for how CAST applies this.
-5. If `scripts/workspace` or `scripts/review-package` are unavailable (non-bash environment, or
-   scripts missing from this plugin's install), fall back to running `git diff -U10 BASE..HEAD`
-   (or `git diff -U10 HEAD` for the bare working-tree case) directly and holding the result
-   in-conversation as the shared diff; note this fallback in the final report's coverage-honesty
-   statement — this is the one path where the orchestrator ends up holding full diff content,
-   since there's no file to point subagents at instead.
+4. **Do not `Read` this file or a per-file stat into the orchestrator's own context.** Dispatch one
+   disposable **scope resolver** that computes the file and line totals mechanically without
+   printing `git diff --stat`, `--numstat`, or `--name-only` rows into any model context. It also
+   compares changed paths against the Security criteria in `reviewers/persona-catalog.md`. The
+   resolver writes `$WORKSPACE/scope.json` containing only `files_changed`, `lines_changed`,
+   `sensitive_path_match`, an optional single matched-path example, and the reviewed target hash,
+   then returns a manifest of at most 2 KiB. The parent reads only that bounded manifest and
+   **never captures per-file output**. Every later stage that needs actual diff content reads the
+   packaged file itself in its own disposable context.
+5. If `scripts/workspace` or `scripts/review-package` are unavailable (non-bash environment or a
+   broken plugin install), stop with error code `artifact_packaging_unavailable`. Do not run an
+   inline `git diff` or hold diff content in-conversation; that fallback defeats the hard context
+   contract and recreates the failure this preflight prevents. Otherwise, apply the Hard context
+   preflight's 25-file/1,500-line monolithic scope gate to `$WORKSPACE/scope.json` now, for **every**
+   tier source (explicit full/lite/medium and `--auto`). Stop with `scope_too_large` before CAST;
+   tier selection never bypasses this gate.
 6. **Resolve `--auto` to a concrete tier — only when `tier_source` is `"auto"`; a no-op for
    `"explicit"` runs**, where `tier` is already simply whichever flag (or absence of one) step 1
    parsed. This is the one point in Setup where a tier-selecting flag has a genuine data dependency
-   on the resolved review target, so it runs here, after the diff is packaged and its stat summary
-   captured (step 4, or step 5's fallback stat), and before CAST. Using that stat summary's file
-   list and added/removed line counts — no new git plumbing, no live-scan, no file content beyond
-   path matching — compute:
+   on the resolved review target, so it runs here, after the diff is packaged and the bounded scope
+   artifact is captured in step 4, and before CAST. Read these already-computed signals from
+   `$WORKSPACE/scope.json`:
    - `files_changed`: count of distinct files in the stat summary.
    - `lines_changed`: total added + deleted lines across every file in the stat summary.
    - `sensitive_path_match`: true if any changed file's path matches the sensitive-path criteria
      `reviewers/persona-catalog.md`'s Security entry defines (the single source of truth for that
      path list, per Architecture invariant 2) — cited, never redefined, by
-     `references/lite-mode.md`'s "Auto resolution" section.
+     `references/lite-mode.md`, "Auto resolution" section.
 
    Feed these three signals into `references/lite-mode.md`'s "Auto resolution" decision table to
    get a concrete `tier` (`"full" | "medium" | "lite"`). Record `files_changed`, `lines_changed`,

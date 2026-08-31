@@ -1,7 +1,7 @@
 ---
 name: review-panel
 description: Run the review-panel orchestrator against a diff, PR, or branch — human-interactive by default, or unattended machine output with --mode=agent; narrow the review scope with --lite, --medium, or --auto
-argument-hint: "[base..head | branch | PR] [--mode=agent] [--lite | --medium | --auto]"
+argument-hint: "[base..head | branch | PR] [--mode=agent] [--lite | --medium | --auto] [--resume PATH --checkpoint-sha256 HEX]"
 allowed-tools: Task, Read, Grep, Glob, Bash
 ---
 
@@ -33,18 +33,32 @@ Parse the arguments to extract:
   other piece of state this command is responsible for setting; everything else about narrowed-tier
   behavior — the per-stage guarantees each tier gives, and `--auto`'s resolver and decision table —
   is owned by `skills/review-panel/references/lite-mode.md`.
+- **Resume flag**: `--resume PATH --checkpoint-sha256 HEX` resumes the checkpoint at `PATH`. Both
+  arguments are required together. The expected hash is supplied by the prior invocation, not
+  recomputed into the command by the resumed process. Resume is mutually exclusive with
+  a new review target and with tier flags: the checkpoint already owns the target, tier, cast list,
+  round number, and progress counters. Accept it only when the new process has
+  `REVIEW_PANEL_FRESH_RESUME=1` **and** `REVIEW_PANEL_SESSION_ID` exists and differs from the
+  checkpoint's `origin_session_id`; otherwise stop with `fresh_context_unverifiable`. The plugin's
+  SessionStart hook supplies the session ID. Reject a missing/unreadable path before doing any
+  review work. After structure/hash checks, run
+  `plugins/review-panel/scripts/checkpoint-claim PATH "$REVIEW_PANEL_SESSION_ID" HEX`; reject its
+  `checkpoint_hash_mismatch` or `checkpoint_already_consumed` result. A plain slash-command
+  resume in the current conversation is forbidden because it defeats the checkpoint boundary.
 
 ## Action
 
 Invoke the **review-panel** skill (`skills/review-panel/SKILL.md`) as the orchestrator, passing
-the parsed review target and mode through. Read `SKILL.md` and its `references/` files — do not
-attempt to run the panel from memory of this command file. In particular:
+the parsed target, mode, and optional resume path through. Read `SKILL.md`, then load stage
+references **one at a time, just-in-time** immediately before that stage. **Never preload all
+references** or retain a completed stage's procedure in the parent context. Do not attempt to run
+the panel from memory of this command file. The reference map is:
 
 - `skills/review-panel/SKILL.md` — the 7-stage loop (CAST → SPAWN → MERGE → VALIDATE → FIX →
   RE-REVIEW → CONVERGE) and diff-packaging setup.
 - `skills/review-panel/references/cast-and-spawn.md`,
-  `references/merge-and-validate.md`, `references/fix-and-rereview.md`,
-  `references/converge-and-pipeline.md` — full procedural detail per stage.
+  `references/merge-and-validate.md`, `references/fix-and-rereview.md`, and
+  `references/converge-and-pipeline.md` — load only the file for the stage being entered.
 - `skills/review-panel/references/dual-mode-contract.md` — exactly how each mode's output is
   shaped; read this before producing any final output.
 - `skills/review-panel/references/lite-mode.md` — the `--lite`/`--medium`/`--auto` flag contract,
@@ -59,21 +73,28 @@ a circuit-break) is reached.
 
 ### Human-interactive mode (default — no `--mode=agent`)
 
-Run the full loop while narrating progress conversationally as each stage completes, per
-`dual-mode-contract.md`'s "Human-interactive mode" section. When the loop ends, produce the
-`# Review Panel Report` markdown structure specified there (Cast, Findings, Fixes Applied,
-Re-Review, Convergence, Coverage Honesty), then drive the interactive apply loop described in
-that same file: offer to show the diff as committed, run a manual additional round on a specific
-disputed finding, or accept as final. If the run circuit-broke, hand off the diagnosis clearly
-instead of guessing at a resolution.
+Run the loop without streaming raw findings or subagent reports into the conversation. Emit at
+most one short progress line per stage from its bounded manifest. When the loop ends, dispatch the
+final synthesis worker and render its bounded `final-summary.json` as the `# Review Panel Report`
+structure specified there (Cast, Findings, Fixes Applied, Re-Review, Convergence, Coverage
+Honesty). Any requested additional round is a new target invocation launched with `claude -p` in a
+fresh process, never continued in this parent conversation. If the run circuit-broke, hand off the
+diagnosis clearly instead of guessing at a resolution.
 
 ### Unattended mode (`--mode=agent` present in `$ARGUMENTS`)
 
 Run the identical loop with no interactive prompts, no clarifying questions, and no
-partial/streaming output. When the loop reaches `converged` or `circuit_broken` (or fails to
-execute at all, i.e. `error`), emit **exactly one JSON object** — the contract shape defined in
+partial/streaming output. When the invocation reaches any terminal status (including `checkpointed`, `converged`,
+`circuit_broken`, or `error`), emit **exactly one JSON object** — the contract shape defined in
 `dual-mode-contract.md`'s "`mode:agent` JSON contract" section — as the final and only output.
 Nothing else should follow it.
+
+### Terminal-state hard stop
+
+After emitting any terminal status (`converged`, `capped`, `checkpointed`, `escalated`,
+`circuit_broken`, or `error`), make no more tool calls and start no follow-up review, issue-creation,
+acceptance-criteria, or fix round. Residual work is reported, not silently continued. Only a new
+user invocation or a fresh-process `--resume` command may start more work.
 
 ## Wiring into automation
 
@@ -92,6 +113,7 @@ field maps to `decision_on_failure`.
 /review-panel --lite
 /review-panel main..feature/checkout-fix --medium
 /review-panel feature/checkout-fix --auto --mode=agent
+REVIEW_PANEL_FRESH_RESUME=1 claude -p "/review-panel --resume .review-panel/workspace/converge-state-round2.json --checkpoint-sha256 <sha256>"
 ```
 
 - No arguments: reviews the current working-tree diff against `HEAD`, human-interactive.

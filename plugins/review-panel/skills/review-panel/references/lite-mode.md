@@ -58,15 +58,15 @@ any of the above — its guarantees are unchanged and its `narrowed_guarantees` 
 ## Auto resolution
 
 `--auto` defers tier selection to a resolver that runs once, in `SKILL.md`'s Setup (step 6, after
-the diff is packaged and its stat summary captured, before CAST) — using only cheap, pre-CAST
+the diff is packaged and bounded `scope.json` is captured, before CAST) — using only cheap, pre-CAST
 signals computed from the diff's file list and added/removed line counts. It never reads live-scan
 results and never reads file content beyond path matching; either would require work CAST itself is
 responsible for, and would defeat the point of a cheap pre-CAST resolver.
 
 ### Signals
 
-Three signals, computed once per run from the stat summary `SKILL.md` Setup step 4 (or its step 5
-fallback) already captured:
+Three signals, computed once per run in the `scope.json` artifact `SKILL.md` Setup step 4 already
+captured:
 
 - **`files_changed`**: count of distinct files touched by the diff.
 - **`lines_changed`**: total added + deleted lines across every touched file.

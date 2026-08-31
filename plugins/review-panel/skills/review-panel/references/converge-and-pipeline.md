@@ -1,7 +1,6 @@
-# CONVERGE, and Pipeline-Not-Barrier
+# CONVERGE and the Artifact-Path Barrier
 
-Stage 7, plus the cross-cutting pipeline-not-barrier mechanism that stages CAST through MERGE
-implement (not a separate stage of its own — it's a property of how the earlier stages run).
+Stage 7, plus the cross-cutting artifact-path barrier that stages CAST through MERGE implement.
 
 ---
 
@@ -33,41 +32,36 @@ must circuit-break and escalate to a human.
      `escalated` means the loop correctly recognized a finding it must never resolve on its own and
      stopped by design. These are three different outcomes and must stay distinguishable
      downstream.
-   - If sovereignty-marked findings coexist with other, ordinary unresolved findings in the same
-     round, still apply the dirty-round loop (step 2 below) to the ordinary findings across further
-     rounds, subject to the active tier's cap — `escalated` is not exclusive of continuing to
-     converge on everything else. Report `escalated` as the overall run status once every
-     *non*-sovereignty finding has otherwise reached a clean state, or once the active tier's cap is
-     reached on those ordinary findings (report both `escalated` and the tier-cap diagnosis
-     together in that case); until then, the round is simply dirty (step 2) with the sovereignty
-     finding(s) noted as carried-forward-by-design in the report rather than counted as regressions.
+   - If sovereignty-marked findings coexist with ordinary unresolved findings, apply step 2 to the
+     ordinary findings. Emit top-level `escalated` only after every ordinary finding is clean. If a
+     narrowed-tier cap is reached while ordinary findings remain, top-level status is `capped` and
+     `convergence.escalation.pending` independently remains true; never pass a dirty ordinary
+     finding under the non-blocking `escalated` status.
 1. **Clean round → done.** If RE-REVIEW's Axis (a) regression check and Axis (b) coherence check
-   both come back clean (zero new findings, zero unresolved findings from the round that just
+   both come back clean (`unresolved_skipped_count == 0`, zero new findings, zero unresolved findings from the round that just
    fixed) **and no sovereignty-marked finding remains** (step 0), the loop stops. Emit the final
    report (human mode) or the final JSON blob (`mode:agent`) per
    [dual-mode-contract.md](dual-mode-contract.md), with status `converged`. This is unchanged in
    every tier — a clean round is `converged` whether reached in round 1 under `--lite`, round 1 or
    2 under `--medium`, or any round under full mode.
 2. **Dirty round → check the active tier's cap, then loop or terminate.** If RE-REVIEW surfaces any
-   new or unresolved finding, first check the round just completed against the active tier's
+   new or unresolved finding, including any non-sovereignty skipped fix, first check the round just completed against the active tier's
    iteration cap:
    - **Lite:** capped at **1** total round. If the round that just went dirty was round 1 (it
      always is, under lite), do **not** loop back to SPAWN — terminate immediately with status
      `capped` (see "Narrowed-tier iteration cap" below).
    - **Medium:** capped at **2** total rounds. If the round that just went dirty was round 2,
-     terminate with status `capped`. If it was round 1, the tier still has its second permitted
-     round available — loop back to SPAWN as step 3 describes, exactly once.
-   - **Full** (no tier flag, or `--auto` resolved to full): no tier cap — unchanged from today,
-     loop back to SPAWN as step 3 describes, subject only to the existing 3-strikes circuit-breaker
-     and the round-8 hard cap below. Full mode's dirty-round-loops-to-SPAWN behavior, the 3-strikes
-     breaker, and the round-8 hard cap are all unmodified by this phase and are simply never
-     reached under either narrowed tier, since a narrowed-tier loop never proceeds past its own
-     cap (1 or 2 rounds) to begin with.
+     terminate with status `capped`. If it was round 1, checkpoint and stop this invocation; the
+     fresh resume runs the second and final permitted round.
+   - **Full** (no tier flag, or `--auto` resolved to full): checkpoint and stop the current
+     invocation with status `checkpointed`. Full mode has no total-round cap across resume
+     invocations, but it never starts another full round in the same orchestration context. The
+     3-strikes breaker and round-8 hard cap carry across checkpoints.
 
-   When step 2 does loop (dirty round, cap not yet reached): take the new packaged diff RE-REVIEW
-   already produced and hand it to the next iteration, per step 3 below.
-3. **Loop back to SPAWN, not always CAST.** The re-entry point for a looped iteration is
-   **SPAWN**, using the same cast list CAST already produced, UNLESS RE-REVIEW's findings suggest
+   When step 2 permits another round, take the new packaged diff RE-REVIEW already produced and
+   record it in the checkpoint for the next fresh invocation, per step 3 below.
+3. **Resume at SPAWN, not always CAST.** The re-entry point recorded for the next fresh invocation
+   is **SPAWN**, using the same cast list CAST already produced, UNLESS RE-REVIEW's findings suggest
    the diff has changed in a way that plausibly changes which seats should be cast (e.g. FIX
    introduced a new type/schema surface that wasn't there in round 1, which would newly trigger
    Domain-Intent if it wasn't already cast). In that case, re-run CAST first. **Justification for
@@ -211,124 +205,67 @@ replacement for the 3-strikes breaker — whichever triggers first ends the loop
 
 ### Context-budget checkpoint
 
-The mechanisms above decide *whether* to loop; this one preserves restartable state. The
-orchestrator's own context accumulates round over round — every CAST/SPAWN/MERGE/VALIDATE/FIX/
-RE-REVIEW dispatch prompt and return value it has issued or received since the run began, on top
-of whatever the invoking conversation held before this skill was ever invoked. A skill's own
-markdown instructions cannot introspect the orchestrator's actual token count from inside a
-running session, so this breaker cannot key off "context is at X% full" the way a runtime-level
-compactor might. It uses the one signal CONVERGE already tracks precisely for every other purpose
-in this file: **the round number.**
-
-**Threshold: every 3rd loop-back to SPAWN.** Check this immediately after decision-rule step 2
-decides to loop (dirty round, tier cap not yet reached) and before dispatching the next round's
-SPAWN batch, using the round number of the iteration *about to start* (i.e. the round that just
-went dirty was a multiple of 3 — after round 3, after round 6). This is a fixed, orchestrator-
-countable proxy for context accumulation, not a claim that context actually overflows at exactly
-this point — same spirit as the round-8 hard cap above (a concrete, checkable number standing in
-for an underlying resource concern an agent following markdown instructions cannot measure
-directly). Full mode is the only tier this can ever fire in: lite is capped at 1 total round and
-medium at 2 (Decision rule step 2), so neither ever reaches a 3rd loop-back — this breaker is
-structurally unreachable under either narrowed tier, exactly as the 3-strikes breaker and round-8
-cap already are (see "Tier exclusivity, both directions" above).
-
-**On crossing the threshold, checkpoint state before dispatching SPAWN in the current orchestrating
-conversation.** A skill is not an Agent `subagent_type`, so this procedure must not try to dispatch
-the `review-panel` skill itself through `Task`. Instead:
-
-1. **Write a state-handoff file** to the run's scratch workspace (the same
-   `.review-panel/workspace/` directory `scripts/workspace` resolves for the packaged diff — see
-   SKILL.md's Setup step 2), named `converge-state-round<N>.json` where `N` is the next round
-   about to start. This file is the recovery record if the session compacts or the user resumes the
-   loop later. It must contain at minimum:
+**Every dirty round that is allowed to continue** — full mode, plus medium round 1 — checkpoints
+and terminates the current invocation before another round can inflate the parent context. Write
+`.review-panel/workspace/converge-state-round<N>.json`
+for the next round. It must contain at minimum:
+   - `checkpoint_id`: a run-and-round audit identifier matching `[A-Za-z0-9_-]{1,128}`. Replay
+     protection keys on the externally supplied checkpoint content hash, never this mutable field or
+     the checkpoint filename.
    - `round`: the next round number to run.
+   - `mode`, the canonical review target/range, the reviewed target hash, and
+     `origin_session_id` copied from `REVIEW_PANEL_SESSION_ID`.
    - `tier` and `tier_source` (as resolved in Setup).
    - `strikes`: the current consecutive-no-progress count (per the 3-strikes circuit-breaker
      above), and the finding counts (total, by severity) for at least the most recent round, since
      "progress" is defined relative to the previous round's counts.
-   - `sovereignty_findings`: any findings still carrying `sovereignty: human-required`, verbatim,
-     so the new dispatch does not need to re-derive them from a fresh VALIDATE pass.
+   - `progress_artifact_path` and its content hash. The immutable, round-specific artifact contains
+     non-sovereignty finding fingerprints and severities plus a bounded last-three-round history.
+     On resume, verify the hash and compare this artifact with the new `rereview-report.json` before
+     updating or resetting strikes; aggregate counts and free-text notes are not substitutes for
+     identity-aware progress evidence.
+   - `sovereignty_artifact_path` and its content hash. Store sovereignty finding details in a
+     separate artifact; the checkpoint **never embeds findings** or their evidence verbatim.
    - `packaged_diff_path`: the path to the current packaged diff (the file the last RE-REVIEW
      iteration produced), so the fresh dispatch never needs to re-run `review-package` before
      resuming SPAWN.
-   - `cast_list`: the full cast list from CAST (or the last re-cast), so the fresh dispatch skips
-     re-running CAST unless RE-REVIEW's findings already flagged a re-cast as necessary per step 3
-     above.
-   - A short free-text `carry_forward_notes` field capturing anything about *why* rounds so far
+   - `cast_artifact_path`, its content hash, cast count, and `recast_required`; never embed the cast
+     list or rationales in the checkpoint.
+   - A `carry_forward_notes` field capped at 512 UTF-8 bytes capturing anything about *why* rounds so far
      have or haven't shown progress that a bare finding-count table wouldn't convey (e.g. "the same
      Important finding at foo.ts:42 has survived 2 fix attempts using different approaches each
      time").
-2. **Continue in the current orchestrator** by dispatching the next SPAWN round. Keep bulky state
-   in the checkpoint and packaged-diff files rather than inlining it into prompts. If compaction or
-   an explicit resume occurs, read the checkpoint first and reconstruct `round`, `tier`, `strikes`,
-   sovereignty findings, and the cast list before re-entering at SPAWN.
-3. **Every subsequent 3rd loop-back repeats the checkpoint**, so round 6 writes
-   `converge-state-round7.json` before round 7 begins.
-4. **This is housekeeping, not a terminal state.** It does not stop the loop or alter status.
-   Mention the checkpoint in coverage notes without claiming a fresh orchestrator was dispatched.
+2. The checkpoint itself is at most 2 KiB. Verify every referenced artifact exists and record its
+   content hash; use paths, IDs, counts, and hashes rather than copied artifact content.
+   Set `origin_session_id` and leave the sibling claim path absent.
+3. After writing the checkpoint, compute its SHA-256 and emit status `checkpointed`, the checkpoint
+   path, and the exact resume command `/review-panel --resume <checkpoint> --checkpoint-sha256
+   <sha256>`. The current
+   orchestrator **must not dispatch the next SPAWN** or perform more review work.
+4. Continue only via `REVIEW_PANEL_FRESH_RESUME=1 claude -p "/review-panel --resume <checkpoint> --checkpoint-sha256 <sha256>"`
+   in a **fresh Claude Code orchestration context**. The resume path requires the current
+   `REVIEW_PANEL_SESSION_ID` to exist and differ from `origin_session_id`, verifies hashes, restores
+   counters, and then runs `scripts/checkpoint-claim <checkpoint> "$REVIEW_PANEL_SESSION_ID"
+   <sha256>` to verify and claim that exact content atomically. If the hash differs, stop with
+   `checkpoint_hash_mismatch`; if the content-hash claim already exists, stop with
+   `checkpoint_already_consumed`. Only the successful claimant enters SPAWN (or CAST when
+   `recast_required` is true).
 
-**Below this threshold — i.e. every loop-back that isn't a multiple of 3 — behavior is exactly
-what decision-rule step 2/3 already describe: the same orchestrating conversation dispatches the
-next SPAWN round directly, with no checkpoint.** This mechanism changes nothing about
-rounds 1, 2, 4, 5, 7, or 8; it only inserts checkpoints at the round-3 and round-6 boundaries
-within full mode's existing loop.
+This is a terminal state for one invocation but not for the logical review run. `mode:agent`
+automation must launch a new process/session for the resume command; repeatedly feeding the resume
+back into the same conversation defeats the context boundary and is a contract violation.
 
 ---
 
-## Pipeline-Not-Barrier
+## Artifact-path barrier
 
 This is the concurrency shape CAST through MERGE actually run in — described here as its own
 section because it's load-bearing across multiple stages, not a property of any single one.
 
-### The principle, in this orchestrator's own words
-
-A seat that finishes reviewing and has nothing to report should be marked done and let the rest of
-the pipeline move on immediately — it must not sit and wait for the slowest seat in its batch to
-also finish before MERGE is allowed to start processing anyone's output. Symmetrically, a seat that
-comes back with findings should have those findings flow into MERGE as soon as they're available,
-not held back until every other seat in the batch also reports in. The only point in the entire
-7-stage loop where everything must wait for everything else is immediately before final synthesis
-— CONVERGE's decision (and the report it produces) genuinely needs every seat's output and every
-RE-REVIEW axis's result to make a correct call, since progress-measurement and the clean/dirty
-verdict are both whole-round judgments, not per-seat ones.
-
-### Concretely, in this orchestrator
-
-- **Within a SPAWN batch** (see [cast-and-spawn.md](cast-and-spawn.md)'s bounded-parallel
-  concurrency bound): as each seat in the batch returns, immediately start MERGE's fingerprinting
-  and confidence-scoring work on that seat's findings against whatever has already been merged so
-  far, rather than buffering all batch results and starting MERGE only once the whole batch is
-  back. A seat reporting zero findings contributes nothing to fingerprinting and should not block
-  MERGE's processing of seats that did report findings. **Granularity caveat:** a batch of
-  concurrent `Task` dispatches typically returns to the orchestrating conversation together as a
-  group, not with true per-seat completion events the orchestrator can observe individually — most
-  runtimes have no mechanism to notice "seat 2 of 5 just finished" while seats 1, 3, 4, 5 are still
-  running. In practice this principle applies at the granularity of "as each batch of up to 5
-  concurrent seats returns," not literally streaming per-individual-seat; the batch-vs-batch
-  incrementality described below (start MERGE on batch 1 while batch 2 runs) is where the real
-  pipelining benefit comes from in most runtimes. If a specific runtime does expose true per-seat
-  completion within a batch, take advantage of it — but don't assume it's available by default.
-- **Across SPAWN batches**: if a panel needs 2 batches (more than 5 cast seats), MERGE can begin
-  consolidating batch 1's results while batch 2 is still running — MERGE's fingerprint/confidence
-  work is incremental (each new finding either joins an existing fingerprint group or starts a
-  new one), so there's no structural reason to wait for batch 2 before starting on batch 1's
-  output.
-- **VALIDATE**: each merged finding's validator(s) can be dispatched as soon as that finding clears
-  MERGE, independent of whether other findings have finished merging yet. A finding with a clear,
-  early fingerprint match doesn't need to wait for a slower, more ambiguous finding elsewhere in
-  the diff to finish its own merge/dedup resolution.
-- **The one hard barrier**: CONVERGE's decision. It cannot run until (a) every cast seat's SPAWN
-  result is accounted for (returned, or recorded as a coverage gap if it errored/timed out), (b)
-  every surviving finding has completed VALIDATE, (c) FIX has completed and reported its
-  fix/skip list, and (d) RE-REVIEW has completed both axes. Any one of these still pending means
-  CONVERGE cannot yet decide clean-vs-loop-vs-circuit-break, since the decision genuinely depends
-  on the complete picture.
-
-### Why this matters here specifically
-
-The plan's core insight is perspective diversity from independent seats — but independence of
-*judgment* is not the same as independence of *scheduling*. Serializing every seat behind a full
-batch barrier before MERGE can start doesn't add any independence value (each seat already formed
-its judgment in isolation during SPAWN); it only adds wall-clock latency. Pipeline-not-barrier is
-how this orchestrator keeps the diversity benefit of casting many seats without paying for it with
-a slow, fully-serialized stage-by-stage loop.
+The parent schedules bounded SPAWN batches and records only artifact paths and hashes in
+`$WORKSPACE/seat-artifacts/index.json`. After all seats are accounted for, it dispatches one MERGE
+worker with that index path. The worker owns fingerprinting and confidence scoring and returns one
+bounded MERGE manifest. The **parent never fingerprints**, scores, streams, or accumulates raw
+findings. VALIDATE begins only from `merged-findings.json` and follows its own bounded batch
+contract. This deliberate artifact-path barrier costs some pipelining latency; preserving the
+parent context is more important than shaving a few minutes from a review.

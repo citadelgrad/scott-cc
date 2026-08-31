@@ -107,8 +107,8 @@ then step 1/2:
 - **Full**: clean round 1 → **`converged`** after 1 round. Total dispatches: 6 + 5 + 3 = **14**.
 - **Lite**: dirty round 1, cap is 1 total round (`converge-and-pipeline.md` line 38-40) → **do
   not loop** → **`capped`**, with F3 reported outstanding. Total dispatches: 1 + 2 + 2 = **5**.
-- **Medium**: dirty round 1, cap is 2 total rounds, round 1 has budget remaining → loop back to
-  SPAWN for round 2 (line 41-43), dispatching medium's same narrowed candidate set again
+- **Medium**: dirty round 1, cap is 2 total rounds, round 1 has budget remaining → emit
+  `checkpointed` and resume SPAWN for round 2 in a fresh process, dispatching medium's same narrowed candidate set again
   (`{Adversarial, Simplicity, Structural}`, per `converge-and-pipeline.md`'s "full cast list" note
   applying per-tier, not per-run) = 3. F3 was already surfaced by round-1's axis (b) and is fed
   directly into round 2's MERGE pass per `fix-and-rereview.md` line 168 ("treated as a new finding
@@ -312,18 +312,14 @@ implemented, just not live-dispatched by this document.
 > narrowing the review scope never narrows it (SPEC Architecture invariant 3...). If one or more
 > sovereignty-marked findings remain: Emit status `escalated`... Do **not** loop back to SPAWN for
 > these findings, and do **not** collapse this into `circuit_broken` or `capped`... If
-> sovereignty-marked findings coexist with other, ordinary unresolved findings in the same round,
-> still apply the dirty-round loop... subject to the active tier's cap... Report `escalated` as the
-> overall run status once every *non*-sovereignty finding has otherwise reached a clean state, or
-> once the active tier's cap is reached on those ordinary findings (report both `escalated` and the
-> tier-cap diagnosis together in that case)...
+> sovereignty-marked findings coexist with ordinary unresolved findings, apply the dirty-round
+> loop subject to the active tier's cap. Report `escalated` only after ordinary findings are clean;
+> if the cap is reached while ordinary findings remain, report top-level `capped` with
+> `convergence.escalation.pending=true`.
 
-The last clause is new since the previous pass's quote and matters here: `escalated` can now
-*coexist* with a tier-cap diagnosis in the same report, when sovereignty and ordinary findings are
-both outstanding at once (see `dual-mode-contract.md`'s merged `capped`/`escalated` status fields).
-The walkthrough below has only a single finding — the sovereignty one — so that coexistence case
-doesn't arise on this fixture; it's noted here for completeness, not because it changes this
-fixture's result.
+The walkthrough below has only a single finding — the sovereignty one — so the combined
+sovereignty-plus-ordinary-cap case does not arise. If it did, `capped` would remain blocking while
+the orthogonal escalation field preserved the human-sign-off requirement.
 
 ### Applying it to `sensitive-migration/`
 

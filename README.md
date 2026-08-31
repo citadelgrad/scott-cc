@@ -1,6 +1,6 @@
 # Scott's Agent Skills and Claude Code Setup
 
-Portable agent skills plus a modular Claude Code plugin suite for productive development. The core plugin provides **8 slash commands**, **7 specialized AI agents**, **29 skills**, **5 hooks**, and **2 stored templates that produce 3 project artifacts**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, multi-persona code review, and more.
+Portable agent skills plus a modular Claude Code plugin suite for productive development. The core plugin provides **8 slash commands**, **7 specialized AI agents**, **29 skills**, **6 hooks**, and **2 stored templates that produce 3 project artifacts**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, multi-persona code review, and more.
 
 Created and maintained by **Scott Nixon ([@citadelgrad](https://github.com/citadelgrad))**. See [Skill Authorship and Provenance](SKILL-AUTHORSHIP.md) for the per-skill inventory and [review-panel credits](plugins/review-panel/CREDITS.md) for original creators of vendored and adopted work.
 
@@ -29,7 +29,7 @@ Install the complete Claude Code plugin, including agents, slash commands, and h
 | Commands | 8 | `delegate-first`, `gha`, `handoff`, `security-cheatsheet`, `thermo-nuclear`, `google-standard`, `polyglot-idiom`, `concurrency-atomicity` |
 | Agents | 7 | `api-debugger`, `backend-architect`, `deep-research-agent`, `frontend-architect`, `refactoring-expert`, `requirements-analyst`, `system-architect` |
 | Skills | 29 | `init`, `acceptance-criteria`, `cli-design`, `delegate-first`, `grill-me`, `adversarial-reviewer`, `tdd`, `python-simplifier`, `typescript-simplifier`, `go-simplifier`, `rust-simplifier`, `swift-simplifier`, `karpathy-guidelines`, `property-based-testing`, `verified-implementation`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory`, `thinking-in-systems`, `emergent-behavior`, `skillopt-sleep-learned`, `thermo-nuclear`, `google-standard`, `polyglot-idiom`, `concurrency-atomicity` |
-| Hooks | 5 | `terminal-bell` (Stop), `toon-post-hook` (PostToolUse), `prefer-modern-tools` (PreToolUse), `data-layer-guard` (PreToolUse), `post-compaction` (SessionStart after compact/clear) |
+| Hooks | 6 | `terminal-bell` (Stop), `toon-post-hook` (PostToolUse), `prefer-modern-tools` (PreToolUse), `data-layer-guard` (PreToolUse), `post-compaction` (SessionStart after compact/clear), `review-panel-session-identity` (SessionStart) |
 | Templates | 3 | `.pre-commit-config.yaml`, `CLAUDE.md`, `AGENTS.md` |
 | Sub-plugins | 9 | `beads-epic-builder`, `browser-automation`, `research-tools`, `security-suite`, `performance-optimization`, `mutation-testing`, `review-panel`, `variant-explorer`, `triage` |
 
@@ -202,7 +202,7 @@ Install from the marketplace:
 | `security-suite` | `stable` | Security advisory and vulnerability scanning. |
 | `performance-optimization` | `unmaintained` | Performance engineering with bottleneck analysis and profiling. |
 | `mutation-testing` | `stable` | Comprehensive mutation testing with zombie test detection and automated refactoring. |
-| `review-panel` | `stable` | Multi-persona adversarial code and design review panel. |
+| `review-panel` | `stable` | Context-bounded, checkpointed multi-persona adversarial code and design review panel. |
 | `variant-explorer` | `stable` | Parallel blind-builder variant exploration with AC/taste/simplicity judging. |
 | `triage` | `stable` | Foundry-resident triage spine: detect → bead → reproduce → fix → gate loop. |
 
@@ -324,13 +324,13 @@ Comprehensive mutation testing with zombie test detection and automated refactor
 
 ### review-panel
 
-Multi-persona adversarial code and design review panel, vendoring and adapting patterns from compound-engineering, clairvoyance, superpowers, ponytail, and mattpocock/skills.
+Multi-persona adversarial code and design review panel, vendoring and adapting patterns from compound-engineering, clairvoyance, superpowers, ponytail, and mattpocock/skills. Version 1.0 makes the orchestrator context-bounded: detailed stage data stays in workspace artifacts, oversized targets fail before CAST, and continuing rounds resume from one-shot checkpoints in fresh Claude Code sessions. See the [v1.0 context-hardening guide](docs/review-panel-context-hardening.md) and [visual engineering brief](docs/reports/review-panel-context-hardening.html).
 
 **Commands (1)**
 
 | Command | Description |
 |---------|-------------|
-| `/review-panel [base..head \| branch \| PR] [--mode=agent]` | Run the review-panel orchestrator against a diff, PR, or branch — human-interactive by default, or unattended machine output with `--mode=agent`. |
+| `/review-panel [base..head \| branch \| PR] [--mode=agent] [--lite \| --medium \| --auto]` | Run one bounded review target — human-interactive by default, unattended with `--mode=agent`, or narrowed with an explicit/automatic tier. Dirty continuing rounds emit a fresh-process resume command with `--resume` and `--checkpoint-sha256`. |
 
 **Agents (1)**
 

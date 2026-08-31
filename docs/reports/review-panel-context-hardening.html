@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Review Panel Context Hardening — Engineering Brief</title>
+  <style>
+    :root {
+      --ink: #16201c;
+      --muted: #5b6862;
+      --paper: #f3f0e8;
+      --surface: #fffdf7;
+      --line: #d8d2c3;
+      --green: #1e6b50;
+      --green-soft: #dcece4;
+      --amber: #a65f14;
+      --amber-soft: #f5e7d3;
+      --red: #a23f35;
+      --red-soft: #f3ddda;
+      --blue: #315b7d;
+      --blue-soft: #dfe9f1;
+      --shadow: 0 14px 40px rgba(35, 39, 34, .08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(rgba(255,255,255,.3) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px),
+        var(--paper);
+      background-size: 26px 26px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+    .page { width: min(1500px, calc(100% - 64px)); margin: 0 auto; padding: 36px 0 72px; }
+    header {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(28px, 5vw, 58px);
+      background: var(--ink);
+      color: #fdf9ee;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+    header::after {
+      content: "";
+      position: absolute;
+      width: 320px; height: 320px;
+      right: -110px; top: -130px;
+      border: 52px solid rgba(113, 192, 155, .17);
+      border-radius: 50%;
+    }
+    .eyebrow { color: #8dd2ae; letter-spacing: .14em; font-size: .78rem; font-weight: 800; text-transform: uppercase; }
+    h1 { max-width: 850px; margin: 12px 0 16px; font-size: clamp(2.1rem, 5vw, 4.3rem); line-height: 1.02; letter-spacing: -.045em; }
+    .lede { max-width: 980px; margin: 0; color: #d6ddd8; font-size: clamp(1rem, 1.35vw, 1.2rem); }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+    .badge { display: inline-flex; align-items: center; gap: 8px; padding: 7px 11px; border: 1px solid rgba(255,255,255,.18); border-radius: 999px; color: #e8eee9; font-size: .82rem; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #7dd5a8; box-shadow: 0 0 0 4px rgba(125,213,168,.14); }
+    nav { display: flex; gap: 8px; flex-wrap: wrap; margin: 22px 0; }
+    nav a { color: var(--ink); background: rgba(255,255,255,.65); border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; text-decoration: none; font-size: .85rem; font-weight: 700; }
+    nav a:hover { background: #fff; }
+    section { margin-top: 24px; padding: clamp(22px, 4vw, 38px); background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); }
+    h2 { margin: 0 0 8px; font-size: clamp(1.45rem, 3vw, 2.2rem); letter-spacing: -.025em; }
+    h3 { margin: 0 0 8px; font-size: 1.02rem; }
+    .section-intro { color: var(--muted); max-width: 780px; margin: 0 0 24px; }
+    .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .metric { padding: 18px; border-radius: 14px; border: 1px solid var(--line); background: #faf7ef; }
+    .metric strong { display: block; font-size: clamp(1.7rem, 4vw, 2.8rem); line-height: 1; letter-spacing: -.04em; }
+    .metric span { display: block; color: var(--muted); margin-top: 8px; font-size: .85rem; }
+    .metric.danger strong { color: var(--red); }
+    .metric.good strong { color: var(--green); }
+    .comparison { display: grid; grid-template-columns: 1fr 64px 1fr; gap: 14px; align-items: stretch; }
+    .state { border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+    .state.before { background: var(--red-soft); border-color: #dfb9b3; }
+    .state.after { background: var(--green-soft); border-color: #b4d6c5; }
+    .state ul, .change ul { margin: 12px 0 0; padding-left: 20px; }
+    .state li, .change li { margin: 7px 0; }
+    .arrow { display: grid; place-items: center; color: var(--green); font-size: 2rem; font-weight: 900; }
+    .flow-wrap { overflow-x: auto; padding: 8px 0; }
+    .flow { min-width: 900px; display: grid; grid-template-columns: repeat(7, 1fr); align-items: center; gap: 8px; }
+    .node { min-height: 100px; display: grid; place-content: center; text-align: center; padding: 12px 8px; border: 1px solid #b9c8d4; background: var(--blue-soft); border-radius: 12px; font-weight: 800; font-size: .86rem; }
+    .node small { display: block; color: var(--muted); font-weight: 500; margin-top: 5px; }
+    .connector { color: var(--blue); text-align: center; font-weight: 900; }
+    .change-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .change { position: relative; padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: #fcfaf4; }
+    .number { width: 28px; height: 28px; display: grid; place-items: center; margin-bottom: 12px; border-radius: 8px; color: white; background: var(--blue); font: 800 .8rem ui-monospace, SFMono-Regular, Menlo, monospace; }
+    code { color: #244b68; background: #e8eef2; padding: 2px 5px; border-radius: 5px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .84em; overflow-wrap: anywhere; }
+    .limits { width: 100%; border-collapse: collapse; font-size: .92rem; }
+    .limits th, .limits td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+    .limits th { color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-size: .72rem; }
+    .limits tr:last-child td { border-bottom: 0; }
+    .pass { color: var(--green); font-weight: 800; }
+    .verification { display: grid; grid-template-columns: 1.15fr .85fr; gap: 16px; }
+    .checklist { list-style: none; padding: 0; margin: 0; }
+    .checklist li { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+    .checklist li:last-child { border-bottom: 0; }
+    .check { color: var(--green); font-weight: 900; }
+    .pending { padding: 22px; border-left: 5px solid var(--amber); background: var(--amber-soft); border-radius: 12px; }
+    .pending p { margin-bottom: 0; }
+    .files { columns: 2; column-gap: 34px; padding-left: 20px; }
+    .files li { break-inside: avoid; margin: 5px 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .78rem; overflow-wrap: anywhere; }
+    footer { margin-top: 20px; padding: 18px 4px; color: var(--muted); font-size: .82rem; }
+    @media (max-width: 1100px) {
+      .change-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 700px) {
+      .metrics { grid-template-columns: repeat(2, 1fr); }
+      .comparison, .verification { grid-template-columns: 1fr; }
+      .arrow { transform: rotate(90deg); min-height: 40px; }
+      .change-grid { grid-template-columns: 1fr; }
+      .files { columns: 1; }
+    }
+    @media (max-width: 480px) { .metrics { grid-template-columns: 1fr; } .page { width: min(100% - 18px, 1500px); padding-top: 10px; } }
+    @media print { body { background: white; } .page { width: 100%; } header, section { box-shadow: none; break-inside: avoid; } nav { display: none; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">Engineering change brief · review-panel</div>
+      <h1>From context-hungry loop to bounded, restartable review</h1>
+      <p class="lede">Claude Code sessions showed that the review-panel workflow was consuming its parent context until repeated compaction—and sometimes prompt-length failure. The workflow was redesigned around bounded manifests, filesystem artifacts, hard limits, and one-shot fresh-session checkpoints.</p>
+      <div class="status-row">
+        <span class="badge"><span class="dot"></span> Implementation verified locally</span>
+        <span class="badge">Bead: scc-gek</span>
+        <span class="badge">scott-cc 5.7.0 · review-panel 1.0.0</span>
+      </div>
+    </header>
+
+    <nav aria-label="Report sections">
+      <a href="#evidence">Evidence</a><a href="#architecture">Before / after</a><a href="#changes">Changes</a><a href="#limits">Hard limits</a><a href="#verification">Verification</a><a href="#deployment">Next step</a>
+    </nav>
+
+    <section id="evidence">
+      <h2>Why this work was necessary</h2>
+      <p class="section-intro">Session analysis found a strong association between exact review-panel invocations and repeated compaction. Two captured runs exceeded Claude Code's 200,000-token prompt maximum.</p>
+      <div class="metrics">
+        <div class="metric danger"><strong>80%</strong><span>Exact review-panel sessions that compacted (8 of 10)</span></div>
+        <div class="metric danger"><strong>70%</strong><span>Exact invocations with repeated compaction (7 of 10)</span></div>
+        <div class="metric danger"><strong>60%</strong><span>Exact invocations with at least five compactions (6 of 10)</span></div>
+        <div class="metric"><strong>22.9%</strong><span>Non-review control sessions that compacted (760-session cohort)</span></div>
+      </div>
+      <p style="margin:18px 0 0;color:var(--muted)">Observed hard failures: <code>208,537 &gt; 200,000</code> tokens and <code>241,686 &gt; 200,000</code> tokens.</p>
+    </section>
+
+    <section id="architecture">
+      <h2>Architecture change</h2>
+      <p class="section-intro">The parent orchestrator now coordinates paths, hashes, counts, and statuses. Detailed content lives in disposable worker contexts and workspace artifacts.</p>
+      <div class="comparison">
+        <article class="state before">
+          <h3>Before: accumulating parent</h3>
+          <ul>
+            <li>Raw diffs and per-file stats entered the parent context.</li>
+            <li>Seat reports and validator reasoning accumulated across stages.</li>
+            <li>Dirty rounds continued in the same conversation.</li>
+            <li>Inline fallbacks reintroduced bulky data when tooling failed.</li>
+            <li>Late checkpoints could not reliably reconstruct progress.</li>
+          </ul>
+        </article>
+        <div class="arrow" aria-hidden="true">→</div>
+        <article class="state after">
+          <h3>After: artifact-driven parent</h3>
+          <ul>
+            <li>Workers read diff content by path in disposable contexts.</li>
+            <li>Every stage returns a bounded manifest; details stay on disk.</li>
+            <li>Every continuing dirty round checkpoints and stops.</li>
+            <li>Packaging or subagent failure stops closed—no inline fallback.</li>
+            <li>Resume is hash-bound, one-shot, and requires a fresh session.</li>
+          </ul>
+        </article>
+      </div>
+      <div class="flow-wrap" aria-label="New review workflow">
+        <div class="flow" style="margin-top:24px">
+          <div class="node">CAST<small>cast.json</small></div><div class="connector">→</div>
+          <div class="node">SPAWN<small>seat artifacts</small></div><div class="connector">→</div>
+          <div class="node">MERGE<small>merged-findings.json</small></div><div class="connector">→</div>
+          <div class="node">VALIDATE<small>validated-findings.json</small></div>
+        </div>
+        <div class="flow" style="margin-top:8px;grid-template-columns:repeat(7,1fr)">
+          <div class="node">FIX<small>fix-report.json</small></div><div class="connector">→</div>
+          <div class="node">RE-REVIEW<small>rereview-report.json</small></div><div class="connector">→</div>
+          <div class="node">CONVERGE<small>finish or checkpoint</small></div><div class="connector">→</div>
+          <div class="node">SYNTHESIZE<small>bounded summary</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="changes">
+      <h2>What changed</h2>
+      <p class="section-intro">The fix is a contract redesign, not a bigger-context workaround.</p>
+      <div class="change-grid">
+        <article class="change"><div class="number">01</div><h3>Bounded preflight</h3><ul><li>A disposable resolver writes <code>scope.json</code>.</li><li>Targets over 25 files or 1,500 changed lines fail before CAST.</li><li>The parent never captures per-file stat output.</li></ul></article>
+        <article class="change"><div class="number">02</div><h3>Artifact-only stage handoffs</h3><ul><li>CAST, SPAWN, MERGE, VALIDATE, FIX, and RE-REVIEW persist detailed outputs.</li><li>Parent-visible stage manifests are capped at 2 KiB.</li><li>Raw findings, reasoning, and diff content never return to the parent.</li></ul></article>
+        <article class="change"><div class="number">03</div><h3>Finite fan-out</h3><ul><li>At most eight seats, including two supplementary seats.</li><li>Agent-type discovery is capped and truncation is disclosed.</li><li>Validation is capped after Critical multipliers are applied.</li></ul></article>
+        <article class="change"><div class="number">04</div><h3>Fresh-session convergence</h3><ul><li>Every continuing dirty full-mode round writes a checkpoint and stops.</li><li>Checkpoint state references hashed progress, cast, sovereignty, and diff artifacts.</li><li>The next round launches via a new <code>claude -p</code> process.</li></ul></article>
+        <article class="change"><div class="number">05</div><h3>Replay-resistant resume</h3><ul><li><code>--resume</code> requires an externally emitted SHA-256.</li><li>Checkpoint bytes are verified before parsing.</li><li>Atomic claims keyed by content hash reject replay, copies, hard links, and mutation.</li></ul></article>
+        <article class="change"><div class="number">06</div><h3>Fail-closed terminal output</h3><ul><li>Unknown or malformed statuses fail automation.</li><li>Skipped fixes remain unresolved; ordinary findings cannot hide under escalation.</li><li>Final parent output is generated from a bounded synthesis summary.</li></ul></article>
+        <article class="change"><div class="number">07</div><h3>Session identity hook</h3><ul><li>A standalone plugin <code>SessionStart</code> hook exposes the Claude session ID.</li><li>Resume rejects the checkpoint's originating session.</li><li>Plugin inspection now reports one registered hook instead of zero.</li></ul></article>
+        <article class="change"><div class="number">08</div><h3>Mechanical regression contracts</h3><ul><li>Context-budget behavior is asserted in dedicated tests.</li><li>Checkpoint claiming is black-box tested.</li><li>Standalone hook packaging and identity behavior are verified.</li></ul></article>
+      </div>
+    </section>
+
+    <section id="limits">
+      <h2>Enforced context budget</h2>
+      <p class="section-intro">These are hard boundaries. Exceeding one produces an explicit stop or scope error rather than quietly spending more context.</p>
+      <div style="overflow-x:auto">
+        <table class="limits">
+          <thead><tr><th>Boundary</th><th>Limit</th><th>Failure behavior</th></tr></thead>
+          <tbody>
+            <tr><td>Review target</td><td><strong>25 files / 1,500 changed lines</strong></td><td><code>scope_too_large</code>; split the target</td></tr>
+            <tr><td>Parent stage manifest</td><td><strong>2 KiB</strong></td><td>Stage fails instead of returning bulky output inline</td></tr>
+            <tr><td>Total seats</td><td><strong>8</strong> (2 supplementary)</td><td>Cast remains finite and coverage gaps are disclosed</td></tr>
+            <tr><td>Agent-type candidates</td><td><strong>12 entries / 2 KiB</strong></td><td><code>agent_type_scan_truncated</code> coverage note</td></tr>
+            <tr><td>Validation</td><td><strong>25 assignments / 5 batches / 5 concurrent</strong></td><td><code>finding_scope_too_large</code>; never under-validate</td></tr>
+            <tr><td>Checkpoint</td><td><strong>2 KiB</strong></td><td>Details move to separately hashed artifacts</td></tr>
+            <tr><td>Final parent summary</td><td><strong>4 KiB / 5 finding summaries</strong></td><td><code>final_summary_too_large</code>; no detailed inline fallback</td></tr>
+            <tr><td>Logical review run</td><td><strong>8 fresh invocations maximum</strong></td><td>Circuit-break / explicit escalation</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="verification">
+      <h2>Verification evidence</h2>
+      <div class="verification">
+        <div>
+          <p class="section-intro">The hardened workflow passed the repository's canonical and targeted quality gates during implementation.</p>
+          <ul class="checklist">
+            <li><span class="check">✓</span><span><strong>170 tests passed</strong> in the recorded full-suite run.</span></li>
+            <li><span class="check">✓</span><span>Latest focused context, checkpoint, and session-identity suite: <strong>22 passed</strong>.</span></li>
+            <li><span class="check">✓</span><span>Ruff checks passed on changed Python files.</span></li>
+            <li><span class="check">✓</span><span>Plugin manifest and skills-distribution verification passed.</span></li>
+            <li><span class="check">✓</span><span><code>claude plugin validate plugins/review-panel</code> passed.</span></li>
+            <li><span class="check">✓</span><span>Standalone plugin inspection reports <strong>Hooks (1) · SessionStart</strong>.</span></li>
+            <li><span class="check">✓</span><span><code>git diff --check</code> passed.</span></li>
+          </ul>
+        </div>
+        <aside class="pending" id="deployment">
+          <h3>Release and upgrade</h3>
+          <p>This work ships as Review Panel 1.0.0 inside scott-cc 5.7.0. Existing installations must update and restart Claude Code before new sessions use the bounded orchestration contract:</p>
+          <ol>
+            <li>Update the installed plugin.</li>
+            <li>Restart Claude Code.</li>
+            <li>Confirm new sessions load the updated version and hook.</li>
+            <li>Split review targets that exceed the new hard scope gate.</li>
+            <li>Run emitted checkpoint continuation commands as fresh processes.</li>
+          </ol>
+          <p><strong>Breaking behavior:</strong> inline fallbacks and same-conversation convergence loops are intentionally rejected.</p>
+        </aside>
+      </div>
+    </section>
+
+    <section id="files">
+      <h2>Primary files changed</h2>
+      <ul class="files">
+        <li>plugins/review-panel/commands/review-panel.md</li>
+        <li>plugins/review-panel/skills/review-panel/SKILL.md</li>
+        <li>plugins/review-panel/skills/review-panel/references/cast-and-spawn.md</li>
+        <li>plugins/review-panel/skills/review-panel/references/merge-and-validate.md</li>
+        <li>plugins/review-panel/skills/review-panel/references/fix-and-rereview.md</li>
+        <li>plugins/review-panel/skills/review-panel/references/converge-and-pipeline.md</li>
+        <li>plugins/review-panel/skills/review-panel/references/dual-mode-contract.md</li>
+        <li>plugins/review-panel/skills/review-panel/references/lite-mode.md</li>
+        <li>plugins/review-panel/scripts/checkpoint-claim</li>
+        <li>plugins/review-panel/hooks/session-identity.py</li>
+        <li>plugins/review-panel/hooks/hooks.json</li>
+        <li>hooks/tests/test_session_identity.py</li>
+        <li>scripts/tests/test_review_panel_context_budget.py</li>
+        <li>scripts/tests/test_review_panel_checkpoint_claim.py</li>
+      </ul>
+    </section>
+
+    <footer>
+      Self-contained engineering brief for the review-panel context-hardening work. No external fonts, scripts, or network assets required.
+    </footer>
+  </main>
+</body>
+</html>

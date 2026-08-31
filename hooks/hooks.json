@@ -2,6 +2,14 @@
   "hooks": {
     "SessionStart": [
       {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PLUGIN_ROOT}/plugins/review-panel/hooks/session-identity.py"
+          }
+        ]
+      },
+      {
         "matcher": "compact",
         "hooks": [
           {

@@ -58,9 +58,9 @@ this orchestrator's own 7-stage shape rather than `design-review`'s 5-phase funn
   deep-dive pass; a file that triages clean should exit immediately, a barrier is justified in
   exactly one place (before final synthesis). This orchestrator's own re-expression, applied to
   panel seats and loop stages instead of files and funnel phases, lives in full in
-  [converge-and-pipeline.md](converge-and-pipeline.md)'s "Pipeline-Not-Barrier" section: seats that
-  finish clean feed MERGE immediately rather than waiting on the slowest seat in their batch, and
-  the one hard barrier is CONVERGE's decision, which — like `design-review`'s final synthesis —
+  [converge-and-pipeline.md](converge-and-pipeline.md)'s "Artifact-path barrier" section: bounded
+  seat batches persist artifacts before one MERGE worker consumes their index, and CONVERGE's
+  decision — like `design-review`'s final synthesis —
   genuinely needs the complete picture across all seats and both RE-REVIEW axes.
 - **Adversarial verification / majority-survives-challenge** — `workflow-builder.md` states it as:
   spawn 2-3 independent agents per candidate finding, each arguing it's *not* real, and keep a

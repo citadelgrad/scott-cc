@@ -7,22 +7,32 @@ for the whole run — do not switch modes mid-loop.
 
 - **Human-interactive mode** (default): invoked via the `/review-panel` command or directly by a
   human in conversation, with no `--mode=agent` argument. Produces a readable markdown report and
-  drives an interactive apply loop (the human can approve/adjust before FIX commits, ask
-  follow-up questions about a finding, or direct another round manually).
+  stops at its terminal status. Any follow-up review starts in a fresh process.
 - **Unattended `mode:agent`**: invoked with `--mode=agent` in `$ARGUMENTS` (or by an automation
   harness that sets this programmatically, e.g. a `foundry` `post-feature` gate). Produces exactly
   one JSON blob as the final output, with no interactive prompts, no clarifying questions, and no
-  partial/streaming output — the loop runs to completion (converged or circuit-broken) and emits
-  one machine-parseable result.
+  partial/streaming output — the invocation runs to a terminal result (`converged`,
+  `circuit_broken`, `checkpointed`, or another declared status) and emits one machine-parseable
+  result. A `checkpointed` result is resumed by a new process/session.
+
+## Final synthesis boundary
+
+After CONVERGE chooses a terminal status, dispatch one **final synthesis worker** with artifact
+paths and hashes only. It reads the detailed stage artifacts and writes the complete audit output
+to `$WORKSPACE/final-report.md` (human mode) or `$WORKSPACE/final-result.json` (`mode:agent`). It
+also writes `$WORKSPACE/final-summary.json`, an **at most 4 KiB** projection containing status,
+counts, at most five highest-severity finding IDs with one-line summaries, coverage counts, and the
+detailed artifact path plus hash. The parent reads only `final-summary.json`; the **parent never
+reads the detailed report artifact**. If synthesis cannot fit a valid summary within 4 KiB, return
+`final_summary_too_large` rather than copying details inline.
 
 ## Human-interactive mode
 
 ### During the run
 
-Report progress narratively as each stage completes — which seats were cast and why, notable
-findings as MERGE/VALIDATE process them, what FIX changed, RE-REVIEW's verdict. This is
-conversational, not a rigid template; use judgment on how much detail to surface live versus
-saving for the final report.
+Emit at most one short progress line per stage, derived from the stage's bounded manifest. Never
+stream raw seat reports, validator reasoning, findings lists, or fixer reasoning into the parent
+conversation; detailed material stays in workspace artifacts for the final synthesis worker.
 
 ### Final report structure
 
@@ -54,18 +64,18 @@ from a no-flag full report by exactly this one line, nothing else added or reflo
 [no guarantee bullets follow, since full mode has none to disclose]
 
 ## Cast
-[seat list with cast rationale, model tier, live-scan additions]
+[seat counts and coverage summary; complete cast is in the detailed artifact]
 
 ## Findings (post-VALIDATE, pre-FIX)
 ### Critical
-[each: file:line, quote, seat(s), confidence anchor, validator verdict]
+[count plus at most five highest-severity finding IDs and one-line summaries across all severities]
 ### Important
-[...]
+[count]
 ### Minor
-[...]
+[count]
 
 ## Fixes Applied
-[per finding: fixed / skipped + reason]
+[fixed/skipped counts; per-finding details are in the detailed artifact]
 
 ## Re-Review
 ### Regressions
@@ -74,34 +84,34 @@ from a no-flag full report by exactly this one line, nothing else added or reflo
 [clean, no CONTEXT.md, or coherence findings]
 
 ## Convergence
-Status: converged | circuit_broken | escalated | capped
+Status: converged | circuit_broken | escalated | capped | checkpointed
 Rounds: N
 [if circuit_broken: diagnosis + recommendation, per converge-and-pipeline.md]
-[if escalated: explicit human sign-off request — one block per unresolved sovereignty finding,
- naming the finding, its file, the DATA-MODEL.md rule it crosses (or its absence), and why FIX
- did not and will not auto-resolve it, per converge-and-pipeline.md's Decision rule step 0]
+[if escalated: unresolved sovereignty count plus at most five finding IDs and one-line summaries;
+ the complete sign-off list and evidence remain in the hashed detailed artifact]
 [if capped (narrowed-tier iteration cap hit with residual findings): tier-specific diagnosis +
 recommendation to re-run at a wider tier, per lite-mode.md]
+[if checkpointed: checkpoint path + exact `REVIEW_PANEL_FRESH_RESUME=1 claude -p
+"/review-panel --resume <path> --checkpoint-sha256 <sha256>"` command; stop here]
 
 ## Coverage Honesty
-[anything skipped, scoped down, or run via fallback, and why]
+[counts plus bounded notes]
+
+## Detailed Audit Artifact
+[path and sha256 for final-report.md]
 ```
 
-### Interactive apply loop
+The rendered parent response, including headings, is at most 4 KiB and is derived only from
+`final-summary.json`.
 
-After the final report, if the run is `converged` with fixes already applied (FIX already ran
-during the loop — fixes are not held back for a final human approval gate, since VALIDATE already
-provides the independence check that stands in for human review of each finding), offer the human
-the chance to: review the diff as committed, request a manual additional round on a specific
-finding they disagree with the panel's verdict on, or accept as final. If `circuit_broken`, the
-apply loop's job is to hand off the diagnosis clearly enough that the human knows where to start
-manually — do not attempt to auto-resolve a circuit-break by guessing. If `escalated`, the apply
-loop's job is to get an explicit sign-off decision from the human on each named sovereignty
-finding (approve the change as-is, direct a manual edit, or reject it) — every other finding in
-the run may already be `converged`-clean; `escalated` narrows the human's attention to exactly the
-sovereignty-marked findings rather than re-presenting the whole report. Do not treat silence or a
-generic "looks good" as sign-off on a sovereignty finding specifically — the human must engage each
-one named in the Convergence block.
+### Post-report choices
+
+After the terminal report, do no more work in this conversation. The human may accept the bounded
+summary, inspect the detailed artifact outside the orchestration context, or launch a new scoped
+review with `claude -p` in a fresh process. Never offer or run an additional in-conversation round.
+For `escalated`, the complete sovereignty sign-off list stays in the hashed detailed artifact; the
+parent shows its count and at most five summaries. Any sign-off workflow covering additional items
+must start in a fresh process and must not reload the whole artifact into this parent.
 
 ## `mode:agent` JSON contract
 
@@ -109,11 +119,18 @@ Emit exactly one JSON object as the final and only output in this mode. Shape:
 
 ```json
 {
-  "status": "converged | circuit_broken | error | escalated | capped",
+  "status": "converged | circuit_broken | error | escalated | capped | checkpointed",
   "tier": "full",
   "narrowed_guarantees": [],
   "tier_source": "explicit",
   "rounds": 2,
+  "finding_counts": {
+    "total": 0,
+    "unresolved": 0,
+    "skipped": 0,
+    "ordinary_unresolved": 0,
+    "sovereignty_pending": 0
+  },
   "cast": [
     {
       "seat": "Correctness/Adversarial",
@@ -152,6 +169,11 @@ Emit exactly one JSON object as the final and only output in this mode. Shape:
       }
     }
   ],
+  "artifacts": {
+    "detailed_result_path": ".review-panel/workspace/final-result.json",
+    "sha256": "..."
+  },
+  "checkpoint": null,
   "convergence": {
     "final_round_clean": true,
     "circuit_breaker": {
@@ -177,8 +199,16 @@ Emit exactly one JSON object as the final and only output in this mode. Shape:
 
 Field notes for an agent emitting this:
 
-- `status`: exactly one of the five values. `error` is reserved for a run that failed to execute
-  at all (e.g. `scripts/workspace` unavailable AND the fallback also failed, no seats could be
+- The parent-visible JSON is `final-summary.json`, at most 4 KiB. `cast` and `findings` are bounded
+  projections: `cast` may be reduced to counts, and `findings` contains at most five
+  highest-severity one-line summaries. Complete schema-rich records live in
+  `artifacts.detailed_result_path`; consumers needing full evidence read that artifact outside the
+  orchestration conversation.
+- `finding_counts` is always present and is computed from the complete detailed artifact, not the
+  at-most-five `findings` projection. It is the fail-closed machine signal for unresolved, skipped,
+  ordinary-unresolved, and sovereignty-pending work.
+- `status`: exactly one of the six values. `error` is reserved for a run that failed to execute
+  at all (e.g. artifact packaging was unavailable, no seats could be
   cast, or the post-FIX sovereignty guard detected a violation — see
   [fix-and-rereview.md](fix-and-rereview.md)'s "Sovereignty guard") — distinct from `circuit_broken`
   (the loop ran but didn't converge) and from `escalated` (the loop ran and every non-sovereignty
@@ -190,7 +220,15 @@ Field notes for an agent emitting this:
   untouched" in `lite-mode.md`). `capped` is used exclusively by narrowed-tier (`--lite`/`--medium`)
   runs that hit their CONVERGE iteration cap with residual findings still outstanding — full mode
   never returns `capped`, and narrowed tiers never return `circuit_broken` (that value stays
-  exclusively full mode's genuine-stagnation signal).
+  exclusively full mode's genuine-stagnation signal). `checkpointed` means a dirty round with
+  remaining iteration budget persisted complete resume state and intentionally stopped before another round; it is neither a
+  pass nor a failure.
+- `checkpoint`: null unless `status` is `checkpointed`; otherwise an object with `path`,
+  `next_round`, `resume_prompt`, `resume_command`, and `sha256`. `resume_prompt` is the slash-command
+  prompt only; `resume_command` is the complete shell command including
+  `REVIEW_PANEL_FRESH_RESUME=1 claude -p`. Both carry the prior invocation's
+  `--checkpoint-sha256` value. Consumers must start it in a fresh process/session,
+  never append it to the current conversation.
 - `tier`: string enum `"full" | "medium" | "lite"`, always present — replaces an earlier two-state
   `"lite": boolean` design, which could not represent three states. `"full"` for no tier flag (or
   `--auto` resolved to full).
@@ -225,19 +263,17 @@ Field notes for an agent emitting this:
   rounds — this is the same diagnosis text the human-mode escalation block would show, just placed
   in a structured field instead of markdown prose.
 - `convergence.escalation`: `pending: true` with `sovereignty_finding_ids` populated whenever
-  `status` is `escalated` (or, mid-run in future streaming contexts, whenever sovereignty findings
-  are outstanding); `pending: false` with an empty array otherwise. `sovereignty_finding_ids`
+  sovereignty findings are outstanding; `pending: false` with an empty array otherwise.
+  `sovereignty_finding_ids`
   references the `id` field of each still-pending finding in the `findings` array above, so a
   consumer can cross-reference without re-parsing evidence text.
-- `convergence.capped.diagnosis`: null unless `status` is `capped`, or `status` is `escalated` and
-  ordinary findings also exhausted a narrowed-tier cap. When present, it is a tier-specific
+- `convergence.capped.diagnosis`: null unless `status` is `capped`. When present, it is a tier-specific
   human-readable string naming which tier and cap was hit (e.g. "lite mode capped at 1 iteration;
   findings remain...") — see [converge-and-pipeline.md](converge-and-pipeline.md)'s "Narrowed-tier
   iteration cap" section for the exact per-tier wording. Mutually exclusive with
   `convergence.circuit_breaker.diagnosis` being non-null on the same run — a run is capped or
-  circuit-broken, never both. In the combined sovereignty-plus-cap case, `status` remains
-  `escalated`, `convergence.escalation.pending` remains true, and this diagnosis records the
-  independent cap outcome.
+  circuit-broken, never both. In the combined sovereignty-plus-cap case, `status` is `capped` and
+  `convergence.escalation.pending` remains true.
 - `coverage`: never omit this object even when nothing was skipped — an explicit empty
   `skipped_seats`/`fallbacks_used`/`notes` is itself the coverage-honesty signal ("checked, found
   nothing to report") as opposed to the field being absent (which would leave a `foundry` gate
@@ -246,7 +282,8 @@ Field notes for an agent emitting this:
 ### Wiring to `foundry`
 
 A `foundry.yaml` gate invoking this skill in `mode:agent` should treat the JSON's `status` field as
-the gate's pass/fail signal: `converged` → gate passes; `circuit_broken` → gate should fail with
+the gate's control signal: `checkpointed` → start the supplied resume command in a fresh Claude
+process; `converged` → gate passes; `circuit_broken` → gate should fail with
 `decision_on_failure: fail` (or `warn` if the profile allows manual override) and the
 `agent`/`explain` integrations can consume `convergence.circuit_breaker.diagnosis` directly for
 their explanation/escalation text; `error` → gate fails, treat as an infrastructure problem with
@@ -287,22 +324,76 @@ profiles:
       # Trusted/internal branches only — see the note below the YAML before wiring this up.
       - id: review-panel
         run: |
-          claude -p "/review-panel $(git merge-base origin/main HEAD)..HEAD --mode=agent" \
-            --dangerously-skip-permissions \
-            --output-format json > "$FOUNDRY_RUN_DIR/claude-cli.json"
+          set -euo pipefail
+          prompt="/review-panel $(git merge-base origin/main HEAD)..HEAD --mode=agent"
+          fresh_resume=0
+          # Each iteration is a new Claude process/context. Never use --resume-session here.
+          for invocation in 1 2 3 4 5 6 7 8; do
+            if [ "$fresh_resume" -eq 1 ]; then
+              REVIEW_PANEL_FRESH_RESUME=1 claude -p "$prompt" \
+                --dangerously-skip-permissions \
+                --output-format json > "$FOUNDRY_RUN_DIR/claude-cli.json"
+            else
+              claude -p "$prompt" \
+                --dangerously-skip-permissions \
+                --output-format json > "$FOUNDRY_RUN_DIR/claude-cli.json"
+            fi
+            jq -r '.result' "$FOUNDRY_RUN_DIR/claude-cli.json" > "$FOUNDRY_RUN_DIR/review-panel.json"
+            status=$(jq -er '.status | select(type == "string")' "$FOUNDRY_RUN_DIR/review-panel.json") || exit 1
+            case "$status" in
+              checkpointed|converged|escalated|capped|circuit_broken|error) ;;
+              *) echo "review-panel: unknown status: $status" >&2; exit 1 ;;
+            esac
+            jq -e '
+              (.coverage | type == "object") and
+              (.artifacts.detailed_result_path | type == "string" and length > 0) and
+              (.artifacts.sha256 | type == "string" and length == 64) and
+              (.finding_counts | type == "object") and
+              (if .status == "converged" then
+                 .convergence.final_round_clean == true and
+                 .convergence.escalation.pending == false and
+                 .finding_counts.unresolved == 0 and .finding_counts.skipped == 0
+               elif .status == "checkpointed" then
+                 (.checkpoint.path | type == "string" and length > 0) and
+                 (.checkpoint.resume_prompt | type == "string" and
+                    test("--checkpoint-sha256 [0-9a-f]{64}")) and
+                 (.checkpoint.sha256 | type == "string" and length == 64)
+               elif .status == "escalated" then
+                 .convergence.escalation.pending == true and
+                 .finding_counts.ordinary_unresolved == 0 and
+                 .finding_counts.sovereignty_pending > 0
+               elif .status == "capped" then
+                 (.convergence.capped.diagnosis | type == "string" and length > 0) and
+                 .finding_counts.unresolved > 0
+               elif .status == "circuit_broken" then
+                 (.convergence.circuit_breaker.diagnosis | type == "string" and length > 0)
+               else .status == "error"
+               end)
+            ' "$FOUNDRY_RUN_DIR/review-panel.json" >/dev/null || exit 1
+            if [ "$status" != "checkpointed" ]; then
+              break
+            fi
+            prompt=$(jq -er '.checkpoint.resume_prompt | select(type == "string" and length > 0)' "$FOUNDRY_RUN_DIR/review-panel.json")
+            fresh_resume=1
+          done
           # --output-format json wraps the CLI's own response envelope (type, subtype, result,
           # cost_usd, session_id, ...) — the skill's JSON contract is the agent's final reply,
           # which lands as a JSON *string* inside .result, not at the envelope's top level.
-          jq -r '.result' "$FOUNDRY_RUN_DIR/claude-cli.json" > "$FOUNDRY_RUN_DIR/review-panel.json"
-          status=$(jq -r '.status' "$FOUNDRY_RUN_DIR/review-panel.json")
-          if [ "$status" = "escalated" ]; then
+          status=$(jq -er '.status | select(type == "string")' "$FOUNDRY_RUN_DIR/review-panel.json") || exit 1
+          case "$status" in
+          checkpointed)
+            echo "review-panel: still checkpointed after 8 fresh invocations" >&2
+            exit 1 ;;
+          escalated)
             # OQ4: escalated must never block or park unattended automation — surface it loudly,
             # then exit 0 like converged. See dual-mode-contract.md's "escalated must never block
             # or park the gate" note above.
             echo "review-panel: sovereignty finding(s) pending human sign-off — see review-panel.json convergence.escalation"
             jq -r '.convergence.escalation.sovereignty_finding_ids[]' "$FOUNDRY_RUN_DIR/review-panel.json"
-            jq -r '.convergence.capped.diagnosis // empty' "$FOUNDRY_RUN_DIR/review-panel.json"
-          elif [ "$status" = "capped" ]; then
+            jq -r '.convergence.capped.diagnosis // empty' "$FOUNDRY_RUN_DIR/review-panel.json" ;;
+          converged)
+            exit 0 ;;
+          capped)
             # This example invokes full mode (no --lite/--medium flag), so capped should never
             # occur here — this branch only matters if the gate is adapted to call --lite/--medium.
             # See dual-mode-contract.md's "Wiring to foundry" note on capped -> decision_on_failure:
@@ -311,10 +402,13 @@ profiles:
             # exiting 1 here, since a capped run found something but wasn't given the round budget
             # to finish, unlike a genuine circuit_broken stagnation.
             echo "review-panel: tier capped with residual findings — see review-panel.json convergence.capped.diagnosis"
-            exit 1
-          elif [ "$status" = "circuit_broken" ] || [ "$status" = "error" ]; then
-            exit 1
-          fi
+            exit 1 ;;
+          circuit_broken|error)
+            exit 1 ;;
+          *)
+            echo "review-panel: unknown status: $status" >&2
+            exit 1 ;;
+          esac
         timeout: 20m
         allow_failure: false
         decision_on_failure: fail   # circuit_broken/error/capped -> gate fails; converged/escalated -> exit 0
@@ -336,7 +430,9 @@ Notes on this example:
 - The gate's `run` command is exactly the `/review-panel` slash command from `commands/` invoked
   with `--mode=agent`, non-interactively via `claude -p`, over the PR's merge-base range — this is
   the same target-resolution the command performs for a human, just with the flag set and no TTY.
-- `status: converged` and `status: escalated` are the two values that let the gate script exit `0`
+- `status: checkpointed` causes the wrapper to launch the emitted resume command in a fresh Claude
+  process, up to the logical run's round-8 hard cap. `status: converged` and `status: escalated` are
+  the two final values that let the gate script exit `0`
   — `escalated` is deliberately treated as passing, not as a third failure mode, per OQ4 above;
   `circuit_broken` and `error` are failures, per the mapping described above, so the script maps
   those non-passing outcomes to a nonzero exit rather than trying to distinguish
