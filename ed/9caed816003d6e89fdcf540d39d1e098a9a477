@@ -1,0 +1,14 @@
+plugins/review-panel/skills/catalog-steward/SKILL.md
+  h_12ee2b2686c122 14-16,54,60-115,119-123
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "ed9caed816003d6e89fdcf540d39d1e098a9a477",
+  "prompts": {},
+  "humans": {
+    "h_12ee2b2686c122": {
+      "author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
