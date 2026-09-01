@@ -1,0 +1,27 @@
+pipelines/scc-6lj.dot
+  s_1fd1ffd91519c4::t_ec9f993cf3f64c 148
+  s_1fd1ffd91519c4::t_476bbd4abd2c3f 106
+  s_1fd1ffd91519c4::t_910ad5a724b7da 60
+  s_1fd1ffd91519c4::t_f5c7e4d4048855 122
+  s_1fd1ffd91519c4::t_166a976242ac6f 93
+  s_1fd1ffd91519c4::t_9c73c5c5590a55 1-36,38-59,61-81,83-92,94-105,107-121,123-132,134-147,149-178
+  s_1fd1ffd91519c4::t_f1f9bd67b2c3dd 37
+  s_1fd1ffd91519c4::t_7cdcd12ef1087b 133
+  s_1fd1ffd91519c4::t_a0c5310eb7a4f1 82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "d66202aae855419923d21ee52cdc4f0acb8af5dd",
+  "prompts": {},
+  "sessions": {
+    "s_1fd1ffd91519c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01951f80-74c5-4357-bfba-45c6565407aa",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
