@@ -1,0 +1,16 @@
+SKILL-AUTHORSHIP.md
+  h_12ee2b2686c122 48,96
+plugins/review-panel/skills/catalog-steward/SKILL.md
+  h_12ee2b2686c122 1-75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "bb85be70c21d6bd9725f11fb1c9c3290a8303292",
+  "prompts": {},
+  "humans": {
+    "h_12ee2b2686c122": {
+      "author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
