@@ -1,0 +1,82 @@
+plugins/mutation-testing/skills/mutation-test/SKILL.md
+  s_aac0d35f4773ee::t_0c927f8304eeab 18-43,50,99,142,217,237,242,338,340,374
+plugins/browser-automation/skills/browser-use-e2e/SKILL.md
+  s_aac0d35f4773ee::t_f5d16dab46a5de 29-46,147,180,204
+scripts/verify_orchestration_contracts.py
+  s_aac0d35f4773ee::t_3f595663d3e753 21-28,163-203,223-252,256
+plugins/mutation-testing/docs/MUTATION-TESTING.md
+  s_aac0d35f4773ee::t_b88305b0adde7d 43-44,154,195
+  s_aac0d35f4773ee::t_98a1695614cc1d 193
+skills/writing-skills-excellence/SKILL.md
+  s_aac0d35f4773ee::t_3f595663d3e753 36,46,60,110
+skills/writing-skills-excellence/references/orchestrator-architecture.md
+  s_aac0d35f4773ee::t_3f595663d3e753 1-46
+scripts/tests/test_explore_variants_context_budget.py
+  s_aac0d35f4773ee::t_9fc33cfe412929 26,35
+  s_aac0d35f4773ee::t_ed268a56b7e24f 1-25,27-34,36-55
+plugins/review-panel/skills/design-review/references/workflow-builder.md
+  s_aac0d35f4773ee::t_d96a87c2076fc7 19-33,38-39,44-45,69-70,78,80-82
+plugins/variant-explorer/skills/explore-variants/SKILL.md
+  s_aac0d35f4773ee::t_95a10b491c1f71 29-52,81-84,102,104,126-127,140-141,161-166,183-188,191-192
+plugins/triage/skills/detectors/prod-errors/SKILL.md
+  s_aac0d35f4773ee::t_e3672197743376 26-43
+plugins/mutation-testing/README.md
+  s_aac0d35f4773ee::t_b88305b0adde7d 17,69,76,131
+  s_aac0d35f4773ee::t_98a1695614cc1d 18,211
+scripts/tests/test_design_review_context_budget.py
+  s_aac0d35f4773ee::t_ed268a56b7e24f 1-19,21-50
+  s_aac0d35f4773ee::t_9fc33cfe412929 20
+plugins/review-panel/skills/grill-the-schema/SKILL.md
+  s_aac0d35f4773ee::t_c02a084dbf4feb 31-50
+scripts/tests/test_second_wave_context_budget.py
+  s_aac0d35f4773ee::t_9fc33cfe412929 64,75
+  s_aac0d35f4773ee::t_ed268a56b7e24f 1-11,13-16,18-27,29-35,37-63,65-74,76
+  s_aac0d35f4773ee::t_98a1695614cc1d 12,17,28,36
+plugins/review-panel/skills/grill-with-docs/SKILL.md
+  s_aac0d35f4773ee::t_c02a084dbf4feb 31-50
+scripts/tests/test_verify_orchestration_contracts.py
+  s_aac0d35f4773ee::t_51dcda73f0742a 45-98
+plugins/mutation-testing/commands/mutation-test.md
+  s_aac0d35f4773ee::t_b88305b0adde7d 3
+  s_aac0d35f4773ee::t_0c927f8304eeab 20,43-45,62-66
+plugins/review-panel/skills/design-review/SKILL.md
+  s_aac0d35f4773ee::t_d96a87c2076fc7 31-53,112-115,117-119,124
+plugins/browser-automation/skills/browser-use/SKILL.md
+  s_aac0d35f4773ee::t_f5d16dab46a5de 27-45,53,91,141-142,172-174
+plugins/review-panel/skills/improve-codebase-architecture/SKILL.md
+  s_aac0d35f4773ee::t_e3672197743376 25-43
+scripts/tests/test_mutation_test_context_budget.py
+  s_aac0d35f4773ee::t_ed268a56b7e24f 1-60
+plugins/mutation-testing/agents/test-quality-reviewer.md
+  s_aac0d35f4773ee::t_98a1695614cc1d 173
+  s_aac0d35f4773ee::t_b88305b0adde7d 67,118,120,182-183
+  s_aac0d35f4773ee::t_0c927f8304eeab 46-64,179,234-235,241-242,251-252,285,294,445
+plugins/review-panel/skills/ponytail-audit/SKILL.md
+  s_aac0d35f4773ee::t_e3672197743376 25-41,60-61
+plugins/review-panel/skills/grill-my-taste/SKILL.md
+  s_aac0d35f4773ee::t_c02a084dbf4feb 34-35,43-60
+  s_aac0d35f4773ee::t_779bd34f2c25b9 61
+plugins/triage/skills/triage-spine/SKILL.md
+  s_aac0d35f4773ee::t_0a0852155f6493 36-59,88-91,129-134,180-183,192-194,205-210,213-218,268-273
+  s_aac0d35f4773ee::t_0f694c1a7b920e 274
+scripts/tests/test_triage_spine_context_budget.py
+  s_aac0d35f4773ee::t_9fc33cfe412929 37
+  s_aac0d35f4773ee::t_98a1695614cc1d 54
+  s_aac0d35f4773ee::t_ed268a56b7e24f 1-36,38-53,55-56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "3929d2bfeca40801a6df9504b56d2fa1636456cc",
+  "prompts": {},
+  "sessions": {
+    "s_aac0d35f4773ee": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a059a2-b899-7790-b15b-020b6b20cd53",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
