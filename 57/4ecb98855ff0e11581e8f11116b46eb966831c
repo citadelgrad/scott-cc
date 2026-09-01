@@ -1,0 +1,19 @@
+scripts/tests/test_second_wave_context_budget.py
+  s_aac0d35f4773ee::t_74756efae33d49 8-15,18-26,29-34,37-42,45-50,53-58,61-67,70-75,89-91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "574ecb98855ff0e11581e8f11116b46eb966831c",
+  "prompts": {},
+  "sessions": {
+    "s_aac0d35f4773ee": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a059a2-b899-7790-b15b-020b6b20cd53",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
