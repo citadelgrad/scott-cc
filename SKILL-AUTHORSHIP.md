@@ -45,6 +45,7 @@ The inline `source` and `sources` metadata in skills such as `grill-me`, `tdd`, 
 - `plugins/mutation-testing/skills/mutation-test/SKILL.md`
 - `plugins/research-tools/skills/humanizer/SKILL.md`
 - `plugins/review-panel/skills/adversarial-reviewer/SKILL.md`
+- `plugins/review-panel/skills/catalog-steward/SKILL.md`
 - `plugins/review-panel/skills/data-steward/SKILL.md`
 - `plugins/review-panel/skills/domain-modeling/SKILL.md`
 - `plugins/review-panel/skills/grill-my-taste/SKILL.md`
@@ -92,4 +93,4 @@ Scott maintains these copies but is not presented as their original author. Exac
 
 ## Scope
 
-This inventory covers the 71 installable `SKILL.md` files under `skills/` and `plugins/*/skills/`. It excludes research notes such as `docs/research/LOGGING/LOGGING_SKILL.md` and tool-managed compatibility copies such as `.agents/skills/beads/SKILL.md`; those are not distributed as scott-cc-authored skills.
+This inventory covers the 72 installable `SKILL.md` files under `skills/` and `plugins/*/skills/`. It excludes research notes such as `docs/research/LOGGING/LOGGING_SKILL.md` and tool-managed compatibility copies such as `.agents/skills/beads/SKILL.md`; those are not distributed as scott-cc-authored skills.
