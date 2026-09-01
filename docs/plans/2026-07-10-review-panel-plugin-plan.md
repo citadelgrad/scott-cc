@@ -281,19 +281,22 @@ as inspiration/snippet sources, distinct from the verbatim-vendored MIT plugins 
 ## 8. Explicitly deferred / separate decisions
 1. **superpowers workflow skills** (brainstorming/writing-plans/tdd/git-worktrees): if Scott wants
    these offline too, they need a *separate* vendored "workflow" plugin — NOT review-panel. Decide later.
+   Filed as `scc-i2w` (decision issue, sibling to Epic B) during the 2026-09-01 Epic B planning pass.
 2. **ponytail base mode** (lazy-dev persona + hooks): keeping or dropping is a UX choice independent
-   of the panel. Panel only needs ponytail-review/audit.
-3. **ce-dogfood** live-browser QA seat: future addition.
+   of the panel. Panel only needs ponytail-review/audit. Filed as `scc-pjk` (decision issue, sibling
+   to Epic B) during the 2026-09-01 Epic B planning pass.
+3. **ce-dogfood** live-browser QA seat: future addition. Filed as `scc-06c` (task, sibling to Epic B)
+   during the 2026-09-01 Epic B planning pass.
 4. **Epic B — skill catalog/audit meta-project**: the cross-skill "where are the holes / evaluate a
    new external skill" workflow. Same catalog viewed as a maintenance problem; it keeps casting good
-   over time. Stub now, build later.
+   over time. Planned and decomposed 2026-09-01 — see §10 below.
 
 ---
 
 ## 9. Open items before/within build
 - [x] **domain-modeling copy-vs-build** — RESOLVED: build from scratch; blueprint folded into §6b.
-- [ ] **Verify `0xBigBoss/claude-code` license** before lifting any of its text (no root LICENSE found). vibe-types is Apache-2.0 (clear); attribute both snippet sources in CREDITS.
-- [ ] Confirm node availability on the air-gapped target (affects adr-skill scripts vs manual fallback).
+- [x] **Verify `0xBigBoss/claude-code` license** — RESOLVED 2026-08-31 (Epic B planning pass): account renamed to `alleneubank/claude-code` (confirmed via HTTP 301 redirect); repo at new location now carries a root `LICENSE` under Apache-2.0. Nothing has been cannibalized from this source yet (unchanged from original build — domain-modeling only pulled from vibe-types). See `plugins/review-panel/CREDITS.md` for the full note; any future cannibalization from this source should credit it as Apache-2.0.
+- [x] Confirm node availability on the air-gapped target — RESOLVED 2026-08-31 (Epic B planning pass): Scott confirmed Node.js **is** available on the air-gapped deployment target. adr-skill's Node-based path can be treated as the primary path there, not just a fallback.
 - [ ] Read each local-only trial-copy for a license header when copying (adr-skill, improve-codebase-architecture, grill-with-docs, tdd).
 - [ ] Final `persona-catalog.md` seat roster + per-seat model tier.
 - [x] Beads workspace fixed: this repo's `bd init` had never set `issue-prefix` (db existed but empty, 0 issues across 3 export snapshots). Reinitialized via `bd init --reinit-local --prefix scc` after verifying zero data risk. Prefix is `scc`.
@@ -327,6 +330,20 @@ time (rules/checklist format — these are engineering build tasks, not user sto
 13. `scc-ns8.13` **CONTEXT.md/ADR wiring** (domain-modeling writes log; adr-skill callable; no-node fallback). *(dep: 6, 7)*
 14. `scc-ns8.14` **Pressure-test harness** (run the panel on a known-buggy diff — superpowers "TDD-for-skills": baseline fails without panel, passes with; verify circuit-breaker + coverage-honesty). *(dep: 10, 11, 12)*
 
-### Epic B — Skill catalog / audit (STUB)  → `scc-6lj`
-Cross-skill hole-finding + new-external-skill evaluation workflow that maintains the catalog.
-Created as a stubbed epic (P3, no children yet) per plan §8.4 — do not build yet.
+### Epic B — Skill catalog / audit maintenance workflow  → `scc-6lj`
+Cross-skill hole-finding + new-external-skill evaluation workflow that maintains
+`plugins/review-panel/reviewers/persona-catalog.md` over time, distinct from the already-closed
+`scc-jnb`/`scc-j2d` context-safety audit. Planned 2026-09-01 (research → PRD → SPEC → approval,
+via `beads-epic-builder:epic-planner`); PRD at `docs/prd-epic-b-catalog-maintenance.md`, SPEC at
+`docs/spec-epic-b-catalog-maintenance.md`. Each issue below got testable acceptance criteria via
+the `acceptance-criteria` skill at creation time (rules format).
+
+1. `scc-6lj.1` **Create `scripts/catalog_seat_audit.py`** deterministic coverage-audit script + `scripts/tests/test_catalog_seat_audit.py`, following the `hooks/data_layer_guard.py` precedent pattern. *(dep: none — unblocks everything)*
+2. `scc-6lj.2` **Author `catalog-steward` skill** (SKILL.md + Procedure A: hole-finding against the live catalog, propose-only, no auto-edit). *(dep: 1)*
+3. `scc-6lj.3` **Add Procedure B** (new-external-skill evaluation: frontmatter-only read, 3-way comparison, 4 recommendation types) to `catalog-steward`. *(dep: 2)*
+4. `scc-6lj.4` **Wire `foundry.yaml` `catalog-audit` profile** + monthly schedule (repo's mandatory control layer for scheduled automation). *(dep: 1)*
+5. `scc-6lj.5` **First real run** of Procedure A against the live catalog; apply the proposed diff to close the 3 known gaps found during planning (`adr-skill`, `grill-my-taste`, `grill-the-schema` — all currently undocumented in `persona-catalog.md`). *(dep: 2, 3)*
+
+Sibling issues (secondary scope, Epic-A-adjacent loose ends — not children of `scc-6lj`): `scc-i2w`
+(superpowers workflow plugin decision), `scc-pjk` (ponytail base mode decision), `scc-06c`
+(ce-dogfood live-browser QA seat) — see §8 above.

@@ -258,13 +258,21 @@ reflect real file-level provenance and any upstream NOTICE file contents.
 
 ### 0xBigBoss/claude-code
 
-**Not used.** This source's `typescript-best-practices` skill has no root
-`LICENSE` file, so its license could not be verified in this offline task.
-Per this plugin's policy of only vendoring or cannibalizing from
-license-verified sources, no text, code, or structure from
-`0xBigBoss/claude-code` appears anywhere in `skills/domain-modeling/` or
-elsewhere in this plugin. If the upstream license is verified in the future,
-this section can be revisited.
+**Still not used, license now verified.** At the time `domain-modeling` was authored
+(2026-07-10), this source's `typescript-best-practices` skill had no root `LICENSE` file, so its
+license could not be verified in that offline task, and per this plugin's policy of only vendoring
+or cannibalizing from license-verified sources, no text, code, or structure from
+`0xBigBoss/claude-code` was used anywhere in `skills/domain-modeling/` or elsewhere in this plugin.
+
+**Verified 2026-08-31** (Epic B planning pass): the GitHub account `0xBigBoss` has since been
+renamed to `alleneubank` (confirmed via HTTP 301 redirect from
+`github.com/0xBigBoss/claude-code` to `github.com/alleneubank/claude-code`); the repository at its
+new location now carries a root `LICENSE` file under the **Apache License, Version 2.0**. This
+removes the prior license-verification blocker for any future task that wants to cannibalize its
+"Make Illegal States Unrepresentable" TypeScript section per plan §6b — but as of this note, still
+**nothing has been lifted**, so no attribution entry beyond this note is owed yet. If a future
+change does cannibalize from this source, credit it here as Apache-2.0 (attribute per Apache-2.0
+terms) and update this section to describe what was taken.
 
 ### 0xMassi/claude-skills (MIT)
 
