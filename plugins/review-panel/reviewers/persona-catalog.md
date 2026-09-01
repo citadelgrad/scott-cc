@@ -515,6 +515,31 @@ catalog entry, on the judgment that giving each one an independent seat would ei
   `grill-with-docs`, it has no autonomous, diff-scoped findings output a panel seat could consume;
   the user's live selection between candidates is load-bearing to its design, not an implementation
   detail that could be stubbed out for an unattended panel run.
+- **`adr-skill`** — a Socratic, interactive workflow: it interviews a human one question at a
+  time (Phase 1's Capture Intent) to draft, review, and finalize an Architecture Decision Record,
+  gated on explicit human confirmation at each phase. It has no diff-scoped findings-producing
+  mode; its entire value is the back-and-forth with a person authoring a specific ADR. Not
+  seat-shaped for an autonomous panel run. Like `grill-with-docs`, it overlaps `domain-modeling`'s
+  `CONTEXT-AND-ADR.md` mechanism (see the Domain-Intent seat above), which already gives the panel
+  its own non-interactive path to ADR artifacts.
+- **`grill-my-taste`** — a Socratic grilling session: it elicits personal taste via forced choices
+  between realistic alternatives, one choice at a time, each confirmed with the human before being
+  written to `TASTE.md`. It has no diff-scoped findings-producing mode; its entire value is the
+  live forced-choice dialogue. Not seat-shaped for an autonomous panel run. `taste-review` (see the
+  Taste seat above) is the panel's own read-only consumer of the `TASTE.md` this skill produces
+  conversationally.
+- **`grill-the-schema`** — a Socratic grilling session: it interviews a human one question at a
+  time to build `DATA-MODEL.md` — entities, invariants, lifecycle, ownership, and Agent
+  boundaries — cross-referencing actual schema/migration files as it goes. It has no diff-scoped
+  findings-producing mode; its entire value is the live interview. Not seat-shaped for an
+  autonomous panel run. `data-steward` (see the Data Steward seat above) is the panel's own
+  read-only consumer of the `DATA-MODEL.md` this skill produces conversationally, and already
+  recommends running `grill-the-schema` when no `DATA-MODEL.md` exists.
+- **`catalog-steward`** — the skill that maintains this catalog itself. Per its own frontmatter,
+  it is explicitly "not a per-diff review lens" and states it must never be cast as a
+  review-panel seat. It has no diff-scoped findings-producing mode; it audits and proposes edits
+  to this file on a periodic schedule (the `catalog-audit` foundry profile), advisory-only, never
+  auto-editing. Not seat-shaped for an autonomous panel run by design.
 
 If any of these are separately installed and updated upstream (e.g. a user's live-scan finds a
 newer or differently-scoped version), the live-scan secondary-enrichment layer may still surface
