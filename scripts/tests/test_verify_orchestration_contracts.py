@@ -42,6 +42,60 @@ def test_component_name_reads_frontmatter(tmp_path: Path) -> None:
     assert contracts.component_name(component) == "example-agent"
 
 
+def test_registered_orchestrators_have_all_contract_fields_and_tests() -> None:
+    assert contracts.orchestration_contract_errors(contracts.ROOT) == []
+
+
+def test_orchestrator_registry_reports_each_missing_declaration(
+    tmp_path: Path, monkeypatch
+) -> None:
+    skill_path = "skills/example/SKILL.md"
+    test_path = "scripts/tests/test_example_context_budget.py"
+    skill = tmp_path / skill_path
+    skill.parent.mkdir(parents=True)
+    skill.write_text("# Example\n", encoding="utf-8")
+    test = tmp_path / test_path
+    test.parent.mkdir(parents=True)
+    test.write_text(skill_path, encoding="utf-8")
+    monkeypatch.setattr(
+        contracts,
+        "ORCHESTRATOR_CONTRACTS",
+        (contracts.OrchestratorContract(skill_path, test_path),),
+    )
+
+    errors = contracts.orchestration_contract_errors(tmp_path)
+
+    assert len(errors) == len(contracts.ORCHESTRATOR_CONTRACT_FIELDS)
+    for field in contracts.ORCHESTRATOR_CONTRACT_FIELDS:
+        assert any(field.rstrip(":").lower() in error for error in errors)
+
+
+def test_orchestrator_registry_requires_named_mechanical_test(
+    tmp_path: Path, monkeypatch
+) -> None:
+    skill_path = "skills/example/SKILL.md"
+    test_path = "scripts/tests/test_example_context_budget.py"
+    skill = tmp_path / skill_path
+    skill.parent.mkdir(parents=True)
+    skill.write_text(
+        "\n".join(contracts.ORCHESTRATOR_CONTRACT_FIELDS), encoding="utf-8"
+    )
+    monkeypatch.setattr(
+        contracts,
+        "ORCHESTRATOR_CONTRACTS",
+        (contracts.OrchestratorContract(skill_path, test_path),),
+    )
+
+    assert contracts.orchestration_contract_errors(tmp_path) == [
+        f"orchestrator context-budget test missing: {test_path}"
+    ]
+
+    test = tmp_path / test_path
+    test.parent.mkdir(parents=True)
+    test.write_text("# no skill path\n", encoding="utf-8")
+    assert "does not name skill" in contracts.orchestration_contract_errors(tmp_path)[0]
+
+
 def test_mutation_handoff_dry_run_preserves_payload_contracts() -> None:
     fixture_path = (
         contracts.ROOT / "plugins/mutation-testing/tests/fixtures/contract-handoff.json"

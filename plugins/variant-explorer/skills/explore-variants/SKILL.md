@@ -26,6 +26,30 @@ scores every surviving variant, and this skill hands the human a ranked shortlis
 **Builders never see each other's work. Judges see all of it.** That asymmetry is the whole
 point: contamination-free generation, informed comparison.
 
+## Context architecture contract
+
+- **Scope contract:** Resolve exactly one spec and one AC source before dispatch. Normalize both to
+  artifacts of at most **64 KiB each**, compute SHA-256 values, and reject larger or missing inputs
+  with `SPEC_SCOPE_TOO_LARGE` or `AC_REQUIRED`. The existing N contract remains: refuse N=1,
+  default to 3, allow 2–6, and clamp N>6 to **6**.
+- **Fan-out contract:** Dispatch at most **5 builders concurrently**, **6 builder assignments**
+  total, and at most **3 judges concurrently / 3 judge assignments**. Each judge scores at most
+  **6 variants** and emits at most **6 scorecards**.
+- **Artifact contract:** `run-manifest.json` binds spec, AC, builder, and judge artifacts by SHA-256.
+  Builder and judge detail never returns inline; each worker returns a manifest of at most **2
+  KiB**. Each bounded scorecard summary is at most **1 KiB**; the shortlist is at most **6 KiB** and
+  six entries, with detailed reasoning available only by artifact path and hash.
+- **Failure contract:** Worktree isolation, artifact persistence, hash validation, or judge-schema
+  failure is explicit and fail-closed for that worker. A malformed judge becomes a named
+  `JUDGE_MALFORMED` coverage gap and contributes no score; never invent, coerce, or partially merge
+  its scores. Zero valid required judges stops before ranking.
+- **Continuation contract:** Before asking for the human pick, write `decision-checkpoint.json`
+  containing the run-manifest SHA-256, shortlist artifact hash, survivor worktrees/commits, losses,
+  and cleanup state. Atomically claim its SHA-256 on resume; hash mismatch or duplicate cleanup is
+  rejected. No worktree cleanup occurs before the checkpoint and recorded human decision.
+- **Mechanical-test contract:** `scripts/tests/test_explore_variants_context_budget.py` asserts N,
+  builder, judge, scorecard, artifact, shortlist, malformed-judge, and decision-checkpoint bounds.
+
 ## When to Use
 
 - Multiple genuinely different implementation approaches are plausible and worth building out,
@@ -54,6 +78,10 @@ Parse `$ARGUMENTS`:
   one before proceeding — every builder and judge needs concrete, testable AC to work against.
 - **N**: from `--n N`. Default `3` if omitted or non-numeric.
 
+Persist normalized spec and AC text before reading them into any builder prompt. Reject either
+artifact above 64 KiB. Write `run-manifest.json` with their paths and SHA-256 values; all later
+prompts reference those paths and hashes rather than copying the text.
+
 Validate N before spawning anything:
 
 | N value | Behavior |
@@ -71,9 +99,9 @@ Dispatch N `Agent` calls with `isolation: "worktree"` and `subagent_type:
 sub-batch as 5 then 1 (mirrors `cast-and-spawn.md`'s ≤5-concurrent-per-batch convention) rather
 than firing all 6 in one burst.
 
-Each builder's prompt contains **only**:
+Each builder's prompt contains **only** references to:
 
-1. The spec + acceptance criteria (text or file path)
+1. The spec + acceptance-criteria artifact paths and expected SHA-256 values
 2. One distinct angle, drawn from a bank such as:
    - MVP-first — build the smallest thing that satisfies every AC, defer everything else
    - Data-model-first — derive the implementation from the data shape outward
@@ -95,7 +123,8 @@ transcript and confirm no cross-contamination (AC3). No new logging infrastructu
 
 Wait for all N dispatches to return. For each:
 
-- **Returned `status: complete`** → survivor. Record its worktree path, branch name, and summary.
+- **Returned `status: complete`** → survivor. Require a ≤2 KiB manifest containing its worktree
+  path, branch name, commit, report artifact path, report SHA-256, status, and counts.
 - **Returned `status: blocked: <reason>`, errored, or timed out** → **lost variant**. Record
   `{"id": "<variant-id>", "reason": "<reason>"}` — mirrors `epic-swarm`'s `tasks_failed` shape.
 
@@ -108,8 +137,8 @@ with zero survivors.
 
 ### Phase 4 — Judge panel (AC2)
 
-Dispatch judges against the **surviving** variants, giving each judge the variants' worktree
-paths (not inline content) plus the spec/AC. Each judge is one `Agent` call using
+Dispatch judges against the **surviving** variants, giving each judge the hashed builder-manifest
+path plus hashed spec/AC paths (not inline content). Each judge is one `Agent` call using
 `subagent_type: "variant-explorer:variant-judge"`, told which single axis to score:
 
 1. **AC-conformance judge** — native to this plugin, no cross-plugin dependency. Checks every
@@ -129,6 +158,12 @@ paths (not inline content) plus the spec/AC. Each judge is one `Agent` call usin
 
 Dispatch the (up to three) judges in a single message so they run in parallel.
 
+Each judge writes detailed scorecards to an artifact and returns a ≤2 KiB manifest. Validate the
+artifact hash and schema, including no more than 6 scorecards and a ≤1 KiB bounded summary per
+scorecard. Record malformed output as `JUDGE_MALFORMED`; it contributes no score. If any required
+axis has zero valid judge output, stop before ranking instead of guessing. Synthesis writes a
+shortlist artifact and returns at most 6 KiB / 6 entries.
+
 Assemble the combined **ranked shortlist** from the judges' returned scorecards. Every variant's
 final scorecard must cite:
 
@@ -145,12 +180,16 @@ remains, say so explicitly rather than forcing an arbitrary order — let the hu
 
 ### Phase 5 — Human pick & cleanup
 
-1. Present the ranked shortlist with each variant's full scorecard.
-2. Ask the human to pick a winner.
-3. Ask explicitly: **"Harvest ideas from runners-up before cleanup?"** If yes, read the specific
+1. Write and hash `decision-checkpoint.json` with the run-manifest and shortlist hashes, survivor
+   worktree paths/commits, losses, and `cleanup_state: pending`; persist it before human output.
+2. Present the bounded ranked shortlist with links to each full scorecard artifact.
+3. Ask the human to pick a winner. On resumed sessions, atomically claim the checkpoint SHA-256
+   before accepting a decision; reject hash mismatch or an already-consumed cleanup transition.
+4. Ask explicitly: **"Harvest ideas from runners-up before cleanup?"** If yes, read the specific
    non-winning worktree(s) the human points to, note what idea(s) are worth extracting in the
    final report — this is a human-judgment call, not an automated diff/merge.
-4. **Only after that prompt is answered** (yes or no), clean up every non-winning worktree:
+5. **Only after that prompt is answered** (yes or no), record the decision in the checkpoint, then
+   clean up every non-winning worktree:
    `git worktree remove <path>` (add `--force` only if the human confirms the worktree's changes
    aren't needed) and delete its branch. Cleanup must never happen before the harvest prompt, and
    never silently.

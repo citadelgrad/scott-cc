@@ -1,6 +1,6 @@
 ---
 name: mutation-test
-description: Run the mutation-testing orchestrator against a file or directory, with quick, standard, or deep mutation budgets
+description: Run the bounded mutation-testing orchestrator against one source file, with quick, standard, or deep mutation budgets
 argument-hint: "[path] [--quick | --deep] [--focus=<area>] [--auto-approve]"
 allowed-tools: Task(mutation-testing:test-quality-reviewer), Read, Grep, Glob, Bash, AskUserQuestion
 ---
@@ -17,7 +17,7 @@ $ARGUMENTS
 
 Parse and pass these fields to the agent:
 
-- **Target:** the remaining file or directory path. If omitted, pass `null`; the agent owns its
+- **Target:** the remaining source file path. If omitted, pass `null`; the agent owns its
   documented conversation-context / git-status discovery flow and user selection.
 - **Mode:** `quick` for `--quick`, `deep` for `--deep`, otherwise `standard`. `--quick` and
   `--deep` together are a hard error; do not dispatch.
@@ -40,9 +40,9 @@ Task(
   focus: <value-or-null>
   auto_approve: <true|false>
 
-  Follow your documented phase contracts. Preserve the primary checkout, report executor
-  coverage gaps separately from survived mutations, and return the final Test Quality Audit
-  Report with the user's apply/refuse decision."""
+  Follow your documented hard context contract. Preserve the primary checkout, use artifact-only
+  handoffs, report executor coverage gaps separately from survived mutations, and return only the
+  bounded final summary plus detailed artifact paths and the user's apply/refuse decision."""
 )
 ```
 
@@ -59,6 +59,8 @@ Do not substitute a `scott-cc:*` agent name. Agents shipped by this plugin are e
 
 ## Output contract
 
-Return the orchestrator agent's final report unchanged. It must include the chosen target and
-mode, mutation counts (total/evaluated/caught/survived), execution gaps, mutation score or `null`,
-zombie/redundant findings, the refactoring proposal, and whether the user accepted it.
+Return the orchestrator agent's bounded final summary unchanged. It must stay at or below 4 KiB,
+name no more than 10 finding IDs, include the chosen target and mode, mutation counts
+(total/evaluated/caught/survived), execution-gap counts, mutation score or `null`, detailed report
+artifact paths and hashes, and whether the user accepted the proposal. Never inline the detailed
+mutation, executor, audit, or refactor artifacts.

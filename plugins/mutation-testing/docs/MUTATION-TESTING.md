@@ -40,8 +40,8 @@ Proposed: Consolidate 150 redundant tests → 1 parameterized test
 ### Option 1: Slash Command (Explicit)
 ```bash
 /mutation-test stripe_handler.py
-/mutation-test --quick api/payments/
-/mutation-test --deep billing/
+/mutation-test --quick api/payments/handler.py
+/mutation-test --deep billing/renewal.py
 ```
 
 **Pros**: User has full control, no surprises, explicit intent
@@ -151,7 +151,7 @@ User → test-quality-reviewer (orchestrator)
 
 3. **Parallel execution with isolation**
    - Git worktrees = no race conditions
-   - 15 test suites run simultaneously (15x speedup)
+   - At most 5 test suites run concurrently in bounded batches
 
 4. **Educational value**
    - Explains WHY tests are weak
@@ -190,9 +190,9 @@ def test_subscription_status_validation(status):
 
 - **Quick mode** (5 mutations): ~1-2 minutes
 - **Standard mode** (15 mutations): ~3-5 minutes
-- **Deep mode** (30+ mutations): ~10-15 minutes
+- **Deep mode** (30 mutations maximum): ~10-15 minutes
 
-**Parallelization**: Runs N test suites simultaneously (Nx speedup)
+**Parallelization**: Runs at most 5 test suites concurrently per batch
 
 ## Safety Features
 

@@ -24,6 +24,25 @@ metadata:
 
 The `browser-use` command provides fast, persistent browser automation. It maintains browser sessions across commands, enabling complex multi-step workflows.
 
+## Context architecture contract
+
+- **Scope contract:** One invocation may control at most **2 named sessions**, **20 tabs total**,
+  and **100 browser actions per session**. Autonomous `run` calls must set `--max-steps 50` and a
+  **15-minute wall-clock timeout**; reject missing limits with `BROWSER_BUDGET_REQUIRED`.
+- **Fan-out contract:** At most **2 sessions run concurrently**, one autonomous agent per session,
+  and **3 retries per failed action**. Exhaustion is terminal for that action.
+- **Artifact contract:** Screenshots, HTML, extracted datasets, and agent history must be written to
+  files. Never return inline base64 media. Parent-visible state/history summaries are at most
+  **2 KiB** and **20 element records**, with artifact paths and SHA-256 for larger output.
+- **Failure contract:** Missing timeout/step limits, media persistence, session isolation, or valid
+  JSON output stops with a named error. Never substitute inline base64, unlimited retries, or an
+  unbounded persistent session.
+- **Continuation contract:** A persistent session writes a ≤2 KiB `browser-checkpoint.json` after
+  every 25 actions with session name, URL, action count, artifact hashes, and expiry. Resume only a
+  hash-matching checkpoint; close sessions at 100 actions or 15 minutes.
+- **Mechanical-test contract:** `scripts/tests/test_second_wave_context_budget.py` asserts the
+  session, tab, action, step, timeout, retry, media, summary, and checkpoint bounds for this skill.
+
 ## Quick Start
 
 ```bash
@@ -31,7 +50,7 @@ browser-use open https://example.com           # Navigate to URL
 browser-use state                              # Get page elements with indices
 browser-use click 5                            # Click element by index
 browser-use type "Hello World"                 # Type text
-browser-use screenshot                         # Take screenshot
+browser-use screenshot screenshot.png          # Save screenshot as an artifact
 browser-use close                              # Close browser
 ```
 
@@ -69,7 +88,7 @@ browser-use scroll up                     # Scroll up
 ### Page State
 ```bash
 browser-use state                         # Get URL, title, and clickable elements
-browser-use screenshot                    # Take screenshot (outputs base64)
+browser-use screenshot path.png           # Save screenshot; inline base64 is prohibited
 browser-use screenshot path.png           # Save screenshot to file
 browser-use screenshot --full path.png    # Full page screenshot
 ```
@@ -119,8 +138,8 @@ The Python session maintains state across commands. The `browser` object provide
 
 ### Agent Tasks (Requires API Key)
 ```bash
-browser-use run "Fill the contact form with test data"    # Run AI agent
-browser-use run "Extract all product prices" --max-steps 50
+timeout 900 browser-use run "Fill the contact form with test data" --max-steps 50
+timeout 900 browser-use run "Extract all product prices" --max-steps 50
 ```
 
 Agent tasks use an LLM to autonomously complete complex browser tasks. Requires `BROWSER_USE_API_KEY` or configured LLM API key (OPENAI_API_KEY, ANTHROPIC_API_KEY, etc).
@@ -150,7 +169,9 @@ browser-use server logs                   # View server logs
 | `--json` | Output as JSON |
 | `--api-key KEY` | Override API key |
 
-**Session behavior**: All commands without `--session` use the same "default" session. The browser stays open and is reused across commands. Use `--session NAME` to run multiple browsers in parallel.
+**Session behavior**: All commands without `--session` use the same "default" session. The browser
+stays open only within the 100-action / 15-minute budget. Use at most two named sessions in
+parallel and checkpoint every 25 actions.
 
 ## Examples
 

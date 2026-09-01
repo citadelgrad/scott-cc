@@ -28,6 +28,29 @@ When invoked with $ARGUMENTS, scope the entire review to the specified target. R
 
 This skill does not replace individual lenses. It sequences them into a diagnostic funnel that moves from broad to narrow, skipping work when early phases find nothing actionable.
 
+## Context architecture contract
+
+- **Scope contract:** Before the parent reads target content, a disposable resolver writes counts to
+  `design-review-scope.json`. A single-target review may contain at most **20 files** and **1,200
+  changed lines** after generated/vendor exclusions. Reject larger targets with `SCOPE_TOO_LARGE`
+  and suggested path/range partitions; a narrower tier never bypasses this gate.
+- **Fan-out contract:** Dispatch at most **4 target workers concurrently**, **4 targets per batch**,
+  **3 batches / 12 target assignments**, and retain at most **40 candidate findings**. Verification
+  assigns exactly one challenger per retained candidate, in batches of at most 4, with **40 total
+  validator assignments**.
+- **Artifact contract:** Scope, triage, deep-dive, finding, and validation detail stays in hashed
+  artifacts. Workers return manifests of at most **2 KiB**; final synthesis returns at most **4
+  KiB** and the top **12 finding IDs**, with full findings available only by artifact path and
+  SHA-256.
+- **Failure contract:** Missing workflow isolation, scope resolver, artifact persistence, hashes,
+  or schema-valid worker output stops with `ISOLATION_UNAVAILABLE` or
+  `ARTIFACT_CONTRACT_FAILED`. Never read an oversized target into the parent and never fall back to
+  a same-conversation per-file review.
+- **Continuation contract:** This is a finite one-shot workflow and is **not resumable**. Finishing,
+  rejecting, or failing a run is terminal; another scope requires a fresh invocation.
+- **Mechanical-test contract:** `scripts/tests/test_design_review_context_budget.py` asserts the
+  scope, worker, batch, finding, validator, manifest, summary, and no-fallback bounds.
+
 ## Diagnostic Funnel
 
 ### Phase 1: Complexity Triage
@@ -86,13 +109,18 @@ Rank findings in this order:
 
 ## Reviewing at Scale
 
-The funnel above is written for one target reviewed in-conversation. When the target is an entire codebase, a large PR spanning many files, or the user asks for a "thorough" or "comprehensive" review, running it once per file in a single conversation burns context fast and serializes work that has no reason to be serial.
+The funnel above is written for one bounded target. Resolve scope counts mechanically before the
+parent reads content. If the target exceeds 20 files or 1,200 changed lines, stop with
+`SCOPE_TOO_LARGE` and suggest coherent path or commit-range partitions. Each partition is a new
+invocation; do not process them serially in this conversation.
 
-If Dynamic Workflows are available in this session (the user said "workflow," used the `ultracode` keyword, or `/effort ultracode` is set), build one instead of running the funnel manually file by file. See [references/workflow-builder.md](references/workflow-builder.md) for how to map these five phases onto a workflow script — what fans out, what needs a barrier, and where to add adversarial verification. If workflows aren't available, fall back to running the funnel per file or module in sequence, same as a single-target review.
+For an in-budget multi-file target, Dynamic Workflows are mandatory. See
+[references/workflow-builder.md](references/workflow-builder.md). If isolated workflows are not
+available, stop with `ISOLATION_UNAVAILABLE`; there is no same-context large-scope fallback.
 
 ## Limitations
 - Use this skill only when the task clearly matches the scope described above.
 - Orchestrates other skills — works best when the full Clairvoyance collection is installed.
-- Context-intensive for large codebases; consider per-file reviews for big PRs.
+- Rejects targets over 20 files or 1,200 changed lines; review suggested partitions separately.
 - Not for applying a single specific lens — invoke that skill directly instead.
 - Stop and ask for clarification if the review scope, target, or priority criteria are unclear.

@@ -31,13 +31,33 @@ For each forced choice:
 5. Confirm the wording with the user before writing anything.
 6. Write the confirmed entry to `TASTE.md` inline, in the correct section.
 
-Ask one forced choice at a time, waiting for the pick and the why before moving to the next. Run at least 5 forced choices per session before treating the session as complete.
+Ask one forced choice at a time, waiting for the pick and the why before moving to the next. Run at
+least 5 and at most 8 forced choices per session before treating the session as complete.
 
 If invoked with `--mine-evidence` (or the user asks to mine repo/PR history), run evidence-mining mode instead of generating live pairs (see below).
 
 If invoked with `--distill`, run the distill pass over Candidate rules instead of eliciting new choices (see below).
 
 </what-to-do>
+
+## Context architecture contract
+
+- **Scope contract:** Live mode covers one TASTE.md and **5–8 forced choices**. Evidence-mining mode
+  scans at most **100 commits / 20 qualifying diffs** after metadata preflight; reject larger
+  history with `SCOPE_TOO_LARGE` and a commit-range partition.
+- **Fan-out contract:** Ask at most **8 human questions per session**, one at a time, with no
+  concurrent choice or mining workers. Distill mode resolves at most **8 candidates** per session.
+- **Artifact contract:** Confirmed rules stay in the human-owned TASTE.md. A continuation manifest
+  is at most **2 KiB** and contains at most **8 choice/candidate IDs**, provenance, paths, and
+  SHA-256 values; never embed full alternatives, diffs, or conversation history.
+- **Failure contract:** Missing human confirmation, scope metadata, writable TASTE.md, or valid
+  manifest stops before writing. Never continue past question 8, auto-confirm wording, or silently
+  discard pending candidates.
+- **Continuation contract:** At question 8 or an earlier pause, write
+  `grill-my-taste-checkpoint.json` bound to the TASTE.md and source-history SHA-256 values. Resume
+  only in a fresh session after hash verification, starting with unresolved IDs.
+- **Mechanical-test contract:** `scripts/tests/test_second_wave_context_budget.py` asserts the
+  choice, commit, diff, question, candidate, manifest, hash, and fresh-session bounds for this skill.
 
 <supporting-info>
 

@@ -14,8 +14,8 @@ Measures **actual** test quality (not just coverage) by:
 
 ```bash
 /mutation-test stripe_handler.py              # Standard mode (15 mutations)
-/mutation-test --quick api/payments/          # Quick mode (5 mutations)
-/mutation-test --deep billing/                # Deep mode (30+ mutations)
+/mutation-test --quick api/payments/handler.py # Quick mode (5 mutations)
+/mutation-test --deep billing.py               # Deep mode (30 mutations max)
 /mutation-test                                # Smart mode (auto-detects target)
 ```
 
@@ -66,14 +66,14 @@ Would you like me to apply this refactoring?
 
 1. **test-quality-reviewer** - Orchestrates the full workflow
 2. **test-saboteur** - Creates semantic mutations in git worktrees
-3. **test-executor** (×15 parallel) - Runs tests against each mutation
+3. **test-executor** (batches of ≤5) - Runs tests against each mutation
 4. **test-auditor** - Calculates mutation score, finds zombies
 5. **test-refactor-specialist** - Generates production-ready refactored code
 
 ## Key Features
 
 ### 🚀 Parallel Execution
-- Runs 15 test suites simultaneously (15x speedup)
+- Runs at most 5 test suites concurrently in bounded batches
 - Uses git worktrees for isolation (no race conditions)
 - ~3-5 minutes vs hours with traditional tools
 
@@ -128,7 +128,7 @@ This plugin is available in the scott-cc marketplace:
 
 ### Deep Audit Before Release
 ```bash
-/mutation-test --deep billing/
+/mutation-test --deep billing/renewal.py
 ```
 
 ### Smart Auto-Detection
@@ -208,7 +208,7 @@ def test_subscription_status_validation(status):
 
 - **Quick mode** (5 mutations): ~1-2 minutes
 - **Standard mode** (15 mutations): ~3-5 minutes
-- **Deep mode** (30+ mutations): ~10-15 minutes
+- **Deep mode** (30 mutations maximum): ~10-15 minutes
 
 ## Integration with Beads
 

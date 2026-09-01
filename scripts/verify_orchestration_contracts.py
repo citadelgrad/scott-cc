@@ -18,6 +18,14 @@ class Component:
     name: str | None = None
 
 
+@dataclass(frozen=True)
+class OrchestratorContract:
+    """A skill whose multi-stage workflow must declare context-safety contracts."""
+
+    skill_path: str
+    test_module: str
+
+
 COMPONENTS = (
     # review-panel orchestrator, stage contracts, catalog seats, and helpers
     Component("plugins/review-panel/commands/review-panel.md", "review-panel"),
@@ -152,6 +160,47 @@ MUTATION_AGENT_NAMES = (
     "test-refactor-specialist",
 )
 
+ORCHESTRATOR_CONTRACT_FIELDS = (
+    "Scope contract:",
+    "Fan-out contract:",
+    "Artifact contract:",
+    "Failure contract:",
+    "Continuation contract:",
+    "Mechanical-test contract:",
+)
+
+ORCHESTRATOR_CONTRACTS = (
+    OrchestratorContract(
+        "plugins/mutation-testing/skills/mutation-test/SKILL.md",
+        "scripts/tests/test_mutation_test_context_budget.py",
+    ),
+    OrchestratorContract(
+        "plugins/review-panel/skills/design-review/SKILL.md",
+        "scripts/tests/test_design_review_context_budget.py",
+    ),
+    OrchestratorContract(
+        "plugins/triage/skills/triage-spine/SKILL.md",
+        "scripts/tests/test_triage_spine_context_budget.py",
+    ),
+    OrchestratorContract(
+        "plugins/variant-explorer/skills/explore-variants/SKILL.md",
+        "scripts/tests/test_explore_variants_context_budget.py",
+    ),
+    *(
+        OrchestratorContract(path, "scripts/tests/test_second_wave_context_budget.py")
+        for path in (
+            "plugins/browser-automation/skills/browser-use/SKILL.md",
+            "plugins/browser-automation/skills/browser-use-e2e/SKILL.md",
+            "plugins/review-panel/skills/ponytail-audit/SKILL.md",
+            "plugins/review-panel/skills/improve-codebase-architecture/SKILL.md",
+            "plugins/triage/skills/detectors/prod-errors/SKILL.md",
+            "plugins/review-panel/skills/grill-with-docs/SKILL.md",
+            "plugins/review-panel/skills/grill-my-taste/SKILL.md",
+            "plugins/review-panel/skills/grill-the-schema/SKILL.md",
+        )
+    ),
+)
+
 
 def component_name(path: Path) -> str | None:
     """Return a Markdown component's frontmatter name, if present."""
@@ -171,9 +220,40 @@ def broken_markdown_links(path: Path) -> list[str]:
     return missing
 
 
+def orchestration_contract_errors(root: Path) -> list[str]:
+    """Return missing declarations and tests for registered orchestrators."""
+    errors: list[str] = []
+    for contract in ORCHESTRATOR_CONTRACTS:
+        skill = root / contract.skill_path
+        test_module = root / contract.test_module
+        if not skill.exists():
+            errors.append(f"registered orchestrator missing: {contract.skill_path}")
+            continue
+
+        text = skill.read_text(encoding="utf-8")
+        for field in ORCHESTRATOR_CONTRACT_FIELDS:
+            if field not in text:
+                errors.append(
+                    f"orchestrator contract missing {field.rstrip(':').lower()}: "
+                    f"{contract.skill_path}"
+                )
+
+        if not test_module.exists():
+            errors.append(
+                f"orchestrator context-budget test missing: {contract.test_module}"
+            )
+        elif contract.skill_path not in test_module.read_text(encoding="utf-8"):
+            errors.append(
+                "orchestrator context-budget test does not name skill: "
+                f"{contract.skill_path} -> {contract.test_module}"
+            )
+    return errors
+
+
 def verify(root: Path = ROOT, *, check_cli: bool = True) -> list[str]:
     """Return all orchestration contract violations under *root*."""
     errors: list[str] = []
+    errors.extend(orchestration_contract_errors(root))
     seen: set[str] = set()
     for component in COMPONENTS:
         if component.path in seen:

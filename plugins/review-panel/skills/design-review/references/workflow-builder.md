@@ -16,17 +16,33 @@ Use a pipeline over targets, not a `parallel()` triage pass followed by a separa
 
 A barrier is justified in exactly one place: before final synthesis, since prioritization (syndrome clusters, boundary issues, canary flags) requires comparing findings across the whole target set, not just within one file.
 
+## Hard Bounds
+
+- Read only `design-review-scope.json` in the parent before dispatch. Reject more than 20 files or
+  1,200 changed lines.
+- Run at most 4 target workers concurrently, 4 targets per batch, 3 batches, and 12 target
+  assignments total.
+- Keep at most 40 candidate finding records. Assign one challenger per candidate, never 2-3, with
+  at most 4 concurrent challengers and 40 validator assignments total.
+- Each worker writes detailed JSON to the run workspace and returns a manifest no larger than
+  2 KiB containing path, SHA-256, status, counts, and coverage gaps.
+- The synthesis worker reads artifacts directly and writes `final-summary.json`. It returns at most
+  4 KiB and 12 finding IDs; the parent never loads complete scorecards or finding bodies.
+- Any missing worker isolation, artifact, hash, or valid schema is terminal. Do not replace a
+  worker with an inline or sequential parent-context pass.
+
 ## Adversarial Verification
 
 A design-quality finding is a judgment call, not a compile error. "Getter/setter exposing internal state" can be a real information leak or a defensible choice given the module's actual callers. Treat every candidate finding from the deep-dive stage as a claim to be challenged, not a fact to be reported:
 
-- Spawn 2-3 independent agents per finding, each asked to argue it's *not* real given the surrounding code (is there a caller that genuinely needs this, a constraint that makes the "shallow" module unavoidably shallow, a reason the exception count is justified).
-- Keep a finding only if a majority survive the challenge.
+- Spawn exactly one independent challenger per retained finding, asked to argue it is *not* real
+  given the surrounding code. Keep it only when the challenger cannot invalidate its cited evidence.
 - This matters more here than in a typical bug-finding workflow: correctness bugs are usually binary, design smells are contextual, and an unverified sweep will over-report defensible code as broken.
 
 ## Scale and Cost
 
-Don't spawn one agent per file on a codebase with thousands of files. Batch the triage stage by directory or module, and only descend to per-file granularity for targets the batch already flagged as worth a closer look. If the run bounds coverage in any way (skipping generated code, sampling a subset, capping directory depth), say so in the final report — a design review that silently skipped half the codebase is worse than one that says what it skipped and why.
+Never accept a codebase with thousands of files as one target. The preflight rejects it and reports
+coherent partitions. Do not sample silently or descend beyond the 12-assignment total.
 
 ## Skeleton
 
@@ -50,8 +66,8 @@ deepDiveResults = pipeline(
 phase('Verify')
 verified = pipeline(
   deepDiveResults.flatMap(findings),
-  finding => parallel of 2-3 challenger agents arguing it's not real,
-    keep if majority disagree with the challenge
+  finding => one challenger agent arguing it's not real,
+    keep if the challenge cannot invalidate cited evidence
 )
 
 phase('Synthesize')
@@ -59,6 +75,8 @@ one final agent: dedupe verified findings, group into syndrome clusters,
 apply the Prioritization ranking from SKILL.md, write the report
 ```
 
-## Fallback
+## Unavailable Workflow
 
-If Dynamic Workflows aren't available in this session (older Claude Code, a session with workflows disabled, or a different platform entirely), fall back to running the funnel from SKILL.md per file or module in sequence. Same phases, same prioritization, just slower and without adversarial verification — same tradeoff `design-it-twice` makes with its `references/pre-mortem-fallback.md` when subagents aren't available.
+If isolated Dynamic Workflows are unavailable, stop with `ISOLATION_UNAVAILABLE`. Running the
+funnel per file or module in this same conversation is prohibited because it defeats the context
+contract.

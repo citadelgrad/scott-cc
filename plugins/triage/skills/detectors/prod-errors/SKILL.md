@@ -23,6 +23,24 @@ tail, a file of log lines, or a Sentry issue export is irrelevant to this skill'
 three reduce to the same "log line with a stack trace" shape below. This skill does not require a
 live Sentry API integration to function.
 
+## Context architecture contract
+
+- **Scope contract:** Preflight file/export metadata before reading log bodies. Accept at most
+  **50 MiB or 100,000 lines** per invocation and at most **24 hours** of events; reject larger
+  inputs with `LOG_SCOPE_TOO_LARGE` and time/file partitions.
+- **Fan-out contract:** Parse at most **10,000 lines per batch**, **2 batches concurrently**, and
+  **10 batches / 100,000 lines** total. Retain at most **100 distinct error fingerprints**.
+- **Artifact contract:** Parsed occurrences and verbatim traces append to JSONL artifacts. Batch
+  manifests are at most **2 KiB**. Return at most **20 triage-item summaries / 4 KiB**; complete
+  evidence remains by artifact path and SHA-256 for triage-spine consumption.
+- **Failure contract:** Missing metadata preflight, artifact persistence, fingerprint/schema
+  validation, or complete trace capture stops with `LOG_SCAN_FAILED`; never inline the whole log or
+  silently truncate it.
+- **Continuation contract:** This is a finite one-shot scan and is **not resumable**. Reported
+  partitions are separate fresh invocations with explicit coverage windows.
+- **Mechanical-test contract:** `scripts/tests/test_second_wave_context_budget.py` asserts the byte,
+  line, time, batch, concurrency, fingerprint, manifest, item, and summary bounds for this skill.
+
 ## When to Use
 
 - Pointed at a log source (file, tail, or pasted excerpt) containing one or more error entries

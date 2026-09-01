@@ -33,6 +33,7 @@ Dispatcher for skill creation excellence. Use the decision tree below to find th
 3. **Verify Compliance:**
    - Check metadata/naming -> [Standards](references/standards/README.md)
    - Add tests -> [Testing Guide](references/testing/README.md)
+   - Dispatch agents, scan corpora, loop, or resume -> [Orchestrator Architecture](references/orchestrator-architecture.md)
 
 ## 📚 Component Index
 
@@ -42,6 +43,7 @@ Dispatcher for skill creation excellence. Use the decision tree below to find th
 | **[Standards](references/standards/README.md)** | File naming, YAML frontmatter, directory structure. |
 | **[Anti-Rationalization](references/anti-rationalization/README.md)**| How to write rules that agents won't ignore. |
 | **[Testing](references/testing/README.md)** | How to ensure your skill actually works. |
+| **[Orchestrator Architecture](references/orchestrator-architecture.md)** | Hard context contracts for multi-stage workflows. |
 
 ## 🛠️ Templates
 
@@ -55,6 +57,7 @@ Dispatcher for skill creation excellence. Use the decision tree below to find th
 - Improving an EXISTING skill that agents ignore
 - Debugging why a skill isn't being triggered
 - Standardizing skills across a team
+- Adding agent fan-out, corpus scans, multi-round loops, or continuation to a skill
 
 ## How It Works
 
@@ -104,6 +107,7 @@ Before deploying any skill:
 - [ ] Total lines < 500 (use `references/` for more)
 - [ ] No `@` force-loading in cross-references
 - [ ] Tested with real scenarios
+- [ ] Orchestrators declare all six context contracts and register a mechanical budget test
 
 ## 🔗 Related Skills
 

@@ -28,6 +28,26 @@ If a question can be answered by exploring the codebase, explore the codebase in
 
 </what-to-do>
 
+## Context architecture contract
+
+- **Scope contract:** One session covers one data-layer partition and may inspect at most **50
+  schema/source files or 10,000 lines**. Resolve counts before bodies; reject larger exploration
+  with `SCOPE_TOO_LARGE` and ask the human to choose a partition.
+- **Fan-out contract:** Ask at most **10 human questions per session**, one at a time, with no
+  concurrent question or exploration agents. Codebase-resolvable questions do not consume the
+  human-question budget but remain inside the file/line cap.
+- **Artifact contract:** Confirmed decisions stay in human-owned DATA-MODEL.md. A continuation
+  manifest is at most **2 KiB** and contains at most **10 decision IDs**, schema/doc paths, and
+  SHA-256 values; never embed schema bodies or conversation transcripts.
+- **Failure contract:** Missing data-layer identity, scope counts, human confirmation, writable
+  DATA-MODEL.md, or valid manifest stops before writing. Never continue past question 10 or record
+  an unresolved invariant as settled.
+- **Continuation contract:** At question 10 or an earlier pause, write
+  `grill-the-schema-checkpoint.json` bound to DATA-MODEL.md and schema artifact SHA-256 values. A
+  later fresh session verifies hashes and resumes only unresolved decision IDs.
+- **Mechanical-test contract:** `scripts/tests/test_second_wave_context_budget.py` asserts the
+  file, line, question, decision, manifest, hash, and fresh-session bounds for this skill.
+
 <supporting-info>
 
 ## Domain awareness

@@ -15,14 +15,39 @@ metadata:
 
 # Mutation Testing Skill
 
-Run mutation testing to identify weak tests through semantic code mutations and parallel test execution.
+Run mutation testing to identify weak tests through semantic code mutations and bounded parallel test execution.
+
+## Context architecture contract
+
+- **Scope contract:** Resolve one source file and its test command before loading source content.
+  Reject directories, multiple targets, generated files, files over **2,000 lines**, or a target
+  without an independently runnable test command with `TARGET_SCOPE_TOO_LARGE` or
+  `TARGET_NOT_ISOLATABLE`. Quick, standard, and deep runs create at most **5**, **15**, and **30**
+  mutations respectively; **30 mutations is the absolute run ceiling**.
+- **Fan-out contract:** Execute at most **5 mutations per batch**, at most **5 executor agents
+  concurrently**, and at most **6 batches / 30 total executor assignments**. The next batch cannot
+  start until the previous batch has a hashed checkpoint.
+- **Artifact contract:** Bulky source snapshots, mutation manifests, executor output, audits, and
+  refactor proposals live under the run workspace. Every worker returns a manifest of at most
+  **2 KiB** with artifact path, SHA-256, status, and counts. Final synthesis reads only the bounded
+  audit summary and returns at most **4 KiB** and **10 finding IDs**; detailed reports remain by path.
+- **Failure contract:** Worktree creation, clean-checkout verification, test-command isolation,
+  artifact persistence, or output-schema validation failure stops with `ISOLATION_UNAVAILABLE` or
+  `ARTIFACT_CONTRACT_FAILED`. Never mutate the primary checkout and never fall back to sequential
+  mutations in it or to inline worker payloads.
+- **Continuation contract:** After each batch, write `checkpoint.json` containing the request hash,
+  artifact SHA-256 values, completed mutation IDs, and next batch. Resume only in a fresh
+  `claude -p` process with `MUTATION_TEST_FRESH_RESUME=1`, a different session ID, and the expected
+  checkpoint SHA-256; atomically claim that hash and reject mismatches or replay.
+- **Mechanical-test contract:** `scripts/tests/test_mutation_test_context_budget.py` asserts the
+  target, mutation, batch, concurrency, manifest, summary, isolation, and fresh-resume bounds.
 
 ## Quick Start
 
 ```bash
 /mutation-test stripe_handler.py              # Standard mode (15 mutations)
 /mutation-test --quick api/payments/          # Quick mode (5 mutations)
-/mutation-test --deep billing/                # Deep mode (30+ mutations)
+/mutation-test --deep billing.py              # Deep mode (30 mutations max)
 /mutation-test                                # Smart mode (auto-detects target)
 ```
 
@@ -71,7 +96,7 @@ Mutation testing is the gold standard for measuring test quality. It works by:
 - Good for: Normal development workflow, feature testing
 
 ### Deep Mode (--deep)
-- 30+ mutations
+- 30 mutations (hard maximum)
 - ~10-15 minutes
 - Good for: Critical code paths, pre-release audits, comprehensive analysis
 
@@ -114,7 +139,7 @@ Apply refactoring? [Y/n]
 The skill launches the test-quality-reviewer agent, which orchestrates:
 
 1. **test-saboteur**: Creates semantic mutations (boundary conditions, return values, boolean logic)
-2. **test-executor** (×15 in parallel): Runs test suite against each mutation
+2. **test-executor** (batches of ≤5): Runs test suite against each mutation
 3. **test-auditor**: Analyzes results, calculates mutation score, finds zombies
 4. **test-refactor-specialist**: Generates refactored test suite
 
@@ -189,7 +214,7 @@ def test_discount_at_boundary():
 
 ### Deep Audit Before Release
 ```bash
-/mutation-test --deep billing/
+/mutation-test --deep billing/renewal.py
 ```
 
 Output:
@@ -209,12 +234,12 @@ Estimated improvement: 78% → 85%
 ```bash
 # Target specific file or directory
 /mutation-test stripe_handler.py
-/mutation-test api/payments/
+/mutation-test api/payments/handler.py
 
 # Choose mutation count
 /mutation-test --quick        # 5 mutations (fast)
 /mutation-test                # 15 mutations (default)
-/mutation-test --deep         # 30+ mutations (thorough)
+/mutation-test --deep         # 30 mutations max (thorough)
 
 # Focus on specific areas
 /mutation-test --focus=retry_logic api/
@@ -310,9 +335,9 @@ def test_process_payment():
 
 - **Quick mode**: ~1-2 minutes (5 mutations, good for frequent checks)
 - **Standard mode**: ~3-5 minutes (15 mutations, balanced)
-- **Deep mode**: ~10-15 minutes (30+ mutations, comprehensive)
+- **Deep mode**: ~10-15 minutes (30 mutations maximum, comprehensive)
 
-Parallelization: Runs 15 test suites simultaneously (15x speedup vs sequential)
+Parallelization: Runs at most 5 test suites simultaneously in bounded batches.
 
 ## Safety
 
@@ -346,7 +371,7 @@ A: No. Mutations are in isolated git worktrees. Main working tree is never touch
 A: Review the diff and reject specific changes. You have full control.
 
 **Q: Can I mutation test my entire codebase?**
-A: Yes, but start with high-risk areas (payments, auth, etc.). Full codebase mutation testing can take hours.
+A: No. Run one source file per invocation; select high-risk files and start separate fresh runs.
 
 **Q: How is this different from code coverage?**
 A: Coverage measures lines executed. Mutation testing measures if tests actually validate correctness. You can have 100% coverage with 0% mutation score (all zombie tests).

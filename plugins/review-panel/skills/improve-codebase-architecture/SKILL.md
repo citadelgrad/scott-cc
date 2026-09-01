@@ -22,6 +22,25 @@ metadata:
 
 Surface architectural friction and propose **deepening opportunities** — refactors that turn shallow modules into deep ones. The aim is testability and AI-navigability.
 
+## Context architecture contract
+
+- **Scope contract:** Before exploration, count eligible source files/lines without reading file
+  bodies into the parent. Accept at most **150 files / 25,000 lines** or stop with
+  `SCOPE_TOO_LARGE` and suggested domain/path partitions.
+- **Fan-out contract:** Explore at most **15 files per batch**, **3 batches concurrently**, and
+  **10 batches / 150 file assignments**. Retain at most **30 candidate opportunities** for
+  synthesis.
+- **Artifact contract:** Batch notes and candidate evidence append to hashed JSONL artifacts.
+  Worker manifests are at most **2 KiB**; the parent receives at most **10 ranked candidates / 4
+  KiB**, with full evidence by artifact path and SHA-256.
+- **Failure contract:** Missing scope resolver, worker isolation, artifact persistence, domain-doc
+  access, or valid candidate schema stops with `ARCHITECTURE_SCAN_FAILED`; never fall back to an
+  inline whole-repository scan.
+- **Continuation contract:** Repository exploration is a finite one-shot workflow and is **not
+  resumable**. The later human grilling starts as a separate bounded conversational session.
+- **Mechanical-test contract:** `scripts/tests/test_second_wave_context_budget.py` asserts the file,
+  line, batch, concurrency, assignment, candidate, manifest, and summary bounds for this skill.
+
 ## Glossary
 
 Use these terms exactly in every suggestion. Consistent language is the point — don't drift into "component," "service," "API," or "boundary." Full definitions in [LANGUAGE.md](LANGUAGE.md).

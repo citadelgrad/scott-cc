@@ -43,9 +43,28 @@ Target mutation score: >80% (excellent), 60-80% (good), <60% (needs work)
 
 ## Workflow Orchestration
 
+### Hard execution contract
+
+The `mutation-test` skill's Context architecture contract is authoritative over every example
+below. Resolve exactly one source file of at most 2,000 lines and a separately runnable test
+command before dispatch. Quick/standard/deep mean exactly 5/15/30 maximum mutations. Executors run
+in batches of at most 5 with at most 5 concurrent agents, 6 batches, and 30 assignments total.
+
+Create a run workspace outside the primary checkout. Each phase writes its full JSON under that
+workspace and returns only a ≤2 KiB manifest with `artifact_path`, `artifact_sha256`, `status`, and
+counts. Prompts pass artifact paths and expected SHA-256 values, never serialized mutation,
+executor, audit, or diff payloads. Validate schemas and hashes before the next phase. The final
+summary is ≤4 KiB and names ≤10 finding IDs.
+
+After each executor batch, write and hash `checkpoint.json`; do not start another batch in this
+context. Resume through a fresh `claude -p` process carrying `MUTATION_TEST_FRESH_RESUME=1`, a new
+session ID, and the expected checkpoint SHA-256. Atomically claim the checkpoint hash. Hash
+mismatch, replay, inability to prove a fresh process, dirty primary checkout, worktree failure,
+test isolation failure, artifact failure, or malformed worker JSON is terminal and fail-closed.
+
 ### Phase 0: Target Identification (when no path provided)
 
-If user invokes `/mutation-test` without specifying a file/directory:
+If user invokes `/mutation-test` without specifying one source file:
 
 **Step 1: Check conversation context**
 ```bash
@@ -96,9 +115,9 @@ AskUserQuestion(
 
 ```
 "I couldn't find any recently modified files with tests.
-Please specify a file or directory:
+Please specify one source file:
   /mutation-test stripe_handler.py
-  /mutation-test api/payments/"
+  /mutation-test api/payments/handler.py"
 ```
 
 ### Phase 1: Mutation Generation (test-saboteur agent)
@@ -151,17 +170,17 @@ Task(
 **How many mutations?**
 - Quick mode: 5 mutations (fast feedback, 1-2 min)
 - Standard mode: 15 mutations (balanced, 3-5 min)
-- Deep mode: 30+ mutations (exhaustive, 10+ min)
+- Deep mode: 30 mutations maximum (exhaustive, 10+ min)
 
 Choose based on user request. Default to standard.
 
 ### Phase 2: Parallel Test Execution (test-executor agents)
 
-Launch one test-executor agent per mutation **in parallel**:
+Launch test-executor agents in batches of at most five, never more than five **in parallel**:
 
 ```python
-# Launch all executors in a single message (parallel execution)
-for mutation in mutations:
+# Launch only the current bounded batch in one message
+for mutation in current_batch[:5]:
     Task(
       subagent_type="mutation-testing:test-executor",
       description=f"Run tests for mutation {mutation['id']}",
@@ -212,13 +231,15 @@ for mutation in mutations:
     )
 ```
 
-**Key: Send all Task calls in ONE message** for parallel execution.
+**Key: Send at most five Task calls in one message.** Persist and hash the batch result artifact,
+then checkpoint for a fresh-process continuation before another batch.
 
 Wait for all test-executor agents to complete before proceeding.
 
 ### Phase 3: Quality Analysis (test-auditor agent)
 
-Launch test-auditor with aggregated results:
+Launch test-auditor with artifact paths and expected hashes. The fields below describe artifact
+contents; do not inline them in its prompt:
 
 ```
 Task(
@@ -227,11 +248,8 @@ Task(
   prompt="""
   Analyze mutation test results to identify test quality issues.
 
-  Mutations Created:
-  {json.dumps(mutations)}
-
-  Test Results:
-  {json.dumps(all_test_results)}
+  Mutation Manifest: {mutation_manifest_path} sha256={mutation_manifest_sha256}
+  Executor Results: {executor_results_path} sha256={executor_results_sha256}
 
   Source File: {source_file}
   Test File: {test_file}
@@ -264,7 +282,7 @@ Task(
 
 ### Phase 4: Refactoring Proposal (test-refactor-specialist agent)
 
-Launch refactor specialist with audit results:
+Launch refactor specialist with the audit artifact path and expected SHA-256:
 
 ```
 Task(
@@ -273,8 +291,7 @@ Task(
   prompt="""
   Generate refactored test suite based on mutation analysis.
 
-  Audit Results:
-  {json.dumps(audit_results)}
+  Audit Results: {audit_artifact_path} sha256={audit_artifact_sha256}
 
   Source File: {source_file}
   Test File: {test_file}
@@ -425,7 +442,7 @@ check runs inside the sub-agent whose own instructions could be the thing that f
 - ✅ Explain WHY each test is a zombie
 
 **Error Handling**:
-- If worktree creation fails → fallback to sequential mutations
+- If worktree creation fails → stop with `ISOLATION_UNAVAILABLE`
 - If tests fail to run → report to user, don't continue
 - If mutation creates syntax error → skip that mutation
 - If all mutations fail → check test setup (dependencies, etc.)

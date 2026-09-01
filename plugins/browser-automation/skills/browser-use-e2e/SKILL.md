@@ -26,6 +26,24 @@ metadata:
 
 Generate and execute end-to-end tests using browser-use, an AI-powered browser automation library. Tests are written in natural language and the AI agent figures out the specific interactions.
 
+## Context architecture contract
+
+- **Scope contract:** One generated test covers one user journey, at most **50 agent steps**, **15
+  minutes**, and **20 assertions**. Every `agent.run()` call must pass `max_steps=50`; missing
+  bounds fail with `E2E_BUDGET_REQUIRED` before browser launch.
+- **Fan-out contract:** Run at most **2 browser tests concurrently** and allow at most **2 retries
+  per test**. A retry starts from a fresh browser context.
+- **Artifact contract:** Persist screenshots, video, traces, HTML, and full agent history beneath
+  the test report directory. Return at most a **2 KiB** manifest and **20 assertion statuses** with
+  artifact paths and SHA-256; never inline media or full history.
+- **Failure contract:** Missing limits, browser cleanup, artifact persistence, domain restriction,
+  or schema-valid terminal result fails closed. A timed-out or malformed agent result is not a
+  passing assertion and is never retried beyond two attempts.
+- **Continuation contract:** This is a finite one-shot workflow and is **not resumable**. A retry is
+  a new browser context within the same fixed budget, not continuation of a timed-out agent.
+- **Mechanical-test contract:** `scripts/tests/test_second_wave_context_budget.py` asserts the
+  step, time, assertion, concurrency, retry, artifact, and terminal-result bounds for this skill.
+
 ## Quick Start
 
 ### 1. Setup
@@ -126,7 +144,7 @@ async def test_login():
         use_vision=False,  # Security: no screenshots with creds
     )
 
-    result = await agent.run()
+    result = await asyncio.wait_for(agent.run(max_steps=50), timeout=900)
     assert result.is_successful()
 
 asyncio.run(test_login())
@@ -159,7 +177,7 @@ async def test_github_login(browser, sensitive_data):
         sensitive_data=sensitive_data,
         use_vision=False,
     )
-    result = await agent.run()
+    result = await asyncio.wait_for(agent.run(max_steps=50), timeout=900)
     assert result.is_successful()
 ```
 
@@ -183,7 +201,7 @@ async def test_with_2fa_profile():
         # No credentials needed - profile has active session
     )
 
-    result = await agent.run()
+    result = await asyncio.wait_for(agent.run(max_steps=50), timeout=900)
     assert result.is_successful()
 ```
 

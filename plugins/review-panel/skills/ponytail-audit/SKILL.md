@@ -22,6 +22,23 @@ metadata:
 ponytail-review, repo-wide. Scan the whole tree instead of a diff. Rank
 findings biggest cut first.
 
+## Context architecture contract
+
+- **Scope contract:** A deterministic preflight counts eligible source files and lines without
+  loading them into the parent. Accept at most **200 files / 30,000 lines**; otherwise stop with
+  `SCOPE_TOO_LARGE` and report coherent directory partitions.
+- **Fan-out contract:** Scan at most **20 files per batch**, **4 batches concurrently**, and **10
+  batches / 200 file assignments** total.
+- **Artifact contract:** Each batch appends findings to a JSONL artifact and returns a manifest of
+  at most **2 KiB**. Final output contains at most **20 ranked findings / 4 KiB**, with the complete
+  list available by artifact path and SHA-256.
+- **Failure contract:** Missing preflight, isolated batch worker, writable append-only artifact, or
+  valid finding schema stops with `AUDIT_CONTRACT_FAILED`; never scan the repository inline.
+- **Continuation contract:** This is a finite one-shot workflow and is **not resumable**. Oversized
+  partitions are separate fresh invocations.
+- **Mechanical-test contract:** `scripts/tests/test_second_wave_context_budget.py` asserts the file,
+  line, batch, assignment, manifest, finding, and summary bounds for this skill.
+
 ## Tags
 
 Same as ponytail-review:
@@ -40,7 +57,8 @@ thing, dead flags and config, hand-rolled stdlib.
 
 ## Output
 
-One line per finding, ranked: `<tag> <what to cut>. <replacement>. [path]`.
+One line per finding, ranked, capped at 20 parent-visible entries:
+`<tag> <what to cut>. <replacement>. [path]`.
 End with `net: -<N> lines, -<M> deps possible.` Nothing to cut: `Lean already. Ship.`
 
 ## Boundaries
