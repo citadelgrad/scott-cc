@@ -32,6 +32,14 @@ profiles:
         run: uv run pytest
         timeout: 10m
 
+  catalog-audit:
+    gates:
+      - id: catalog-seat-audit
+        run: uv run python scripts/catalog_seat_audit.py --out .foundry/catalog-audit-report.md
+        timeout: 5m
+        allow_failure: true
+        decision_on_failure: warn
+
 schedules:
   plugin-staleness-audit-weekly:
     profile: plugin-staleness-audit
@@ -39,3 +47,10 @@ schedules:
   triage-scott-cc:
     profile: triage
     cron: '0 11 * * 2'
+  catalog-audit-monthly:
+    profile: catalog-audit
+    cron: '0 6 1 * *'   # 06:00 UTC on the 1st of each month
+
+integrations:
+  beads:
+    on_needs_human: true
