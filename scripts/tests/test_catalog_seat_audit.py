@@ -3,7 +3,9 @@
 Uses small synthetic tmp_path fixtures for isolated unit tests of each
 parsing/audit rule, plus one test that runs against the real, checked-in
 plugins/review-panel catalog/skills/design-review files and asserts the
-mandated boundary condition (exactly 3 undocumented findings, no others).
+mandated boundary condition (the catalog is clean — Epic B, scc-6lj.5,
+closed the previously known adr-skill/grill-my-taste/grill-the-schema
+gaps, so a regression here means a real skill went undocumented again).
 """
 
 from __future__ import annotations
@@ -232,7 +234,7 @@ def test_fully_consistent_fixture_produces_zero_findings_and_exit_0(tmp_path):
     assert "Status: CLEAN" in rendered
 
 
-def test_real_repo_files_produce_exactly_3_undocumented_findings():
+def test_real_repo_files_produce_zero_findings():
     catalog_text = (REPO_ROOT / catalog_seat_audit.DEFAULT_CATALOG).read_text()
     skills_dir = REPO_ROOT / catalog_seat_audit.DEFAULT_SKILLS_DIR
     design_review_text = (
@@ -241,15 +243,11 @@ def test_real_repo_files_produce_exactly_3_undocumented_findings():
 
     report = catalog_seat_audit.audit(catalog_text, skills_dir, design_review_text)
 
-    assert {f.subject for f in report.findings} == {
-        "adr-skill",
-        "grill-my-taste",
-        "grill-the-schema",
-    }
-    assert all(f.kind == "undocumented" for f in report.findings)
+    assert report.findings == []
+    assert report.clean is True
 
 
-def test_real_repo_main_exits_1_and_never_modifies_source_files(tmp_path):
+def test_real_repo_main_exits_0_and_never_modifies_source_files(tmp_path):
     catalog_path = REPO_ROOT / catalog_seat_audit.DEFAULT_CATALOG
     skills_dir = REPO_ROOT / catalog_seat_audit.DEFAULT_SKILLS_DIR
     design_review_path = REPO_ROOT / catalog_seat_audit.DEFAULT_DESIGN_REVIEW
@@ -272,7 +270,7 @@ def test_real_repo_main_exits_1_and_never_modifies_source_files(tmp_path):
         ]
     )
 
-    assert exit_code == 1
+    assert exit_code == 0
     assert catalog_path.read_text() == catalog_before
     assert design_review_path.read_text() == design_review_before
     assert sorted(p.name for p in skills_dir.iterdir()) == skill_dir_names_before
