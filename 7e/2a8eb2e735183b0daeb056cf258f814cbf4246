@@ -1,0 +1,14 @@
+plugins/review-panel/reviewers/persona-catalog.md
+  h_12ee2b2686c122 518-542
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "7e2a8eb2e735183b0daeb056cf258f814cbf4246",
+  "prompts": {},
+  "humans": {
+    "h_12ee2b2686c122": {
+      "author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
