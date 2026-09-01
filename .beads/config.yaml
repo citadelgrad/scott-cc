@@ -64,3 +64,6 @@ validation:
 # - linear.api-key
 # - github.org
 # - github.repo
+
+# Team-maintainer policy permits normal session-close git operations.
+no-git-ops: false
