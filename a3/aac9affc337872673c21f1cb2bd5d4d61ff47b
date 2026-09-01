@@ -1,0 +1,31 @@
+scripts/tests/test_verify_plugin.py
+  s_aac0d35f4773ee::t_bf4cf9be0d0afb 134-135
+  s_fdf5b8cbabc0d0::t_843d0322e832bf 7,81-89,91-133
+  s_aac0d35f4773ee::t_74756efae33d49 90
+.pre-commit-config.yaml
+  s_fdf5b8cbabc0d0::t_843d0322e832bf 62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "a3aac9affc337872673c21f1cb2bd5d4d61ff47b",
+  "prompts": {},
+  "sessions": {
+    "s_aac0d35f4773ee": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a059a2-b899-7790-b15b-020b6b20cd53",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    },
+    "s_fdf5b8cbabc0d0": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "54bb2e51-67ae-46ea-84c9-c1c914d054cd",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": null
+    }
+  }
+}
