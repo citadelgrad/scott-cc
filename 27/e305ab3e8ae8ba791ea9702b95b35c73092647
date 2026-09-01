@@ -1,0 +1,19 @@
+.beads/config.yaml
+  s_aac0d35f4773ee::t_a021df4a6359c5 67-69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "27e305ab3e8ae8ba791ea9702b95b35c73092647",
+  "prompts": {},
+  "sessions": {
+    "s_aac0d35f4773ee": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a059a2-b899-7790-b15b-020b6b20cd53",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
