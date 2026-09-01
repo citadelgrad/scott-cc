@@ -1,0 +1,27 @@
+docs/plans/2026-07-10-review-panel-plugin-plan.md
+  s_1fd1ffd91519c4::t_399291bf617f25 284,286-289,292
+  s_1fd1ffd91519c4::t_bf4819bf311da3 333-349
+  s_1fd1ffd91519c4::t_093ff2ba4defab 298-299
+docs/prd-epic-b-catalog-maintenance.md
+  s_1fd1ffd91519c4::t_7555d2ee87dae2 1-174
+plugins/review-panel/CREDITS.md
+  s_1fd1ffd91519c4::t_620eee847d2387 261-275
+docs/spec-epic-b-catalog-maintenance.md
+  s_1fd1ffd91519c4::t_b25a1b46c477e3 1-304
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "a27fede2f968edb30db706a3a6a14e35ef5c5a7d",
+  "prompts": {},
+  "sessions": {
+    "s_1fd1ffd91519c4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "01951f80-74c5-4357-bfba-45c6565407aa",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "Scott Nixon <citadelgrad@gmail.com>"
+    }
+  }
+}
