@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -75,6 +76,61 @@ def test_empty_skill_bodies_detects_frontmatter_only_skill(tmp_path: Path) -> No
     )
 
     assert verify_plugin.empty_skill_bodies(tmp_path) == [empty_skill]
+
+
+def test_empty_skill_bodies_detects_malformed_and_allows_healthy_edits(
+    tmp_path: Path,
+) -> None:
+    malformed_skill = (
+        tmp_path / "plugins" / "example" / "skills" / "malformed" / "SKILL.md"
+    )
+    malformed_skill.parent.mkdir(parents=True)
+    malformed_skill.write_text("---\nname: malformed\ndescription: Missing delimiter\n")
+
+    healthy_skill = tmp_path / "plugins" / "example" / "skills" / "healthy" / "SKILL.md"
+    healthy_skill.parent.mkdir(parents=True)
+    healthy_skill.write_text(
+        "---\nname: healthy\ndescription: Edited normally\n---\n\n# Procedure\nDo work.\n"
+    )
+
+    assert verify_plugin.empty_skill_bodies(tmp_path) == [malformed_skill]
+
+
+def test_plugin_manifest_hook_matches_plugin_skill_only_changes() -> None:
+    config = (REPO_ROOT / ".pre-commit-config.yaml").read_text()
+    hook = config.split("- id: plugin-manifest-contract", maxsplit=1)[1].split(
+        "- id:", maxsplit=1
+    )[0]
+    pattern_match = re.search(r"^\s*files:\s*(.+)$", hook, flags=re.MULTILINE)
+    assert pattern_match is not None
+    pattern = pattern_match.group(1)
+
+    assert re.search(
+        pattern,
+        "plugins/review-panel/skills/review-panel/SKILL.md",
+    )
+
+
+def test_main_reports_every_empty_or_malformed_skill_path(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    write_contract(tmp_path, marketplace_description="accurate inventory")
+    empty_skill = tmp_path / "plugins" / "example" / "skills" / "empty" / "SKILL.md"
+    malformed_skill = (
+        tmp_path / "plugins" / "example" / "skills" / "malformed" / "SKILL.md"
+    )
+    empty_skill.parent.mkdir(parents=True)
+    malformed_skill.parent.mkdir(parents=True)
+    empty_skill.write_text("---\nname: empty\n---\n")
+    malformed_skill.write_text("---\nname: malformed\n")
+
+    with pytest.raises(SystemExit) as exc_info:
+        verify_plugin.main()
+
+    assert exc_info.value.code == 1
+    output = capsys.readouterr().out
+    assert "plugins/example/skills/empty/SKILL.md" in output
+    assert "plugins/example/skills/malformed/SKILL.md" in output
 
 
 def test_root_description_drift_fails(tmp_path: Path) -> None:

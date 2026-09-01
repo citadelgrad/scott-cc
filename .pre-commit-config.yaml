@@ -59,7 +59,7 @@ repos:
         entry: python3 scripts/verify_plugin.py
         language: system
         pass_filenames: false
-        files: ^(?:\.claude-plugin/.*\.json|plugins/.*/\.claude-plugin/plugin\.json|hooks/hooks\.json|scripts/verify_plugin\.py)$
+        files: ^(?:\.claude-plugin/.*\.json|plugins/.*/\.claude-plugin/plugin\.json|plugins/[^/]+/skills/[^/]+/SKILL\.md|hooks/hooks\.json|scripts/verify_plugin\.py)$
       - id: skills-distribution-contract
         name: skills CLI distribution contract
         entry: python3 scripts/verify_skills_distribution.py
