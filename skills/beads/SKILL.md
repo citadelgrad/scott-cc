@@ -1,14 +1,15 @@
 ---
 name: beads
 description: >-
-  Use when bd/Beads is explicitly requested, or trusted repository context designates Beads as the
-  issue tracker, for nontrivial tracked work: creating, claiming, implementing, or closing an issue;
-  an ambiguous or missing workspace; dependency graphs and ready-front scheduling; concurrent or swarm
-  workers, isolated lanes, and claim conflicts; verifying a worker's result before integration or
-  closure; crash, compaction, or interrupted-session recovery; human or CI approval gates; redacting
-  secrets in issue content; choosing Beads versus a durable executor (PAS); and durable cross-session
-  handoff. Do not use for unrelated repositories, ephemeral work, or PAS authoring with no real Beads
-  lifecycle.
+  Use when bd/Beads is explicitly requested, or trusted repository context designates Beads as the issue tracker,
+  for nontrivial tracked work: creating, claiming, implementing, or closing an issue; an ambiguous workspace or
+  write scope, including under pressure to skip tracking; dependency graphs and ready-front scheduling, including
+  stalled fronts; concurrent or swarm workers, lane isolation, capacity limits, partial-lane failure, or
+  cancellation; verifying a worker's result before integration, including stale review reuse or merge/test
+  failure; crash, compaction, resume-identity mismatch, stale-epoch reassignment, or duplicate results; human or
+  CI approval gates, including grants, receipts, timeouts, and malformed or consumed approvals; redacting secrets
+  or leaked sentinels; choosing Beads versus a durable executor (PAS); and context/budget bounds or durable
+  handoff. Do not use for unrelated repositories, ephemeral work, or PAS authoring with no real Beads lifecycle.
 license: MIT; see LICENSE.txt and references/sources.md
 compatibility: >-
   Hermes-first. Requires the Go/Dolt bd executable for lifecycle work and Git
