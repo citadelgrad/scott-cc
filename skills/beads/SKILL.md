@@ -2,15 +2,14 @@
 name: beads
 description: >-
   Use when bd/Beads is explicitly requested, or trusted repository context designates Beads as the issue tracker,
-  for nontrivial tracked work, even framed as an edge case or failure: ambiguous workspace or write scope, or
-  pressure to skip tracking; dependency graphs, ready-front scheduling, or stalled fronts; concurrent or swarm
-  workers, lane conflicts, capacity limits, or cancellation; verifying a worker's result before integration, stale
-  review reuse, or merge/test failure; crash, compaction, resume-identity mismatch, stale-epoch reassignment, or
-  duplicate results; a Beads approval gate misbehaving: silence or timeout as approval, a malformed, stale,
-  consumed, or mismatched token, a reused one-shot grant, or gate evaluation erroring where native close would
-  just warn; redacting secrets or leaked sentinels; choosing Beads versus a durable executor (PAS); and
-  context/budget bounds or durable handoff. Do not use for unrelated repositories, ephemeral work, or PAS
-  authoring with no real Beads lifecycle.
+  for nontrivial tracked work: concurrent or swarm workers, lane isolation, capacity limits, partial-lane failure,
+  or cancellation; human or CI approval gates, including grants, receipts, timeouts, and malformed or consumed
+  approvals; redacting secrets or leaked sentinels; creating, claiming, implementing, or closing an issue; an
+  ambiguous workspace or write scope, including under pressure to skip tracking; dependency graphs and ready-front
+  scheduling, including stalled fronts; verifying a worker's result before integration, including stale review
+  reuse or merge/test failure; crash, compaction, resume-identity mismatch, stale-epoch reassignment, or duplicate
+  results; choosing Beads versus a durable executor (PAS); and context/budget bounds or durable handoff. Do not
+  use for unrelated repositories, ephemeral work, or PAS authoring with no real Beads lifecycle.
 license: MIT; see LICENSE.txt and references/sources.md
 compatibility: >-
   Hermes-first. Requires the Go/Dolt bd executable for lifecycle work and Git
