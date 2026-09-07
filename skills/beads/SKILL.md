@@ -1,15 +1,15 @@
 ---
 name: beads
 description: >-
-  Use when bd/Beads is explicitly requested, or trusted repository context designates Beads as the issue tracker,
-  for nontrivial tracked work: concurrent or swarm workers, lane isolation, capacity limits, partial-lane failure,
-  or cancellation; human or CI approval gates, including grants, receipts, timeouts, and malformed or consumed
-  approvals; redacting secrets or leaked sentinels; creating, claiming, implementing, or closing an issue; an
-  ambiguous workspace or write scope, including under pressure to skip tracking; dependency graphs and ready-front
-  scheduling, including stalled fronts; verifying a worker's result before integration, including stale review
-  reuse or merge/test failure; crash, compaction, resume-identity mismatch, stale-epoch reassignment, or duplicate
-  results; choosing Beads versus a durable executor (PAS); and context/budget bounds or durable handoff. Do not
-  use for unrelated repositories, ephemeral work, or PAS authoring with no real Beads lifecycle.
+  Use when handling any nontrivial issue-tracked repository request where bd/Beads is named or trusted context
+  designates Beads as the tracker. Always load before answering, even when the request does not say Beads, for:
+  creating, claiming, implementing, or closing issues; dependency readiness or stalled work; concurrent workers
+  or swarms, ownership, lane isolation, capacity, partial failure, cancellation, or result verification; human or
+  CI gates, grants,
+  receipts, timeouts, or malformed, stale, mismatched, or consumed approval; secret or sentinel leakage; ambiguous
+  workspace or write scope; crash, compaction, restart, resume identity, stale epochs, duplicate results, or durable
+  handoff; and choosing Beads versus PAS. Do not use for unrelated repositories, arithmetic, rewriting, generic
+  brainstorming, read-only code explanation, ephemeral work, Paperclip-only work, or PAS authoring without Beads.
 license: MIT; see LICENSE.txt and references/sources.md
 compatibility: >-
   Hermes-first. Requires the Go/Dolt bd executable for lifecycle work and Git
