@@ -16,6 +16,7 @@ SCRIPTS = ROOT / "skills" / "beads" / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
 import lane_snapshot  # noqa: E402
+import safe_bd  # noqa: E402
 import worker_result  # noqa: E402
 
 
@@ -35,6 +36,11 @@ def execute(job_path: Path) -> dict[str, Any]:
         job_path.with_suffix(".pid").write_text(str(os.getpid()), encoding="ascii")
         time.sleep(float(job["behavior"].partition(":")[2]))
         return {"status": "slept"}
+    if job["behavior"].startswith("flood_output:"):
+        byte_count = int(job["behavior"].partition(":")[2])
+        sys.stdout.write("x" * byte_count)
+        sys.stderr.write("y" * byte_count)
+        return {"status": "flooded"}
     packet_path = Path(job["packet_path"])
     packet_raw = packet_path.read_bytes()
     packet = json.loads(packet_raw)
@@ -57,9 +63,19 @@ def execute(job_path: Path) -> dict[str, Any]:
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(job["content"], encoding="utf-8")
     if job["behavior"] == "child_tracker_mutation":
-        tracker_file = worktree / ".beads" / "child-write.json"
-        tracker_file.parent.mkdir(parents=True, exist_ok=True)
-        tracker_file.write_text("{}\n", encoding="utf-8")
+        # Exercise the production safe transport's worker capability gate with
+        # a real lifecycle profile. Construction must fail before any bd
+        # process can be dispatched.
+        safe_bd.SafeBdRequest(
+            "close_exact",
+            {
+                "issue_id": packet["issue"]["id"],
+                "actor": "child",
+                "reason": "forbidden child close",
+            },
+            worktree.resolve(),
+            safe_bd.WorkerScope(frozenset({packet["issue"]["id"]})),
+        )
 
     snapshot = lane_snapshot.capture(
         worktree, packet["repository"]["base_sha"], exclude=outbox

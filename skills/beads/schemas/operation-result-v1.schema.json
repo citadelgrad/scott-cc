@@ -149,6 +149,42 @@
           }
         }
       }
+    },
+    {
+      "else": {
+        "not": {
+          "required": [
+            "run_outcome"
+          ]
+        }
+      },
+      "if": {
+        "properties": {
+          "operation": {
+            "const": "finish"
+          }
+        },
+        "required": [
+          "operation"
+        ]
+      },
+      "then": {
+        "if": {
+          "properties": {
+            "status": {
+              "const": "success"
+            }
+          },
+          "required": [
+            "status"
+          ]
+        },
+        "then": {
+          "required": [
+            "run_outcome"
+          ]
+        }
+      }
     }
   ],
   "properties": {
@@ -617,6 +653,19 @@
         {
           "type": "null"
         }
+      ]
+    },
+    "run_outcome": {
+      "enum": [
+        "completed",
+        "partially_completed",
+        "blocked",
+        "human_required",
+        "budget_exhausted",
+        "circuit_broken",
+        "inconclusive",
+        "cancelled",
+        "error"
       ]
     },
     "safe_next_action": {

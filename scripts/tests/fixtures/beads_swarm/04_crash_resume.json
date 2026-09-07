@@ -1,45 +1,266 @@
 {
   "schema_version": "beads.swarm-fixture.v1",
   "id": "crash-resume-convergence",
-  "acceptance_criteria": ["AC-T16-004"],
-  "timeout_seconds": 30,
-  "max_processes": 1,
-  "freeze_crash_points": [
-    {"boundary": "after_lock_acquire", "occurrence": 1},
-    {"boundary": "after_journal_write", "occurrence": 1},
-    {"boundary": "after_journal_fsync", "occurrence": 1},
-    {"boundary": "after_temp_write", "occurrence": 1},
-    {"boundary": "after_temp_fsync", "occurrence": 1},
-    {"boundary": "after_atomic_rename", "occurrence": 1},
-    {"boundary": "after_directory_fsync", "occurrence": 1},
-    {"boundary": "after_temp_write", "occurrence": 2},
-    {"boundary": "after_temp_fsync", "occurrence": 2},
-    {"boundary": "after_atomic_rename", "occurrence": 2},
-    {"boundary": "after_directory_fsync", "occurrence": 2},
-    {"boundary": "after_temp_write", "occurrence": 3},
-    {"boundary": "after_temp_fsync", "occurrence": 3},
-    {"boundary": "after_atomic_rename", "occurrence": 3},
-    {"boundary": "after_directory_fsync", "occurrence": 3},
-    {"boundary": "after_journal_write", "occurrence": 3},
-    {"boundary": "after_journal_fsync", "occurrence": 3},
-    {"boundary": "after_checkpoint_acceptance", "occurrence": 1},
-    {"boundary": "after_temp_write", "occurrence": 4},
-    {"boundary": "after_temp_fsync", "occurrence": 4},
-    {"boundary": "after_atomic_rename", "occurrence": 4},
-    {"boundary": "after_directory_fsync", "occurrence": 4},
-    {"boundary": "after_pointer_publication", "occurrence": 1},
-    {"boundary": "after_lock_release", "occurrence": 1}
+  "acceptance_criteria": [
+    "AC-T16-004"
   ],
+  "timeout_seconds": 30,
+  "output_limit_bytes": 4096,
+  "max_processes": 1,
   "native_io_crash_points": [
-    {"argv_prefix": ["git", "commit-tree"], "phase": "before"},
-    {"argv_prefix": ["git", "commit-tree"], "phase": "after"},
-    {"argv_prefix": ["git", "update-ref"], "phase": "before"},
-    {"argv_prefix": ["git", "update-ref"], "phase": "after"},
-    {"argv_prefix": ["git", "reset", "--hard"], "phase": "before"},
-    {"argv_prefix": ["git", "reset", "--hard"], "phase": "after"}
+    {
+      "argv_prefix": [
+        "git",
+        "commit-tree"
+      ],
+      "phase": "before"
+    },
+    {
+      "argv_prefix": [
+        "git",
+        "commit-tree"
+      ],
+      "phase": "after"
+    },
+    {
+      "argv_prefix": [
+        "git",
+        "update-ref"
+      ],
+      "phase": "before"
+    },
+    {
+      "argv_prefix": [
+        "git",
+        "update-ref"
+      ],
+      "phase": "after"
+    },
+    {
+      "argv_prefix": [
+        "git",
+        "reset",
+        "--hard"
+      ],
+      "phase": "before"
+    },
+    {
+      "argv_prefix": [
+        "git",
+        "reset",
+        "--hard"
+      ],
+      "phase": "after"
+    }
   ],
   "expected_max_native_replays": 0,
-  "expected_terminal_states": ["success", "conflict", "unknown"],
+  "expected_terminal_states": [
+    "success",
+    "conflict",
+    "unknown"
+  ],
   "expected_resume_status": "success",
-  "expected_repeat_status": "conflict"
+  "expected_repeat_status": "conflict",
+  "recovery_scenarios": [
+    {
+      "id": "cancellation",
+      "expected_status": "refused",
+      "expected_error": "LANE_VERIFICATION_FAILED"
+    },
+    {
+      "id": "consecutive_roots",
+      "expected_runs": 2,
+      "expected_status": "success"
+    },
+    {
+      "id": "unknown_late_child",
+      "expected_error": "ISSUE_OWNERSHIP_INVALID"
+    },
+    {
+      "id": "repeat_resume",
+      "expected_first": "success",
+      "expected_repeat": "success"
+    },
+    {
+      "id": "durable_handoff_result",
+      "expected_launch": "APPLIED",
+      "expected_accept": "APPLIED",
+      "expected_repeat_error": "HANDOFF_RESULT_DUPLICATE"
+    }
+  ],
+  "crash_flows": [
+    {
+      "id": "lane_freeze",
+      "scope": "successful parent freeze of one imported, checkpointed lane",
+      "crash_points": [
+        {
+          "boundary": "after_lock_acquire",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_lock_acquire",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_lock_release",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_temp_write",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_temp_fsync",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_atomic_rename",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_directory_fsync",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_temp_write",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_temp_fsync",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_atomic_rename",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_directory_fsync",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_lock_acquire",
+          "occurrence": 3
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_lock_release",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_temp_write",
+          "occurrence": 3
+        },
+        {
+          "boundary": "after_temp_fsync",
+          "occurrence": 3
+        },
+        {
+          "boundary": "after_atomic_rename",
+          "occurrence": 3
+        },
+        {
+          "boundary": "after_directory_fsync",
+          "occurrence": 3
+        },
+        {
+          "boundary": "after_lock_acquire",
+          "occurrence": 4
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 3
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 3
+        },
+        {
+          "boundary": "after_lock_release",
+          "occurrence": 3
+        },
+        {
+          "boundary": "after_checkpoint_acceptance",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_temp_write",
+          "occurrence": 4
+        },
+        {
+          "boundary": "after_temp_fsync",
+          "occurrence": 4
+        },
+        {
+          "boundary": "after_atomic_rename",
+          "occurrence": 4
+        },
+        {
+          "boundary": "after_directory_fsync",
+          "occurrence": 4
+        },
+        {
+          "boundary": "after_pointer_publication",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_lock_release",
+          "occurrence": 4
+        }
+      ],
+      "boundary_selector": "all"
+    },
+    {
+      "id": "durable_handoff_launch",
+      "scope": "successful parent publication and journaling of one durable handoff launch",
+      "crash_points": [
+        {
+          "boundary": "after_handoff_launch_prepared",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_handoff_launch_resolved",
+          "occurrence": 1
+        }
+      ],
+      "boundary_selector": "after_handoff_"
+    },
+    {
+      "id": "direct_operation_close",
+      "scope": "successful parent TRACKER_CLOSE from frozen intent through exact readback",
+      "crash_points": [
+        {
+          "boundary": "after_operation_prepared",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_operation_marker",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_operation_effect",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_operation_resolved",
+          "occurrence": 1
+        }
+      ],
+      "boundary_selector": "after_operation_"
+    }
+  ]
 }

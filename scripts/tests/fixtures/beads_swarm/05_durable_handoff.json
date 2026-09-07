@@ -3,6 +3,7 @@
   "id": "durable-executor-handoff",
   "acceptance_criteria": ["AC-T16-005"],
   "timeout_seconds": 30,
+  "output_limit_bytes": 4096,
   "max_processes": 1,
   "executor": {
     "type": "pas",

@@ -1118,6 +1118,11 @@ This is the canonical machine-facing result for observe, execute-one, plan/creat
 - optional `run_id`/checkpoint path for resumable work.
 - `pending_actions`, an array of schema-valid §7.7.2 actions; empty when none.
 
+Successful `finish` results additionally require `run_outcome`, preserving one
+of the nine terminal run statuses from §10.12. The top-level `status` continues
+to report whether the finish operation itself executed successfully; it must
+not collapse or substitute for the terminal run outcome.
+
 Creation operations additionally require exact created IDs, requested-field/readback comparison, dependency-edge set comparison, lint warning/error totals, cycle result, and resulting ready/blocked classification. Partial creation is non-success with every applied and unapplied node/edge listed.
 
 Human output is rendered from this record. Tests must fail if prose says “created,” “completed,” “closed,” “pushed,” or “synced” while the record or external readback disagrees.

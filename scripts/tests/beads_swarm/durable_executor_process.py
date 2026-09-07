@@ -8,6 +8,11 @@ import json
 import sys
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(ROOT / "skills" / "beads" / "scripts"))
+
+import safe_bd  # noqa: E402
+
 
 def main(argv: list[str] | None = None) -> int:
     args = sys.argv[1:] if argv is None else argv
@@ -18,7 +23,32 @@ def main(argv: list[str] | None = None) -> int:
     handoff = json.loads(handoff_raw)
     isolation = Path(handoff["isolation_target"])
     artifact = isolation / "durable-executor.patch"
-    payload = b"durable executor result\n"
+    try:
+        safe_bd.SafeBdRequest(
+            "close_exact",
+            {
+                "issue_id": handoff["scope_issue_ids"][0],
+                "actor": handoff["executor_identity"],
+                "reason": "executor must not own lifecycle",
+            },
+            isolation.resolve(),
+            safe_bd.WorkerScope(frozenset(handoff["scope_issue_ids"])),
+        )
+    except safe_bd.SafeBdError as exc:
+        mutation_attempt = {
+            "profile": "close_exact",
+            "dispatched": False,
+            "error_code": str(exc),
+        }
+    else:  # pragma: no cover - a production capability regression
+        mutation_attempt = {
+            "profile": "close_exact",
+            "dispatched": True,
+            "error_code": None,
+        }
+    payload = (
+        json.dumps(mutation_attempt, sort_keys=True, separators=(",", ":")) + "\n"
+    ).encode()
     artifact.write_bytes(payload)
     artifact.chmod(0o600)
     result = {

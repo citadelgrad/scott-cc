@@ -7,6 +7,7 @@ import hashlib
 import shutil
 import subprocess
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -89,7 +90,16 @@ def _operation(run):
     )
 
 
-def _execute(tmp_path: Path):
+def _read_tracker(native) -> dict[str, Any]:
+    observed = native(
+        safe_bd.SafeBdRequest(
+            "issue_get", {"issue_id": ISSUE}, native.repository_root, None
+        )
+    )
+    return dict(observed.data)
+
+
+def _execute(tmp_path: Path, native):
     fixture = DURABLE_FIXTURE
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -110,29 +120,46 @@ def _execute(tmp_path: Path):
     executor_handoff.chmod(0o400)
     frozen_sha256 = hashlib.sha256(frozen.read_bytes()).hexdigest()
     result_path = executor_output / "durable-result.json"
-    completed = subprocess.run(
-        [sys.executable, str(EXECUTOR), str(executor_handoff), str(result_path)],
-        capture_output=True,
-        text=True,
-        timeout=fixture["timeout_seconds"],
-    )
+    tracker_before = _read_tracker(native)
+    with (
+        tempfile.TemporaryFile(mode="w+b") as stdout,
+        tempfile.TemporaryFile(mode="w+b") as stderr,
+    ):
+        completed = subprocess.run(
+            [sys.executable, str(EXECUTOR), str(executor_handoff), str(result_path)],
+            stdout=stdout,
+            stderr=stderr,
+            timeout=fixture["timeout_seconds"],
+        )
+        stdout.seek(0)
+        stderr.seek(0)
+        captured_stdout = stdout.read(fixture["output_limit_bytes"])
+        captured_stderr = stderr.read(fixture["output_limit_bytes"])
     assert completed.returncode == 0, completed
+    assert len(captured_stdout) <= fixture["output_limit_bytes"]
+    assert len(captured_stderr) <= fixture["output_limit_bytes"]
+    tracker_after = _read_tracker(native)
+    assert tracker_after == tracker_before
     assert fixture["max_processes"] == 1
     assert hashlib.sha256(frozen.read_bytes()).hexdigest() == frozen_sha256
     run["durable_paths"] = {
         "frozen": frozen,
         "executor_input": executor_input,
         "executor_output": executor_output,
+        "tracker_before": tracker_before,
+        "tracker_after": tracker_after,
     }
     return fixture, run, handoff, json.loads(result_path.read_bytes())
 
 
 def _native_success():
-    return tracker_common.FakeNative(
+    native = tracker_common.FakeNative(
         safe_bd,
         responses={
             "issue_comments": [[]],
             "issue_get": [
+                {"id": ISSUE, "status": "open", "assignee": None},
+                {"id": ISSUE, "status": "open", "assignee": None},
                 {"id": ISSUE, "status": "open", "assignee": None},
                 {"id": ISSUE, "status": "in_progress", "assignee": "parent"},
             ],
@@ -141,12 +168,15 @@ def _native_success():
         },
         allowed=["issue_comments", "issue_get", "append_marker_note", "claim_exact"],
     )
+    native.repository_root = Path("/").resolve()
+    return native
 
 
 def test_durable_executor_return_reenters_parent_verification_without_ownership_transfer(
     tmp_path: Path,
 ) -> None:
-    fixture, run, handoff, result = _execute(tmp_path)
+    native = _native_success()
+    fixture, run, handoff, result = _execute(tmp_path, native)
     before = run["ownership"].inspect_readonly(ISSUE).record
     assert before["actor"] == "parent"
     assert handoff["beads_authority"] == "readonly"
@@ -156,8 +186,14 @@ def test_durable_executor_return_reenters_parent_verification_without_ownership_
     assert paths["executor_output"].parent == paths["executor_input"].parent
     assert paths["executor_output"] not in paths["frozen"].parents
     assert Path(result["artifact"]["path"]).is_relative_to(paths["executor_output"])
+    mutation_attempt = json.loads(Path(result["artifact"]["path"]).read_bytes())
+    assert mutation_attempt == {
+        "profile": "close_exact",
+        "dispatched": False,
+        "error_code": "WORKER_MUTATION_REFUSED",
+    }
+    assert paths["tracker_before"] == paths["tracker_after"]
 
-    native = _native_success()
     accepted = ch.accept(
         _context(run),
         handoff=handoff,
@@ -177,6 +213,27 @@ def test_durable_executor_return_reenters_parent_verification_without_ownership_
     assert after["epoch"] == before["epoch"]
     assert fixture["executor"]["identity"] != after["actor"]
 
+    recovery = common.fixture("04_crash_resume.json")
+    expected = next(
+        case
+        for case in recovery["recovery_scenarios"]
+        if case["id"] == "durable_handoff_result"
+    )
+    relaunched = ch.launch(_context(run), handoff=handoff, actor="parent")
+    assert relaunched.already_launched is True
+    assert relaunched.status == expected["expected_launch"]
+    assert accepted.status == expected["expected_accept"]
+    repeated = ch.accept(
+        _context(run),
+        handoff=handoff,
+        result=result,
+        operation=_operation(run),
+        actor="parent",
+        ownership=run["ownership"],
+        runner=tracker_common.FakeNative(safe_bd, responses={}, allowed=[]),
+    )
+    assert repeated.error_code == expected["expected_repeat_error"]
+
 
 @pytest.mark.parametrize(
     "case",
@@ -189,7 +246,8 @@ def test_untrusted_durable_return_tampering_never_reaches_tracker(
     tamper = case["id"]
     case_root = tmp_path / tamper
     case_root.mkdir()
-    _fixture, run, handoff, result = _execute(case_root)
+    native = _native_success()
+    _fixture, run, handoff, result = _execute(case_root, native)
     if tamper == "handoff_sha256":
         result["handoff_sha256"] = "f" * 64
     elif tamper == "executor_identity":
@@ -227,7 +285,8 @@ def test_untrusted_durable_return_tampering_never_reaches_tracker(
     elif tamper == "beads_mutated":
         result["beads_mutated"] = True
 
-    native = tracker_common.FakeNative(safe_bd, responses={}, allowed=[])
+    native.calls.clear()
+    native.allowed = frozenset()
     if case["failure_stage"] == "schema":
         with pytest.raises(ch.schema_runtime.ValidationFailure) as refused:
             ch.accept(

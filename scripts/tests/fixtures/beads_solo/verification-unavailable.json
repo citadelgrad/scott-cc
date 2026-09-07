@@ -3,7 +3,7 @@
   "mode": "unavailable",
   "verifier_name": "solo-verifier-disappears",
   "expected_exit_code": 127,
-  "expected_status": "refused",
-  "expected_disposition": "reject",
-  "expected_coverage_gap": "REQUIRED_COMMAND_FAILED"
+  "expected_status": "blocked",
+  "expected_disposition": "inconclusive",
+  "expected_coverage_gap": "REQUIRED_VERIFIER_UNAVAILABLE"
 }

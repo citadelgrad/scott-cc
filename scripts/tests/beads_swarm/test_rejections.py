@@ -26,7 +26,10 @@ def _one(tmp_path: Path, issue_id: str = "scc-reject") -> dict:
 def _run(swarm: dict, **kwargs):
     assert len(swarm["lanes"]) <= REJECTION_FIXTURE["max_processes"]
     return common.run_children(
-        swarm, timeout=REJECTION_FIXTURE["timeout_seconds"], **kwargs
+        swarm,
+        timeout=REJECTION_FIXTURE["timeout_seconds"],
+        output_limit=REJECTION_FIXTURE["output_limit_bytes"],
+        **kwargs,
     )
 
 
@@ -52,7 +55,7 @@ def test_child_tracker_mutation_is_rejected_inside_child_process(
     assert result.returncode == 3
     assert EXPECTED_ERRORS["child_tracker_mutation"] in result.stdout
     assert not (swarm["lanes"]["scc-reject"]["outbox"] / "result.json").exists()
-    assert not (swarm["repo"] / ".beads" / "child-write.json").exists()
+    assert "SafeBdError" in result.stdout
     assert common.git(swarm["repo"], "rev-parse", "HEAD") == swarm["head"]
 
 
@@ -97,6 +100,10 @@ def test_cancelled_lane_remains_recoverable_and_never_becomes_candidate(
     tmp_path: Path,
 ) -> None:
     swarm = _one(tmp_path)
+    recovery = common.fixture("04_crash_resume.json")
+    expected = next(
+        case for case in recovery["recovery_scenarios"] if case["id"] == "cancellation"
+    )
     child = _run(swarm, behaviors={"scc-reject": "cancelled"})["scc-reject"]
     assert child.returncode == 0, child
     result_sha = common.import_lane(swarm, "scc-reject")
@@ -108,8 +115,9 @@ def test_cancelled_lane_remains_recoverable_and_never_becomes_candidate(
     )
     verified = ci.verify_lane(swarm["context"], "scc-reject")
 
-    assert verified["status"] == "refused"
-    assert verified["error_code"] == EXPECTED_ERRORS["cancelled_lane"]
+    assert verified["status"] == expected["expected_status"]
+    assert verified["error_code"] == expected["expected_error"]
+    assert expected["expected_error"] == EXPECTED_ERRORS["cancelled_lane"]
     with pytest.raises(ci.IntegrationError, match="LANE_NOT_VERIFIED"):
         ci.build_candidate(
             swarm["context"], lane_freeze_sha256s=[frozen["freeze_sha256"]]
@@ -202,6 +210,7 @@ def test_failed_candidate_test_and_conflicting_candidate_never_apply(
         {"issue_id": "scc-b", "path": "src/shared.py", "content": "SIDE = 'b'\n"},
     ]
     conflict = common.setup_swarm(conflict_root, lanes)
+    assert len(conflict["lanes"]) == REJECTION_FIXTURE["max_processes"]
     children = _run(conflict)
     assert all(child.returncode == 0 for child in children.values())
     shas = {issue: common.import_lane(conflict, issue) for issue in children}

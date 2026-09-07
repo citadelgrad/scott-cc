@@ -25,25 +25,10 @@ REQUIRED_REJECTION_CASES = {
     "candidate_conflict",
     "unknown_primary_result",
 }
-REQUIRED_FREEZE_CRASH_POINTS = {
-    ("after_lock_acquire", 1),
-    ("after_journal_write", 1),
-    ("after_journal_fsync", 1),
-    *(
-        (boundary, occurrence)
-        for occurrence in range(1, 5)
-        for boundary in (
-            "after_temp_write",
-            "after_temp_fsync",
-            "after_atomic_rename",
-            "after_directory_fsync",
-        )
-    ),
-    ("after_journal_write", 3),
-    ("after_journal_fsync", 3),
-    ("after_checkpoint_acceptance", 1),
-    ("after_pointer_publication", 1),
-    ("after_lock_release", 1),
+REQUIRED_CRASH_FLOWS = {
+    "lane_freeze",
+    "durable_handoff_launch",
+    "direct_operation_close",
 }
 REQUIRED_NATIVE_IO_CRASH_POINTS = {
     (prefix, phase)
@@ -63,6 +48,32 @@ REQUIRED_DURABLE_TAMPER_CASES = {
     "artifact_path_escape",
     "beads_mutated",
 }
+COMMON_FIELDS = {
+    "schema_version",
+    "id",
+    "acceptance_criteria",
+    "timeout_seconds",
+    "output_limit_bytes",
+    "max_processes",
+}
+EXACT_FIELDS = {
+    "isolated-parent-owned-swarm": COMMON_FIELDS
+    | {"lanes", "deadline_probe", "ownership_contention"},
+    "untrusted-evidence-matrix": COMMON_FIELDS | {"cases"},
+    "mixed-batch-partial-success": COMMON_FIELDS
+    | {"lanes", "expected_integrated", "expected_recoverable", "expected_close_status"},
+    "crash-resume-convergence": COMMON_FIELDS
+    | {
+        "crash_flows",
+        "native_io_crash_points",
+        "expected_max_native_replays",
+        "expected_terminal_states",
+        "expected_resume_status",
+        "expected_repeat_status",
+        "recovery_scenarios",
+    },
+    "durable-executor-handoff": COMMON_FIELDS | {"executor", "tamper_cases"},
+}
 
 
 def test_fixture_corpus_covers_every_acceptance_criterion() -> None:
@@ -74,8 +85,10 @@ def test_fixture_corpus_covers_every_acceptance_criterion() -> None:
         fixture = json.loads(path.read_text(encoding="utf-8"))
         covered.update(fixture["acceptance_criteria"])
         fixture_ids.add(fixture["id"])
+        assert set(fixture) == EXACT_FIELDS[fixture["id"]]
         assert fixture["schema_version"] == "beads.swarm-fixture.v1"
         assert fixture["timeout_seconds"] <= 30
+        assert 1 <= fixture["output_limit_bytes"] <= 65536
         assert 1 <= fixture["max_processes"] <= 4
         if "lanes" in fixture:
             assert fixture["max_processes"] == len(fixture["lanes"])
@@ -101,19 +114,69 @@ def test_case_fixtures_declare_machine_checkable_verdicts() -> None:
     )
     assert recovery["expected_resume_status"] in recovery["expected_terminal_states"]
     assert recovery["expected_repeat_status"] in recovery["expected_terminal_states"]
-    assert {
-        (case["boundary"], case["occurrence"])
-        for case in recovery["freeze_crash_points"]
-    } == REQUIRED_FREEZE_CRASH_POINTS
+    assert {flow["id"] for flow in recovery["crash_flows"]} == REQUIRED_CRASH_FLOWS
+    assert all(
+        set(flow) == {"id", "scope", "boundary_selector", "crash_points"}
+        and flow["scope"]
+        and flow["boundary_selector"] in {"all", "after_handoff_", "after_operation_"}
+        and flow["crash_points"]
+        and all(
+            set(point) == {"boundary", "occurrence"} for point in flow["crash_points"]
+        )
+        for flow in recovery["crash_flows"]
+    )
     assert {
         (tuple(case["argv_prefix"]), case["phase"])
         for case in recovery["native_io_crash_points"]
     } == REQUIRED_NATIVE_IO_CRASH_POINTS
+    assert {case["id"] for case in recovery["recovery_scenarios"]} == {
+        "cancellation",
+        "consecutive_roots",
+        "unknown_late_child",
+        "repeat_resume",
+        "durable_handoff_result",
+    }
+    assert all(len(case) >= 2 for case in recovery["recovery_scenarios"])
+
+    isolated = json.loads(
+        (FIXTURES / "01_isolated_swarm.json").read_text(encoding="utf-8")
+    )
+    assert set(isolated["deadline_probe"]) == {
+        "deadline_seconds",
+        "elapsed_limit_seconds",
+        "sleep_seconds",
+        "output_flood_bytes",
+    }
+    assert len(isolated["deadline_probe"]["sleep_seconds"]) == isolated["max_processes"]
+    assert set(isolated["ownership_contention"]) == {
+        "issue_id",
+        "first_actor",
+        "second_actor",
+        "expected_disposition",
+    }
+    assert all(
+        set(lane) == {"issue_id", "path", "content"} for lane in isolated["lanes"]
+    )
+
+    mixed = json.loads((FIXTURES / "03_mixed_batch.json").read_text(encoding="utf-8"))
+    lane_ids = {lane["issue_id"] for lane in mixed["lanes"]}
+    assert all(set(lane) == {"issue_id", "outcome", "path"} for lane in mixed["lanes"])
+    assert set(mixed["expected_close_status"]) == lane_ids
+    assert set(mixed["expected_integrated"]) | set(mixed["expected_recoverable"]) == (
+        lane_ids
+    )
 
     durable = json.loads(
         (FIXTURES / "05_durable_handoff.json").read_text(encoding="utf-8")
     )
     assert durable["executor"]["artifact_scope"] == "isolated_executor_output"
+    assert set(durable["executor"]) == {
+        "type",
+        "identity",
+        "beads_authority",
+        "beads_mutation",
+        "artifact_scope",
+    }
     assert all(
         set(case) == {"id", "expected_error", "failure_stage"}
         and case["failure_stage"] in {"schema", "guard"}

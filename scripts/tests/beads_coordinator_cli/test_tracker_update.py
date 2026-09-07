@@ -441,3 +441,79 @@ def test_successful_close_is_checkpointed_for_finish_recovery(
     capsys.readouterr()
     current = run["checkpoints"].current(rebuild_pointer=True).value
     assert current["issues"][LANE_A]["tracker_status_observed"] == "closed"
+
+
+def test_close_rechecks_ownership_under_the_issue_lock_before_dispatch(
+    tmp_path, monkeypatch
+):
+    run = common.make_run(tmp_path, issue_ids=[LANE_A], root_issue_id=ROOT_ISSUE)
+    _accept_checkpoint(run, {LANE_A: _checkpoint_entry(run, LANE_A)})
+    real_guard = run["ownership"].guard
+    dispatched = False
+
+    def racing_guard(issue_id, run_directory, *, epoch, actor):
+        run["ownership"].release(
+            issue_id,
+            run_directory,
+            epoch=epoch,
+            operation_id="9" * 64,
+        )
+        return real_guard(issue_id, run_directory, epoch=epoch, actor=actor)
+
+    def execute(*_args, **_kwargs):
+        nonlocal dispatched
+        dispatched = True
+        raise AssertionError("close dispatched after ownership release")
+
+    monkeypatch.setattr(run["ownership"], "guard", racing_guard)
+    monkeypatch.setattr(bc.direct_operation, "execute", execute)
+
+    result = bc.coordinator_tracker.close_lanes(
+        bc.direct_operation.open_run(run["run_directory"]),
+        ownership=run["ownership"],
+        issues=[LANE_A],
+        actor="parent",
+        reason="verified",
+    )
+
+    assert dispatched is False
+    assert result[0].status == bc.direct_operation.UNKNOWN
+    assert result[0].error_code == "TRACKER_CLOSE_OWNERSHIP_MISMATCH"
+
+
+def test_close_revalidates_tracker_prestate_after_marker_before_exact_close(tmp_path):
+    run = common.make_run(tmp_path, issue_ids=[LANE_A], root_issue_id=ROOT_ISSUE)
+    _accept_checkpoint(run, {LANE_A: _checkpoint_entry(run, LANE_A)})
+    tracker = {"id": LANE_A, "status": "in_progress", "assignee": "parent"}
+
+    def issue_get(_request):
+        return dict(tracker)
+
+    def append_marker(_request):
+        tracker["status"] = "open"
+        return {"ok": True}
+
+    fake = common.FakeNative(
+        common.safe_bd,
+        responses={
+            "issue_comments": lambda _request: [],
+            "issue_get": issue_get,
+            "append_marker_note": append_marker,
+            "close_exact": {**tracker, "status": "closed"},
+        },
+        allowed=["issue_comments", "issue_get", "append_marker_note", "close_exact"],
+    )
+
+    result = bc.coordinator_tracker.close_lanes(
+        bc.direct_operation.open_run(run["run_directory"]),
+        ownership=run["ownership"],
+        issues=[LANE_A],
+        actor="parent",
+        reason="verified",
+        runner=fake,
+    )[0]
+
+    assert result.status == bc.direct_operation.CONFLICT
+    assert result.error_code == "DIRECT_OPERATION_PRESTATE_CHANGED"
+    assert fake.count("append_marker_note") == 1
+    assert fake.count("close_exact") == 0

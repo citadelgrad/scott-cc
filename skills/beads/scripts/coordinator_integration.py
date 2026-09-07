@@ -801,12 +801,35 @@ def _lane_requires_review(changed_paths: list[str]) -> bool:
     )
 
 
+def _unavailable_verifier_outcome(
+    argv: tuple[str, ...],
+    *,
+    stdout_log: Path,
+    stderr_log: Path,
+    started_at: str,
+    finished_at: str,
+    failure_code: str,
+) -> dict[str, Any]:
+    stdout_artifact = safe_output.write_new_artifact(stdout_log, b"")
+    safe_output.write_new_artifact(stderr_log, f"{failure_code}\n".encode())
+    return {
+        "command": json.dumps(list(argv), separators=(",", ":")),
+        "exit_code": 127,
+        "started_at": started_at,
+        "finished_at": finished_at,
+        "log_path": str(stdout_log),
+        "log_sha256": stdout_artifact.sha256,
+    }
+
+
 def _rerun_commands(
     worktree: Path, commands: tuple[tuple[str, ...], ...], logs_directory: Path
-) -> list[dict[str, Any]]:
+) -> tuple[list[dict[str, Any]], bool]:
     logs_directory.mkdir(parents=True, exist_ok=True)
     outcomes: list[dict[str, Any]] = []
+    verifier_unavailable = False
     for index, argv in enumerate(commands):
+        started_at = utc_now()
         stdout_log = logs_directory / f"command-{index:03d}.stdout.log"
         stderr_log = logs_directory / f"command-{index:03d}.stderr.log"
         spec = safe_output.CommandSpec(
@@ -822,19 +845,50 @@ def _rerun_commands(
             stdout_log=stdout_log,
             stderr_log=stderr_log,
         )
-        result, _ = safe_output.run_command(
-            spec, sensitive=safe_output.SensitiveSet(())
-        )
+        try:
+            result, _ = safe_output.run_command(
+                spec, sensitive=safe_output.SensitiveSet(())
+            )
+        except safe_output.SafeOutputError as exc:
+            if exc.args != ("EXECUTABLE_NOT_ABSOLUTE_FILE",):
+                raise
+            outcomes.append(
+                _unavailable_verifier_outcome(
+                    argv,
+                    stdout_log=stdout_log,
+                    stderr_log=stderr_log,
+                    started_at=started_at,
+                    finished_at=utc_now(),
+                    failure_code="EXECUTABLE_NOT_ABSOLUTE_FILE",
+                )
+            )
+            verifier_unavailable = True
+            continue
+        if result.status == "SPAWN_FAILED":
+            outcomes.append(
+                _unavailable_verifier_outcome(
+                    argv,
+                    stdout_log=stdout_log,
+                    stderr_log=stderr_log,
+                    started_at=result.started_at,
+                    finished_at=result.finished_at,
+                    failure_code="SPAWN_FAILED",
+                )
+            )
+            verifier_unavailable = True
+            continue
         entry = {
             "command": json.dumps(list(argv), separators=(",", ":")),
             "exit_code": result.exit_code,
+            "started_at": result.started_at,
+            "finished_at": result.finished_at,
             "log_path": str(stdout_log),
             "log_sha256": _sha256(stdout_log.read_bytes())
             if stdout_log.exists()
             else None,
         }
         outcomes.append(entry)
-    return outcomes
+    return outcomes, verifier_unavailable
 
 
 def verify_lane(context: RunContext, issue_id: str) -> dict[str, Any]:
@@ -867,7 +921,7 @@ def verify_lane(context: RunContext, issue_id: str) -> dict[str, Any]:
         if freeze.freeze_sha256 != freeze_sha:
             raise IntegrationError("LANE_FREEZE_STALE", status="conflict")
         worktree = Path(packet.value["repository"]["worktree"])
-        rerun = _rerun_commands(
+        rerun, verifier_unavailable = _rerun_commands(
             worktree,
             packet.required_commands,
             lanes_directory / "verification",
@@ -877,6 +931,8 @@ def verify_lane(context: RunContext, issue_id: str) -> dict[str, Any]:
         disposition = (
             "accept"
             if completed and commands_passed
+            else "inconclusive"
+            if verifier_unavailable
             else "reject"
             if completed
             else "inconclusive"
@@ -900,10 +956,25 @@ def verify_lane(context: RunContext, issue_id: str) -> dict[str, Any]:
                 }
                 for item in validated.value["acceptance_evidence"]
             ],
-            "failure_classification": "none" if commands_passed else "introduced",
-            "coverage_gaps": [] if commands_passed else ["REQUIRED_COMMAND_FAILED"],
+            "failure_classification": (
+                None
+                if commands_passed
+                else "environment"
+                if verifier_unavailable
+                else "introduced"
+            ),
+            "coverage_gaps": (
+                []
+                if commands_passed
+                else [
+                    "REQUIRED_VERIFIER_UNAVAILABLE"
+                    if verifier_unavailable
+                    else "REQUIRED_COMMAND_FAILED"
+                ]
+            ),
             "disposition": disposition,
         }
+        schema_runtime.require_valid("parent-verification-v1.schema.json", record)
         record_path = lanes_directory / "parent-verification.json"
         state.atomic_write(
             record_path,
@@ -914,17 +985,27 @@ def verify_lane(context: RunContext, issue_id: str) -> dict[str, Any]:
         )
         requires_review = _lane_requires_review(validated.value["changes"]["paths"])
         if disposition != "accept":
+            checkpoint_state = "inconclusive" if verifier_unavailable else "failed"
             _update_one_issue(
                 context,
                 context.checkpoints.current(rebuild_pointer=True),
                 issue_id,
                 lambda e: e["verification"].update(
                     {
-                        "state": "failed",
+                        "state": checkpoint_state,
                         "record_sha256": _sha256(_canonical(record)),
                     }
                 ),
             )
+            if verifier_unavailable:
+                return _failure(
+                    "REQUIRED_VERIFIER_UNAVAILABLE",
+                    status="blocked",
+                    record_path=str(record_path),
+                    failure_classification="environment",
+                    disposition="inconclusive",
+                    safe_next_action="restore_required_verifier_and_retry",
+                )
             return _failure("LANE_VERIFICATION_FAILED", record_path=str(record_path))
         if requires_review:
             _update_one_issue(

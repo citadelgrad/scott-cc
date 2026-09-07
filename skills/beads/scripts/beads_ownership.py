@@ -584,6 +584,65 @@ class OwnershipStore:
             )
 
     @contextmanager
+    def guarded_release(
+        self,
+        issue_id: str,
+        run_directory: Path,
+        *,
+        epoch: int,
+        actor: str,
+        operation_id: str,
+        now: dt.datetime | None = None,
+    ) -> Iterator[Callable[[], OwnershipResult]]:
+        """Hold an active issue lock and expose a one-shot release transition.
+
+        Callers that coordinate other ownership records can establish the
+        normative run-lock -> root-issue-lock order, perform their guarded
+        preparation, and only then persist this issue's release without
+        dropping and reacquiring its lock.
+        """
+        _valid_hash(operation_id, "OWNERSHIP_OPERATION_ID_INVALID")
+        state._opaque_utf8(actor, label="ACTOR", maximum=4096)
+        directory = self._existing_directory(issue_id)
+        current_time = _now(now)
+        timestamp = state.utc_timestamp(current_time)
+        with state.exclusive_lock(
+            directory / "lock", root=self.run_root, create=False, hook=self.crash_hook
+        ):
+            history, loaded = self._read_unlocked(directory, issue_id, reconcile=False)
+            if loaded is None:
+                raise OwnershipError("OWNERSHIP_NOT_ACTIVE", status="unknown")
+            if loaded["status"] == "active":
+                current, _secret = self._require_capability(
+                    issue_id, run_directory, epoch, history, loaded
+                )
+            elif loaded["status"] in {"release_prepared", "released"}:
+                current = loaded
+            else:
+                raise OwnershipError("OWNERSHIP_NOT_ACTIVE", status="unknown")
+            if current["actor"] != actor:
+                raise OwnershipError("OWNERSHIP_ACTOR_MISMATCH", status="conflict")
+            released: OwnershipResult | None = None
+
+            def release_once() -> OwnershipResult:
+                nonlocal released
+                if released is None:
+                    released = self._release_unlocked(
+                        directory,
+                        issue_id,
+                        run_directory,
+                        epoch,
+                        operation_id,
+                        current_time,
+                        timestamp,
+                        history,
+                        loaded,
+                    )
+                return released
+
+            yield release_once
+
+    @contextmanager
     def released_guard(
         self,
         issue_id: str,

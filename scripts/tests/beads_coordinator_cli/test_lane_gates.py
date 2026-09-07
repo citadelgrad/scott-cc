@@ -196,6 +196,32 @@ def test_refused_payload_with_explicit_error_code_is_honored_verbatim(
     assert out["blockers"] == ["LANE_ARTIFACT_MISSING"]
 
 
+def test_unavailable_verifier_remains_distinct_in_typed_cli_result(
+    tmp_path, monkeypatch, capsys
+):
+    run = common.make_run(tmp_path, issue_ids=[ISSUE_ID])
+    monkeypatch.setattr(
+        bc.coordinator_integration,
+        "verify_lane",
+        lambda *a, **k: {
+            "status": "blocked",
+            "error_code": "REQUIRED_VERIFIER_UNAVAILABLE",
+            "failure_classification": "environment",
+            "disposition": "inconclusive",
+            "safe_next_action": "restore_required_verifier_and_retry",
+        },
+    )
+
+    exit_code = bc.main(_argv_verify(run, tmp_path) + ["--json"])
+    out = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 1
+    assert out["status"] == "blocked"
+    assert out["error_code"] == "REQUIRED_VERIFIER_UNAVAILABLE"
+    assert out["blockers"] == ["REQUIRED_VERIFIER_UNAVAILABLE"]
+    assert out["safe_next_action"]["code"] == "REQUIRED_VERIFIER_UNAVAILABLE"
+
+
 @pytest.mark.parametrize(
     ("subcommand", "attr", "argv_builder", "expected_issue_ids"),
     LANE_GATE_CASES,

@@ -947,12 +947,30 @@ def resume(
     assert prepared is not None
     assert marker is not None
     probe = dict(prepared["recovery_probe"])
-    guard = _replay_guard(
-        operation,
-        classification=classification,
-        marker_present=marker_present,
-        ambiguous_prior=ambiguous_prior,
-    )
+    try:
+        immutable_input = Path(prepared["immutable_input_path"])
+        immutable_raw = _read_owned_bytes(
+            immutable_input,
+            root=operations_directory(context.run_directory),
+            max_bytes=MAX_INTENT_BYTES,
+        )
+        input_changed = (
+            state.sha256_bytes(immutable_raw) != prepared["immutable_input_sha256"]
+        )
+    except (OSError, DirectOperationError, state.StateError):
+        input_changed = True
+
+    if input_changed:
+        observed = None
+        classification = INSUFFICIENT_OBSERVATION
+        guard = "DIRECT_OPERATION_INPUT_CHANGED"
+    else:
+        guard = _replay_guard(
+            operation,
+            classification=classification,
+            marker_present=marker_present,
+            ambiguous_prior=ambiguous_prior,
+        )
     dispatched = False
     if guard is None and classification == PRESTATE_UNCHANGED:
         marker_ok = True
@@ -972,10 +990,36 @@ def resume(
             # without one would leave that question permanently unanswerable,
             # so the operation stops here having changed nothing.
             guard = "DIRECT_OPERATION_MARKER_UNAVAILABLE"
+        elif operation.effect_type == "TRACKER_CLOSE":
+            # Closing is destructive and the marker is itself a write. Re-read
+            # the protected state after publishing the marker so a concurrent
+            # tracker change cannot slip through the prepare/dispatch window.
+            observed, classification = _observe(
+                context, operation, runner=dispatch, sensitive=sensitive
+            )
+            if classification != PRESTATE_UNCHANGED:
+                guard = "DIRECT_OPERATION_PRESTATE_CHANGED"
+            else:
+                dispatched = True
+                effect_ok = _dispatch_effect(
+                    context,
+                    operation,
+                    actor=actor,
+                    runner=dispatch,
+                    sensitive=sensitive,
+                )
+                context.crash_hook("after_operation_effect")
+                observed, classification = _observe(
+                    context, operation, runner=dispatch, sensitive=sensitive
+                )
         else:
             dispatched = True
             effect_ok = _dispatch_effect(
-                context, operation, actor=actor, runner=dispatch, sensitive=sensitive
+                context,
+                operation,
+                actor=actor,
+                runner=dispatch,
+                sensitive=sensitive,
             )
             context.crash_hook("after_operation_effect")
             if effect_ok and operation.effect_type in MARKER_AFTER_EFFECT:

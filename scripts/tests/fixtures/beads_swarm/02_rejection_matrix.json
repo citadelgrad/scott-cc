@@ -3,9 +3,10 @@
   "id": "untrusted-evidence-matrix",
   "acceptance_criteria": ["AC-T16-002"],
   "timeout_seconds": 30,
-  "max_processes": 3,
+  "output_limit_bytes": 4096,
+  "max_processes": 2,
   "cases": [
-    {"id": "child_tracker_mutation", "expected_error": "SCHEMA_MAX_ITEMS:/changes/outside_allowed_scope"},
+    {"id": "child_tracker_mutation", "expected_error": "WORKER_MUTATION_REFUSED"},
     {"id": "forged_result_identity", "expected_error": "RESULT_IDENTITY_MISMATCH"},
     {"id": "stale_ownership_epoch", "expected_error": "COMMAND_INTENT_IDENTITY_MISMATCH"},
     {"id": "missing_command_evidence", "expected_error": "ARTIFACT_PATH_INVALID"},

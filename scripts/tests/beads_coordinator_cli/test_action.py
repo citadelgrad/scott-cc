@@ -30,6 +30,8 @@ themselves -- proving the CLI's own envelope-building, not re-proving
 from __future__ import annotations
 
 import json
+import threading
+from pathlib import Path
 
 import pytest
 
@@ -221,6 +223,118 @@ def _receipt_for(pending_action, **overrides):
     }
     payload.update(overrides)
     return payload
+
+
+def test_concurrent_harness_receipts_cannot_overwrite_winning_evidence(
+    tmp_path, monkeypatch
+):
+    run = common.make_run(tmp_path, issue_ids=[ISSUE_ID])
+    context = bc.direct_operation.open_run(run["run_directory"])
+    prepared_result = bc.protected_action.prepare_protected_action(
+        context,
+        effect_type="HERMES_DISPATCH",
+        target_identity="hermes://dispatch/test",
+        target_sha256="a" * 64,
+        precondition_sha256="b" * 64,
+        summary="dispatch test worker",
+        probe_type="hermes_dispatch",
+        probe_argv=["hermes", "dispatch"],
+        issue_id=ISSUE_ID,
+        ownership_epoch=run["epochs"][ISSUE_ID],
+    )
+    pending = dict(prepared_result["pending_action"])
+    pending.update(action="hermes_dispatch", required_receipt_variant="hermes_dispatch")
+    pending_without_id = dict(pending)
+    pending_without_id.pop("action_id")
+    pending["action_id"] = common.state.sha256_bytes(
+        common.state.canonical_payload_bytes(pending_without_id)
+    )
+    first = _receipt_for(
+        pending,
+        evidence={"path": None, "sha256": None, "summary": "first receipt"},
+    )
+    second = _receipt_for(
+        pending,
+        evidence={"path": None, "sha256": None, "summary": "second receipt"},
+    )
+
+    real_write = bc.coordinator_tracker.state.atomic_write
+    first_written = threading.Event()
+    second_written = threading.Event()
+
+    def ordered_evidence_write(path, data, **kwargs):
+        if "_action_receipts" not in Path(path).parts:
+            return real_write(path, data, **kwargs)
+        if b"first receipt" in data:
+            result = real_write(path, data, **kwargs)
+            first_written.set()
+            assert second_written.wait(5)
+            return result
+        assert first_written.wait(5)
+        result = real_write(path, data, **kwargs)
+        second_written.set()
+        return result
+
+    monkeypatch.setattr(
+        bc.coordinator_tracker.state, "atomic_write", ordered_evidence_write
+    )
+    real_append = context.journal.append
+    first_appended = threading.Event()
+
+    def ordered_resolution_append(record, **kwargs):
+        if record.get("phase") != "RESOLUTION":
+            return real_append(record, **kwargs)
+        evidence = Path(record["readback_evidence_path"]).read_bytes()
+        if b"first receipt" in evidence:
+            result = real_append(record, **kwargs)
+            first_appended.set()
+            return result
+        assert first_appended.wait(5)
+        return real_append(record, **kwargs)
+
+    monkeypatch.setattr(context.journal, "append", ordered_resolution_append)
+    start = threading.Barrier(2)
+    results = []
+    errors = []
+
+    def resolve(receipt):
+        start.wait()
+        try:
+            results.append(
+                bc.coordinator_tracker.resolve_harness_receipt(
+                    context,
+                    prepared=prepared_result["prepared"],
+                    pending_action=pending,
+                    receipt=receipt,
+                )
+            )
+        except Exception as exc:  # the losing duplicate must fail closed
+            errors.append(exc)
+
+    threads = [
+        threading.Thread(target=resolve, args=(first,)),
+        threading.Thread(target=resolve, args=(second,)),
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(10)
+        assert not thread.is_alive()
+
+    resolutions = [
+        record
+        for record in context.journal.read().records
+        if record.get("phase") == "RESOLUTION"
+        and record.get("operation_id") == pending["operation_id"]
+    ]
+    assert len(results) == 1
+    assert len(errors) == 1
+    assert len(resolutions) == 1
+    evidence_path = Path(resolutions[0]["readback_evidence_path"])
+    assert (
+        common.state.sha256_bytes(evidence_path.read_bytes())
+        == resolutions[0]["readback_evidence_sha256"]
+    )
 
 
 def _resolve_input(**overrides):

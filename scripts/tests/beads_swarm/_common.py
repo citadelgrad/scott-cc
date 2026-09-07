@@ -8,6 +8,7 @@ import json
 import shutil
 import subprocess
 import sys
+import threading
 import time
 from collections.abc import Mapping
 from pathlib import Path
@@ -20,6 +21,15 @@ INTEGRATION_COMMON = ROOT / "scripts" / "tests" / "beads_integration" / "_common
 WORKER = Path(__file__).with_name("worker_process.py")
 PYTHON = sys.executable
 RUN_ID = "run-0123456789abcdef-20260906T120000.000000Z-AAAAAAAD"
+DEFAULT_OUTPUT_LIMIT = 4096
+
+
+def _drain_bounded(stream: Any, sink: bytearray, limit: int) -> None:
+    """Continuously drain a child pipe while retaining at most ``limit`` bytes."""
+    while chunk := stream.read(65536):
+        remaining = limit - len(sink)
+        if remaining > 0:
+            sink.extend(chunk[:remaining])
 
 
 def _load(path: Path, name: str) -> ModuleType:
@@ -117,11 +127,14 @@ def run_children(
     behaviors: dict[str, str] | None = None,
     epoch_offsets: dict[str, int] | None = None,
     timeout: int = 30,
+    output_limit: int = DEFAULT_OUTPUT_LIMIT,
 ) -> dict[str, subprocess.CompletedProcess[str]]:
-    """Launch all lanes before waiting; enforce one shared bounded deadline."""
+    """Launch all lanes under one deadline and bounded file-backed output."""
     behaviors = behaviors or {}
     epoch_offsets = epoch_offsets or {}
-    processes: dict[str, subprocess.Popen[str]] = {}
+    processes: dict[str, subprocess.Popen[bytes]] = {}
+    outputs: dict[str, tuple[bytearray, bytearray]] = {}
+    readers: dict[str, tuple[threading.Thread, threading.Thread]] = {}
     deadline = time.monotonic() + timeout
     results: dict[str, subprocess.CompletedProcess[str]] = {}
     try:
@@ -137,20 +150,42 @@ def run_children(
             }
             job_path = lane["packet_path"].with_name(f"job-{issue_id}.json")
             job_path.write_text(json.dumps(job), encoding="utf-8")
-            processes[issue_id] = subprocess.Popen(
+            process = subprocess.Popen(
                 [PYTHON, str(WORKER), str(job_path)],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True,
             )
+            assert process.stdout is not None and process.stderr is not None
+            stdout = bytearray()
+            stderr = bytearray()
+            stdout_reader = threading.Thread(
+                target=_drain_bounded,
+                args=(process.stdout, stdout, output_limit),
+                daemon=True,
+            )
+            stderr_reader = threading.Thread(
+                target=_drain_bounded,
+                args=(process.stderr, stderr, output_limit),
+                daemon=True,
+            )
+            outputs[issue_id] = (stdout, stderr)
+            readers[issue_id] = (stdout_reader, stderr_reader)
+            processes[issue_id] = process
+            stdout_reader.start()
+            stderr_reader.start()
         for issue_id, process in processes.items():
             remaining = max(0.0, deadline - time.monotonic())
-            stdout, stderr = process.communicate(timeout=remaining)
+            process.wait(timeout=remaining)
+            for reader in readers[issue_id]:
+                reader.join(timeout=max(0.0, deadline + 0.5 - time.monotonic()))
+            stdout_bytes, stderr_bytes = outputs[issue_id]
+            stdout = bytes(stdout_bytes).decode("utf-8", errors="replace")
+            stderr = bytes(stderr_bytes).decode("utf-8", errors="replace")
             results[issue_id] = subprocess.CompletedProcess(
                 process.args, process.returncode, stdout, stderr
             )
     finally:
-        cleanup_deadline = time.monotonic() + 2.0
+        cleanup_deadline = deadline + 0.5
         terminate_deadline = min(cleanup_deadline, time.monotonic() + 0.25)
         live = [process for process in processes.values() if process.poll() is None]
         for process in live:
@@ -173,6 +208,10 @@ def run_children(
                     process.wait(timeout=remaining)
                 except subprocess.TimeoutExpired:
                     pass
+        for pair in readers.values():
+            for reader in pair:
+                reader.join(timeout=max(0.0, cleanup_deadline - time.monotonic()))
+        for process in processes.values():
             if process.stdout is not None:
                 process.stdout.close()
             if process.stderr is not None:

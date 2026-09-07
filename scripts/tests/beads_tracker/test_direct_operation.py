@@ -514,7 +514,7 @@ def test_unknown_close_without_marker_may_replay(run):
     fake = native(
         {
             "issue_comments": comments(),
-            "issue_get": [CLAIMED, CLOSED],
+            "issue_get": [CLAIMED, CLAIMED, CLOSED],
             "append_marker_note": {"ok": True},
             "close_exact": CLOSED,
         },
@@ -620,7 +620,7 @@ def test_each_attempt_gets_a_distinct_operation_id(run):
     fake = native(
         {
             "issue_comments": comments(),
-            "issue_get": [CLAIMED, CLOSED],
+            "issue_get": [CLAIMED, CLAIMED, CLOSED],
             "append_marker_note": {"ok": True},
             "close_exact": CLOSED,
         },
@@ -726,6 +726,30 @@ def test_intent_file_is_frozen_under_a_stable_caller_key(run):
     assert payload["caller_key"] == operation.caller_key
     assert payload["actor"] == "parent"
     assert "select" not in payload["readback"]
+
+
+def test_resume_refuses_dispatch_when_frozen_intent_changes_after_prepare(run):
+    fake = native(
+        {
+            "issue_comments": comments(),
+            "issue_get": [OPEN],
+        },
+        allowed=["issue_comments", "issue_get"],
+    )
+    ctx = context(run)
+    pending = do.prepare(ctx, claim_operation(run), actor="parent", runner=fake)
+    input_path = pending.prepared["immutable_input_path"]
+    with open(input_path, "ab") as handle:
+        handle.write(b"tampered")
+
+    result = do.resume(pending)
+
+    assert result.status == do.UNKNOWN
+    assert result.classification == do.INSUFFICIENT_OBSERVATION
+    assert result.error_code == "DIRECT_OPERATION_INPUT_CHANGED"
+    assert result.dispatched is False
+    assert fake.count("append_marker_note") == 0
+    assert fake.count("claim_exact") == 0
 
 
 def test_resolution_event_rejects_a_status_outside_the_taxonomy():

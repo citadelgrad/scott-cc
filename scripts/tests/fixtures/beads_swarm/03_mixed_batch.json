@@ -3,6 +3,7 @@
   "id": "mixed-batch-partial-success",
   "acceptance_criteria": ["AC-T16-003"],
   "timeout_seconds": 30,
+  "output_limit_bytes": 4096,
   "max_processes": 3,
   "lanes": [
     {"issue_id": "scc-good", "outcome": "completed", "path": "src/good.py"},
@@ -10,5 +11,10 @@
     {"issue_id": "scc-missing", "outcome": "missing_evidence", "path": "src/missing.py"}
   ],
   "expected_integrated": ["scc-good"],
-  "expected_recoverable": ["scc-failed", "scc-missing"]
+  "expected_recoverable": ["scc-failed", "scc-missing"],
+  "expected_close_status": {
+    "scc-good": "APPLIED",
+    "scc-failed": "REFUSED",
+    "scc-missing": "REFUSED"
+  }
 }

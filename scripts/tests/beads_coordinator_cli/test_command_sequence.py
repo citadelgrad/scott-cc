@@ -90,6 +90,11 @@ def test_real_claim_freeze_verify_review_candidate_close_finish_command_sequence
     fake = common.FakeNative(
         safe_bd,
         responses={
+            "ready_list": lambda _request: (
+                [{"id": LANE, "status": "open"}]
+                if lane_state["status"] == "open"
+                else []
+            ),
             "issue_get": issue_get,
             "set_run_pointer": set_pointer,
             "issue_comments": lambda _request: [],
@@ -98,6 +103,7 @@ def test_real_claim_freeze_verify_review_candidate_close_finish_command_sequence
             "close_exact": close_exact,
         },
         allowed=[
+            "ready_list",
             "issue_get",
             "set_run_pointer",
             "issue_comments",
@@ -351,7 +357,10 @@ def test_real_claim_freeze_verify_review_candidate_close_finish_command_sequence
     assert ownership.inspect_readonly(LANE).disposition == "released"
     assert ownership.inspect_readonly(ROOT_ISSUE).disposition == "released"
     pointer = json.loads(pointer_metadata[bc.coordinator_tracker._POINTER_METADATA_KEY])
+    accepted = context.checkpoints.current(rebuild_pointer=True)
     assert pointer == {
+        "checkpoint_generation": accepted.generation,
+        "checkpoint_sha256": accepted.generation_sha256,
         "ownership_epoch": root_record["epoch"],
         "run_id": run_id,
         "schema_version": "beads.run-pointer.v1",

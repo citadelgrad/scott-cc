@@ -3,7 +3,20 @@
   "id": "isolated-parent-owned-swarm",
   "acceptance_criteria": ["AC-T16-001"],
   "timeout_seconds": 30,
+  "output_limit_bytes": 4096,
   "max_processes": 3,
+  "deadline_probe": {
+    "deadline_seconds": 1,
+    "elapsed_limit_seconds": 2.0,
+    "sleep_seconds": [0.8, 1.6, 2.4],
+    "output_flood_bytes": 65536
+  },
+  "ownership_contention": {
+    "issue_id": "scc-contention",
+    "first_actor": "parent",
+    "second_actor": "competitor",
+    "expected_disposition": "conflict"
+  },
   "lanes": [
     {"issue_id": "scc-lane-a", "path": "src/a.py", "content": "A = 1\n"},
     {"issue_id": "scc-lane-b", "path": "src/b.py", "content": "B = 2\n"},

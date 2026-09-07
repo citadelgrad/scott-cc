@@ -856,6 +856,8 @@ def _handle_finish(args: argparse.Namespace) -> operation_result.OperationResult
         exercised=["read", "local_write"],
     )
     candidate["status"] = _map_direct_status(outcome.status)
+    if candidate["status"] == "success":
+        candidate["run_outcome"] = data["terminal_status"]
     if candidate["status"] != "success":
         candidate["error_code"] = outcome.error_code or outcome.status
         candidate["coverage_gaps"] = [

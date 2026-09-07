@@ -85,6 +85,7 @@ def test_finish_forwards_every_protocol_terminal_status_to_the_owning_module(
     assert bc.main(_argv(run["run_directory"], input_path)) == 0
     out = json.loads(capsys.readouterr().out)
     assert out["status"] == "success"
+    assert out["run_outcome"] == terminal_status
     assert captured["terminal_status"] == terminal_status
     assert captured["scope_issue_ids"] == [LANE_A]
     assert captured["actor"] == "parent"
@@ -218,7 +219,346 @@ def test_finish_full_path_releases_lane_and_root_then_publishes_terminal_pointer
     pointer = json.loads(box["metadata"][bc.coordinator_tracker._POINTER_METADATA_KEY])
     assert pointer["status"] == "terminal"
     assert pointer["run_id"] == started["run_id"]
+    assert set(pointer) == {
+        "schema_version",
+        "run_id",
+        "checkpoint_generation",
+        "checkpoint_sha256",
+        "ownership_epoch",
+        "status",
+    }
+    accepted = context.checkpoints.current(rebuild_pointer=True)
+    assert pointer["checkpoint_generation"] == accepted.generation
+    assert pointer["checkpoint_sha256"] == accepted.generation_sha256
     assert fake.count("set_run_pointer") == 2
+
+
+def test_finish_refuses_checkpoint_lane_omitted_from_the_bound_empty_scope(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    hermes = repo / ".hermes"
+    hermes.mkdir(mode=0o700)
+    run_root = hermes / "beads-runs"
+    run_root.mkdir(mode=0o700)
+    fake, box = common.tracker_double(ROOT_ISSUE)
+    request = common.state.StartRunInput(
+        request_id="request-empty-scope-with-owned-lane",
+        repository_root=str(repo),
+        git_common_dir=str(repo / ".git"),
+        workspace=str(repo),
+        run_root=str(run_root),
+        root_issue_id=ROOT_ISSUE,
+        scope_issue_ids=(),
+        actor="parent",
+        base_git_commit="a" * 40,
+        authority_snapshot_sha256="b" * 64,
+        workspace_identity_sha256="c" * 64,
+    )
+    started = bc.coordinator_tracker.start_run(
+        request, actor="parent", now=common.now(), runner=fake
+    )
+    run_dir = run_root / started.run_id
+    ownership = common.beads_ownership.OwnershipStore(run_root)
+    root = ownership.inspect_readonly(ROOT_ISSUE).record
+    assert root is not None
+    lane = ownership.acquire(
+        issue_id=LANE_A,
+        actor="parent",
+        run_directory=run_dir,
+        tracker_state_sha256="0" * 64,
+        operation_id="7" * 64,
+        now=datetime.now(timezone.utc),
+    )
+    assert lane.record is not None
+    context = bc.direct_operation.open_run(run_dir)
+    current = context.checkpoints.current(rebuild_pointer=True)
+    context.checkpoints.accept(
+        {
+            **current.value,
+            "generation": current.generation + 1,
+            "phase": "active",
+            "issues": {LANE_A: _terminal_lane_entry(lane.record)},
+            "previous_checkpoint_sha256": current.generation_sha256,
+            "created_at": common.now(),
+        }
+    )
+
+    with pytest.raises(
+        common.state.StateError, match="FINISH_SCOPE_CHECKPOINT_MISMATCH"
+    ):
+        bc.coordinator_tracker.finish_run(
+            request,
+            run_directory=run_dir,
+            scope_issue_ids=[],
+            ownership_epoch=root["epoch"],
+            terminal_status="completed",
+            actor="parent",
+            runner=fake,
+        )
+
+    assert ownership.inspect_readonly(LANE_A).disposition == "held"
+    assert ownership.inspect_readonly(ROOT_ISSUE).disposition == "held"
+    assert (
+        json.loads(box["metadata"][bc.coordinator_tracker._POINTER_METADATA_KEY])[
+            "status"
+        ]
+        == "active"
+    )
+
+
+def test_finish_refuses_bound_scope_lane_missing_from_checkpoint(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    hermes = repo / ".hermes"
+    hermes.mkdir(mode=0o700)
+    run_root = hermes / "beads-runs"
+    run_root.mkdir(mode=0o700)
+    fake, _box = common.tracker_double(ROOT_ISSUE)
+    request = common.state.StartRunInput(
+        request_id="request-bound-lane-missing-checkpoint",
+        repository_root=str(repo),
+        git_common_dir=str(repo / ".git"),
+        workspace=str(repo),
+        run_root=str(run_root),
+        root_issue_id=ROOT_ISSUE,
+        scope_issue_ids=(LANE_A,),
+        actor="parent",
+        base_git_commit="a" * 40,
+        authority_snapshot_sha256="b" * 64,
+        workspace_identity_sha256="c" * 64,
+    )
+    started = bc.coordinator_tracker.start_run(
+        request, actor="parent", now=common.now(), runner=fake
+    )
+    ownership = common.beads_ownership.OwnershipStore(run_root)
+    root = ownership.inspect_readonly(ROOT_ISSUE).record
+    assert root is not None
+
+    with pytest.raises(
+        common.state.StateError, match="FINISH_SCOPE_CHECKPOINT_MISMATCH"
+    ):
+        bc.coordinator_tracker.finish_run(
+            request,
+            run_directory=run_root / started.run_id,
+            scope_issue_ids=[LANE_A],
+            ownership_epoch=root["epoch"],
+            terminal_status="cancelled",
+            actor="parent",
+            runner=fake,
+        )
+
+    assert ownership.inspect_readonly(ROOT_ISSUE).disposition == "held"
+
+
+def test_finish_refuses_an_active_same_run_lane_missing_from_the_checkpoint(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    hermes = repo / ".hermes"
+    hermes.mkdir(mode=0o700)
+    run_root = hermes / "beads-runs"
+    run_root.mkdir(mode=0o700)
+    fake, box = common.tracker_double(ROOT_ISSUE)
+    request = common.state.StartRunInput(
+        request_id="request-held-lane-outside-checkpoint",
+        repository_root=str(repo),
+        git_common_dir=str(repo / ".git"),
+        workspace=str(repo),
+        run_root=str(run_root),
+        root_issue_id=ROOT_ISSUE,
+        scope_issue_ids=(),
+        actor="parent",
+        base_git_commit="a" * 40,
+        authority_snapshot_sha256="b" * 64,
+        workspace_identity_sha256="c" * 64,
+    )
+    started = bc.coordinator_tracker.start_run(
+        request, actor="parent", now=common.now(), runner=fake
+    )
+    run_dir = run_root / started.run_id
+    ownership = common.beads_ownership.OwnershipStore(run_root)
+    root = ownership.inspect_readonly(ROOT_ISSUE).record
+    assert root is not None
+    ownership.acquire(
+        issue_id=LANE_A,
+        actor="parent",
+        run_directory=run_dir,
+        tracker_state_sha256="0" * 64,
+        operation_id="8" * 64,
+        now=datetime.now(timezone.utc),
+    )
+
+    with pytest.raises(common.state.StateError, match="FINISH_UNSCOPED_OWNERSHIP_HELD"):
+        bc.coordinator_tracker.finish_run(
+            request,
+            run_directory=run_dir,
+            scope_issue_ids=[],
+            ownership_epoch=root["epoch"],
+            terminal_status="cancelled",
+            actor="parent",
+            runner=fake,
+        )
+
+    assert (
+        json.loads(box["metadata"][bc.coordinator_tracker._POINTER_METADATA_KEY])[
+            "status"
+        ]
+        == "active"
+    )
+
+
+def test_finish_revalidates_pointer_after_prepare_before_releasing_ownership(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    hermes = repo / ".hermes"
+    hermes.mkdir(mode=0o700)
+    run_root = hermes / "beads-runs"
+    run_root.mkdir(mode=0o700)
+    fake, box = common.tracker_double(ROOT_ISSUE)
+    request = common.state.StartRunInput(
+        request_id="request-pointer-race-before-release",
+        repository_root=str(repo),
+        git_common_dir=str(repo / ".git"),
+        workspace=str(repo),
+        run_root=str(run_root),
+        root_issue_id=ROOT_ISSUE,
+        scope_issue_ids=(),
+        actor="parent",
+        base_git_commit="a" * 40,
+        authority_snapshot_sha256="b" * 64,
+        workspace_identity_sha256="c" * 64,
+    )
+    started = bc.coordinator_tracker.start_run(
+        request, actor="parent", now=common.now(), runner=fake
+    )
+    run_dir = run_root / started.run_id
+    ownership = common.beads_ownership.OwnershipStore(run_root)
+    root = ownership.inspect_readonly(ROOT_ISSUE).record
+    assert root is not None
+    changed = False
+
+    def race_hook(boundary):
+        nonlocal changed
+        if boundary == "after_finish_pointer_prepared" and not changed:
+            changed = True
+            pointer = json.loads(
+                box["metadata"][bc.coordinator_tracker._POINTER_METADATA_KEY]
+            )
+            pointer["ownership_epoch"] += 1
+            box["metadata"][bc.coordinator_tracker._POINTER_METADATA_KEY] = json.dumps(
+                pointer, sort_keys=True, separators=(",", ":")
+            )
+
+    result = bc.coordinator_tracker.finish_run(
+        request,
+        run_directory=run_dir,
+        scope_issue_ids=[],
+        ownership_epoch=root["epoch"],
+        terminal_status="cancelled",
+        actor="parent",
+        runner=fake,
+        crash_hook=race_hook,
+    )
+
+    assert result.status == bc.direct_operation.CONFLICT
+    assert ownership.inspect_readonly(ROOT_ISSUE).disposition == "held"
+    assert fake.count("set_run_pointer") == 1
+
+
+def test_finish_holds_root_issue_lock_while_preparing_and_releasing_lanes(
+    tmp_path, monkeypatch
+):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    hermes = repo / ".hermes"
+    hermes.mkdir(mode=0o700)
+    run_root = hermes / "beads-runs"
+    run_root.mkdir(mode=0o700)
+    fake, _box = common.tracker_double(ROOT_ISSUE)
+    request = common.state.StartRunInput(
+        request_id="request-root-lock-covers-finish-transition",
+        repository_root=str(repo),
+        git_common_dir=str(repo / ".git"),
+        workspace=str(repo),
+        run_root=str(run_root),
+        root_issue_id=ROOT_ISSUE,
+        scope_issue_ids=(LANE_A,),
+        actor="parent",
+        base_git_commit="a" * 40,
+        authority_snapshot_sha256="b" * 64,
+        workspace_identity_sha256="c" * 64,
+    )
+    started = bc.coordinator_tracker.start_run(
+        request, actor="parent", now=common.now(), runner=fake
+    )
+    run_dir = run_root / started.run_id
+    ownership = common.beads_ownership.OwnershipStore(run_root)
+    root = ownership.inspect_readonly(ROOT_ISSUE).record
+    assert root is not None
+    lane = ownership.acquire(
+        issue_id=LANE_A,
+        actor="parent",
+        run_directory=run_dir,
+        tracker_state_sha256="0" * 64,
+        operation_id="6" * 64,
+        now=datetime.now(timezone.utc),
+    )
+    assert lane.record is not None
+    context = bc.direct_operation.open_run(run_dir)
+    current = context.checkpoints.current(rebuild_pointer=True)
+    context.checkpoints.accept(
+        {
+            **current.value,
+            "generation": current.generation + 1,
+            "phase": "active",
+            "issues": {LANE_A: _terminal_lane_entry(lane.record)},
+            "previous_checkpoint_sha256": current.generation_sha256,
+            "created_at": common.now(),
+        }
+    )
+    root_lock = run_root / "_ownership" / common.state.issue_key(ROOT_ISSUE) / "lock"
+
+    def assert_root_locked():
+        probe = subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                (
+                    "import fcntl, os, sys; "
+                    f"fd=os.open({str(root_lock)!r}, os.O_RDWR); "
+                    "\ntry: fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)"
+                    "\nexcept BlockingIOError: sys.exit(0)"
+                    "\nsys.exit(1)"
+                ),
+            ],
+            check=False,
+        )
+        assert probe.returncode == 0, "root issue lock was not held"
+
+    real_prepare = bc.direct_operation.prepare
+    real_release = ownership.release
+
+    def checked_prepare(*args, **kwargs):
+        assert_root_locked()
+        return real_prepare(*args, **kwargs)
+
+    def checked_release(*args, **kwargs):
+        assert_root_locked()
+        return real_release(*args, **kwargs)
+
+    monkeypatch.setattr(bc.direct_operation, "prepare", checked_prepare)
+    monkeypatch.setattr(ownership, "release", checked_release)
+
+    result = bc.coordinator_tracker.finish_run(
+        request,
+        run_directory=run_dir,
+        scope_issue_ids=[LANE_A],
+        ownership_epoch=root["epoch"],
+        terminal_status="completed",
+        actor="parent",
+        runner=fake,
+    )
+
+    assert result.status == bc.direct_operation.APPLIED
 
 
 def test_finish_rejects_scope_that_does_not_match_the_allocated_request(

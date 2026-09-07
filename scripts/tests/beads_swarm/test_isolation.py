@@ -21,6 +21,7 @@ def test_valid_parent_owned_swarm_is_concurrent_isolated_and_verified(
     results = common.run_children(
         swarm,
         timeout=spec["timeout_seconds"],
+        output_limit=spec["output_limit_bytes"],
     )
     assert len(results) == spec["max_processes"]
     assert all(result.returncode == 0 for result in results.values()), results
@@ -87,19 +88,26 @@ def test_valid_parent_owned_swarm_is_concurrent_isolated_and_verified(
 def test_child_timeout_is_one_shared_deadline_and_reaps_every_worker(
     tmp_path: Path,
 ) -> None:
+    spec = common.fixture("01_isolated_swarm.json")
+    probe = spec["deadline_probe"]
     lanes = [{"issue_id": f"scc-timeout-{index}"} for index in range(3)]
     swarm = common.setup_swarm(tmp_path, lanes)
     behaviors = {
         lane["issue_id"]: f"sleep_exit:{delay}"
-        for lane, delay in zip(lanes, (0.8, 1.6, 2.4), strict=True)
+        for lane, delay in zip(lanes, probe["sleep_seconds"], strict=True)
     }
 
     started = time.monotonic()
     with pytest.raises(subprocess.TimeoutExpired):
-        common.run_children(swarm, behaviors=behaviors, timeout=1)
+        common.run_children(
+            swarm,
+            behaviors=behaviors,
+            timeout=probe["deadline_seconds"],
+            output_limit=spec["output_limit_bytes"],
+        )
     elapsed = time.monotonic() - started
 
-    assert elapsed < 2.0
+    assert elapsed < probe["elapsed_limit_seconds"]
     for issue_id, lane in swarm["lanes"].items():
         pid_path = lane["packet_path"].with_name(f"job-{issue_id}.pid")
         pid = int(pid_path.read_text(encoding="ascii"))
@@ -137,3 +145,46 @@ def test_partial_launch_failure_reaps_workers_already_started(
         if spawned and spawned[0].poll() is None:
             spawned[0].kill()
             spawned[0].wait(timeout=1)
+
+
+def test_child_output_capture_is_bounded_without_pipe_deadlock(tmp_path: Path) -> None:
+    spec = common.fixture("01_isolated_swarm.json")
+    issue_id = "scc-output-flood"
+    swarm = common.setup_swarm(tmp_path, [{"issue_id": issue_id}])
+    flood = spec["deadline_probe"]["output_flood_bytes"]
+
+    started = time.monotonic()
+    result = common.run_children(
+        swarm,
+        behaviors={issue_id: f"flood_output:{flood}"},
+        timeout=spec["timeout_seconds"],
+        output_limit=spec["output_limit_bytes"],
+    )[issue_id]
+
+    assert result.returncode == 0
+    assert len(result.stdout.encode()) == spec["output_limit_bytes"]
+    assert len(result.stderr.encode()) == spec["output_limit_bytes"]
+    assert time.monotonic() - started < spec["deadline_probe"]["elapsed_limit_seconds"]
+
+
+def test_duplicate_ownership_contention_preserves_first_owner(tmp_path: Path) -> None:
+    spec = common.fixture("01_isolated_swarm.json")
+    contention = spec["ownership_contention"]
+    swarm = common.setup_swarm(tmp_path, [{"issue_id": contention["issue_id"]}])
+    ownership = swarm["modules"].beads_ownership.OwnershipStore.open_existing(
+        swarm["run"]["run_directory"].parent
+    )
+
+    competing = ownership.acquire(
+        issue_id=contention["issue_id"],
+        actor=contention["second_actor"],
+        run_directory=swarm["run"]["run_directory"],
+        tracker_state_sha256="0" * 64,
+        operation_id="9" * 64,
+        now=None,
+    )
+
+    assert competing.disposition == contention["expected_disposition"]
+    current = ownership.inspect_readonly(contention["issue_id"]).record
+    assert current["actor"] == contention["first_actor"]
+    assert current["epoch"] == swarm["run"]["epochs"][contention["issue_id"]]

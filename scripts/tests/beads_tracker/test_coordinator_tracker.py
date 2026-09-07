@@ -51,6 +51,10 @@ def context(run, *, crash_hook=None):
 
 
 def native(responses, allowed):
+    responses = dict(responses)
+    if "issue_comments" in responses:
+        responses.setdefault("ready_list", [[OPEN_A], [OPEN_A]])
+        allowed = [*allowed, "ready_list"]
     return common.FakeNative(safe_bd, responses=responses, allowed=allowed)
 
 
@@ -276,42 +280,79 @@ def test_claim_front_processes_multiple_lanes_independently(run):
 # pointer_callbacks (AC-T12-003, supporting)
 # ---------------------------------------------------------------------------
 
-POINTER = {
-    "schema_version": "beads.run-pointer.v1",
-    "run_id": "run-fixture",
-    "generation": 1,
-}
-OTHER_POINTER = {
-    "schema_version": "beads.run-pointer.v1",
-    "run_id": "run-rival",
-    "generation": 9,
-}
+
+def accepted_pointer(run, *, status="active"):
+    try:
+        accepted = run["checkpoints"].current(rebuild_pointer=True)
+    except state.StateError as exc:
+        assert str(exc) == "NO_ACCEPTED_CHECKPOINT"
+        run["checkpoints"].accept(
+            {
+                "schema_version": "beads.run-checkpoint.v1",
+                "run_id": run["run_id"],
+                "generation": 1,
+                "root_issue_id": ROOT,
+                "workspace": run["manifest"]["workspace"],
+                "workspace_identity_sha256": run["manifest"][
+                    "workspace_identity_sha256"
+                ],
+                "repository_root": run["manifest"]["repository_root"],
+                "coordinator_session_id": None,
+                "authority_snapshot_sha256": "0" * 64,
+                "phase": "active",
+                "budget": {
+                    "max_parallel": 3,
+                    "max_ready_fronts": 10,
+                    "max_worker_attempts_per_issue": 2,
+                    "max_nonprogress_rounds": 2,
+                },
+                "issues": {},
+                "operation_journal_path": str(
+                    run["run_directory"] / "operations.jsonl"
+                ),
+                "issue_snapshot_sha256": "0" * 64,
+                "ready_front_sha256": "0" * 64,
+                "previous_checkpoint_sha256": state.GENESIS_SHA256,
+                "created_at": common.now(),
+            }
+        )
+        accepted = run["checkpoints"].current(rebuild_pointer=True)
+    return {
+        "schema_version": "beads.run-pointer.v1",
+        "run_id": run["run_id"],
+        "checkpoint_generation": accepted.generation,
+        "checkpoint_sha256": accepted.generation_sha256,
+        "ownership_epoch": run["epochs"].get(ROOT, 0),
+        "status": status,
+    }
 
 
 def test_pointer_callbacks_observe_present(run):
+    pointer = accepted_pointer(run)
     request = pointer_request(repo=run["repo"], run_root=run["run_root"])
-    value = state.canonical_payload_bytes(POINTER).decode("utf-8")
+    value = state.canonical_payload_bytes(pointer).decode("utf-8")
     fake = native(
         {"issue_get": {"id": ROOT, "metadata": {ct._POINTER_METADATA_KEY: value}}},
         allowed=["issue_get"],
     )
     callbacks = ct.pointer_callbacks(request, actor=ACTOR, runner=fake)
 
-    observation = callbacks.observe(POINTER)
+    observation = callbacks.observe(pointer)
 
     assert observation.classification == do.INTENDED_EFFECT_PRESENT
-    assert observation.observed_value == POINTER
+    assert observation.observed_value == pointer
     assert observation.state_sha256 == state.sha256_bytes(
-        state.canonical_payload_bytes(POINTER)
+        state.canonical_payload_bytes(pointer)
     )
 
 
 def test_pointer_callbacks_observe_absent(run):
+    pointer = accepted_pointer(run)
     request = pointer_request(repo=run["repo"], run_root=run["run_root"])
     fake = native({"issue_get": {"id": ROOT, "metadata": {}}}, allowed=["issue_get"])
     callbacks = ct.pointer_callbacks(request, actor=ACTOR, runner=fake)
 
-    observation = callbacks.observe(POINTER)
+    observation = callbacks.observe(pointer)
 
     assert observation.classification == do.PRESTATE_UNCHANGED
     assert observation.state_sha256 == state.GENESIS_SHA256
@@ -319,30 +360,34 @@ def test_pointer_callbacks_observe_absent(run):
 
 
 def test_pointer_callbacks_observe_conflicting(run):
+    pointer = accepted_pointer(run)
+    rival = common.make_run(m, run["repo"], root_issue_id=ROOT, actor="rival")
+    other_pointer = accepted_pointer(rival)
     request = pointer_request(repo=run["repo"], run_root=run["run_root"])
-    value = state.canonical_payload_bytes(OTHER_POINTER).decode("utf-8")
+    value = state.canonical_payload_bytes(other_pointer).decode("utf-8")
     fake = native(
         {"issue_get": {"id": ROOT, "metadata": {ct._POINTER_METADATA_KEY: value}}},
         allowed=["issue_get"],
     )
     callbacks = ct.pointer_callbacks(request, actor=ACTOR, runner=fake)
 
-    observation = callbacks.observe(POINTER)
+    observation = callbacks.observe(pointer)
 
     assert observation.classification == do.CONFLICTING_EFFECT
-    assert observation.observed_value == OTHER_POINTER
+    assert observation.observed_value == other_pointer
     assert observation.state_sha256 == state.sha256_bytes(
-        state.canonical_payload_bytes(OTHER_POINTER)
+        state.canonical_payload_bytes(other_pointer)
     )
 
 
 def test_pointer_callbacks_observe_unreadable(run):
+    pointer = accepted_pointer(run)
     request = pointer_request(repo=run["repo"], run_root=run["run_root"])
     probe = common.FakeNative(safe_bd)
     fake = native({"issue_get": probe.error("issue_get")}, allowed=["issue_get"])
     callbacks = ct.pointer_callbacks(request, actor=ACTOR, runner=fake)
 
-    observation = callbacks.observe(POINTER)
+    observation = callbacks.observe(pointer)
 
     assert observation.classification == do.INSUFFICIENT_OBSERVATION
     assert observation.state_sha256 == state.GENESIS_SHA256
@@ -354,7 +399,7 @@ def test_pointer_callbacks_publish_dispatches_through_direct_operation(run):
     request = pointer_request(
         repo=run["repo"], run_root=run["run_root"], root_issue_id=run["root_issue_id"]
     )
-    pointer = {"run_id": run["run_id"], "ownership_epoch": None, "generation": 1}
+    pointer = accepted_pointer(run)
     callbacks = ct.pointer_callbacks(request, actor=ACTOR, runner=fake)
 
     observation = callbacks.publish(pointer)

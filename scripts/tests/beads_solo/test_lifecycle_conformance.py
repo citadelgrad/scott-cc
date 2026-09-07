@@ -599,11 +599,14 @@ def test_complete_native_solo_lifecycle_binds_ac_evidence_and_finishes(
             "workspace_identity_sha256"
         ],
     )
+    accepted_checkpoint = fixture["context"].checkpoints.current(rebuild_pointer=True)
     pointer = {
         "schema_version": "beads.run-pointer.v1",
         "run_id": fixture["run"]["run_id"],
+        "checkpoint_generation": accepted_checkpoint.generation,
+        "checkpoint_sha256": accepted_checkpoint.generation_sha256,
         "ownership_epoch": fixture["run"]["epochs"][ROOT_ISSUE],
-        "status": "completed",
+        "status": "terminal",
     }
     callbacks = ct.pointer_callbacks(request, actor=ACTOR)
     published = callbacks.publish(pointer)
@@ -642,26 +645,31 @@ def test_failed_or_unavailable_verification_is_rejected_without_false_finish(
     else:
         verifier.unlink()
 
-    try:
-        outcome = ci.verify_lane(fixture["context"], LANE_ISSUE)
-    except ci.safe_output.SafeOutputError as exc:
-        if (
-            scenario["mode"] == "unavailable"
-            and exc.args[0] == "EXECUTABLE_NOT_ABSOLUTE_FILE"
-        ):
-            pytest.xfail(
-                "verify_lane lets an unavailable verifier escape as SafeOutputError "
-                "instead of returning an inconclusive/refused typed outcome"
-            )
-        raise
+    outcome = ci.verify_lane(fixture["context"], LANE_ISSUE)
     assert outcome["status"] == scenario["expected_status"]
     record = json.loads(Path(outcome["record_path"]).read_text(encoding="utf-8"))
-    assert record["disposition"] == "reject"
-    assert record["coverage_gaps"] == ["REQUIRED_COMMAND_FAILED"]
+    if scenario["mode"] == "unavailable":
+        assert outcome == {
+            "status": "blocked",
+            "error_code": "REQUIRED_VERIFIER_UNAVAILABLE",
+            "record_path": outcome["record_path"],
+            "failure_classification": "environment",
+            "disposition": "inconclusive",
+            "safe_next_action": "restore_required_verifier_and_retry",
+        }
+        assert record["disposition"] == "inconclusive"
+        assert record["failure_classification"] == "environment"
+        assert record["coverage_gaps"] == ["REQUIRED_VERIFIER_UNAVAILABLE"]
+    else:
+        assert record["disposition"] == "reject"
+        assert record["failure_classification"] == "introduced"
+        assert record["coverage_gaps"] == ["REQUIRED_COMMAND_FAILED"]
     assert record["commands"][0]["exit_code"] == scenario["expected_exit_code"]
     current = fixture["context"].checkpoints.current(rebuild_pointer=True)
     entry = current.value["issues"][LANE_ISSUE]
-    assert entry["verification"]["state"] == "failed"
+    assert entry["verification"]["state"] == (
+        "inconclusive" if scenario["mode"] == "unavailable" else "failed"
+    )
     assert entry["integration"]["state"] == "not_started"
 
     with pytest.raises(ci.IntegrationError) as excinfo:
@@ -678,13 +686,53 @@ def test_failed_or_unavailable_verification_is_rejected_without_false_finish(
     assert native_issue.data[0]["status"] == "in_progress"
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "production claim_front rechecks status only, so a once-ready issue that "
-        "acquires a blocker can still be claimed; scc-0pu.15 cannot edit that module"
-    ),
+@pytest.mark.parametrize(
+    "spawn_mode",
+    ["non_executable", "missing_interpreter", "disappearing"],
 )
+def test_verifier_spawn_failure_is_durable_and_inconclusive(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    spawn_mode: str,
+) -> None:
+    verifier = tmp_path / f"verifier-{spawn_mode}"
+    verifier.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    verifier.chmod(verifier.stat().st_mode | stat.S_IEXEC)
+    fixture = _integration_fixture(tmp_path, monkeypatch, [str(verifier)])
+
+    if spawn_mode == "non_executable":
+        verifier.chmod(verifier.stat().st_mode & ~0o111)
+    elif spawn_mode == "missing_interpreter":
+        verifier.write_text("#!/definitely/missing/interpreter\n", encoding="utf-8")
+    else:
+        original_popen = ci.safe_output.subprocess.Popen
+
+        def unlink_before_spawn(*args: object, **kwargs: object) -> object:
+            argv = args[0]
+            if isinstance(argv, (list, tuple)) and argv[0] == str(verifier):
+                verifier.unlink()
+            return original_popen(*args, **kwargs)
+
+        monkeypatch.setattr(ci.safe_output.subprocess, "Popen", unlink_before_spawn)
+
+    outcome = ci.verify_lane(fixture["context"], LANE_ISSUE)
+
+    assert outcome["status"] == "blocked"
+    assert outcome["error_code"] == "REQUIRED_VERIFIER_UNAVAILABLE"
+    assert outcome["failure_classification"] == "environment"
+    assert outcome["disposition"] == "inconclusive"
+    assert outcome["safe_next_action"] == "restore_required_verifier_and_retry"
+    record = json.loads(Path(outcome["record_path"]).read_text(encoding="utf-8"))
+    command = record["commands"][0]
+    assert command["exit_code"] == 127
+    assert all(value is not None for value in command.values())
+    stdout_log = Path(command["log_path"])
+    stderr_log = stdout_log.with_name("command-000.stderr.log")
+    assert stdout_log.read_bytes() == b""
+    assert hashlib.sha256(stdout_log.read_bytes()).hexdigest() == command["log_sha256"]
+    assert stderr_log.read_text(encoding="utf-8") == "SPAWN_FAILED\n"
+
+
 def test_claim_refuses_issue_whose_readiness_changed_after_front_capture(
     tmp_path: Path,
 ) -> None:
@@ -699,6 +747,7 @@ def test_claim_refuses_issue_whose_readiness_changed_after_front_capture(
     fake = common.FakeNative(
         m.safe_bd,
         responses={
+            "ready_list": [[{"id": LANE_ISSUE, "status": "open"}]],
             "issue_comments": common.comments(),
             "issue_get": [
                 blocked,
@@ -707,7 +756,13 @@ def test_claim_refuses_issue_whose_readiness_changed_after_front_capture(
             "append_marker_note": {"ok": True},
             "claim_exact": {**blocked, "status": "in_progress", "assignee": ACTOR},
         },
-        allowed=["issue_comments", "issue_get", "append_marker_note", "claim_exact"],
+        allowed=[
+            "ready_list",
+            "issue_comments",
+            "issue_get",
+            "append_marker_note",
+            "claim_exact",
+        ],
     )
     result = ct.claim_front(
         _context(run),
@@ -718,3 +773,72 @@ def test_claim_refuses_issue_whose_readiness_changed_after_front_capture(
     )[0]
     assert result.status == "CONFLICT"
     assert fake.count("claim_exact") == 0
+
+
+def test_claim_refuses_initially_deferred_issue_without_native_claim(
+    tmp_path: Path,
+) -> None:
+    deferred = {
+        "id": LANE_ISSUE,
+        "status": "open",
+        "assignee": None,
+        "blocked_by": [],
+        "defer_until": "2099-01-01T00:00:00Z",
+    }
+    run = common.make_run(m, tmp_path, root_issue_id="root", actor=ACTOR)
+    fake = common.FakeNative(
+        m.safe_bd,
+        responses={"ready_list": [[deferred]]},
+        allowed=["ready_list"],
+    )
+
+    result = ct.claim_front(
+        _context(run),
+        ownership=run["ownership"],
+        issues=[LANE_ISSUE],
+        actor=ACTOR,
+        runner=fake,
+    )[0]
+
+    assert result.status == "CONFLICT"
+    assert result.error_code == "COORDINATOR_TRACKER_ISSUE_NOT_READY"
+    assert fake.count("claim_exact") == 0
+    assert run["ownership"].inspect(LANE_ISSUE).disposition == "unheld"
+
+
+def test_claim_revalidates_native_readiness_at_final_dispatch_seam(
+    tmp_path: Path,
+) -> None:
+    ready = {
+        "id": LANE_ISSUE,
+        "status": "open",
+        "assignee": None,
+        "blocked_by": [],
+        "defer_until": None,
+    }
+    deferred = {**ready, "defer_until": "2099-01-01T00:00:00Z"}
+    run = common.make_run(m, tmp_path, root_issue_id="root", actor=ACTOR)
+    fake = common.FakeNative(
+        m.safe_bd,
+        responses={
+            "ready_list": [[ready], []],
+            "issue_comments": common.comments(),
+            "issue_get": [ready, deferred],
+            "append_marker_note": {"ok": True},
+        },
+        allowed=["ready_list", "issue_comments", "issue_get", "append_marker_note"],
+    )
+
+    result = ct.claim_front(
+        _context(run),
+        ownership=run["ownership"],
+        issues=[LANE_ISSUE],
+        actor=ACTOR,
+        runner=fake,
+    )[0]
+
+    assert result.status == "CONFLICT"
+    assert result.error_code == "COORDINATOR_TRACKER_READINESS_CHANGED"
+    assert fake.count("append_marker_note") == 1
+    assert fake.count("claim_exact") == 0
+    assert run["ownership"].inspect(LANE_ISSUE).disposition == "released"

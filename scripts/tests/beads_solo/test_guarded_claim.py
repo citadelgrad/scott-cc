@@ -41,6 +41,10 @@ def context(run):
 
 
 def native(responses, allowed):
+    responses = dict(responses)
+    if "issue_comments" in responses:
+        responses.setdefault("ready_list", [[OPEN_A], [OPEN_A]])
+        allowed = [*allowed, "ready_list"]
     return common.FakeNative(m.safe_bd, responses=responses, allowed=allowed)
 
 
