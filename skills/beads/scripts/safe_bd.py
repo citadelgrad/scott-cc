@@ -9,9 +9,10 @@ import json
 import re
 import shutil
 import sys
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).parent))
 import safe_output
@@ -29,6 +30,8 @@ CLI_CONTRACT_HASHES = {
     "bd dep list --help": "3579c552baf306fa2cb4e744926f3ad2522eef73409c364ea660d2c98872b996",
     "bd where --help": "82156d7531699d1e59c4975a6215d77280fdfc10c7b4293074cf99c7cfafc30c",
     "bd show --help": "010c34cfe1bf28beedf9c90978979a957e612ce8bd8a56c5b47e2cdde5038179",
+    "bd comments --help": "93b32055bff1e98ec6970e7fb4fca4eaba878725e796fad5763abdf59a4b7cfb",
+    "bd comments add --help": "b5e23626a28b8408a96eaf75ea2a3cb9c4815f8695469cd4e034383a0038e82c",
     "bd human --help": "eef6aff710c947fb2e2ab297583d22049a2bc6c38715f5284a6ed4bf1666a61c",
     "bd gate --help": "16959572cdfc30b030828c6ae440f42933872fef4e876ae14603ce0f8d8e3bf0",
     "bd worktree --help": "a32cd089a3c55e14fa90b9a3785eb7c0db2786f4c47a5f99954cd63a677a7fa9",
@@ -36,12 +39,14 @@ CLI_CONTRACT_HASHES = {
 PROFILE_CONTRACT_COMMANDS = {
     "workspace_where": "bd where --help",
     "issue_get": "bd show --help",
+    "issue_comments": "bd comments --help",
     "issue_list": "bd list --help",
     "ready_list": "bd ready --help",
     "dependency_list": "bd dep list --help",
     "dependency_cycles": "bd dep --help",
     "claim_exact": "bd update --help",
     "restore_claim_fields": "bd update --help",
+    "append_marker_note": "bd comments add --help",
     "set_run_pointer": "bd update --help",
     "close_exact": "bd close --help",
     "create_exact": "bd create --help",
@@ -242,6 +247,8 @@ _EVENT_FIELDS = frozenset(
         "issue_id",
         "event_type",
         "actor",
+        "author",
+        "schema_version",
         "timestamp",
         "created_at",
         "old_value",
@@ -523,7 +530,11 @@ def build_argv(request: SafeBdRequest, *, executable: Path) -> tuple[str, ...]:
             ]
         )
     if p == "append_marker_note":
-        return tuple(prefix + actor + ["note", "--stdin", "--", a["issue_id"]])
+        return tuple(
+            prefix
+            + actor
+            + ["comments", "add", "-f", "/dev/stdin", "--", a["issue_id"]]
+        )
     if p == "close_exact":
         return tuple(
             prefix + actor + ["close", f"--reason={a['reason']}", "--", a["issue_id"]]
@@ -582,7 +593,7 @@ def _allowed_fields(profile: str) -> frozenset[str]:
         return _CYCLE_FIELDS
     if profile.startswith("gate_"):
         return _GATE_FIELDS
-    if profile in {"issue_history", "issue_comments"}:
+    if profile in {"issue_history", "issue_comments", "append_marker_note"}:
         return _EVENT_FIELDS
     return _LIST_FIELDS
 
@@ -910,7 +921,7 @@ def decode_output(
         for record in records:
             _require_fields(record, frozenset({"id", "dependency_type"}))
             _validate_issue_record(record)
-    elif request.profile == "issue_comments":
+    elif request.profile in {"issue_comments", "append_marker_note"}:
         for record in records:
             _require_fields(record, frozenset({"issue_id", "text"}))
             if not isinstance(record["issue_id"], str) or not isinstance(

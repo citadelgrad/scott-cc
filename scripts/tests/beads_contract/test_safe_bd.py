@@ -4,6 +4,8 @@ import hashlib
 import importlib.util
 import json
 import os
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -133,6 +135,87 @@ def test_worker_scope_refuses_mutation_and_unlisted_issue(tmp_path: Path) -> Non
         )
 
 
+def test_marker_profile_writes_to_the_real_comments_read_surface(
+    tmp_path: Path,
+) -> None:
+    safe_bd = _load()
+    executable = shutil.which("bd")
+    if executable is None:
+        pytest.skip("bd is not installed")
+    assert executable is not None
+    version = subprocess.run(
+        [executable, "version"], check=True, capture_output=True, text=True
+    ).stdout
+    if not version.startswith("bd version 1.2.2"):
+        pytest.skip(f"requires bd 1.2.2, found {version.strip()}")
+
+    repository = tmp_path / "repo"
+    subprocess.run(["git", "init", "-q", str(repository)], check=True)
+    subprocess.run(
+        [
+            executable,
+            "init",
+            "--prefix",
+            "tst",
+            "--skip-agents",
+            "--skip-hooks",
+            "--non-interactive",
+        ],
+        cwd=repository,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    subprocess.run(
+        [
+            executable,
+            "--sandbox",
+            "--json",
+            "create",
+            "--id=tst-marker",
+            "--title=marker-regression",
+            "--type=task",
+            "--priority=2",
+        ],
+        cwd=repository,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    marker = "hermes-direct-operation-marker-from-stdin"
+    write_request = safe_bd.SafeBdRequest(
+        "append_marker_note",
+        {"issue_id": "tst-marker", "actor": "coordinator", "content": marker},
+        repository,
+        None,
+    )
+    assert safe_bd.build_argv(write_request, executable=Path(executable).resolve())[
+        -7:
+    ] == (
+        "--actor=coordinator",
+        "comments",
+        "add",
+        "-f",
+        "/dev/stdin",
+        "--",
+        "tst-marker",
+    )
+    assert marker not in safe_bd.build_argv(
+        write_request, executable=Path(executable).resolve()
+    )
+    write = safe_bd.run_profile(write_request)
+    read = safe_bd.run_profile(
+        safe_bd.SafeBdRequest(
+            "issue_comments", {"issue_id": "tst-marker"}, repository, None
+        )
+    )
+
+    assert write.status == "ok", write
+    assert read.status == "ok", read
+    assert any(comment["text"] == marker for comment in read.data)
+
+
 def test_pinned_live_contract_hashes_are_complete() -> None:
     safe_bd = _load()
     assert (
@@ -143,7 +226,15 @@ def test_pinned_live_contract_hashes_are_complete() -> None:
         safe_bd.CLI_CONTRACT_HASHES["bd show --help"]
         == "010c34cfe1bf28beedf9c90978979a957e612ce8bd8a56c5b47e2cdde5038179"
     )
-    assert len(safe_bd.CLI_CONTRACT_HASHES) == 13
+    assert (
+        safe_bd.CLI_CONTRACT_HASHES["bd comments --help"]
+        == "93b32055bff1e98ec6970e7fb4fca4eaba878725e796fad5763abdf59a4b7cfb"
+    )
+    assert (
+        safe_bd.CLI_CONTRACT_HASHES["bd comments add --help"]
+        == "b5e23626a28b8408a96eaf75ea2a3cb9c4815f8695469cd4e034383a0038e82c"
+    )
+    assert len(safe_bd.CLI_CONTRACT_HASHES) == 15
 
 
 def test_native_json_unknown_fields_and_floats_fail_closed(tmp_path: Path) -> None:
