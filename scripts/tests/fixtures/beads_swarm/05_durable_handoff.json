@@ -1,0 +1,23 @@
+{
+  "schema_version": "beads.swarm-fixture.v1",
+  "id": "durable-executor-handoff",
+  "acceptance_criteria": ["AC-T16-005"],
+  "timeout_seconds": 30,
+  "max_processes": 1,
+  "executor": {
+    "type": "pas",
+    "identity": "pas-executor-0001",
+    "beads_authority": "readonly",
+    "beads_mutation": false,
+    "artifact_scope": "isolated_executor_output"
+  },
+  "tamper_cases": [
+    {"id": "handoff_sha256", "expected_error": "HANDOFF_RECORD_MISMATCH", "failure_stage": "guard"},
+    {"id": "executor_identity", "expected_error": "HANDOFF_EXECUTOR_IDENTITY_MISMATCH", "failure_stage": "guard"},
+    {"id": "ownership_epoch", "expected_error": "HANDOFF_EPOCH_MISMATCH", "failure_stage": "guard"},
+    {"id": "artifact_sha256", "expected_error": "HANDOFF_ARTIFACT_MISMATCH", "failure_stage": "guard"},
+    {"id": "artifact_bytes", "expected_error": "HANDOFF_ARTIFACT_MISMATCH", "failure_stage": "guard"},
+    {"id": "artifact_path_escape", "expected_error": "HANDOFF_ARTIFACT_MISMATCH", "failure_stage": "guard"},
+    {"id": "beads_mutated", "expected_error": "ValidationFailure", "failure_stage": "schema"}
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "beads.swarm-fixture.v1",
+  "id": "untrusted-evidence-matrix",
+  "acceptance_criteria": ["AC-T16-002"],
+  "timeout_seconds": 30,
+  "max_processes": 3,
+  "cases": [
+    {"id": "child_tracker_mutation", "expected_error": "SCHEMA_MAX_ITEMS:/changes/outside_allowed_scope"},
+    {"id": "forged_result_identity", "expected_error": "RESULT_IDENTITY_MISMATCH"},
+    {"id": "stale_ownership_epoch", "expected_error": "COMMAND_INTENT_IDENTITY_MISMATCH"},
+    {"id": "missing_command_evidence", "expected_error": "ARTIFACT_PATH_INVALID"},
+    {"id": "cancelled_lane", "expected_error": "LANE_VERIFICATION_FAILED"},
+    {"id": "failed_lane_review", "expected_error": "REVIEW_FAILED"},
+    {"id": "failed_candidate_test", "expected_error": "CANDIDATE_TESTS_FAILED"},
+    {"id": "candidate_conflict", "expected_error": "CANDIDATE_CONFLICT"},
+    {"id": "unknown_primary_result", "expected_error": "PRIMARY_READBACK_UNKNOWN"}
+  ]
+}

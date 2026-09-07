@@ -1,0 +1,12 @@
+{
+  "schema_version": "beads.swarm-fixture.v1",
+  "id": "isolated-parent-owned-swarm",
+  "acceptance_criteria": ["AC-T16-001"],
+  "timeout_seconds": 30,
+  "max_processes": 3,
+  "lanes": [
+    {"issue_id": "scc-lane-a", "path": "src/a.py", "content": "A = 1\n"},
+    {"issue_id": "scc-lane-b", "path": "src/b.py", "content": "B = 2\n"},
+    {"issue_id": "scc-lane-c", "path": "src/c.py", "content": "C = 3\n"}
+  ]
+}
