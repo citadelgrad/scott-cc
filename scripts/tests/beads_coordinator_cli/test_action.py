@@ -31,6 +31,8 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from . import _common as common
 
 bc = common.bc
@@ -83,6 +85,14 @@ def _pending_action(**overrides):
         "required_receipt_variant": "protected_harness_effect",
     }
     payload.update(overrides)
+    payload["payload_sha256"] = common.state.sha256_bytes(
+        common.state.canonical_payload_bytes(payload["payload"])
+    )
+    without_id = dict(payload)
+    without_id.pop("action_id", None)
+    payload["action_id"] = common.state.sha256_bytes(
+        common.state.canonical_payload_bytes(without_id)
+    )
     return payload
 
 
@@ -192,14 +202,206 @@ def test_action_prepare_missing_required_field_exits_2(tmp_path, capsys):
     assert out["error_code"] == "INPUT_MISSING_FIELDS"
 
 
-def _resolve_input(**overrides):
+def _receipt_for(pending_action, **overrides):
     payload = {
-        "prepared": {"schema_version": "beads.operation-journal-event.v1"},
-        "pending_action": {"action": "protected_harness_effect", "issue_id": ISSUE_ID},
-        "receipt": {"schema_version": "beads.action-receipt.v1", "outcome": "applied"},
+        "schema_version": "beads.harness-receipt.v1",
+        "receipt_variant": pending_action["required_receipt_variant"],
+        "action_id": pending_action["action_id"],
+        "operation_id": pending_action["operation_id"],
+        "target_sha256": pending_action["target_sha256"],
+        "action_sha256": pending_action["action_id"],
+        "outcome": "not_applied",
+        "observed_identity": None,
+        "observed_sha256": None,
+        "evidence": {"path": None, "sha256": None, "summary": "not applied"},
+        "harness": "hermes",
+        "provider": "local",
+        "version": "1",
+        "timestamp": "2026-09-05T00:00:00.000000Z",
     }
     payload.update(overrides)
     return payload
+
+
+def _resolve_input(**overrides):
+    pending_action = overrides.pop("pending_action", _pending_action())
+    receipt = (
+        overrides.pop("receipt")
+        if "receipt" in overrides
+        else _receipt_for(pending_action)
+    )
+    payload = {
+        "prepared": {"schema_version": "beads.operation-journal-event.v1"},
+        "pending_action": pending_action,
+        "receipt": receipt,
+    }
+    payload.update(overrides)
+    return payload
+
+
+def test_action_resolve_rejects_unsupported_action_discriminator_before_resolution(
+    tmp_path, monkeypatch, capsys
+):
+    run = common.make_run(tmp_path, issue_ids=[ISSUE_ID])
+    called = False
+
+    def must_not_resolve(*args, **kwargs):
+        nonlocal called
+        called = True
+        return {"status": bc.direct_operation.APPLIED}
+
+    monkeypatch.setattr(
+        bc.protected_action, "resolve_protected_action", must_not_resolve
+    )
+    input_path = tmp_path / "action-resolve-unsupported.json"
+    _write_json(
+        input_path,
+        _resolve_input(
+            pending_action={
+                "action": "shell_command",
+                "issue_id": ISSUE_ID,
+                "required_receipt_variant": "shell_command",
+            },
+            receipt={},
+        ),
+    )
+
+    exit_code = bc.main(
+        [
+            "action",
+            "resolve",
+            "--run-dir",
+            str(run["run_directory"]),
+            "--input",
+            str(input_path),
+            "--json",
+        ]
+    )
+    out = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 2
+    assert out["error_code"] == "INPUT_INVALID"
+    assert called is False
+
+
+@pytest.mark.parametrize(
+    "action",
+    ["hermes_dispatch", "hermes_control", "review_request", "durable_executor_launch"],
+)
+def test_action_resolve_routes_every_canonical_harness_receipt(
+    tmp_path, monkeypatch, capsys, action
+):
+    run = common.make_run(tmp_path, issue_ids=[ISSUE_ID])
+    captured = {}
+
+    def resolve(context, **kwargs):
+        captured["context"] = context
+        captured.update(kwargs)
+        return {"status": bc.direct_operation.APPLIED}
+
+    monkeypatch.setattr(bc.coordinator_tracker, "resolve_harness_receipt", resolve)
+    input_path = tmp_path / "action-resolve-other-capability.json"
+    pending = _pending_action(action=action, required_receipt_variant=action)
+    receipt = _receipt_for(pending)
+    _write_json(
+        input_path,
+        _resolve_input(
+            pending_action=pending,
+            receipt=receipt,
+        ),
+    )
+
+    exit_code = bc.main(
+        [
+            "action",
+            "resolve",
+            "--run-dir",
+            str(run["run_directory"]),
+            "--input",
+            str(input_path),
+            "--json",
+        ]
+    )
+    out = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert out["status"] == "success"
+    assert captured["pending_action"] == pending
+    assert captured["receipt"] == receipt
+
+
+def test_action_resolve_rejects_malformed_unsupported_receipt_before_capability_check(
+    tmp_path, monkeypatch, capsys
+):
+    run = common.make_run(tmp_path, issue_ids=[ISSUE_ID])
+    monkeypatch.setattr(
+        bc.protected_action,
+        "resolve_protected_action",
+        lambda *a, **k: (_ for _ in ()).throw(AssertionError("must not resolve")),
+    )
+    pending = _pending_action(
+        action="hermes_dispatch",
+        required_receipt_variant="hermes_dispatch",
+    )
+    input_path = tmp_path / "action-resolve-malformed-receipt.json"
+    _write_json(
+        input_path,
+        _resolve_input(
+            pending_action=pending,
+            receipt={"schema_version": "beads.harness-receipt.v1"},
+        ),
+    )
+
+    exit_code = bc.main(
+        [
+            "action",
+            "resolve",
+            "--run-dir",
+            str(run["run_directory"]),
+            "--input",
+            str(input_path),
+            "--json",
+        ]
+    )
+    out = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 2
+    assert out["error_code"] == "INPUT_INVALID"
+
+
+def test_action_resolve_rejects_mismatched_receipt_binding_before_capability_check(
+    tmp_path, capsys
+):
+    run = common.make_run(tmp_path, issue_ids=[ISSUE_ID])
+    pending = _pending_action(
+        action="hermes_dispatch",
+        required_receipt_variant="hermes_dispatch",
+    )
+    input_path = tmp_path / "action-resolve-mismatched-receipt.json"
+    _write_json(
+        input_path,
+        _resolve_input(
+            pending_action=pending,
+            receipt=_receipt_for(pending, operation_id="f" * 64),
+        ),
+    )
+
+    exit_code = bc.main(
+        [
+            "action",
+            "resolve",
+            "--run-dir",
+            str(run["run_directory"]),
+            "--input",
+            str(input_path),
+            "--json",
+        ]
+    )
+    out = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 4
+    assert out["status"] == "conflict"
+    assert out["error_code"] == "RECEIPT_OPERATION_MISMATCH"
 
 
 def test_action_resolve_applied_reports_success(tmp_path, monkeypatch, capsys):

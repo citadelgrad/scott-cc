@@ -33,8 +33,21 @@ def _acquire_process(
         queue.put(
             (result.disposition, result.record["run_id"] if result.record else None)
         )
-    except Exception as exc:  # pragma: no cover - diagnostic transfer
+    except Exception as exc:  # noqa: BLE001  # pragma: no cover - child diagnostics
         queue.put(("error", type(exc).__name__))
+
+
+def _release_process(root: str, run: str, started, finished) -> None:
+    ownership = importlib.import_module("beads_ownership")
+    started.set()
+    ownership.OwnershipStore(Path(root)).release(
+        "guarded-issue",
+        Path(run),
+        epoch=1,
+        operation_id="9" * 64,
+        now=dt.datetime(2026, 9, 3, 12, 1, tzinfo=dt.timezone.utc),
+    )
+    finished.set()
 
 
 def _make_run(state, root: Path, suffix: str, secret: str) -> Path:
@@ -92,6 +105,36 @@ def test_two_processes_get_one_held_owner_and_one_typed_conflict(setup) -> None:
     assert audit.disposition == "held"
     assert len(audit.history) == 1
     assert audit.history[0]["status"] == "active"
+
+
+def test_guard_holds_issue_lock_across_external_effect(setup) -> None:
+    state, ownership, root = setup
+    run = _make_run(state, root, "ABCDEFGH", "ab" * 32)
+    store = ownership.OwnershipStore(root)
+    store.acquire(
+        issue_id="guarded-issue",
+        actor="parent",
+        run_directory=run,
+        tracker_state_sha256="0" * 64,
+        operation_id="8" * 64,
+        now=dt.datetime(2026, 9, 3, 12, tzinfo=dt.timezone.utc),
+    )
+    context = multiprocessing.get_context("fork")
+    started = context.Event()
+    finished = context.Event()
+    process = context.Process(
+        target=_release_process, args=(str(root), str(run), started, finished)
+    )
+
+    with store.guard("guarded-issue", run, epoch=1, actor="parent"):
+        process.start()
+        assert started.wait(timeout=5)
+        assert not finished.wait(timeout=0.2)
+
+    assert finished.wait(timeout=5)
+    process.join(timeout=5)
+    assert process.exitcode == 0
+    assert store.inspect_readonly("guarded-issue").disposition == "released"
 
 
 def test_epochs_are_monotonic_and_stale_or_expired_capabilities_fail_closed(

@@ -8,21 +8,19 @@ real success value is ``"active"``). That meant every genuinely successful
 the full CLI dispatch (``bc.main``) over a real bootstrap so the fix is
 proven end to end, not just re-asserted against the source.
 
-Scope note: the crash/resume ordering guarantee itself (root-pointer publish
-before checkpoint 2 before "active", and non-redispatch on resume) is already
-exhaustively proven at the ``coordinator_tracker``/``coordinator_state``
-level by ``scripts/tests/beads_tracker/test_coordinator_tracker.py``.
-``_handle_start_run`` exposes no ``crash_hook=`` injection point at all, so a
-true crash/resume scenario cannot be driven through the CLI handler the way
-that sibling suite drives it directly -- this suite's scope is narrower:
-prove the CLI correctly wires into ``coordinator_tracker.start_run`` and
-correctly translates the returned disposition into the CLI envelope.
+The suite also drives a crash through ``bc.main`` by wrapping the frozen
+``coordinator_tracker.start_run`` boundary with its documented ``crash_hook``
+test seam.  The retry uses the same request and fixed run ID, proving at the
+public dispatcher boundary that a pointer-publication crash resumes without a
+second native pointer write or ownership-epoch allocation.
 """
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
+
+import pytest
 
 from . import _common as common
 
@@ -100,6 +98,69 @@ def test_start_run_happy_path_reports_success_for_active_disposition(
     # The root pointer must have actually been published exactly once as
     # part of reaching "active" -- not merely reported as such.
     assert fake.count("set_run_pointer") == 1
+
+
+def test_start_run_crash_after_pointer_publication_resumes_without_duplicate_ownership(
+    tmp_path, monkeypatch, capsys
+):
+    repo, run_root = _prepare_repo(tmp_path)
+    fake, _box = common.tracker_double(ROOT_ISSUE)
+    monkeypatch.setattr(safe_bd, "run_profile", fake)
+
+    input_path = tmp_path / "start-run-crash.json"
+    _write_input(
+        input_path,
+        repo=repo,
+        run_root=run_root,
+        request_id="request-0002-cli-crash-resume",
+    )
+    fixed_run_id = common.make_run_id(seed=97)
+    crash = common.CrashHook("after_pointer_publication", occurrence=2)
+    real_start_run = bc.coordinator_tracker.start_run
+
+    def crashing_start_run(request, **kwargs):
+        return real_start_run(
+            request,
+            **kwargs,
+            run_id_factory=lambda: fixed_run_id,
+            crash_hook=crash,
+        )
+
+    monkeypatch.setattr(bc.coordinator_tracker, "start_run", crashing_start_run)
+    with pytest.raises(crash.Crash):
+        bc.main(
+            ["start-run", "--input", str(input_path), "--actor", "parent", "--json"]
+        )
+    capsys.readouterr()
+
+    assert fake.count("set_run_pointer") == 1
+    ownership = common.beads_ownership.OwnershipStore(run_root)
+    before = ownership.inspect_readonly(ROOT_ISSUE)
+    assert before.disposition == "held"
+    assert before.record is not None
+    original_epoch = before.record["epoch"]
+
+    def resumed_start_run(request, **kwargs):
+        return real_start_run(
+            request,
+            **kwargs,
+            run_id_factory=lambda: fixed_run_id,
+        )
+
+    monkeypatch.setattr(bc.coordinator_tracker, "start_run", resumed_start_run)
+    exit_code = bc.main(
+        ["start-run", "--input", str(input_path), "--actor", "parent", "--json"]
+    )
+    out = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert out["status"] == "success"
+    assert out["run_id"] == fixed_run_id
+    assert fake.count("set_run_pointer") == 1
+    after = ownership.inspect_readonly(ROOT_ISSUE)
+    assert after.disposition == "held"
+    assert after.record is not None
+    assert after.record["epoch"] == original_epoch
 
 
 def test_start_run_second_call_with_same_root_issue_reports_held(

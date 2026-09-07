@@ -36,6 +36,7 @@ _ALLOWED_STDLIB = {
     "json",
     "shutil",
     "sys",
+    "collections",
     "datetime",
     "pathlib",
     "typing",
@@ -52,6 +53,7 @@ _ALLOWED_FROZEN = {
     "operation_result",
     "protected_action",
     "reconcile_run",
+    "schema_runtime",
 }
 
 # Every non-{status,recover,action} subcommand the parser registers, and the
@@ -98,9 +100,8 @@ def test_module_only_imports_stdlib_and_frozen_siblings():
         if isinstance(node, ast.Import):
             for alias in node.names:
                 seen.add(alias.name.split(".")[0])
-        elif isinstance(node, ast.ImportFrom):
-            if node.module is not None:
-                seen.add(node.module.split(".")[0])
+        elif isinstance(node, ast.ImportFrom) and node.module is not None:
+            seen.add(node.module.split(".")[0])
     unexpected = seen - _ALLOWED_STDLIB - _ALLOWED_FROZEN
     assert unexpected == set()
     # And the reverse: every frozen module the docstring/design claims to
@@ -243,6 +244,7 @@ def test_cli_invoked_as_a_real_subprocess_reports_usage_error_for_no_args():
     """
     completed = subprocess.run(
         [sys.executable, str(common.CLI)],
+        check=False,
         capture_output=True,
         text=True,
         timeout=30,

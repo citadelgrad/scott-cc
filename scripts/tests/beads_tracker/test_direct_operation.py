@@ -89,7 +89,7 @@ def comments(*bodies):
 def marker_note(run, operation, *, effect_type=None):
     """Rebuild the marker text a prior attempt would have written."""
     ctx = context(run)
-    path, sha, changed = do._freeze_intent(ctx, operation, actor="parent")
+    _path, sha, changed = do._freeze_intent(ctx, operation, actor="parent")
     assert not changed
     return do.marker_text(
         run_id=run["run_id"],
@@ -168,6 +168,37 @@ def test_default_select_separates_absent_from_unreadable():
 # ---------------------------------------------------------------------------
 # The happy path and its ordering
 # ---------------------------------------------------------------------------
+
+
+def test_execute_matches_prepare_resume_and_uses_the_public_prepare_seam(
+    run, monkeypatch
+):
+    fake = native(
+        {
+            "issue_comments": comments(),
+            "issue_get": [OPEN, CLAIMED],
+            "append_marker_note": {"ok": True},
+            "claim_exact": CLAIMED,
+        },
+        allowed=["issue_comments", "issue_get", "append_marker_note", "claim_exact"],
+    )
+    real_prepare = do.prepare
+    prepared = []
+
+    def prepare_spy(*args, **kwargs):
+        pending = real_prepare(*args, **kwargs)
+        prepared.append(pending)
+        assert fake.count("claim_exact") == 0
+        return pending
+
+    monkeypatch.setattr(do, "prepare", prepare_spy)
+    result = do.execute(context(run), claim_operation(run), actor="parent", runner=fake)
+
+    assert len(prepared) == 1
+    assert prepared[0].prepared["phase"] == "PREPARED"
+    assert result.status == do.APPLIED
+    assert result.operation_id == prepared[0].operation_id
+    assert fake.count("claim_exact") == 1
 
 
 def test_applied_records_prepared_then_resolution(run):

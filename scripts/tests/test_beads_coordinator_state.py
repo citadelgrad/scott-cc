@@ -7,6 +7,7 @@ import json
 import os
 import stat
 import sys
+import threading
 from pathlib import Path
 
 import pytest
@@ -260,6 +261,57 @@ def test_journal_is_hash_chained_idempotent_and_changed_reuse_conflicts(
     records = journal.read().records
     assert len(records) == 1
     assert records[0]["previous_event_sha256"] == "0" * 64
+
+
+def test_journal_concurrent_appends_form_one_valid_chain(
+    state, owner_root: Path
+) -> None:
+    run = owner_root / "run-aaaaaaaaaaaaaaaa-20260903T120000.000000Z-ABCDEFGH"
+    run.mkdir(mode=0o700)
+    journal = state.OperationJournal.create(run)
+    barrier = threading.Barrier(2)
+    original_read = journal.read
+    reads = 0
+    reads_lock = threading.Lock()
+
+    def synchronized_read():
+        nonlocal reads
+        result = original_read()
+        with reads_lock:
+            reads += 1
+            rendezvous = reads <= 2
+        if rendezvous:
+            try:
+                barrier.wait(timeout=0.2)
+            except threading.BrokenBarrierError:
+                pass
+        return result
+
+    journal.read = synchronized_read
+    errors: list[BaseException] = []
+
+    def append(operation_id: str) -> None:
+        try:
+            journal.append(_prepared(state, run, operation_id))
+        except state.StateError as exc:  # pragma: no cover - asserted below
+            errors.append(exc)
+
+    threads = [
+        threading.Thread(target=append, args=(character * 64,))
+        for character in ("a", "b")
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    assert errors == []
+    records = original_read().records
+    assert len(records) == 2
+    assert records[0]["previous_event_sha256"] == state.GENESIS_SHA256
+    assert records[1]["previous_event_sha256"] == state.sha256_bytes(
+        state.canonical_bytes(records[0])
+    )
 
 
 def test_journal_allows_one_prepared_to_resolution_transition_and_idempotent_replay(

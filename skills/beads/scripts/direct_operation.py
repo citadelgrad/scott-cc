@@ -33,16 +33,17 @@ from __future__ import annotations
 
 import os
 import sys
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Mapping, Sequence
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-import coordinator_state as state  # noqa: E402
-import safe_bd  # noqa: E402
-import safe_output  # noqa: E402
+import coordinator_state as state
+import safe_bd
+import safe_output
 
 __all__ = [
     "ABSENT",
@@ -50,9 +51,6 @@ __all__ = [
     "CLASSIFICATION_STATUS",
     "CONFLICT",
     "CONFLICTING_EFFECT",
-    "DirectOperation",
-    "DirectOperationError",
-    "DirectOperationResult",
     "EFFECT_PROFILES",
     "INSUFFICIENT_OBSERVATION",
     "INTENDED_EFFECT_PRESENT",
@@ -60,18 +58,24 @@ __all__ = [
     "NOT_APPLIED",
     "PRESTATE_UNCHANGED",
     "REPLAY_GUARDED_EFFECTS",
+    "UNKNOWN",
+    "DirectOperation",
+    "DirectOperationError",
+    "DirectOperationResult",
+    "PreparedDirectOperation",
     "Readback",
     "RunContext",
-    "UNKNOWN",
     "classify_observation",
     "default_select",
     "execute",
     "marker_text",
     "open_run",
     "operations_directory",
+    "prepare",
     "prepared_event",
     "probe_result",
     "resolution_event",
+    "resume",
     "tracker_probe",
     "utc_now",
 ]
@@ -473,6 +477,26 @@ class DirectOperationResult:
     evidence_path: Path | None
 
 
+@dataclass(frozen=True)
+class PreparedDirectOperation:
+    """A durable PREPARED intent that can resume after local state changes."""
+
+    context: RunContext
+    operation: DirectOperation
+    actor: str
+    runner: Callable[..., Any]
+    sensitive: Any
+    operation_id: str | None
+    attempt_id: str | None
+    prepared: dict[str, Any] | None
+    marker: str | None
+    marker_present: bool | None
+    observed: Any
+    classification: str
+    ambiguous_prior: bool
+    terminal_result: DirectOperationResult | None = None
+
+
 # ---------------------------------------------------------------------------
 # Intent
 # ---------------------------------------------------------------------------
@@ -724,7 +748,34 @@ def _refused(
     )
 
 
-def execute(
+def _terminal_preparation(
+    context: RunContext,
+    operation: DirectOperation,
+    *,
+    actor: str,
+    runner: Callable[..., Any],
+    sensitive: Any,
+    result: DirectOperationResult,
+) -> PreparedDirectOperation:
+    return PreparedDirectOperation(
+        context,
+        operation,
+        actor,
+        runner,
+        sensitive,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        result.classification,
+        False,
+        result,
+    )
+
+
+def prepare(
     context: RunContext,
     operation: DirectOperation,
     *,
@@ -732,22 +783,23 @@ def execute(
     runner: Callable[..., Any] | None = None,
     sensitive: Any = NO_SENSITIVE,
     now: Callable[[], str] = utc_now,
-) -> DirectOperationResult:
-    """Run one direct tracker operation to a four-way outcome.
-
-    ``runner`` defaults to :func:`safe_bd.run_profile`; tests inject a scripted
-    stand-in so a denied profile raises instead of silently succeeding.
-    """
+) -> PreparedDirectOperation:
+    """Freeze and journal PREPARED without dispatching the external effect."""
     dispatch = runner if runner is not None else safe_bd.run_profile
-
     intent_path, intent_sha, changed = _freeze_intent(context, operation, actor=actor)
     if changed:
-        # The caller key is frozen to a different request.  Nothing is sent.
-        return _refused(
+        return _terminal_preparation(
+            context,
             operation,
-            status=CONFLICT,
-            classification=CONFLICTING_EFFECT,
-            error_code="DIRECT_OPERATION_INTENT_CONFLICT",
+            actor=actor,
+            runner=dispatch,
+            sensitive=sensitive,
+            result=_refused(
+                operation,
+                status=CONFLICT,
+                classification=CONFLICTING_EFFECT,
+                error_code="DIRECT_OPERATION_INTENT_CONFLICT",
+            ),
         )
 
     records = context.journal.read().records
@@ -755,37 +807,50 @@ def execute(
     resolutions = [r for r in prior if r.get("phase") == "RESOLUTION"]
     for record in resolutions:
         if record.get("status") in {APPLIED, CONFLICT}:
-            # Terminal already.  Re-running must not touch the tracker again.
-            return DirectOperationResult(
-                status=str(record["status"]),
-                caller_key=operation.caller_key,
-                operation_id=str(record["operation_id"]),
-                effect_type=operation.effect_type,
-                attempt_id=record.get("attempt_id"),
-                classification=(
-                    INTENDED_EFFECT_PRESENT
-                    if record["status"] == APPLIED
-                    else CONFLICTING_EFFECT
+            classification = (
+                INTENDED_EFFECT_PRESENT
+                if record["status"] == APPLIED
+                else CONFLICTING_EFFECT
+            )
+            return _terminal_preparation(
+                context,
+                operation,
+                actor=actor,
+                runner=dispatch,
+                sensitive=sensitive,
+                result=DirectOperationResult(
+                    status=str(record["status"]),
+                    caller_key=operation.caller_key,
+                    operation_id=str(record["operation_id"]),
+                    effect_type=operation.effect_type,
+                    attempt_id=record.get("attempt_id"),
+                    classification=classification,
+                    observed=None,
+                    marker_present=None,
+                    dispatched=False,
+                    error_code=(record.get("error") or {}).get("code"),
+                    prepared=None,
+                    resolution=dict(record),
+                    evidence_path=None,
                 ),
-                observed=None,
-                marker_present=None,
-                dispatched=False,
-                error_code=(record.get("error") or {}).get("code"),
-                prepared=None,
-                resolution=dict(record),
-                evidence_path=None,
             )
 
     attempt = len(resolutions) + 1
     if attempt > MAX_ATTEMPTS:
-        return _refused(
+        return _terminal_preparation(
+            context,
             operation,
-            status=UNKNOWN,
-            classification=INSUFFICIENT_OBSERVATION,
-            error_code="DIRECT_OPERATION_ATTEMPT_LIMIT",
+            actor=actor,
+            runner=dispatch,
+            sensitive=sensitive,
+            result=_refused(
+                operation,
+                status=UNKNOWN,
+                classification=INSUFFICIENT_OBSERVATION,
+                error_code="DIRECT_OPERATION_ATTEMPT_LIMIT",
+            ),
         )
     attempt_id = f"attempt-{attempt:03d}"
-
     operation_id = state.semantic_operation_id(
         {
             "schema": "beads.direct-operation.v1",
@@ -800,12 +865,9 @@ def execute(
         for r in prior
         if r.get("phase") == "PREPARED" and r.get("operation_id") == operation_id
     ]
-    # A dangling PREPARED means a previous process died somewhere between the
-    # journal write and the resolution: the effect may or may not have landed.
     ambiguous_prior = bool(dangling) or any(
         r.get("status") == UNKNOWN for r in resolutions
     )
-
     marker = marker_text(
         run_id=context.run_id,
         intent_sha256=intent_sha,
@@ -818,10 +880,8 @@ def execute(
         context, operation, runner=dispatch, sensitive=sensitive
     )
     pre_state_sha = _state_digest(observed)
-
     if dangling:
         prepared = dict(dangling[0])
-        probe = dict(prepared["recovery_probe"])
     else:
         probe = tracker_probe(
             target_identity=operation.target_identity,
@@ -844,7 +904,49 @@ def execute(
         )
         prepared = context.journal.append(prepared, hook=context.crash_hook)
         context.crash_hook("after_operation_prepared")
+    return PreparedDirectOperation(
+        context,
+        operation,
+        actor,
+        dispatch,
+        sensitive,
+        operation_id,
+        attempt_id,
+        prepared,
+        marker,
+        marker_present,
+        observed,
+        classification,
+        ambiguous_prior,
+    )
 
+
+def resume(
+    pending: PreparedDirectOperation,
+    *,
+    now: Callable[[], str] = utc_now,
+) -> DirectOperationResult:
+    """Execute/probe one operation from its durable PREPARED intent."""
+    if pending.terminal_result is not None:
+        return pending.terminal_result
+    context = pending.context
+    operation = pending.operation
+    actor = pending.actor
+    dispatch = pending.runner
+    sensitive = pending.sensitive
+    operation_id = pending.operation_id
+    attempt_id = pending.attempt_id
+    prepared = pending.prepared
+    marker = pending.marker
+    marker_present = pending.marker_present
+    observed = pending.observed
+    classification = pending.classification
+    ambiguous_prior = pending.ambiguous_prior
+    assert operation_id is not None
+    assert attempt_id is not None
+    assert prepared is not None
+    assert marker is not None
+    probe = dict(prepared["recovery_probe"])
     guard = _replay_guard(
         operation,
         classification=classification,
@@ -948,6 +1050,29 @@ def execute(
         prepared=prepared,
         resolution=resolution,
         evidence_path=evidence_path,
+    )
+
+
+def execute(
+    context: RunContext,
+    operation: DirectOperation,
+    *,
+    actor: str,
+    runner: Callable[..., Any] | None = None,
+    sensitive: Any = NO_SENSITIVE,
+    now: Callable[[], str] = utc_now,
+) -> DirectOperationResult:
+    """Prepare and immediately resume one direct tracker operation."""
+    return resume(
+        prepare(
+            context,
+            operation,
+            actor=actor,
+            runner=runner,
+            sensitive=sensitive,
+            now=now,
+        ),
+        now=now,
     )
 
 

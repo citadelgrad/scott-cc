@@ -8,9 +8,11 @@ import hashlib
 import hmac
 import os
 import re
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 import coordinator_state as state
 import schema_runtime
@@ -45,7 +47,9 @@ def derive_token(run_secret: bytes, issue_id: str, epoch: int) -> bytes:
 
 def _parse_time(value: str) -> dt.datetime:
     try:
-        parsed = dt.datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%fZ")
+        parsed = dt.datetime.strptime(  # noqa: DTZ007 - UTC is attached below
+            value, "%Y-%m-%dT%H:%M:%S.%fZ"
+        )
     except ValueError as exc:
         raise OwnershipError("OWNERSHIP_TIMESTAMP_INVALID") from exc
     return parsed.replace(tzinfo=dt.timezone.utc)
@@ -75,7 +79,7 @@ class OwnershipStore:
         self.crash_hook = crash_hook
 
     @classmethod
-    def open_existing(cls, run_root: Path) -> "OwnershipStore":
+    def open_existing(cls, run_root: Path) -> OwnershipStore:
         instance = cls.__new__(cls)
         instance.run_root = state.validate_owner_directory(Path(run_root))
         instance.root = state.validate_owner_directory(
@@ -194,9 +198,9 @@ class OwnershipStore:
             ):
                 raise OwnershipError("OWNERSHIP_OPERATION_ID_REUSE_CONFLICT")
             operations[event["operation_id"]] = event
-            if previous_event is not None:
+            if previous_event is not None and epoch == previous_epoch:
                 previous_record = previous_event["record"]
-                if epoch == previous_epoch and (
+                if (
                     record["issue_key"] != previous_record["issue_key"]
                     or record["actor"] != previous_record["actor"]
                     or record["run_id"] != previous_record["run_id"]
@@ -350,6 +354,29 @@ class OwnershipStore:
                 "conflict": "conflict",
             }[current["status"]]
             return OwnershipResult(disposition, current, tuple(history))
+
+    @contextmanager
+    def guard(
+        self,
+        issue_id: str,
+        run_directory: Path,
+        *,
+        epoch: int,
+        actor: str,
+    ) -> Iterator[OwnershipResult]:
+        """Hold the issue lock across an ownership-dependent external effect."""
+        state._opaque_utf8(actor, label="ACTOR", maximum=4096)
+        directory = self._existing_directory(issue_id)
+        with state.exclusive_lock(
+            directory / "lock", root=self.run_root, create=False, hook=self.crash_hook
+        ):
+            history, loaded = self._read_unlocked(directory, issue_id, reconcile=False)
+            current, _secret = self._require_capability(
+                issue_id, run_directory, epoch, history, loaded
+            )
+            if current["actor"] != actor:
+                raise OwnershipError("OWNERSHIP_ACTOR_MISMATCH", status="conflict")
+            yield OwnershipResult("held", current, tuple(history))
 
     def acquire(
         self,
@@ -544,43 +571,90 @@ class OwnershipStore:
             directory / "lock", root=self.run_root, hook=self.crash_hook
         ):
             history, loaded = self._read_unlocked(directory, issue_id)
-            manifest, secret = self._run(run_directory)
-            if loaded is not None and loaded["status"] in {
-                "release_prepared",
-                "released",
-            }:
-                expected_token = state.sha256_bytes(
-                    derive_token(secret, issue_id, epoch)
-                )
-                same_release = (
-                    loaded["run_id"] == manifest["run_id"]
-                    and loaded["epoch"] == epoch
-                    and hmac.compare_digest(loaded["token_sha256"], expected_token)
-                    and history[-1]["operation_id"] == operation_id
-                )
-                if not same_release:
-                    raise OwnershipError("OWNERSHIP_NOT_ACTIVE", status="unknown")
-                if loaded["status"] == "released":
-                    return OwnershipResult("released", loaded, tuple(history))
-                released = {**loaded, "status": "released"}
-                self._append_event(
-                    directory, history, released, operation_id, timestamp
-                )
-                self._publish_current(directory, released)
-                return OwnershipResult("released", released, tuple(history))
-            current, _secret = self._require_capability(
-                issue_id, run_directory, epoch, history, loaded
+            return self._release_unlocked(
+                directory,
+                issue_id,
+                run_directory,
+                epoch,
+                operation_id,
+                current_time,
+                timestamp,
+                history,
+                loaded,
             )
-            if current_time > _parse_time(current["lease_expires_at"]):
-                raise OwnershipError("OWNERSHIP_LEASE_EXPIRED", status="unknown")
-            prepared = {
-                **current,
-                "status": "release_prepared",
-                "renewed_at": timestamp,
-            }
-            self._append_event(directory, history, prepared, operation_id, timestamp)
-            self._publish_current(directory, prepared)
-            released = {**prepared, "status": "released"}
+
+    @contextmanager
+    def released_guard(
+        self,
+        issue_id: str,
+        run_directory: Path,
+        *,
+        epoch: int,
+        operation_id: str,
+        now: dt.datetime | None = None,
+    ) -> Iterator[OwnershipResult]:
+        """Record release, then retain the issue lock through the caller's effect."""
+        _valid_hash(operation_id, "OWNERSHIP_OPERATION_ID_INVALID")
+        directory = self._directory(issue_id)
+        current_time = _now(now)
+        timestamp = state.utc_timestamp(current_time)
+        with state.exclusive_lock(
+            directory / "lock", root=self.run_root, hook=self.crash_hook
+        ):
+            history, loaded = self._read_unlocked(directory, issue_id)
+            yield self._release_unlocked(
+                directory,
+                issue_id,
+                run_directory,
+                epoch,
+                operation_id,
+                current_time,
+                timestamp,
+                history,
+                loaded,
+            )
+
+    def _release_unlocked(
+        self,
+        directory: Path,
+        issue_id: str,
+        run_directory: Path,
+        epoch: int,
+        operation_id: str,
+        current_time: dt.datetime,
+        timestamp: str,
+        history: list[dict[str, Any]],
+        loaded: dict[str, Any] | None,
+    ) -> OwnershipResult:
+        manifest, secret = self._run(run_directory)
+        if loaded is not None and loaded["status"] in {
+            "release_prepared",
+            "released",
+        }:
+            expected_token = state.sha256_bytes(derive_token(secret, issue_id, epoch))
+            same_release = (
+                loaded["run_id"] == manifest["run_id"]
+                and loaded["epoch"] == epoch
+                and hmac.compare_digest(loaded["token_sha256"], expected_token)
+                and history[-1]["operation_id"] == operation_id
+            )
+            if not same_release:
+                raise OwnershipError("OWNERSHIP_NOT_ACTIVE", status="unknown")
+            if loaded["status"] == "released":
+                return OwnershipResult("released", loaded, tuple(history))
+            released = {**loaded, "status": "released"}
             self._append_event(directory, history, released, operation_id, timestamp)
             self._publish_current(directory, released)
             return OwnershipResult("released", released, tuple(history))
+        current, _secret = self._require_capability(
+            issue_id, run_directory, epoch, history, loaded
+        )
+        if current_time > _parse_time(current["lease_expires_at"]):
+            raise OwnershipError("OWNERSHIP_LEASE_EXPIRED", status="unknown")
+        prepared = {**current, "status": "release_prepared", "renewed_at": timestamp}
+        self._append_event(directory, history, prepared, operation_id, timestamp)
+        self._publish_current(directory, prepared)
+        released = {**prepared, "status": "released"}
+        self._append_event(directory, history, released, operation_id, timestamp)
+        self._publish_current(directory, released)
+        return OwnershipResult("released", released, tuple(history))

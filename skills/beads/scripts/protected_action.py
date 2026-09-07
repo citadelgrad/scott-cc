@@ -30,8 +30,9 @@ after every binding check has already passed.
 from __future__ import annotations
 
 import sys
+from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
-from typing import Any, Callable, Mapping, Sequence
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -134,6 +135,42 @@ def _sanitize_receipt(
         evidence["summary"] = _sanitize_field(summary, sensitive)
     sanitized["evidence"] = evidence
     return sanitized
+
+
+def validate_harness_receipt(
+    pending_action: Mapping[str, Any],
+    receipt: Mapping[str, Any],
+    *,
+    sensitive: safe_output.SensitiveSet = direct_operation.NO_SENSITIVE,
+) -> dict[str, Any]:
+    """Validate canonical action identity and receipt bindings for any variant."""
+    _require_valid("pending-action-v1.schema.json", pending_action)
+    _require_valid("harness-receipt-v1.schema.json", receipt)
+    pending_without_id = dict(pending_action)
+    action_id = pending_without_id.pop("action_id")
+    expected_payload_sha = state.sha256_bytes(
+        state.canonical_payload_bytes(pending_action["payload"])
+    )
+    expected_action_id = state.sha256_bytes(
+        state.canonical_payload_bytes(pending_without_id)
+    )
+    if (
+        pending_action["payload_sha256"] != expected_payload_sha
+        or action_id != expected_action_id
+    ):
+        raise ProtectedActionError("PENDING_ACTION_IDENTITY_MISMATCH")
+    if receipt.get("receipt_variant") != pending_action.get("required_receipt_variant"):
+        raise ProtectedActionError("RECEIPT_VARIANT_MISMATCH")
+    if receipt.get("operation_id") != pending_action.get("operation_id"):
+        raise ProtectedActionError("RECEIPT_OPERATION_MISMATCH")
+    if receipt.get("target_sha256") != pending_action.get("target_sha256"):
+        raise ProtectedActionError("RECEIPT_TARGET_MISMATCH")
+    if (
+        receipt.get("action_id") != action_id
+        or receipt.get("action_sha256") != action_id
+    ):
+        raise ProtectedActionError("RECEIPT_ACTION_MISMATCH")
+    return _sanitize_receipt(receipt, sensitive=sensitive)
 
 
 def _pending_action(
@@ -344,20 +381,12 @@ def resolve_protected_action(
     if already_resolved:
         raise ProtectedActionError("OPERATION_ALREADY_RESOLVED", status=CONFLICT)
 
-    _require_valid("harness-receipt-v1.schema.json", receipt)
-    if receipt.get("receipt_variant") != pending_action.get("required_receipt_variant"):
-        raise ProtectedActionError("RECEIPT_VARIANT_MISMATCH")
+    receipt = validate_harness_receipt(pending_action, receipt, sensitive=sensitive)
     if (
         receipt.get("operation_id") != operation_id
         or pending_action.get("operation_id") != operation_id
     ):
         raise ProtectedActionError("RECEIPT_OPERATION_MISMATCH")
-    if receipt.get("target_sha256") != pending_action.get("target_sha256"):
-        raise ProtectedActionError("RECEIPT_TARGET_MISMATCH")
-    if receipt.get("action_sha256") != pending_action.get("action_id"):
-        raise ProtectedActionError("RECEIPT_ACTION_MISMATCH")
-
-    receipt = _sanitize_receipt(receipt, sensitive=sensitive)
 
     # The probe actually run is the one committed at prepare time (its
     # descriptor), never one supplied fresh at resolve time — otherwise a

@@ -18,9 +18,10 @@ import functools
 import json
 import shutil
 import sys
+from collections.abc import Callable, Mapping, Sequence
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Mapping, Sequence
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).parent))
 import beads_ownership
@@ -33,6 +34,7 @@ import direct_operation
 import operation_result
 import protected_action
 import reconcile_run
+import schema_runtime
 
 # ---------------------------------------------------------------------------
 # Legacy Task-8 surface: status and filesystem-only recover. Unmodified from
@@ -412,9 +414,19 @@ def _handle_action_resolve(
 ) -> operation_result.OperationResult:
     data = _load_json_input(args.input)
     _require_fields(data, _ACTION_RESOLVE_FIELDS)
+    schema_runtime.require_valid(
+        "pending-action-v1.schema.json", data["pending_action"]
+    )
+    schema_runtime.require_valid("harness-receipt-v1.schema.json", data["receipt"])
+    action = data["pending_action"]["action"]
     manifest = state.load_run_manifest(args.run_dir)
     context = direct_operation.open_run(args.run_dir)
-    resolution = protected_action.resolve_protected_action(
+    resolver = (
+        protected_action.resolve_protected_action
+        if action == "protected_harness_effect"
+        else coordinator_tracker.resolve_harness_receipt
+    )
+    resolution = resolver(
         context,
         prepared=data["prepared"],
         pending_action=data["pending_action"],
@@ -562,12 +574,27 @@ def _handle_tracker_update(
     manifest = state.load_run_manifest(args.run_dir)
     context = direct_operation.open_run(args.run_dir)
     ownership = beads_ownership.OwnershipStore(args.run_dir.parent)
-    results = coordinator_tracker.claim_front(
-        context,
-        ownership=ownership,
-        issues=list(data["issues"]),
-        actor=args.actor,
-    )
+    action = data.get("action", "claim")
+    if action == "claim":
+        results = coordinator_tracker.claim_front(
+            context,
+            ownership=ownership,
+            issues=list(data["issues"]),
+            actor=args.actor,
+        )
+    elif action == "close":
+        _require_fields(data, ("reason",))
+        if not isinstance(data["reason"], str) or not data["reason"]:
+            raise _CliInputError("INPUT_INVALID")
+        results = coordinator_tracker.close_lanes(
+            context,
+            ownership=ownership,
+            issues=list(data["issues"]),
+            actor=args.actor,
+            reason=data["reason"],
+        )
+    else:
+        raise _CliInputError("INPUT_INVALID")
     candidate = _base_envelope(
         "execute_set",
         manifest,
@@ -779,9 +806,26 @@ _FINISH_FIELDS = (
 )
 
 
+_TERMINAL_RUN_STATUSES = frozenset(
+    {
+        "completed",
+        "partially_completed",
+        "blocked",
+        "human_required",
+        "budget_exhausted",
+        "circuit_broken",
+        "inconclusive",
+        "cancelled",
+        "error",
+    }
+)
+
+
 def _handle_finish(args: argparse.Namespace) -> operation_result.OperationResult:
     data = _load_json_input(args.input)
     _require_fields(data, _FINISH_FIELDS)
+    if data["terminal_status"] not in _TERMINAL_RUN_STATUSES:
+        raise _CliInputError("INPUT_INVALID")
     manifest = state.load_run_manifest(args.run_dir)
     request = state.StartRunInput(
         request_id=manifest["request_id"],
@@ -796,20 +840,13 @@ def _handle_finish(args: argparse.Namespace) -> operation_result.OperationResult
         authority_snapshot_sha256=data["authority_snapshot_sha256"],
         workspace_identity_sha256=manifest["workspace_identity_sha256"],
     )
-    callbacks = coordinator_tracker.pointer_callbacks(request, actor=args.actor)
-    pointer = {
-        "schema_version": "beads.run-pointer.v1",
-        "run_id": manifest["run_id"],
-        "ownership_epoch": data["ownership_epoch"],
-        "status": data["terminal_status"],
-    }
-    before = callbacks.observe(pointer)
-    if before.classification == direct_operation.INTENDED_EFFECT_PRESENT:
-        observation = before
-    else:
-        observation = callbacks.publish(pointer)
-    raw_status = direct_operation.CLASSIFICATION_STATUS.get(
-        observation.classification, direct_operation.UNKNOWN
+    outcome = coordinator_tracker.finish_run(
+        request,
+        run_directory=args.run_dir,
+        scope_issue_ids=list(data["scope_issue_ids"]),
+        ownership_epoch=data["ownership_epoch"],
+        terminal_status=data["terminal_status"],
+        actor=args.actor,
     )
     candidate = _base_envelope(
         "finish",
@@ -818,11 +855,11 @@ def _handle_finish(args: argparse.Namespace) -> operation_result.OperationResult
         requested=["read", "local_write"],
         exercised=["read", "local_write"],
     )
-    candidate["status"] = _map_direct_status(raw_status)
+    candidate["status"] = _map_direct_status(outcome.status)
     if candidate["status"] != "success":
-        candidate["error_code"] = raw_status
+        candidate["error_code"] = outcome.error_code or outcome.status
         candidate["coverage_gaps"] = [
-            _diagnostic("TERMINAL_POINTER_UNCONFIRMED", "finish_unconfirmed")
+            _diagnostic(candidate["error_code"], "finish_incomplete")
         ]
         candidate["safe_next_action"] = _diagnostic(
             "RECONCILE_TERMINAL_POINTER", "finish_next_action"

@@ -30,22 +30,28 @@ its own ``_observe`` helper).
 from __future__ import annotations
 
 import sys
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Mapping, Sequence
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).parent))
 
 import beads_ownership
 import coordinator_state as state
 import direct_operation
+import protected_action
 import safe_bd
 import schema_runtime
 
 __all__ = [
+    "FinishRunResult",
     "LaneClaimResult",
     "claim_front",
+    "close_lanes",
+    "finish_run",
     "pointer_callbacks",
+    "resolve_harness_receipt",
     "start_run",
 ]
 
@@ -180,6 +186,13 @@ def pointer_callbacks(
     def publish(pointer: Mapping[str, object]) -> state.PointerObservation:
         run_directory = run_root / str(pointer["run_id"])
         context = direct_operation.open_run(run_directory, crash_hook=crash_hook)
+        observed_before, _classification = _read(pointer)
+        prestate = (
+            dict(observed_before)
+            if isinstance(observed_before, Mapping)
+            and observed_before.get("status") == "terminal"
+            else direct_operation.ABSENT
+        )
         value = state.canonical_payload_bytes(dict(pointer)).decode("utf-8")
         raw_ownership_epoch = pointer.get("ownership_epoch")
         ownership_epoch = (
@@ -202,7 +215,7 @@ def pointer_callbacks(
                 profile="issue_get",
                 arguments={"issue_id": root_issue_id},
                 intended=dict(pointer),
-                prestate=direct_operation.ABSENT,
+                prestate=prestate,
                 select=lambda data: _select_pointer(data, issue_id=root_issue_id),
             ),
             # The marker note exists to guard non-idempotent effects across
@@ -255,6 +268,363 @@ def start_run(
     if secret_factory is not None:
         kwargs["secret_factory"] = secret_factory
     return state.bootstrap_run(request, callbacks, **kwargs)
+
+
+def resolve_harness_receipt(
+    context: direct_operation.RunContext,
+    *,
+    prepared: Mapping[str, Any],
+    pending_action: Mapping[str, Any],
+    receipt: Mapping[str, Any],
+    sensitive: Any = direct_operation.NO_SENSITIVE,
+) -> dict[str, Any]:
+    """Persist a matching receipt for a non-protected harness-only action."""
+    action = pending_action.get("action")
+    if action not in {
+        "hermes_dispatch",
+        "hermes_control",
+        "review_request",
+        "durable_executor_launch",
+    }:
+        raise protected_action.ProtectedActionError("ACTION_RECEIPT_ROUTE_INVALID")
+    sanitized = protected_action.validate_harness_receipt(
+        pending_action, receipt, sensitive=sensitive
+    )
+    schema_runtime.require_valid(
+        "operation-journal-event-v1.schema.json", dict(prepared)
+    )
+    if any(
+        prepared.get(field) != pending_action.get(field)
+        for field in ("operation_id", "run_id", "issue_id", "ownership_epoch")
+    ):
+        raise protected_action.ProtectedActionError("ACTION_PREPARED_MISMATCH")
+    records = context.journal.read().records
+    exact_prepared = [
+        record
+        for record in records
+        if record.get("phase") == "PREPARED"
+        and record.get("operation_id") == pending_action["operation_id"]
+    ]
+    if len(exact_prepared) != 1 or exact_prepared[0] != dict(prepared):
+        raise protected_action.ProtectedActionError("ACTION_PREPARED_NOT_FOUND")
+    if any(
+        record.get("phase") == "RESOLUTION"
+        and record.get("operation_id") == pending_action["operation_id"]
+        for record in records
+    ):
+        raise protected_action.ProtectedActionError("OPERATION_ALREADY_RESOLVED")
+
+    outcome = sanitized["outcome"]
+    status = {
+        "applied": direct_operation.APPLIED,
+        "not_applied": direct_operation.NOT_APPLIED,
+        "rejected": direct_operation.NOT_APPLIED,
+        "unknown": direct_operation.UNKNOWN,
+    }[outcome]
+    if status == direct_operation.APPLIED and (
+        sanitized.get("observed_sha256") != pending_action["target_sha256"]
+    ):
+        status = direct_operation.CONFLICT
+    evidence_directory = context.run_directory / "_action_receipts"
+    state.ensure_owner_directory(evidence_directory, root=context.run_directory)
+    evidence_path = evidence_directory / f"{pending_action['operation_id']}.json"
+    evidence_raw = state.canonical_bytes(sanitized)
+    state.atomic_write(
+        evidence_path,
+        evidence_raw,
+        root=context.run_directory,
+        max_bytes=direct_operation.MAX_EVIDENCE_BYTES,
+    )
+    evidence_sha = state.sha256_bytes(evidence_raw)
+    resolution = direct_operation.resolution_event(
+        dict(prepared),
+        status=status,
+        observed_post_state_sha256=sanitized.get("observed_sha256"),
+        readback_evidence_path=evidence_path,
+        readback_evidence_sha256=evidence_sha,
+        timestamp=direct_operation.utc_now(),
+        error_code=None
+        if status == direct_operation.APPLIED
+        else f"HARNESS_ACTION_{status}",
+        template_id="harness_action_unresolved",
+        field_path="/action",
+    )
+    context.journal.append(resolution, hook=context.crash_hook)
+    return {
+        "status": status,
+        "classification": (
+            direct_operation.INTENDED_EFFECT_PRESENT
+            if status == direct_operation.APPLIED
+            else direct_operation.PRESTATE_UNCHANGED
+            if status == direct_operation.NOT_APPLIED
+            else direct_operation.INSUFFICIENT_OBSERVATION
+            if status == direct_operation.UNKNOWN
+            else direct_operation.CONFLICTING_EFFECT
+        ),
+        "error_code": None
+        if status == direct_operation.APPLIED
+        else f"HARNESS_ACTION_{status}",
+        "resolution": resolution,
+        "receipt": sanitized,
+    }
+
+
+@dataclass(frozen=True)
+class FinishRunResult:
+    status: str
+    classification: str | None
+    error_code: str | None
+
+
+def _terminal_request_mapping(
+    request: state.StartRunInput, *, run_id: str, crash_hook
+) -> None:
+    root = Path(request.run_root)
+    requests_root = root / "_requests"
+    mapping_path = requests_root / f"{state.request_key(request.request_id)}.json"
+    with state.exclusive_lock(requests_root / ".lock", root=root, hook=crash_hook):
+        mapping = state._read_request_record(mapping_path, requests_root)
+        if mapping["run_id"] != run_id:
+            raise state.StateError("REQUEST_MAPPING_CONFLICT", status="conflict")
+        if mapping["status"] == "terminal":
+            return
+        if mapping["status"] not in {"active", "recovery_required"}:
+            raise state.StateError("REQUEST_NOT_ACTIVE", status="conflict")
+        state._write_request_record(
+            mapping_path,
+            requests_root,
+            {**mapping, "status": "terminal"},
+            crash_hook,
+        )
+
+
+def _validate_finish_request(request: state.StartRunInput, *, run_id: str) -> str:
+    """Bind finish's resupplied fields to the immutable start request."""
+    root = Path(request.run_root)
+    requests_root = root / "_requests"
+    mapping_path = requests_root / f"{state.request_key(request.request_id)}.json"
+    mapping = state._read_request_record(mapping_path, requests_root)
+    start_input = state._validate_start_input(request)
+    start_sha256 = state.sha256_bytes(state.canonical_payload_bytes(start_input))
+    if mapping["run_id"] != run_id or mapping["start_input_v1_sha256"] != start_sha256:
+        raise state.StateError("FINISH_REQUEST_MISMATCH", status="conflict")
+    if mapping["status"] not in {"active", "recovery_required", "terminal"}:
+        raise state.StateError("FINISH_REQUEST_NOT_ACTIVE", status="conflict")
+    return str(mapping["status"])
+
+
+def _accept_phase_checkpoint(
+    context: direct_operation.RunContext,
+    checkpoint: Mapping[str, Any],
+    *,
+    phase: str,
+    issues: Mapping[str, Any] | None = None,
+) -> Mapping[str, Any]:
+    current = context.checkpoints.current(rebuild_pointer=True)
+    candidate = dict(checkpoint)
+    candidate.update(
+        generation=current.generation + 1,
+        phase=phase,
+        issues=dict(issues if issues is not None else checkpoint["issues"]),
+        previous_checkpoint_sha256=current.generation_sha256,
+        created_at=direct_operation.utc_now(),
+    )
+    return context.checkpoints.accept(candidate).value
+
+
+def finish_run(
+    request: state.StartRunInput,
+    *,
+    run_directory: Path,
+    scope_issue_ids: Sequence[str],
+    ownership_epoch: int,
+    terminal_status: str,
+    actor: str,
+    runner: Callable[..., Any] | None = None,
+    sensitive: Any = direct_operation.NO_SENSITIVE,
+    crash_hook: Callable[[str], None] = state.NOOP_HOOK,
+) -> FinishRunResult:
+    """Complete active-to-terminal pointer succession without unsafe shortcuts."""
+    dispatch = runner if runner is not None else safe_bd.run_profile
+    run_directory = state.validate_owner_directory(
+        Path(run_directory), root=Path(request.run_root)
+    )
+    context = direct_operation.open_run(run_directory, crash_hook=crash_hook)
+    if context.run_id != run_directory.name:
+        raise state.StateError("FINISH_RUN_ID_MISMATCH", status="conflict")
+    _validate_finish_request(request, run_id=context.run_id)
+    if tuple(scope_issue_ids) != request.scope_issue_ids:
+        raise state.StateError("FINISH_REQUEST_MISMATCH", status="conflict")
+    ownership = beads_ownership.OwnershipStore(
+        Path(request.run_root), crash_hook=crash_hook
+    )
+    callbacks = pointer_callbacks(
+        request,
+        actor=actor,
+        runner=dispatch,
+        sensitive=sensitive,
+        crash_hook=crash_hook,
+    )
+    terminal_pointer: dict[str, object] = {
+        "schema_version": "beads.run-pointer.v1",
+        "run_id": context.run_id,
+        "ownership_epoch": ownership_epoch,
+        "status": "terminal",
+    }
+    with state.exclusive_lock(
+        run_directory / "run.lock", root=run_directory, hook=crash_hook
+    ):
+        observed = callbacks.observe(terminal_pointer)
+        active = observed.observed_value
+        pointer_is_terminal = (
+            observed.classification == direct_operation.INTENDED_EFFECT_PRESENT
+        )
+        pointer_is_active = (
+            observed.classification == direct_operation.CONFLICTING_EFFECT
+            and isinstance(active, Mapping)
+            and active.get("run_id") == context.run_id
+            and active.get("ownership_epoch") == ownership_epoch
+            and active.get("status") == "active"
+        )
+        if not pointer_is_terminal and not pointer_is_active:
+            status = (
+                direct_operation.UNKNOWN
+                if observed.classification == direct_operation.INSUFFICIENT_OBSERVATION
+                else direct_operation.CONFLICT
+            )
+            return FinishRunResult(
+                status, observed.classification, "TERMINAL_POINTER_PRESTATE_INVALID"
+            )
+
+        checkpoint = context.checkpoints.current(rebuild_pointer=True).value
+        if (
+            checkpoint["phase"]
+            in {
+                "completed",
+                "partially_completed",
+                "blocked",
+                "human_required",
+                "budget_exhausted",
+                "circuit_broken",
+                "inconclusive",
+                "cancelled",
+                "error",
+            }
+            and checkpoint["phase"] != terminal_status
+        ):
+            raise state.StateError("FINISH_TERMINAL_STATUS_CONFLICT", status="conflict")
+        for issue_id in scope_issue_ids:
+            entry = checkpoint["issues"].get(issue_id)
+            if not isinstance(entry, Mapping):
+                raise state.StateError("FINISH_LANE_STATE_MISSING", status="conflict")
+            attempt_state = entry.get("attempt", {}).get("state")
+            if attempt_state not in {"joined", "failed", "cancelled", "unknown"}:
+                raise state.StateError("FINISH_LANE_NONTERMINAL", status="conflict")
+            if (
+                terminal_status == "completed"
+                and entry.get("tracker_status_observed") != "closed"
+            ):
+                raise state.StateError("FINISH_LANE_NOT_CLOSED", status="conflict")
+            epoch = entry.get("ownership", {}).get("epoch")
+            if not isinstance(epoch, int):
+                raise state.StateError(
+                    "FINISH_LANE_OWNERSHIP_INVALID", status="conflict"
+                )
+            held = ownership.inspect_readonly(issue_id)
+            if held.disposition not in {"held", "released"}:
+                raise state.StateError(
+                    "FINISH_LANE_OWNERSHIP_INVALID", status="conflict"
+                )
+            if held.record is None or held.record.get("epoch") != epoch:
+                raise state.StateError(
+                    "FINISH_LANE_OWNERSHIP_INVALID", status="conflict"
+                )
+
+        if checkpoint["phase"] != terminal_status:
+            checkpoint = _accept_phase_checkpoint(
+                context, checkpoint, phase=terminal_status
+            )
+        crash_hook("after_finish_checkpoint")
+
+        active_pointer = {
+            "schema_version": "beads.run-pointer.v1",
+            "run_id": context.run_id,
+            "ownership_epoch": ownership_epoch,
+            "status": "active",
+        }
+        value = state.canonical_payload_bytes(terminal_pointer).decode("utf-8")
+        operation = direct_operation.DirectOperation(
+            caller_key=f"run-pointer/{state.sha256_bytes(state.canonical_payload_bytes(terminal_pointer))}",
+            effect_type="TRACKER_RUN_POINTER",
+            target_identity=f"bd://issue/{request.root_issue_id}#run-pointer",
+            issue_id=request.root_issue_id,
+            ownership_epoch=ownership_epoch,
+            arguments={"issue_id": request.root_issue_id, "value": value},
+            readback=direct_operation.Readback(
+                profile="issue_get",
+                arguments={"issue_id": request.root_issue_id},
+                intended=terminal_pointer,
+                prestate=active_pointer,
+                select=lambda data: _select_pointer(
+                    data, issue_id=request.root_issue_id
+                ),
+            ),
+            marker_enabled=False,
+        )
+        pending = direct_operation.prepare(
+            context,
+            operation,
+            actor=actor,
+            runner=dispatch,
+            sensitive=sensitive,
+        )
+        crash_hook("after_finish_pointer_prepared")
+
+        for issue_id in sorted(scope_issue_ids, key=state.issue_key):
+            entry = checkpoint["issues"][issue_id]
+            epoch = entry["ownership"]["epoch"]
+            released = ownership.release(
+                issue_id,
+                run_directory,
+                epoch=epoch,
+                operation_id=_release_operation_id(
+                    run_id=context.run_id, issue_id=issue_id, actor=actor, epoch=epoch
+                ),
+            )
+            if released.disposition != "released":
+                raise state.StateError(
+                    "FINISH_LANE_RELEASE_UNCONFIRMED", status="unknown"
+                )
+        crash_hook("after_finish_lane_releases")
+
+        with ownership.released_guard(
+            request.root_issue_id,
+            run_directory,
+            epoch=ownership_epoch,
+            operation_id=_release_operation_id(
+                run_id=context.run_id,
+                issue_id=request.root_issue_id,
+                actor=actor,
+                epoch=ownership_epoch,
+            ),
+        ) as root_released:
+            if root_released.disposition != "released":
+                raise state.StateError(
+                    "FINISH_ROOT_RELEASE_UNCONFIRMED", status="unknown"
+                )
+            crash_hook("after_finish_root_release_recorded")
+            transition = direct_operation.resume(pending)
+            if transition.status != direct_operation.APPLIED:
+                return FinishRunResult(
+                    transition.status, transition.classification, transition.error_code
+                )
+            crash_hook("after_finish_pointer")
+        crash_hook("after_finish_root_lock_release")
+        _terminal_request_mapping(request, run_id=context.run_id, crash_hook=crash_hook)
+        crash_hook("after_finish_request_terminal")
+        return FinishRunResult(
+            direct_operation.APPLIED, transition.classification, None
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -374,6 +744,155 @@ def _acquire_local_ownership(
     if acquired.disposition != "held" or acquired.record is None:
         return "conflict", None
     return "held", acquired.record["epoch"]
+
+
+def close_lanes(
+    context: direct_operation.RunContext,
+    *,
+    ownership: beads_ownership.OwnershipStore,
+    issues: Sequence[str],
+    actor: str,
+    reason: str,
+    runner: Callable[..., Any] | None = None,
+    sensitive: Any = direct_operation.NO_SENSITIVE,
+) -> list[LaneClaimResult]:
+    """Close only parent-owned, independently verified, integrated lanes.
+
+    Eligibility comes exclusively from the current accepted checkpoint and is
+    rechecked together with cooperative ownership immediately before each
+    guarded close. Mixed batches remain issue-specific: an ineligible lane is
+    refused without preventing an eligible sibling from closing.
+    """
+    dispatch = runner if runner is not None else safe_bd.run_profile
+    results: list[LaneClaimResult] = []
+    with state.exclusive_lock(
+        context.run_directory / "run.lock",
+        root=context.run_directory,
+        hook=context.crash_hook,
+    ):
+        checkpoint = context.checkpoints.current(rebuild_pointer=True).value
+        entries = checkpoint["issues"]
+        root_entry = entries.get(context.manifest["root_issue_id"])
+        root_actor = (
+            root_entry.get("ownership", {}).get("actor")
+            if isinstance(root_entry, Mapping)
+            else None
+        )
+        if root_actor is not None and root_actor != actor:
+            raise direct_operation.DirectOperationError(
+                "TRACKER_CLOSE_PARENT_REQUIRED", status=direct_operation.CONFLICT
+            )
+        for issue_id in issues:
+            entry = entries.get(issue_id)
+            ownership_entry = (
+                entry.get("ownership") if isinstance(entry, Mapping) else None
+            )
+            if (
+                not isinstance(ownership_entry, Mapping)
+                or ownership_entry.get("actor") != actor
+            ):
+                raise direct_operation.DirectOperationError(
+                    "TRACKER_CLOSE_PARENT_REQUIRED", status=direct_operation.CONFLICT
+                )
+            eligible = (
+                issue_id != context.manifest["root_issue_id"]
+                and entry.get("worker_result", {}).get("state") == "accepted"
+                and entry.get("worker_result", {}).get("outcome") == "completed"
+                and entry.get("artifact", {}).get("state") == "verified"
+                and entry.get("verification", {}).get("state") == "passed"
+                and entry.get("review", {}).get("state") in {"passed", "not_required"}
+                and entry.get("integration", {}).get("state") == "primary_integrated"
+                and entry.get("gate", {}).get("state") in {"none", "resolved"}
+            )
+            if not eligible:
+                results.append(
+                    LaneClaimResult(
+                        issue_id=issue_id,
+                        status="REFUSED",
+                        classification=None,
+                        ownership_epoch=None,
+                        error_code="TRACKER_CLOSE_LANE_NOT_ELIGIBLE",
+                    )
+                )
+                continue
+            epoch = ownership_entry.get("epoch")
+            if isinstance(epoch, bool) or not isinstance(epoch, int):
+                results.append(
+                    LaneClaimResult(
+                        issue_id=issue_id,
+                        status=direct_operation.CONFLICT,
+                        classification=None,
+                        ownership_epoch=None,
+                        error_code="TRACKER_CLOSE_OWNERSHIP_MISMATCH",
+                    )
+                )
+                continue
+            operation = direct_operation.DirectOperation(
+                caller_key=f"tracker-close/{context.run_id}/{issue_id}/{epoch}",
+                effect_type="TRACKER_CLOSE",
+                target_identity=f"bd://issue/{issue_id}",
+                issue_id=issue_id,
+                ownership_epoch=epoch,
+                arguments={"issue_id": issue_id, "reason": reason},
+                readback=direct_operation.Readback(
+                    profile="issue_get",
+                    arguments={"issue_id": issue_id},
+                    intended={"status": "closed"},
+                    prestate={"status": entry["tracker_status_observed"]},
+                ),
+            )
+            try:
+                with ownership.guard(
+                    issue_id,
+                    context.run_directory,
+                    epoch=epoch,
+                    actor=actor,
+                ):
+                    outcome = direct_operation.execute(
+                        context,
+                        operation,
+                        actor=actor,
+                        runner=dispatch,
+                        sensitive=sensitive,
+                    )
+            except beads_ownership.OwnershipError as exc:
+                status = (
+                    direct_operation.UNKNOWN
+                    if exc.status == "unknown"
+                    else direct_operation.CONFLICT
+                )
+                results.append(
+                    LaneClaimResult(
+                        issue_id=issue_id,
+                        status=status,
+                        classification=None,
+                        ownership_epoch=epoch if isinstance(epoch, int) else None,
+                        error_code="TRACKER_CLOSE_OWNERSHIP_MISMATCH",
+                    )
+                )
+                continue
+            if outcome.status == direct_operation.APPLIED:
+                updated_entries = dict(checkpoint["issues"])
+                updated_entry = dict(entry)
+                updated_entry["tracker_status_observed"] = "closed"
+                updated_entries[issue_id] = updated_entry
+                checkpoint = _accept_phase_checkpoint(
+                    context,
+                    checkpoint,
+                    phase=str(checkpoint["phase"]),
+                    issues=updated_entries,
+                )
+                entries = checkpoint["issues"]
+            results.append(
+                LaneClaimResult(
+                    issue_id=issue_id,
+                    status=outcome.status,
+                    classification=outcome.classification,
+                    ownership_epoch=epoch,
+                    error_code=outcome.error_code,
+                )
+            )
+    return results
 
 
 def claim_front(

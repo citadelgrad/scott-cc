@@ -23,9 +23,10 @@ import base64
 import hashlib
 import secrets
 import sys
+from collections.abc import Callable, Mapping, Sequence
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable, Mapping, Sequence, cast
+from typing import Any, cast
 
 ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS = ROOT / "skills" / "beads" / "scripts"
@@ -223,8 +224,10 @@ class CrashHook:
     attribute after the fact.
     """
 
-    def __init__(self, label: str) -> None:
+    def __init__(self, label: str, *, occurrence: int = 1) -> None:
         self.label = label
+        self.occurrence = occurrence
+        self.seen = 0
 
         class Crash(RuntimeError):
             pass
@@ -233,7 +236,9 @@ class CrashHook:
 
     def __call__(self, event: str) -> None:
         if event == self.label:
-            raise self.Crash(self.label)
+            self.seen += 1
+            if self.seen == self.occurrence:
+                raise self.Crash(self.label)
 
 
 def crash_after(label: str) -> CrashHook:
@@ -241,7 +246,7 @@ def crash_after(label: str) -> CrashHook:
     return CrashHook(label)
 
 
-def tracker_double(root_issue_id: str) -> tuple["FakeNative", dict[str, Any]]:
+def tracker_double(root_issue_id: str) -> tuple[FakeNative, dict[str, Any]]:
     """A tiny in-memory tracker double for root-pointer publish round trips.
 
     Round-trips whatever ``set_run_pointer`` writes back out of the next

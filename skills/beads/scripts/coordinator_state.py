@@ -17,9 +17,10 @@ import os
 import re
 import secrets
 import stat
+from collections.abc import Callable, Iterator, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Iterator, Mapping
+from typing import Any
 
 import schema_runtime
 
@@ -613,7 +614,7 @@ class OperationJournal:
         self.path = self.run_directory / "operations.jsonl"
 
     @classmethod
-    def create(cls, run_directory: Path) -> "OperationJournal":
+    def create(cls, run_directory: Path) -> OperationJournal:
         journal = cls(run_directory)
         if journal.path.exists():
             validate_owner_file(journal.path, root=run_directory)
@@ -635,53 +636,73 @@ class OperationJournal:
         *,
         hook: Callable[[str], None] = NOOP_HOOK,
     ) -> dict[str, Any]:
-        state = self.read()
-        if state.torn_tail is not None:
-            raise StateError("JOURNAL_TORN_TAIL", status="unknown")
-        candidate = dict(event)
-        operation_id = candidate.get("operation_id")
-        same_id = [
-            record for record in state.records if record["operation_id"] == operation_id
-        ]
-        if candidate.get("phase") == "RESOLUTION":
-            prepared = [record for record in same_id if record["phase"] == "PREPARED"]
-            if len(prepared) != 1 or any(
-                candidate.get(field) != prepared[0].get(field)
-                for field in self._RESOLUTION_BINDING_FIELDS
-            ):
-                raise StateError("OPERATION_RESOLUTION_MISMATCH")
-        if same_id:
-            same_phase = [
+        # Reading the previous digest and appending its successor is one
+        # transaction. O_APPEND only protects each write's file offset; it does
+        # not prevent two coordinator processes from building sibling records
+        # from the same predecessor.
+        with exclusive_lock(
+            self.run_directory / "operations.lock",
+            root=self.run_directory,
+            hook=hook,
+        ):
+            state = self.read()
+            if state.torn_tail is not None:
+                raise StateError("JOURNAL_TORN_TAIL", status="unknown")
+            candidate = dict(event)
+            operation_id = candidate.get("operation_id")
+            same_id = [
                 record
-                for record in same_id
-                if record["phase"] == candidate.get("phase")
+                for record in state.records
+                if record["operation_id"] == operation_id
             ]
-            if same_phase:
-                original = same_phase[0]
-                comparable = dict(candidate)
-                comparable["previous_event_sha256"] = original["previous_event_sha256"]
-                if comparable == original:
-                    return original
-                raise StateError("OPERATION_ID_REUSE_CONFLICT")
-            phases = {record["phase"] for record in same_id}
-            if candidate.get("phase") != "RESOLUTION" or phases != {"PREPARED"}:
-                raise StateError("OPERATION_ID_REUSE_CONFLICT")
-        candidate["previous_event_sha256"] = state.last_sha256
-        schema_runtime.require_valid(
-            "operation-journal-event-v1.schema.json", candidate
-        )
-        raw = canonical_bytes(candidate)
-        fd = os.open(
-            self.path, os.O_WRONLY | os.O_APPEND | getattr(os, "O_NOFOLLOW", 0)
-        )
-        try:
-            os.write(fd, raw)
-            hook("after_journal_write")
-            os.fsync(fd)
-            hook("after_journal_fsync")
-        finally:
-            os.close(fd)
-        return candidate
+            if candidate.get("phase") == "RESOLUTION":
+                prepared = [
+                    record for record in same_id if record["phase"] == "PREPARED"
+                ]
+                if len(prepared) != 1 or any(
+                    candidate.get(field) != prepared[0].get(field)
+                    for field in self._RESOLUTION_BINDING_FIELDS
+                ):
+                    raise StateError("OPERATION_RESOLUTION_MISMATCH")
+            if same_id:
+                same_phase = [
+                    record
+                    for record in same_id
+                    if record["phase"] == candidate.get("phase")
+                ]
+                if same_phase:
+                    original = same_phase[0]
+                    comparable = dict(candidate)
+                    comparable["previous_event_sha256"] = original[
+                        "previous_event_sha256"
+                    ]
+                    if comparable == original:
+                        return original
+                    raise StateError("OPERATION_ID_REUSE_CONFLICT")
+                phases = {record["phase"] for record in same_id}
+                if candidate.get("phase") != "RESOLUTION" or phases != {"PREPARED"}:
+                    raise StateError("OPERATION_ID_REUSE_CONFLICT")
+            candidate["previous_event_sha256"] = state.last_sha256
+            schema_runtime.require_valid(
+                "operation-journal-event-v1.schema.json", candidate
+            )
+            raw = canonical_bytes(candidate)
+            fd = os.open(
+                self.path, os.O_WRONLY | os.O_APPEND | getattr(os, "O_NOFOLLOW", 0)
+            )
+            try:
+                view = memoryview(raw)
+                while view:
+                    written = os.write(fd, view)
+                    if written <= 0:
+                        raise StateError("JOURNAL_WRITE_FAILED", status="unknown")
+                    view = view[written:]
+                hook("after_journal_write")
+                os.fsync(fd)
+                hook("after_journal_fsync")
+            finally:
+                os.close(fd)
+            return candidate
 
 
 def _filesystem_probe(path: str, digest: str) -> dict[str, Any]:
@@ -711,7 +732,7 @@ class CheckpointStore:
     @classmethod
     def open_existing(
         cls, run_directory: Path, journal: OperationJournal
-    ) -> "CheckpointStore":
+    ) -> CheckpointStore:
         instance = cls.__new__(cls)
         instance.run_directory = validate_owner_directory(run_directory)
         instance.journal = journal
@@ -1224,6 +1245,42 @@ def bootstrap_run(
         import beads_ownership
 
         owner_store = beads_ownership.OwnershipStore(root, crash_hook=crash_hook)
+        existing_pointer = callbacks.observe({})
+        if existing_pointer.classification == "insufficient_observation":
+            return BootstrapResult("recovery_required", run.name, run, None, None)
+        if existing_pointer.classification == "conflicting_effect":
+            pointer = existing_pointer.observed_value
+            if (
+                not isinstance(pointer, Mapping)
+                or pointer.get("schema_version") != "beads.run-pointer.v1"
+                or pointer.get("status") not in {"active", "terminal"}
+                or not isinstance(pointer.get("run_id"), str)
+                or isinstance(pointer.get("ownership_epoch"), bool)
+                or not isinstance(pointer.get("ownership_epoch"), int)
+            ):
+                return BootstrapResult("conflict", run.name, run, None, None)
+            pointer_run_id = pointer["run_id"]
+            assert isinstance(pointer_run_id, str)
+            if pointer_run_id != run.name:
+                if pointer["status"] == "active":
+                    return BootstrapResult("held", run.name, run, None, None)
+                try:
+                    prior_run = guarded_path(root, pointer_run_id, must_exist=True)
+                    prior_manifest = load_run_manifest(prior_run)
+                    prior_mapping_path = requests_root / (
+                        f"{request_key(prior_manifest['request_id'])}.json"
+                    )
+                    prior_mapping = _read_request_record(
+                        prior_mapping_path, requests_root
+                    )
+                except (KeyError, StateError):
+                    return BootstrapResult("conflict", run.name, run, None, None)
+                if (
+                    prior_manifest["root_issue_id"] != request.root_issue_id
+                    or prior_mapping["run_id"] != pointer["run_id"]
+                    or prior_mapping["status"] != "terminal"
+                ):
+                    return BootstrapResult("conflict", run.name, run, None, None)
         inspected = owner_store.inspect(request.root_issue_id)
         if (
             inspected.disposition == "held"
@@ -1515,12 +1572,14 @@ def bootstrap_run(
             ),
             None,
         )
+        before = callbacks.observe(pointer)
         expected_before = (
             existing_prepared["expected_pre_state_sha256"]
             if existing_prepared is not None
+            else before.state_sha256
+            if before.classification == "conflicting_effect"
             else GENESIS_SHA256
         )
-        before = callbacks.observe(pointer)
         _validate_pointer_observation(before, pointer, expected_before)
         prepared = existing_prepared or _prepared_event(
             run=run,

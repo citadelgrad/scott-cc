@@ -261,3 +261,183 @@ def test_missing_issues_field_exits_2_with_input_missing_fields(tmp_path, capsys
 
     assert exit_code == 2
     assert out["error_code"] == "INPUT_MISSING_FIELDS"
+
+
+def _checkpoint_entry(
+    run,
+    issue_id,
+    *,
+    verification="passed",
+    review="passed",
+    integration="primary_integrated",
+):
+    return {
+        "tracker_status_observed": "in_progress",
+        "readiness": {"state": "ready", "reason": ""},
+        "ownership": {
+            "state": "held",
+            "epoch": run["epochs"][issue_id],
+            "token_sha256": "a" * 64,
+            "actor": run["actor"],
+        },
+        "attempt": {
+            "state": "joined",
+            "attempt_id": "attempt-001",
+            "delegation_id": "delegation-1",
+            "subagent_id": None,
+            "child_session_id": None,
+        },
+        "worker_result": {
+            "state": "accepted",
+            "outcome": "completed",
+            "record_sha256": "b" * 64,
+        },
+        "artifact": {"state": "verified", "lane_freeze_sha256": "c" * 64},
+        "verification": {"state": verification, "record_sha256": "d" * 64},
+        "review": {
+            "state": review,
+            "record_sha256": "e" * 64 if review == "passed" else None,
+        },
+        "integration": {
+            "state": integration,
+            "candidate_sha256": "f" * 64,
+            "event_id": "1" * 64,
+        },
+        "gate": {"state": "none", "gate_id": None},
+        "packet_sha256": "2" * 64,
+        "result_sha256": "b" * 64,
+        "worktree": None,
+        "branch": None,
+        "base_sha": None,
+        "head_sha": None,
+    }
+
+
+def _accept_checkpoint(run, entries):
+    checkpoint = {
+        "schema_version": "beads.run-checkpoint.v1",
+        "run_id": run["run_id"],
+        "generation": 1,
+        "root_issue_id": ROOT_ISSUE,
+        "workspace": run["manifest"]["workspace"],
+        "workspace_identity_sha256": run["manifest"]["workspace_identity_sha256"],
+        "repository_root": run["manifest"]["repository_root"],
+        "coordinator_session_id": None,
+        "authority_snapshot_sha256": "0" * 64,
+        "phase": "active",
+        "budget": {
+            "max_parallel": 3,
+            "max_ready_fronts": 10,
+            "max_worker_attempts_per_issue": 2,
+            "max_nonprogress_rounds": 2,
+        },
+        "issues": entries,
+        "operation_journal_path": str(run["run_directory"] / "operations.jsonl"),
+        "issue_snapshot_sha256": "0" * 64,
+        "ready_front_sha256": "0" * 64,
+        "previous_checkpoint_sha256": bc.state.GENESIS_SHA256,
+        "created_at": common.now(),
+    }
+    run["checkpoints"].accept(checkpoint)
+
+
+def _applied(operation):
+    return bc.direct_operation.DirectOperationResult(
+        status=bc.direct_operation.APPLIED,
+        caller_key=operation.caller_key,
+        operation_id="3" * 64,
+        effect_type=operation.effect_type,
+        attempt_id="attempt-001",
+        classification=bc.direct_operation.INTENDED_EFFECT_PRESENT,
+        observed={"status": "closed"},
+        marker_present=True,
+        dispatched=True,
+        error_code=None,
+        prepared=None,
+        resolution=None,
+        evidence_path=None,
+    )
+
+
+def test_close_dispatches_only_verified_primary_integrated_lanes_in_a_mixed_batch(
+    tmp_path, monkeypatch, capsys
+):
+    run = common.make_run(
+        tmp_path, issue_ids=[LANE_A, LANE_B], root_issue_id=ROOT_ISSUE
+    )
+    _accept_checkpoint(
+        run,
+        {
+            LANE_A: _checkpoint_entry(run, LANE_A),
+            LANE_B: _checkpoint_entry(run, LANE_B, verification="failed"),
+        },
+    )
+    dispatched = []
+
+    def execute(_context, operation, **_kwargs):
+        dispatched.append(operation)
+        return _applied(operation)
+
+    monkeypatch.setattr(bc.direct_operation, "execute", execute)
+    input_path = tmp_path / "tracker-close.json"
+    _write_json(
+        input_path,
+        {"action": "close", "issues": [LANE_A, LANE_B], "reason": "verified"},
+    )
+
+    exit_code = bc.main(_argv(run, input_path))
+    out = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 1
+    assert out["status"] == "partial"
+    assert out["error_code"] == "TRACKER_CLOSE_LANE_NOT_ELIGIBLE"
+    assert [operation.issue_id for operation in dispatched] == [LANE_A]
+    assert dispatched[0].effect_type == "TRACKER_CLOSE"
+    assert dispatched[0].ownership_epoch == run["epochs"][LANE_A]
+
+
+def test_close_requires_the_run_parent_actor_and_dispatches_nothing_for_a_worker(
+    tmp_path, monkeypatch, capsys
+):
+    run = common.make_run(tmp_path, issue_ids=[LANE_A], root_issue_id=ROOT_ISSUE)
+    _accept_checkpoint(run, {LANE_A: _checkpoint_entry(run, LANE_A)})
+    called = False
+
+    def execute(*_args, **_kwargs):
+        nonlocal called
+        called = True
+        raise AssertionError("worker must not close")
+
+    monkeypatch.setattr(bc.direct_operation, "execute", execute)
+    input_path = tmp_path / "tracker-close.json"
+    _write_json(
+        input_path, {"action": "close", "issues": [LANE_A], "reason": "verified"}
+    )
+
+    exit_code = bc.main(_argv(run, input_path, actor="worker"))
+    out = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 4
+    assert out["error_code"] == "TRACKER_CLOSE_PARENT_REQUIRED"
+    assert called is False
+
+
+def test_successful_close_is_checkpointed_for_finish_recovery(
+    tmp_path, monkeypatch, capsys
+):
+    run = common.make_run(tmp_path, issue_ids=[LANE_A], root_issue_id=ROOT_ISSUE)
+    _accept_checkpoint(run, {LANE_A: _checkpoint_entry(run, LANE_A)})
+    monkeypatch.setattr(
+        bc.direct_operation,
+        "execute",
+        lambda _context, operation, **_kwargs: _applied(operation),
+    )
+    input_path = tmp_path / "tracker-close-checkpoint.json"
+    _write_json(
+        input_path, {"action": "close", "issues": [LANE_A], "reason": "verified"}
+    )
+
+    assert bc.main(_argv(run, input_path)) == 0
+    capsys.readouterr()
+    current = run["checkpoints"].current(rebuild_pointer=True).value
+    assert current["issues"][LANE_A]["tracker_status_observed"] == "closed"
