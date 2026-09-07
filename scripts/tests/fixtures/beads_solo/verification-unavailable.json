@@ -1,0 +1,9 @@
+{
+  "schema_version": "beads.solo-verification-fixture.v1",
+  "mode": "unavailable",
+  "verifier_name": "solo-verifier-disappears",
+  "expected_exit_code": 127,
+  "expected_status": "refused",
+  "expected_disposition": "reject",
+  "expected_coverage_gap": "REQUIRED_COMMAND_FAILED"
+}

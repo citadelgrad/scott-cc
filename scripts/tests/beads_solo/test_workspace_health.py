@@ -33,7 +33,9 @@ def _snapshot(directory):
     for root, _dirs, files in os.walk(directory):
         for name in sorted(files):
             path = os.path.join(root, name)
-            entries.append((os.path.relpath(path, directory), os.path.getsize(path)))
+            with open(path, "rb") as stream:
+                content_sha256 = hashlib.sha256(stream.read()).hexdigest()
+            entries.append((os.path.relpath(path, directory), content_sha256))
     return tuple(sorted(entries))
 
 
