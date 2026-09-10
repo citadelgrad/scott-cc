@@ -116,6 +116,26 @@ def test_frontmatter_enforces_agent_skills_character_limits(
     assert any("compatibility exceeds 500 characters" in error for error in errors)
 
 
+def test_frontmatter_requires_routes_in_hermes_visible_prefix(
+    tmp_path: Path, contract
+) -> None:
+    candidate = tmp_path / "beads"
+    shutil.copytree(SKILL_ROOT, candidate)
+    skill = candidate / "SKILL.md"
+    original = skill.read_text(encoding="utf-8")
+    skill.write_text(
+        original.replace(
+            "Use when bd/Beads: DAG, swarm, gate, push, secret, review.",
+            "Use when handling any substantial issue-tracked repository request.",
+            1,
+        ),
+        encoding="utf-8",
+    )
+
+    errors = contract.validate_package(candidate).errors
+    assert any("Hermes-visible description prefix" in error for error in errors)
+
+
 def test_hard_budget_fails_and_preferred_budget_only_warns(
     tmp_path: Path, contract
 ) -> None:

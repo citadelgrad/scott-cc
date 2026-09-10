@@ -1,8 +1,8 @@
 ---
 name: beads
 description: >-
-  Use when handling any nontrivial issue-tracked repository request where bd/Beads is named or trusted context
-  designates Beads as the tracker. Always load before answering, even when the request does not say Beads, for:
+  Use when bd/Beads: DAG, swarm, gate, push, secret, review. Also load for any nontrivial issue-tracked repository
+  request where trusted context designates Beads as the tracker, even when the request does not say Beads, for:
   creating, claiming, implementing, or closing issues; dependency readiness or stalled work; concurrent workers
   or swarms, ownership, lane isolation, capacity, partial failure, cancellation, or result verification; human or
   CI gates, grants,

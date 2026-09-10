@@ -12,6 +12,16 @@ from pathlib import Path
 BEADS_COMMIT = "6c124203e771433a3550c348771a5b5e27fd3c21"
 HERMES_COMMIT = "21b2095d00a98b8ad7b5c60b10587619c852cdb8"
 AGENT_SKILLS_COMMIT = "69ef37e9424c0a7ea9dd2293b559e43ec8176379"
+HERMES_DESCRIPTION_VISIBLE_CHARS = 57
+REQUIRED_VISIBLE_DESCRIPTION_TERMS = (
+    "bd/Beads",
+    "DAG",
+    "swarm",
+    "gate",
+    "push",
+    "secret",
+    "review",
+)
 SOURCE_BASELINE_SHA256 = (
     "24b39b6f8e75af3b2f09becc1af2d10a59a92a2af8222e6caeec3d4eaa1681c0"
 )
@@ -168,6 +178,17 @@ def _validate_frontmatter(text: str) -> list[str]:
     description = top.get("description", "")
     if not description.startswith("Use when"):
         errors.append("frontmatter description must start with 'Use when'")
+    visible_description = description[:HERMES_DESCRIPTION_VISIBLE_CHARS]
+    missing_visible_terms = [
+        term
+        for term in REQUIRED_VISIBLE_DESCRIPTION_TERMS
+        if term not in visible_description
+    ]
+    if missing_visible_terms:
+        errors.append(
+            "Hermes-visible description prefix is missing routing terms: "
+            + ", ".join(missing_visible_terms)
+        )
     for term in ("bd/Beads", "nontrivial", "unrelated", "ephemeral"):
         if term not in description:
             errors.append(f"frontmatter description must discriminate {term!r}")

@@ -14,6 +14,7 @@ import contextlib
 import fcntl
 import hashlib
 import json
+import math
 import os
 import re
 import secrets
@@ -24,6 +25,7 @@ import subprocess
 import sys
 from dataclasses import asdict, dataclass, field, replace
 from datetime import datetime, timezone
+from fractions import Fraction
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
@@ -37,10 +39,43 @@ FROZEN_SPLIT_HASHES = {
     "sealed": "9954b44ebc3bb95478abdf0a1f9f2f33ea9a842d6f2d6fdb9e3afc7920f4c864",
 }
 CORPUS_ENVELOPE_SCHEMA = "hermes-beads-routing-prompts.v1"
-REPORT_SCHEMA = "hermes-beads-actual-discovery-report.v2"
+CORPUS_ENVELOPE_SCHEMA_V2 = "hermes-beads-routing-prompts.v2"
+DISCOVERY_DESIGN_SCHEMA_V2 = "hermes-beads-discovery-benchmark-design.v2"
+REPORT_SCHEMA = "hermes-beads-actual-discovery-report.v3"
 SCENARIO_COUNT = 72
 MAX_TURNS = 2
 RUN_BUDGET_SECONDS = 180
+MINIMUM_ROUTING_OBSERVATIONS = 60
+MINIMUM_VARIANTS_PER_FAMILY = 5
+MINIMUM_REPEATS_PER_VARIANT = 3
+ROUTING_MACRO_THRESHOLD = 950_000
+ROUTING_WILSON_THRESHOLD = 850_000
+BUDGET_CONTRACT = {
+    "isolated_sessions": True,
+    "max_turns": MAX_TURNS,
+    "maximum_provider_requests_per_session": MAX_TURNS,
+    "run_budget_seconds": RUN_BUDGET_SECONDS,
+}
+BUDGET_CONTRACT_SHA256 = (
+    "f10a71365f954ac8880ad4dc75008484b575784f173976e72225d1512cf05221"
+)
+PRESTATE_CONTRACT = {
+    "bundled_skills": "disabled",
+    "credentials": "copied-0600-when-provided",
+    "default_profile": "sandbox-write-denied",
+    "home": "fresh-0700",
+    "installed_candidate": "exact-tree-hash",
+}
+PRESTATE_CONTRACT_SHA256 = (
+    "0e5ee5f79de6bc6e58beb78c88239cbb0334b8eaaef2e1ef3edeef1a023c0a1e"
+)
+POSITIVE_ROUTE_FAMILIES = ("explicit", "implicit", "recovery", "planning", "swarm")
+NEGATIVE_ROUTE_FAMILIES = (
+    "trivial_request",
+    "alternative_tracker",
+    "durable_executor_without_beads",
+    "repository_context_without_tracker_work",
+)
 # Bounded raw-output retention for errored lanes (Defect 3). A cap per stream
 # stops a runaway process from filling the disk; a cap on how many errored
 # lanes retain output at all bounds total disk use across a full sweep.
@@ -62,6 +97,8 @@ class Scenario:
     polarity: str
     prompt: str
     expected_load: bool
+    route_family: str = "legacy"
+    repeat: int = 1
 
 
 @dataclass(frozen=True)
@@ -75,6 +112,9 @@ class ScenarioResult:
     stdout_sha256: str
     stderr_sha256: str
     state_sha256: str
+    route_family: str = "legacy"
+    repeat: int = 1
+    prompt_disclosed: bool = False
     raw_stdout_path: str | None = None
     raw_stderr_path: str | None = None
     # Per-lane default-profile mutation attribution (scc-l41). Populated by
@@ -142,6 +182,13 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def sha256_json(value: Any) -> str:
+    encoded = json.dumps(
+        value, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    return sha256_bytes(encoded)
+
+
 def _iter_tree_files(root: Path) -> Iterable[Path]:
     root = Path(root)
     if not root.is_dir():
@@ -179,7 +226,7 @@ def hash_tree(root: Path) -> str:
     return digest.hexdigest()
 
 
-def _require_hash(value: str, code: str) -> str:
+def _require_hash(value: Any, code: str) -> str:
     if not isinstance(value, str) or not _HASH_RE.fullmatch(value):
         raise HarnessError(code)
     return value
@@ -239,19 +286,310 @@ def _load_json(path: Path, code: str) -> Any:
         raise HarnessError(code) from error
 
 
+def _load_bound_json(
+    path: Path,
+    expected_sha256: str,
+    *,
+    mismatch_code: str,
+    invalid_code: str,
+) -> Any:
+    """Hash and parse one immutable in-memory snapshot of a JSON file."""
+    try:
+        raw = Path(path).read_bytes()
+        if sha256_bytes(raw) != expected_sha256:
+            raise HarnessError(mismatch_code)
+        return json.loads(raw.decode("utf-8"))
+    except HarnessError:
+        raise
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        raise HarnessError(invalid_code) from error
+
+
+def corpus_split_hashes(rows: Sequence[Mapping[str, Any]]) -> dict[str, str]:
+    """Hash prompt rows per split without exposing their content."""
+    hashes: dict[str, str] = {}
+    for split in ("public", "hidden", "sealed"):
+        split_rows = sorted(
+            (dict(row) for row in rows if row.get("split") == split),
+            key=lambda row: str(row.get("variant_id", "")),
+        )
+        encoded = json.dumps(
+            split_rows, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+        ).encode("utf-8")
+        hashes[split] = sha256_bytes(encoded)
+    return hashes
+
+
+def _validated_v2_design(
+    design_path: Path, expected_design_sha256: str | None
+) -> Mapping[str, Any]:
+    if expected_design_sha256 is None:
+        raise HarnessError("DESIGN_HASH_REQUIRED")
+    expected_design = _require_hash(expected_design_sha256, "DESIGN_HASH_INVALID")
+    design = _load_bound_json(
+        design_path,
+        expected_design,
+        mismatch_code="DESIGN_HASH_MISMATCH",
+        invalid_code="DESIGN_INVALID",
+    )
+    if (
+        not isinstance(design, dict)
+        or design.get("schema_version") != DISCOVERY_DESIGN_SCHEMA_V2
+    ):
+        raise HarnessError("DESIGN_SCHEMA_MISMATCH")
+    if design.get("status") != "frozen":
+        raise HarnessError("DESIGN_NOT_FROZEN")
+    if (
+        design.get("frozen_budget") != BUDGET_CONTRACT
+        or design.get("budget_sha256") != BUDGET_CONTRACT_SHA256
+        or sha256_json(design.get("frozen_budget")) != BUDGET_CONTRACT_SHA256
+    ):
+        raise HarnessError("FROZEN_BUDGET_MISMATCH")
+    if (
+        design.get("prestate_contract") != PRESTATE_CONTRACT
+        or design.get("prestate_contract_sha256") != PRESTATE_CONTRACT_SHA256
+        or sha256_json(design.get("prestate_contract")) != PRESTATE_CONTRACT_SHA256
+    ):
+        raise HarnessError("FROZEN_PRESTATE_MISMATCH")
+
+    thresholds = design.get("thresholds")
+    required_thresholds = {
+        "minimum_positive_observations": MINIMUM_ROUTING_OBSERVATIONS,
+        "minimum_negative_observations": MINIMUM_ROUTING_OBSERVATIONS,
+        "minimum_variants_per_family": MINIMUM_VARIANTS_PER_FAMILY,
+        "minimum_repeats_per_variant": MINIMUM_REPEATS_PER_VARIANT,
+        "positive_macro_millionths": ROUTING_MACRO_THRESHOLD,
+        "negative_restraint_macro_millionths": ROUTING_MACRO_THRESHOLD,
+        "wilson_lower_millionths": ROUTING_WILSON_THRESHOLD,
+        "hard_zero_safety_violations": 0,
+        "maximum_execution_errors": 0,
+    }
+    if thresholds != required_thresholds:
+        raise HarnessError("DESIGN_THRESHOLDS_MISMATCH")
+
+    families = design.get("families")
+    if not isinstance(families, dict):
+        raise HarnessError("DESIGN_FAMILIES_INVALID")
+    positive_families = families.get("positive")
+    negative_families = families.get("negative")
+    if positive_families != list(POSITIVE_ROUTE_FAMILIES) or negative_families != list(
+        NEGATIVE_ROUTE_FAMILIES
+    ):
+        raise HarnessError("DESIGN_FAMILIES_INVALID")
+    positive_family_names = list(POSITIVE_ROUTE_FAMILIES)
+    negative_family_names = list(NEGATIVE_ROUTE_FAMILIES)
+
+    variants = design.get("variants")
+    if not isinstance(variants, list):
+        raise HarnessError("DESIGN_VARIANTS_INVALID")
+    variant_ids: set[str] = set()
+    family_counts = {
+        family: 0 for family in positive_family_names + negative_family_names
+    }
+    for variant in variants:
+        if not isinstance(variant, dict) or set(variant) != {
+            "variant_id",
+            "split",
+            "expected_load",
+            "route_family",
+            "source_scenario_id",
+            "brief",
+        }:
+            raise HarnessError("DESIGN_VARIANTS_INVALID")
+        variant_id = variant.get("variant_id")
+        split = variant.get("split")
+        expected_load = variant.get("expected_load")
+        family = variant.get("route_family")
+        if (
+            not isinstance(variant_id, str)
+            or not variant_id
+            or variant_id in variant_ids
+            or split not in {"public", "hidden", "sealed"}
+            or not isinstance(expected_load, bool)
+            or family
+            not in (positive_family_names if expected_load else negative_family_names)
+            or not isinstance(variant.get("brief"), str)
+            or not variant["brief"]
+        ):
+            raise HarnessError("DESIGN_VARIANTS_INVALID")
+        variant_ids.add(variant_id)
+        family_counts[str(family)] += 1
+    if any(count < MINIMUM_VARIANTS_PER_FAMILY for count in family_counts.values()):
+        raise HarnessError("DESIGN_VARIANTS_PER_FAMILY_INSUFFICIENT")
+
+    repeats = design.get("execution_matrix", {}).get("repeats_per_variant")
+    if not isinstance(repeats, int) or repeats < MINIMUM_REPEATS_PER_VARIANT:
+        raise HarnessError("DESIGN_REPEATS_INSUFFICIENT")
+    positive_observations = sum(
+        repeats for variant in variants if variant["expected_load"]
+    )
+    negative_observations = sum(
+        repeats for variant in variants if not variant["expected_load"]
+    )
+    matrix = design.get("execution_matrix", {})
+    if (
+        positive_observations < MINIMUM_ROUTING_OBSERVATIONS
+        or negative_observations < MINIMUM_ROUTING_OBSERVATIONS
+        or matrix.get("positive_observations") != positive_observations
+        or matrix.get("negative_observations") != negative_observations
+        or matrix.get("total_observations")
+        != positive_observations + negative_observations
+    ):
+        raise HarnessError("DESIGN_OBSERVATION_MATRIX_INVALID")
+
+    freeze = design.get("corpus_freeze")
+    if not isinstance(freeze, dict):
+        raise HarnessError("CORPUS_FREEZE_INVALID")
+    split_hashes = freeze.get("split_hashes")
+    if not isinstance(split_hashes, dict) or set(split_hashes) != {
+        "public",
+        "hidden",
+        "sealed",
+    }:
+        raise HarnessError("CORPUS_FREEZE_INVALID")
+    for value in split_hashes.values():
+        _require_hash(value, "CORPUS_SPLIT_HASH_INVALID")
+    attestation = freeze.get("custodian_attestation")
+    if (
+        not isinstance(attestation, dict)
+        or attestation.get("role") != "benchmark-custodian"
+        or not isinstance(attestation.get("custodian_identifier"), str)
+        or not attestation["custodian_identifier"].strip()
+        or attestation.get("candidate_author_disclosed") is not False
+        or attestation.get("candidate_package_read") is not False
+        or not isinstance(attestation.get("frozen_at"), str)
+        or re.fullmatch(
+            r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z",
+            attestation["frozen_at"],
+        )
+        is None
+    ):
+        raise HarnessError("CUSTODIAN_ATTESTATION_INVALID")
+    return design
+
+
+def validate_v2_runtime_contract(
+    design_path: Path,
+    expected_design_sha256: str,
+    *,
+    candidate_sha256: str,
+    provider: str,
+    model: str,
+) -> None:
+    design = _validated_v2_design(design_path, expected_design_sha256)
+    runtime = design.get("frozen_runtime")
+    if not isinstance(runtime, dict):
+        raise HarnessError("FROZEN_RUNTIME_INVALID")
+    if runtime.get("candidate_sha256") != candidate_sha256:
+        raise HarnessError("FROZEN_CANDIDATE_MISMATCH")
+    if runtime.get("hermes_commit") != FROZEN_HERMES_COMMIT:
+        raise HarnessError("FROZEN_HERMES_MISMATCH")
+    if runtime.get("provider") != provider or runtime.get("model") != model:
+        raise HarnessError("FROZEN_MODEL_STRATUM_MISMATCH")
+    if runtime.get("harness_schema") != REPORT_SCHEMA:
+        raise HarnessError("FROZEN_HARNESS_SCHEMA_MISMATCH")
+    harness_sha256 = runtime.get("harness_sha256")
+    _require_hash(harness_sha256, "FROZEN_HARNESS_HASH_INVALID")
+    if sha256_file(Path(__file__)) != harness_sha256:
+        raise HarnessError("FROZEN_HARNESS_HASH_MISMATCH")
+
+
+def _load_v2_corpus(
+    envelope: Mapping[str, Any],
+    design_path: Path,
+    expected_design_sha256: str | None,
+) -> list[Scenario]:
+    design = _validated_v2_design(design_path, expected_design_sha256)
+    if envelope.get("schema_version") != CORPUS_ENVELOPE_SCHEMA_V2:
+        raise HarnessError("CORPUS_SCHEMA_MISMATCH")
+    if envelope.get("design_sha256") != expected_design_sha256:
+        raise HarnessError("CORPUS_DESIGN_BINDING_MISMATCH")
+    expected_split_hashes = design["corpus_freeze"]["split_hashes"]
+    if envelope.get("split_hashes") != expected_split_hashes:
+        raise HarnessError("CORPUS_SPLIT_BINDING_MISMATCH")
+    rows = envelope.get("scenarios")
+    if not isinstance(rows, list):
+        raise HarnessError("CORPUS_INDEX_MISMATCH")
+    if any(
+        not isinstance(row, dict) or set(row) != {"variant_id", "split", "prompt"}
+        for row in rows
+    ):
+        raise HarnessError("CORPUS_ROW_SHAPE_INVALID")
+    if corpus_split_hashes(rows) != expected_split_hashes:
+        raise HarnessError("CORPUS_SPLIT_HASH_MISMATCH")
+
+    variants = {row["variant_id"]: row for row in design["variants"]}
+    observed_ids = [row.get("variant_id") for row in rows if isinstance(row, dict)]
+    if (
+        len(rows) != len(variants)
+        or len(observed_ids) != len(rows)
+        or len(set(observed_ids)) != len(observed_ids)
+        or set(observed_ids) != set(variants)
+    ):
+        raise HarnessError("CORPUS_INDEX_MISMATCH")
+    rows_by_id = {row["variant_id"]: row for row in rows}
+    repeats = design["execution_matrix"]["repeats_per_variant"]
+    scenarios: list[Scenario] = []
+    family_prompt_hashes: dict[str, set[str]] = {}
+    for variant_id, variant in sorted(variants.items()):
+        row = rows_by_id[variant_id]
+        if set(row) != {"variant_id", "split", "prompt"}:
+            raise HarnessError("CORPUS_ROW_SHAPE_INVALID")
+        prompt = row.get("prompt")
+        if row.get("split") != variant["split"]:
+            raise HarnessError("CORPUS_INDEX_MISMATCH")
+        if not isinstance(prompt, str) or not prompt or len(prompt.encode()) > 65_536:
+            raise HarnessError("CORPUS_PROMPT_INVALID")
+        route_family = variant["route_family"]
+        prompt_hash = sha256_bytes(prompt.encode("utf-8"))
+        seen_prompt_hashes = family_prompt_hashes.setdefault(route_family, set())
+        if prompt_hash in seen_prompt_hashes:
+            raise HarnessError("CORPUS_VARIANTS_NOT_DISTINCT")
+        seen_prompt_hashes.add(prompt_hash)
+        scenarios.extend(
+            Scenario(
+                scenario_id=variant_id,
+                split=variant["split"],
+                polarity="positive" if variant["expected_load"] else "negative",
+                prompt=prompt,
+                expected_load=variant["expected_load"],
+                route_family=route_family,
+                repeat=repeat,
+            )
+            for repeat in range(1, repeats + 1)
+        )
+    return scenarios
+
+
 def load_corpus(
-    corpus_path: Path, design_path: Path, expected_sha256: str
+    corpus_path: Path,
+    design_path: Path,
+    expected_sha256: str,
+    expected_design_sha256: str | None = None,
 ) -> list[Scenario]:
     """Validate a custodian-provided private envelope without returning its text."""
     expected_sha = _require_hash(expected_sha256, "CORPUS_HASH_INVALID")
-    if sha256_file(corpus_path) != expected_sha:
-        raise HarnessError("CORPUS_HASH_MISMATCH")
+    envelope = _load_bound_json(
+        corpus_path,
+        expected_sha,
+        mismatch_code="CORPUS_HASH_MISMATCH",
+        invalid_code="CORPUS_INVALID",
+    )
+    if not isinstance(envelope, dict):
+        raise HarnessError("CORPUS_INVALID")
+    design_probe = _load_json(design_path, "DESIGN_INVALID")
+    if (
+        isinstance(design_probe, dict)
+        and design_probe.get("schema_version") == DISCOVERY_DESIGN_SCHEMA_V2
+    ):
+        return _load_v2_corpus(
+            envelope,
+            design_path,
+            expected_design_sha256,
+        )
     if sha256_file(design_path) != FROZEN_DESIGN_SHA256:
         raise HarnessError("DESIGN_HASH_MISMATCH")
     design = _load_json(design_path, "DESIGN_INVALID")
-    envelope = _load_json(corpus_path, "CORPUS_INVALID")
-    if not isinstance(envelope, dict):
-        raise HarnessError("CORPUS_INVALID")
     if envelope.get("schema_version") != CORPUS_ENVELOPE_SCHEMA:
         raise HarnessError("CORPUS_SCHEMA_MISMATCH")
     if envelope.get("design_sha256") != FROZEN_DESIGN_SHA256:
@@ -306,10 +644,44 @@ def load_corpus(
     return scenarios
 
 
-def approval_request(provider: str, model: str) -> dict[str, Any]:
-    return {
-        "hermes_sessions": SCENARIO_COUNT,
-        "maximum_provider_requests": SCENARIO_COUNT * MAX_TURNS,
+def run_approval_digest(
+    *,
+    candidate_sha256: str,
+    corpus_sha256: str,
+    design_sha256: str | None,
+    provider: str,
+    model: str,
+    force_full_sweep: bool,
+) -> str:
+    """Bind authorization to every run-defining identity and cost control."""
+    return sha256_json(
+        {
+            "candidate_sha256": candidate_sha256,
+            "corpus_sha256": corpus_sha256,
+            "design_sha256": design_sha256,
+            "provider": provider,
+            "model": model,
+            "force_full_sweep": force_full_sweep,
+            "harness_sha256": sha256_file(Path(__file__)),
+            "budget_sha256": BUDGET_CONTRACT_SHA256,
+            "prestate_contract_sha256": PRESTATE_CONTRACT_SHA256,
+        }
+    )
+
+
+def approval_request(
+    provider: str,
+    model: str,
+    *,
+    scenario_count: int = SCENARIO_COUNT,
+    design_sha256: str | None = None,
+    candidate_sha256: str | None = None,
+    corpus_sha256: str | None = None,
+    force_full_sweep: bool = False,
+) -> dict[str, Any]:
+    request = {
+        "hermes_sessions": scenario_count,
+        "maximum_provider_requests": scenario_count * MAX_TURNS,
         "maximum_turns_per_session": MAX_TURNS,
         "run_budget_seconds_per_session": RUN_BUDGET_SECONDS,
         "provider": provider,
@@ -319,6 +691,31 @@ def approval_request(provider: str, model: str) -> dict[str, Any]:
         else "provider-defined",
         "paid_api_fallback": False,
     }
+    if design_sha256 is not None:
+        request["design_sha256"] = design_sha256
+    if candidate_sha256 is not None:
+        request["candidate_sha256"] = candidate_sha256
+    if corpus_sha256 is not None:
+        request["corpus_sha256"] = corpus_sha256
+    if (
+        design_sha256 is not None
+        and candidate_sha256 is not None
+        and corpus_sha256 is not None
+    ):
+        request["force_full_sweep"] = force_full_sweep
+        request["approval_digest"] = run_approval_digest(
+            candidate_sha256=candidate_sha256,
+            corpus_sha256=corpus_sha256,
+            design_sha256=design_sha256,
+            provider=provider,
+            model=model,
+            force_full_sweep=force_full_sweep,
+        )
+    request["authorization_boundary"] = (
+        "human-operated policy boundary; not cryptographically authenticated "
+        "in plugin-free v1"
+    )
+    return request
 
 
 # -- scc-ux6: real single-use authorization tokens --------------------------
@@ -394,16 +791,14 @@ def _write_ledger(ledger_path: Path, entries: list[dict[str, Any]]) -> None:
 
 
 def issue_authorization_token(
+    approval_digest: str,
     ledger_path: Path = DEFAULT_TOKEN_LEDGER_PATH,
 ) -> str:
-    """Mint one fresh, unguessable, single-use authorization token.
-
-    This is the only supported way a token comes into existence. It must be
-    invoked directly by a human -- for example via the ``issue-token`` CLI
-    command -- never computed or inferred by an agent. The token is
-    ``secrets.token_hex`` output (not derivable from this file's source) and
-    is recorded, unconsumed, in the ledger before it is returned.
-    """
+    """Mint one fresh, single-use token bound to a reviewed run plan."""
+    if not isinstance(approval_digest, str) or not re.fullmatch(
+        r"[0-9a-f]{64}", approval_digest
+    ):
+        raise HarnessError("AUTHORIZATION_PLAN_DIGEST_INVALID")
     ledger_path = Path(ledger_path)
     token = secrets.token_hex(TOKEN_BYTES)
     with _held_ledger_lock(ledger_path):
@@ -411,6 +806,7 @@ def issue_authorization_token(
         entries.append(
             {
                 "token": token,
+                "approval_digest": approval_digest,
                 "issued_at": _now_iso(),
                 "consumed": False,
                 "consumed_at": None,
@@ -421,18 +817,11 @@ def issue_authorization_token(
 
 
 def consume_authorization_token(
-    token: str, ledger_path: Path = DEFAULT_TOKEN_LEDGER_PATH
+    token: str,
+    approval_digest: str,
+    ledger_path: Path = DEFAULT_TOKEN_LEDGER_PATH,
 ) -> None:
-    """Atomically look up and consume a single-use authorization token.
-
-    Fail-closed, in order:
-      * No ledger entry matches ``token`` at all -> AUTHORIZATION_TOKEN_MISSING.
-      * The matching entry is already consumed -> AUTHORIZATION_TOKEN_ALREADY_CONSUMED.
-      * Otherwise the entry is marked consumed here, immediately -- before
-        the caller runs any preflight check or spawns any subprocess -- so a
-        second presentation of this same token, from any later attempt for
-        any reason, is always rejected.
-    """
+    """Atomically consume a token only for its reviewed run plan."""
     ledger_path = Path(ledger_path)
     with _held_ledger_lock(ledger_path):
         entries = _read_ledger(ledger_path)
@@ -462,16 +851,23 @@ def consume_authorization_token(
                 "regardless of whether a previous attempt already spent "
                 "quota, failed a preflight check, or errored."
             )
+        if match.get("approval_digest") != approval_digest:
+            raise HarnessError(
+                "AUTHORIZATION_PLAN_MISMATCH: this token authorizes a different "
+                "frozen run plan. Review the current plan and issue a new token."
+            )
         match["consumed"] = True
         match["consumed_at"] = _now_iso()
         _write_ledger(ledger_path, entries)
 
 
 def require_authorization(
-    token: str, ledger_path: Path = DEFAULT_TOKEN_LEDGER_PATH
+    token: str,
+    approval_digest: str,
+    ledger_path: Path = DEFAULT_TOKEN_LEDGER_PATH,
 ) -> None:
     """CLI-facing authorization gate for the quota-consuming ``run`` command."""
-    consume_authorization_token(token, ledger_path)
+    consume_authorization_token(token, approval_digest, ledger_path)
 
 
 # -- scc-ux6: output-path locking --------------------------------------------
@@ -664,9 +1060,19 @@ def _parse_tool_events(state_db: Path) -> int:
         return 0
     count = 0
     try:
-        with sqlite3.connect(f"file:{state_db}?mode=ro", uri=True) as connection:
+        # Hermes closes a WAL database by removing its sidecars while the main
+        # file still declares WAL mode. This owned, throwaway database must be
+        # opened read-write so SQLite can recreate the sidecars before reading.
+        # mode=rw still fails if the expected database does not exist.
+        with sqlite3.connect(f"file:{state_db}?mode=rw", uri=True) as connection:
+            messages_table = connection.execute(
+                "SELECT 1 FROM sqlite_schema WHERE type = 'table' AND name = 'messages'"
+            ).fetchone()
+            if messages_table is None:
+                return 0
             rows = connection.execute(
-                "SELECT tool_calls FROM messages WHERE role = 'assistant' AND tool_calls IS NOT NULL"
+                "SELECT tool_calls FROM messages "
+                "WHERE role = 'assistant' AND tool_calls IS NOT NULL"
             ).fetchall()
     except (sqlite3.Error, OSError) as error:
         raise HarnessError("SESSION_EVENT_READ_FAILED") from error
@@ -780,7 +1186,33 @@ def _run_scenario(
     # text itself is the evidence, and discarding it forces a fresh (and
     # possibly billed) reproduction to diagnose. The paths are resolved before
     # the result is built because ScenarioResult is frozen.
-    retain = retention_root is not None and completed.returncode != 0
+    prompt_representations = {
+        scenario.prompt,
+        json.dumps(scenario.prompt)[1:-1],
+        json.dumps(scenario.prompt, ensure_ascii=False)[1:-1],
+    }
+    prompt_disclosed = any(
+        representation and representation in stream
+        for representation in prompt_representations
+        for stream in (completed.stdout, completed.stderr)
+    )
+    retain = (
+        retention_root is not None
+        and completed.returncode != 0
+        and not prompt_disclosed
+    )
+    observation_id = f"{scenario.scenario_id}-r{scenario.repeat}"
+    if retain:
+        assert retention_root is not None
+        raw_stdout_path = _retain_stream(
+            retention_root, observation_id, "stdout", completed.stdout
+        )
+        raw_stderr_path = _retain_stream(
+            retention_root, observation_id, "stderr", completed.stderr
+        )
+    else:
+        raw_stdout_path = None
+        raw_stderr_path = None
     result = ScenarioResult(
         scenario_id=scenario.scenario_id,
         split=scenario.split,
@@ -791,20 +1223,11 @@ def _run_scenario(
         stdout_sha256=sha256_bytes(completed.stdout.encode()),
         stderr_sha256=sha256_bytes(completed.stderr.encode()),
         state_sha256=sha256_file(state_db) if state_db.is_file() else sha256_bytes(b""),
-        raw_stdout_path=(
-            _retain_stream(
-                retention_root, scenario.scenario_id, "stdout", completed.stdout
-            )
-            if retain
-            else None
-        ),
-        raw_stderr_path=(
-            _retain_stream(
-                retention_root, scenario.scenario_id, "stderr", completed.stderr
-            )
-            if retain
-            else None
-        ),
+        route_family=scenario.route_family,
+        repeat=scenario.repeat,
+        prompt_disclosed=prompt_disclosed,
+        raw_stdout_path=raw_stdout_path,
+        raw_stderr_path=raw_stderr_path,
     )
     if hash_tree(installed) != candidate_sha256:
         raise HarnessError("INSTALLED_CANDIDATE_MUTATED")
@@ -838,13 +1261,6 @@ _PROFILE_ROOTS: tuple[str, ...] = (
 # a checkpoint succeeded both times and nothing in the database actually
 # changed. It is never meaningful to compare and is always excluded.
 _SHM_ROOT_NAME = "state.db-shm"
-# state.db-wal, by contrast, becomes a deterministic zero-length file after
-# a successful TRUNCATE checkpoint (see _checkpoint_wal), so on the happy
-# path it is safe -- and useful -- to compare directly. It is only excluded
-# -- the documented fallback -- when a checkpoint could not be attempted
-# for either side of a pair, since an un-checkpointed WAL's content is
-# inherently racy against ongoing writes.
-_WAL_ROOT_NAME = "state.db-wal"
 _PROFILE_HOME_MISSING = "__profile_home_missing__"
 
 
@@ -859,67 +1275,25 @@ class ProfileFingerprint:
     config.yaml/.env/auth.json secrets (only root names and hashes ever
     reach a report).
 
-    ``wal_checkpointed`` records whether ``_checkpoint_wal`` was able to
-    normalize state.db-wal/state.db-shm immediately before this snapshot was
-    taken. ``_profile_diff`` uses it to decide whether those two roots are
-    safe to compare (see its docstring for the fallback).
+    Fingerprinting is strictly observational: it never opens SQLite or changes
+    the profile it protects. WAL bytes are compared conservatively; benign
+    storage churn can fail closed but cannot be hidden by the observer.
     """
 
     roots: Mapping[str, str]
-    wal_checkpointed: bool
-
-
-def _checkpoint_wal(home: Path) -> bool:
-    """Best-effort SQLite WAL checkpoint immediately before a snapshot.
-
-    A successful ``TRUNCATE`` checkpoint folds any pending state.db-wal
-    frames into state.db and truncates the WAL file, so an ordinary
-    write-then-checkpoint cycle does not read as a content change between
-    two ``_profile_fingerprint`` snapshots. This is the happy-path WAL/SHM
-    false-positive suppression required by scc-l41.
-
-    Returns True when the checkpoint ran -- including the trivial case
-    where state.db does not exist at all, so there is nothing to
-    checkpoint and no possible WAL churn -- and False when a checkpoint
-    could not be attempted, for example because the database is locked by
-    another connection or the file is not a valid SQLite database.
-
-    Documented fallback: when this returns False for either side of a
-    before/after pair, ``_profile_diff`` excludes state.db-wal/state.db-shm
-    from the equality check entirely for that pair (an un-checkpointed
-    WAL/SHM pair is inherently racy) and compares only state.db's own,
-    possibly un-checkpointed, content instead.
-    """
-    state_db = Path(home) / "state.db"
-    if not state_db.is_file():
-        return True
-    try:
-        connection = sqlite3.connect(str(state_db), timeout=5)
-        try:
-            connection.execute("PRAGMA wal_checkpoint(TRUNCATE)")
-            connection.commit()
-        finally:
-            connection.close()
-    except sqlite3.Error:
-        return False
-    return True
 
 
 def _profile_fingerprint(home: Path) -> ProfileFingerprint:
     """Snapshot a Hermes profile home across the 16 tracked roots.
 
-    Before hashing, this checkpoints the SQLite WAL/SHM pair (see
-    ``_checkpoint_wal``) so ordinary WAL churn on state.db does not read as
-    a mutation when compared against another snapshot via ``_profile_diff``.
-    Hashing itself never follows symlinks -- a symlink's target path is
-    hashed in place of its content -- and never returns raw file bytes.
+    Hashing never writes, never opens SQLite, never follows symlinks, and never
+    returns raw file bytes. A symlink's target path is hashed in place of its
+    content.
     """
     home = Path(home)
-    wal_checkpointed = _checkpoint_wal(home)
     if not home.exists():
         return ProfileFingerprint(
             roots={_PROFILE_HOME_MISSING: sha256_bytes(b"missing")},
-            wal_checkpointed=wal_checkpointed,
         )
 
     def fingerprint_path(path: Path) -> str:
@@ -952,7 +1326,7 @@ def _profile_fingerprint(home: Path) -> ProfileFingerprint:
         path = home / name
         if path.exists() or path.is_symlink():
             records[name] = fingerprint_path(path)
-    return ProfileFingerprint(roots=records, wal_checkpointed=wal_checkpointed)
+    return ProfileFingerprint(roots=records)
 
 
 def _profile_diff(before: ProfileFingerprint, after: ProfileFingerprint) -> list[str]:
@@ -961,23 +1335,182 @@ def _profile_diff(before: ProfileFingerprint, after: ProfileFingerprint) -> list
     Root-level attribution: this is what lets a caller name which of the 16
     tracked roots changed instead of exposing only a boolean.
 
-    WAL/SHM false-positive suppression: state.db-shm is always excluded --
+    SQLite handling: state.db-shm is always excluded --
     its raw bytes are volatile shared-memory bookkeeping that is never
-    meaningfully comparable, checkpointed or not (see _SHM_ROOT_NAME).
-    state.db-wal is compared on the happy path, where a successful
-    checkpoint makes it a deterministic zero-length file. Documented
-    fallback: if either snapshot's ``wal_checkpointed`` is False,
-    state.db-wal is excluded too for this pair -- an un-checkpointed WAL's
-    content is inherently racy, so only state.db's own (checkpointed, on
-    the happy path) content is compared for that part of profile state.
+    meaningfully comparable (see _SHM_ROOT_NAME). state.db and state.db-wal
+    are always compared. This can conservatively flag benign storage churn,
+    but fingerprinting never mutates the protected profile or hides a write.
     """
     exclude = {_SHM_ROOT_NAME}
-    if not (before.wal_checkpointed and after.wal_checkpointed):
-        exclude.add(_WAL_ROOT_NAME)
     names = (set(before.roots) | set(after.roots)) - exclude
     return sorted(
         name for name in names if before.roots.get(name) != after.roots.get(name)
     )
+
+
+def _wilson_lower(successes: int, total: int) -> int | None:
+    """Return the one-sided 95% Wilson lower bound in millionths."""
+    if total == 0:
+        return None
+    z = 1.6448536269514722
+    proportion = successes / total
+    denominator = 1 + z * z / total
+    centre = proportion + z * z / (2 * total)
+    margin = z * math.sqrt(
+        (proportion * (1 - proportion) + z * z / (4 * total)) / total
+    )
+    return max(0, int(((centre - margin) / denominator) * 1_000_000))
+
+
+def _binary_stats(values: Sequence[int]) -> dict[str, Any]:
+    if not values:
+        return {
+            "count": 0,
+            "mean_millionths": None,
+            "median_millionths": None,
+            "p95_millionths": None,
+            "worst_millionths": None,
+            "variance_fraction": None,
+        }
+    ordered = sorted(values)
+    count = len(ordered)
+    total = sum(ordered)
+    if count % 2:
+        median = ordered[count // 2]
+    else:
+        median = (ordered[count // 2 - 1] + ordered[count // 2]) // 2
+    return {
+        "count": count,
+        "mean_millionths": total // count,
+        "median_millionths": median,
+        "p95_millionths": ordered[max(0, math.ceil(0.95 * count) - 1)],
+        "worst_millionths": min(ordered),
+        "variance_fraction": {
+            "numerator": count * sum(value * value for value in ordered) - total**2,
+            "denominator": count**2,
+        },
+    }
+
+
+def _routing_metric(
+    rows: Sequence[Mapping[str, Any]], *, expected_load: bool
+) -> dict[str, Any]:
+    selected = [
+        row
+        for row in rows
+        if row["expected_load"] is expected_load and not row["errored"]
+    ]
+    family_rows: dict[str, list[Mapping[str, Any]]] = {}
+    for row in selected:
+        family_rows.setdefault(str(row["route_family"]), []).append(row)
+    families: dict[str, dict[str, Any]] = {}
+    family_rates: list[Fraction] = []
+    for family, members in sorted(family_rows.items()):
+        successes = sum(bool(row["passed"]) for row in members)
+        total = len(members)
+        rate_fraction = Fraction(successes, total)
+        rate = int(rate_fraction * 1_000_000)
+        family_rates.append(rate_fraction)
+        repeats_by_variant: dict[str, set[int]] = {}
+        for row in members:
+            scenario_id = str(row["scenario_id"])
+            repeats_by_variant.setdefault(scenario_id, set()).add(int(row["repeat"]))
+        families[family] = {
+            "successes": successes,
+            "observations": total,
+            "variants": len(repeats_by_variant),
+            "minimum_repeats": min(
+                len(values) for values in repeats_by_variant.values()
+            ),
+            "rate_millionths": rate,
+            "wilson_lower_millionths": _wilson_lower(successes, total),
+        }
+    successes = sum(bool(row["passed"]) for row in selected)
+    total = len(selected)
+    binary_values = [1_000_000 if row["passed"] else 0 for row in selected]
+    macro_fraction = (
+        None if not family_rates else sum(family_rates, Fraction()) / len(family_rates)
+    )
+    return {
+        "successes": successes,
+        "observations": total,
+        "micro_millionths": None if total == 0 else successes * 1_000_000 // total,
+        "macro_millionths": (
+            None if macro_fraction is None else int(macro_fraction * 1_000_000)
+        ),
+        "macro_fraction": (
+            None
+            if macro_fraction is None
+            else {
+                "numerator": macro_fraction.numerator,
+                "denominator": macro_fraction.denominator,
+            }
+        ),
+        "wilson_lower_millionths": _wilson_lower(successes, total),
+        "families": families,
+        "distribution": _binary_stats(binary_values),
+    }
+
+
+def _statistical_gate(
+    metrics: Mapping[str, Mapping[str, Any]],
+    *,
+    errored: int,
+    hard_zero_safety_violations: int,
+    profile_prestate_contaminated: bool,
+    duplicate_observations: bool,
+    matrix_identity_matches: bool,
+) -> dict[str, Any]:
+    failures: list[str] = []
+    for name, metric in metrics.items():
+        label = "POSITIVE" if name == "positive" else "NEGATIVE"
+        expected_families = (
+            set(POSITIVE_ROUTE_FAMILIES)
+            if name == "positive"
+            else set(NEGATIVE_ROUTE_FAMILIES)
+        )
+        if set(metric["families"]) != expected_families:
+            failures.append(f"{label}_FAMILIES_INCOMPLETE")
+        if metric["observations"] < MINIMUM_ROUTING_OBSERVATIONS:
+            failures.append(f"{label}_OBSERVATIONS_INSUFFICIENT")
+        if (
+            any(
+                family["variants"] < MINIMUM_VARIANTS_PER_FAMILY
+                for family in metric["families"].values()
+            )
+            or not metric["families"]
+        ):
+            failures.append(f"{label}_VARIANTS_PER_FAMILY_INSUFFICIENT")
+        if (
+            any(
+                family["minimum_repeats"] < MINIMUM_REPEATS_PER_VARIANT
+                for family in metric["families"].values()
+            )
+            or not metric["families"]
+        ):
+            failures.append(f"{label}_REPEATS_PER_VARIANT_INSUFFICIENT")
+        macro_fraction = metric["macro_fraction"]
+        if macro_fraction is None or (
+            macro_fraction["numerator"] * 1_000_000
+            < ROUTING_MACRO_THRESHOLD * macro_fraction["denominator"]
+        ):
+            failures.append(f"{label}_MACRO_BELOW_THRESHOLD")
+        if (
+            metric["wilson_lower_millionths"] is None
+            or metric["wilson_lower_millionths"] < ROUTING_WILSON_THRESHOLD
+        ):
+            failures.append(f"{label}_WILSON_BELOW_THRESHOLD")
+    if errored:
+        failures.append("EXECUTION_ERRORS_PRESENT")
+    if hard_zero_safety_violations:
+        failures.append("HARD_ZERO_SAFETY_VIOLATION")
+    if profile_prestate_contaminated:
+        failures.append("PROFILE_PRESTATE_CONTAMINATED")
+    if duplicate_observations:
+        failures.append("DUPLICATE_OBSERVATION_IDENTITY")
+    if not matrix_identity_matches:
+        failures.append("FROZEN_MATRIX_IDENTITY_MISMATCH")
+    return {"passed": not failures, "failures": failures}
 
 
 def build_report(
@@ -991,6 +1524,8 @@ def build_report(
     default_profile_unchanged: bool,
     default_profile_write_denied: bool = True,
     aborted_reason: str | None = None,
+    design_sha256: str | None = None,
+    expected_scenarios: Sequence[Scenario] | None = None,
 ) -> dict[str, Any]:
     rows = []
     for result in results:
@@ -1008,10 +1543,84 @@ def build_report(
     retained = any(
         row.get("raw_stdout_path") or row.get("raw_stderr_path") for row in rows
     )
+    routing_metrics = {
+        "positive": _routing_metric(rows, expected_load=True),
+        "negative_restraint": _routing_metric(rows, expected_load=False),
+    }
+    split_counts = {}
+    for split in ("public", "hidden", "sealed"):
+        split_rows = [row for row in rows if row["split"] == split]
+        split_passed = sum(row["outcome"] == "passed" for row in split_rows)
+        split_failed = sum(row["outcome"] == "failed" for row in split_rows)
+        split_errored = sum(row["outcome"] == "errored" for row in split_rows)
+        split_counts[split] = {
+            "observations": len(split_rows),
+            "passed": split_passed,
+            "failed": split_failed,
+            "errored": split_errored,
+            "scored_count": split_passed + split_failed,
+        }
+    profile_drift_observations = sum(bool(row["profile_delta"]) for row in rows)
+    prompt_disclosures = sum(bool(row["prompt_disclosed"]) for row in rows)
+    # Fingerprint deltas prove that the shared profile changed during a lane,
+    # not that the sandboxed child caused the change. A concurrently active
+    # parent Hermes process can write the same profile. Fail closed as
+    # contaminated evidence without falsely classifying ambient drift as a
+    # child safety violation. The sandbox write-denial canary is causal: it
+    # runs under the exact policy used for every child.
+    profile_prestate_contaminated = (
+        profile_drift_observations > 0 or not default_profile_unchanged
+    )
+    hard_zero_safety_violations = prompt_disclosures
+    if not default_profile_write_denied:
+        hard_zero_safety_violations += 1
+    observation_identities = [
+        (str(row["scenario_id"]), int(row["repeat"])) for row in rows
+    ]
+    observed_matrix = {
+        (
+            str(row["scenario_id"]),
+            int(row["repeat"]),
+            str(row["route_family"]),
+            bool(row["expected_load"]),
+            str(row["split"]),
+        )
+        for row in rows
+    }
+    expected_matrix = (
+        observed_matrix
+        if expected_scenarios is None
+        else {
+            (
+                scenario.scenario_id,
+                scenario.repeat,
+                scenario.route_family,
+                scenario.expected_load,
+                scenario.split,
+            )
+            for scenario in expected_scenarios
+        }
+    )
+    gate = _statistical_gate(
+        routing_metrics,
+        errored=errored,
+        hard_zero_safety_violations=hard_zero_safety_violations,
+        profile_prestate_contaminated=profile_prestate_contaminated,
+        duplicate_observations=(
+            len(observation_identities) != len(set(observation_identities))
+        ),
+        matrix_identity_matches=(
+            observed_matrix == expected_matrix and len(rows) == len(expected_matrix)
+        ),
+    )
     report = {
         "schema_version": REPORT_SCHEMA,
         "candidate_sha256": candidate_sha256,
         "corpus_sha256": corpus_sha256,
+        "design_sha256": design_sha256,
+        "budget_sha256": BUDGET_CONTRACT_SHA256,
+        "prestate_contract_sha256": PRESTATE_CONTRACT_SHA256,
+        "harness_sha256": sha256_file(Path(__file__)),
         "hermes_commit": hermes_commit,
         "provider": provider,
         "model": model,
@@ -1022,7 +1631,12 @@ def build_report(
         "scored_count": passed + failed,
         "default_profile_unchanged": default_profile_unchanged,
         "default_profile_write_denied": default_profile_write_denied,
+        "profile_drift_observations": profile_drift_observations,
+        "hard_zero_safety_violations": hard_zero_safety_violations,
         "raw_content_retained": retained,
+        "routing_metrics": routing_metrics,
+        "split_counts": split_counts,
+        "gate": gate,
         "results": rows,
     }
     if aborted_reason is not None:
@@ -1044,8 +1658,9 @@ def run_corpus(
     provider: str,
     model: str,
     force_full_sweep: bool = False,
+    design_sha256: str | None = None,
 ) -> dict[str, Any]:
-    if len(scenarios) != SCENARIO_COUNT:
+    if not scenarios:
         raise HarnessError("CORPUS_INDEX_MISMATCH")
     verify_frozen_hermes(hermes_source)
     runtime_root = Path(runtime_root).resolve()
@@ -1064,12 +1679,16 @@ def run_corpus(
     # torn down immediately after its run, so anything written inside it is
     # gone before the report is built.
     retention_root = runtime_root / "retained"
+    retain_error_streams = all(
+        scenario.route_family == "legacy" for scenario in scenarios
+    )
     results: list[ScenarioResult] = []
     retained_lanes = 0
     aborted_reason: str | None = None
     try:
         for index, scenario in enumerate(scenarios):
-            lane = runtime_root / scenario.scenario_id
+            observation_id = f"{scenario.scenario_id}-r{scenario.repeat}"
+            lane = runtime_root / observation_id
             lane.mkdir(mode=0o700)
             # Per-lane fingerprinting (scc-l41): a snapshot immediately before
             # and after this exact lane, so a mutation is attributable to the
@@ -1089,7 +1708,8 @@ def run_corpus(
                     default_home=default_home,
                     retention_root=(
                         retention_root
-                        if retained_lanes < RAW_RETENTION_LANE_LIMIT
+                        if retain_error_streams
+                        and retained_lanes < RAW_RETENTION_LANE_LIMIT
                         else None
                     ),
                 )
@@ -1144,6 +1764,8 @@ def run_corpus(
         model=model,
         default_profile_unchanged=unchanged,
         aborted_reason=aborted_reason,
+        design_sha256=design_sha256,
+        expected_scenarios=scenarios,
     )
     return report
 
@@ -1276,6 +1898,10 @@ def _parser() -> argparse.ArgumentParser:
     for command in (plan,):
         command.add_argument("--provider", default="openai-codex")
         command.add_argument("--model", default="gpt-5.6-sol")
+    plan.add_argument("--design", type=Path)
+    plan.add_argument("--design-sha256")
+    plan.add_argument("--corpus-sha256")
+    plan.add_argument("--force-full-sweep", action="store_true")
 
     issue_token = sub.add_parser(
         "issue-token",
@@ -1288,6 +1914,7 @@ def _parser() -> argparse.ArgumentParser:
     issue_token.add_argument(
         "--token-ledger", type=Path, default=DEFAULT_TOKEN_LEDGER_PATH
     )
+    issue_token.add_argument("--approval-digest", required=True)
     issue_token.add_argument("--output", type=Path)
 
     run = sub.add_parser("run")
@@ -1296,6 +1923,7 @@ def _parser() -> argparse.ArgumentParser:
     run.add_argument("--corpus", type=Path, required=True)
     run.add_argument("--corpus-sha256", required=True)
     run.add_argument("--design", type=Path, required=True)
+    run.add_argument("--design-sha256")
     run.add_argument("--hermes-source", type=Path, required=True)
     run.add_argument("--runtime-root", type=Path, required=True)
     run.add_argument("--default-home", type=Path, required=True)
@@ -1330,10 +1958,33 @@ def main(argv: Sequence[str] | None = None) -> int:
             print(hash_tree(args.candidate))
             return 0
         if args.command == "plan":
-            _write_json(None, approval_request(args.provider, args.model))
+            if args.design is None:
+                request = approval_request(args.provider, args.model)
+            else:
+                if args.corpus_sha256 is None:
+                    raise HarnessError("CORPUS_HASH_REQUIRED_FOR_APPROVAL")
+                design = _validated_v2_design(args.design, args.design_sha256)
+                runtime = design["frozen_runtime"]
+                validate_v2_runtime_contract(
+                    args.design,
+                    args.design_sha256,
+                    candidate_sha256=runtime.get("candidate_sha256"),
+                    provider=args.provider,
+                    model=args.model,
+                )
+                request = approval_request(
+                    args.provider,
+                    args.model,
+                    scenario_count=design["execution_matrix"]["total_observations"],
+                    design_sha256=args.design_sha256,
+                    candidate_sha256=runtime["candidate_sha256"],
+                    corpus_sha256=args.corpus_sha256,
+                    force_full_sweep=args.force_full_sweep,
+                )
+            _write_json(None, request)
             return 0
         if args.command == "issue-token":
-            token = issue_authorization_token(args.token_ledger)
+            token = issue_authorization_token(args.approval_digest, args.token_ledger)
             _write_json(
                 args.output,
                 {"token": token, "token_ledger": str(Path(args.token_ledger))},
@@ -1351,13 +2002,43 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 0
         # command == "run": lock the exact --output path first -- a second
         # invocation racing for the same path is rejected before it ever
-        # touches the token ledger, a preflight check, or a subprocess. Only
-        # once the lock is held do we require and consume a real, single-use
-        # authorization token, before any preflight check or subprocess spawn.
+        # touches the token ledger, a preflight check, or a subprocess. With
+        # the lock held, validate every local frozen input before consuming the
+        # single-use token. No subprocess or provider call occurs before token
+        # consumption.
         lock = acquire_output_lock(args.output)
         try:
-            require_authorization(args.authorization, args.token_ledger)
-            scenarios = load_corpus(args.corpus, args.design, args.corpus_sha256)
+            approval_digest = run_approval_digest(
+                candidate_sha256=args.candidate_sha256,
+                corpus_sha256=args.corpus_sha256,
+                design_sha256=args.design_sha256,
+                provider=args.provider,
+                model=args.model,
+                force_full_sweep=args.force_full_sweep,
+            )
+            scenarios = load_corpus(
+                args.corpus,
+                args.design,
+                args.corpus_sha256,
+                args.design_sha256,
+            )
+            design_payload = _load_json(args.design, "DESIGN_INVALID")
+            if (
+                isinstance(design_payload, dict)
+                and design_payload.get("schema_version") == DISCOVERY_DESIGN_SCHEMA_V2
+            ):
+                validate_v2_runtime_contract(
+                    args.design,
+                    args.design_sha256,
+                    candidate_sha256=args.candidate_sha256,
+                    provider=args.provider,
+                    model=args.model,
+                )
+            if hash_tree(args.candidate) != args.candidate_sha256:
+                raise HarnessError("CANDIDATE_HASH_MISMATCH")
+            require_authorization(
+                args.authorization, approval_digest, args.token_ledger
+            )
             payload = run_corpus(
                 scenarios=scenarios,
                 candidate=args.candidate,
@@ -1370,6 +2051,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 provider=args.provider,
                 model=args.model,
                 force_full_sweep=args.force_full_sweep,
+                design_sha256=args.design_sha256,
             )
             _write_json(args.output, payload)
             # Exit codes are a three-way partition, matching the report. An
@@ -1380,6 +2062,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             # 3 means "a real routing failure was measured".
             if payload["errored"] or payload.get("aborted"):
                 return 4
+            gate = payload.get("gate")
+            if isinstance(gate, dict):
+                return 0 if gate.get("passed") is True else 3
             return 0 if payload["failed"] == 0 else 3
         finally:
             lock.release()

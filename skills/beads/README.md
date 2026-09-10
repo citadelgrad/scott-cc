@@ -45,12 +45,69 @@ uv run --python 3.12 python scripts/hermes_discovery_harness.py probe \
 ```
 
 Automatic selection is an LLM decision and cannot be established by a keyword
-oracle or explicit load. The `run` subcommand accepts the custodian's complete
-72-scenario envelope, sends each undisclosed prompt through stdin (`--query-file
--`), records only `skill_view` and committed load counts plus hashes, deletes
-every scenario home, and refuses to start without the exact authorization text
-printed by `plan`. It caps the run at 72 isolated sessions, two provider
-requests per session (144 maximum), and no paid API fallback.
+oracle or explicit load. The v2 design blueprint is
+`../../docs/plans/2026-09-02-hermes-beads-skill/discovery-benchmark-design-v2.json`.
+A benchmark custodian must materialize its private prompts, fill the split
+hashes and attestation, and change its status to `frozen` before use. Candidate
+v12's routing text is fixed before that materialization.
+
+The custodian freeze order is strict:
+
+1. Create one external row per design variant with exactly `variant_id`,
+   `split`, and `prompt`; do not expose that file to the candidate author.
+2. Compute each split hash with `corpus_split_hashes()` over the canonical rows.
+3. Copy the design externally, add those hashes and the custodian attestation,
+   and set `status` to `frozen`.
+4. Hash the frozen design. Build the v2 corpus envelope with exactly
+   `schema_version`, `design_sha256`, `split_hashes`, and `scenarios`.
+5. Hash the complete envelope and record both whole-file hashes out of band.
+
+The design stores split-content hashes, not its envelope's whole-file hash.
+That avoids a circular design-hash/corpus-hash dependency. The run report binds
+both whole files. Hashing and validation must emit only hashes and named error
+codes, never prompt text.
+
+The `run` subcommand validates the frozen design and corpus hashes, expands 45
+prompt variants into three fresh isolated sessions each, sends prompts only
+through stdin (`--query-file -`), records sanitized routing evidence, and
+deletes every scenario home. The 135-observation matrix contains 75 positive
+and 60 negative-restraint observations. Release uses 95% macro family scores,
+one-sided 95% Wilson lower bounds of at least 85%, and hard-zero causal sandbox
+write-denial failures. Concurrent drift in the shared default profile fails the
+run as contaminated evidence; a temporal fingerprint delta alone is not falsely
+attributed to the benchmark child. Execution errors produce no verdict. Results
+from different model/provider/Hermes/harness strata are never pooled.
+
+First inspect the exact quota request:
+
+```sh
+uv run --python 3.12 python skills/beads/scripts/hermes_discovery_harness.py plan \
+  --design "$FROZEN_DISCOVERY_DESIGN" \
+  --design-sha256 "$FROZEN_DISCOVERY_DESIGN_SHA256" \
+  --corpus-sha256 "$FROZEN_DISCOVERY_CORPUS_SHA256"
+```
+
+The plan caps one run at 135 Hermes sessions and 270 provider requests. A human
+must inspect its `approval_digest`, then mint and provide a token bound to that
+exact plan:
+
+```sh
+uv run --python 3.12 python skills/beads/scripts/hermes_discovery_harness.py \
+  issue-token --approval-digest "$APPROVAL_DIGEST"
+```
+
+Agents must never invoke `issue-token` or weaken this gate. A run also requires
+`--design-sha256`, `--corpus-sha256`, `--candidate-sha256`,
+`--authorization`, and `--token-ledger`; the harness rejects identity drift
+or use of a token for any other plan before any Hermes child process starts.
+
+This is a human-operated policy boundary, not cryptographic human
+authentication: plugin-free code running as the same OS user cannot prove who
+invoked a terminal command. That limitation must stay explicit. V2 private
+benchmark runs never retain raw stdout or stderr. Legacy diagnostic runs may
+retain bounded streams under a `0700` runtime root with `0600` files, but never
+retain a stream that contains an exact private-prompt echo; that condition is a
+hard-zero disclosure violation.
 
 ## Scope
 

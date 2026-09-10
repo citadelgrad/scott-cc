@@ -13,6 +13,7 @@ import pytest
 
 REPO = Path(__file__).resolve().parents[2]
 SCRIPT = REPO / "skills/beads/scripts/evaluate_skill.py"
+DISCOVERY_SCRIPT = REPO / "skills/beads/scripts/hermes_discovery_harness.py"
 MANIFEST = REPO / "evaluation/beads-skill/manifests/release-v1.json"
 CORPUS = REPO / "skills/beads/evals/public-dev/corpus-v1.json"
 FIXTURES = REPO / "scripts/tests/fixtures/beads_contract/valid"
@@ -28,6 +29,28 @@ def load_evaluator():
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
+
+
+def load_discovery_harness():
+    spec = importlib.util.spec_from_file_location(
+        "beads_discovery_for_benchmark", DISCOVERY_SCRIPT
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_discovery_and_full_evaluator_share_one_sided_wilson_contract() -> None:
+    evaluator = load_evaluator()
+    discovery = load_discovery_harness()
+
+    for total in (1, 15, 60, 75, 100):
+        for successes in range(total + 1):
+            assert discovery._wilson_lower(successes, total) == (
+                evaluator._MODULE._wilson_lower(successes, total)
+            )
 
 
 def test_frozen_public_corpus_validates_against_source_contract() -> None:

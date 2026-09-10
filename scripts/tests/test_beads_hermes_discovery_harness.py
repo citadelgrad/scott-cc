@@ -18,6 +18,9 @@ SCRIPT = ROOT / "skills/beads/scripts/hermes_discovery_harness.py"
 DESIGN = (
     ROOT / "docs/plans/2026-09-02-hermes-beads-skill/benchmark-corpus-design-v1.json"
 )
+DESIGN_V2 = (
+    ROOT / "docs/plans/2026-09-02-hermes-beads-skill/discovery-benchmark-design-v2.json"
+)
 SKILL = ROOT / "skills/beads"
 
 
@@ -55,6 +58,265 @@ def _full_fixture(tmp_path: Path, harness) -> Path:
     path = tmp_path / "corpus.json"
     path.write_text(json.dumps(payload, sort_keys=True), encoding="utf-8")
     return path
+
+
+def _v2_fixture(tmp_path: Path, harness):
+    design = json.loads(DESIGN_V2.read_text(encoding="utf-8"))
+    rows = [
+        {
+            "variant_id": variant["variant_id"],
+            "split": variant["split"],
+            "prompt": f"private v2 fixture prompt for {variant['variant_id']}",
+        }
+        for variant in design["variants"]
+    ]
+    split_hashes = harness.corpus_split_hashes(rows)
+    design["status"] = "frozen"
+    design["corpus_freeze"]["split_hashes"] = split_hashes
+    design["corpus_freeze"]["custodian_attestation"] = {
+        "role": "benchmark-custodian",
+        "custodian_identifier": "test-independent-custodian",
+        "candidate_author_disclosed": False,
+        "candidate_package_read": False,
+        "frozen_at": "2026-09-08T00:00:00Z",
+    }
+    design_path = tmp_path / "design-v2.json"
+    design_path.write_text(json.dumps(design, sort_keys=True), encoding="utf-8")
+    design_sha256 = harness.sha256_file(design_path)
+    corpus = {
+        "schema_version": "hermes-beads-routing-prompts.v2",
+        "design_sha256": design_sha256,
+        "split_hashes": split_hashes,
+        "scenarios": rows,
+    }
+    corpus_path = tmp_path / "corpus-v2.json"
+    corpus_path.write_text(json.dumps(corpus, sort_keys=True), encoding="utf-8")
+    return design_path, design_sha256, corpus_path, harness.sha256_file(corpus_path)
+
+
+def test_v2_frozen_design_is_metadata_only_and_binds_current_candidate(harness) -> None:
+    design = json.loads(DESIGN_V2.read_text(encoding="utf-8"))
+
+    assert harness.sha256_file(DESIGN_V2) == (
+        "e03bc9cfbc520ccb4ed36c8b99f6ae0bc3796ba27919ed5d7af04e4abc7ee9cb"
+    )
+    assert design["status"] == "frozen"
+    assert design["frozen_runtime"]["candidate_sha256"] == harness.hash_tree(SKILL)
+    assert design["frozen_runtime"]["harness_sha256"] == harness.sha256_file(SCRIPT)
+    assert len(design["variants"]) == 45
+    assert all("prompt" not in variant for variant in design["variants"])
+    assert all(design["corpus_freeze"]["split_hashes"].values())
+    assert design["corpus_freeze"]["custodian_attestation"] == {
+        "role": "benchmark-custodian",
+        "custodian_identifier": "independent-benchmark-custodian",
+        "candidate_author_disclosed": False,
+        "candidate_package_read": False,
+        "frozen_at": "2026-09-08T19:12:39Z",
+    }
+    assert design["execution_matrix"] == {
+        "repeats_per_variant": 3,
+        "positive_observations": 75,
+        "negative_observations": 60,
+        "total_observations": 135,
+        "repeat_rule": (
+            "Each repeat is a fresh isolated Hermes session. Results are never "
+            "pooled across model/provider/Hermes/harness strata."
+        ),
+    }
+
+
+def test_v2_corpus_loader_expands_frozen_variants_into_repeats(
+    tmp_path: Path, harness
+) -> None:
+    design, design_sha, corpus, corpus_sha = _v2_fixture(tmp_path, harness)
+
+    scenarios = harness.load_corpus(corpus, design, corpus_sha, design_sha)
+
+    assert len(scenarios) == 135
+    assert sum(row.expected_load for row in scenarios) == 75
+    assert sum(not row.expected_load for row in scenarios) == 60
+    assert {row.repeat for row in scenarios} == {1, 2, 3}
+    assert len({(row.scenario_id, row.repeat) for row in scenarios}) == 135
+    assert all("private v2 fixture prompt" in row.prompt for row in scenarios)
+
+
+def test_v2_corpus_loader_rejects_unfrozen_design_without_prompt_disclosure(
+    tmp_path: Path, harness
+) -> None:
+    design = tmp_path / "design-v2.json"
+    unfrozen_design = json.loads(DESIGN_V2.read_text(encoding="utf-8"))
+    unfrozen_design["status"] = "awaiting_custodian_freeze"
+    design.write_text(json.dumps(unfrozen_design, sort_keys=True), encoding="utf-8")
+    corpus = tmp_path / "corpus-v2.json"
+    corpus.write_text(
+        json.dumps(
+            {
+                "schema_version": "hermes-beads-routing-prompts.v2",
+                "design_sha256": harness.sha256_file(design),
+                "split_hashes": {},
+                "scenarios": [
+                    {
+                        "variant_id": "D001",
+                        "split": "public",
+                        "prompt": "private prompt must not appear in the error",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(harness.HarnessError, match="DESIGN_NOT_FROZEN") as error:
+        harness.load_corpus(
+            corpus,
+            design,
+            harness.sha256_file(corpus),
+            harness.sha256_file(design),
+        )
+    assert "private prompt" not in str(error.value)
+
+
+def test_v2_corpus_loader_rejects_incomplete_custodian_attestation(
+    tmp_path: Path, harness
+) -> None:
+    design_path, _, corpus_path, _ = _v2_fixture(tmp_path, harness)
+    design = json.loads(design_path.read_text(encoding="utf-8"))
+    del design["corpus_freeze"]["custodian_attestation"]["candidate_package_read"]
+    design_path.write_text(json.dumps(design, sort_keys=True), encoding="utf-8")
+    changed_design_sha = harness.sha256_file(design_path)
+    corpus = json.loads(corpus_path.read_text(encoding="utf-8"))
+    corpus["design_sha256"] = changed_design_sha
+    corpus_path.write_text(json.dumps(corpus, sort_keys=True), encoding="utf-8")
+
+    with pytest.raises(harness.HarnessError, match="CUSTODIAN_ATTESTATION_INVALID"):
+        harness.load_corpus(
+            corpus_path,
+            design_path,
+            harness.sha256_file(corpus_path),
+            changed_design_sha,
+        )
+
+
+def test_v2_corpus_loader_rejects_duplicate_prompt_variants_with_valid_hashes(
+    tmp_path: Path, harness
+) -> None:
+    design_path, _design_sha, corpus_path, _corpus_sha = _v2_fixture(tmp_path, harness)
+    design = json.loads(design_path.read_text(encoding="utf-8"))
+    corpus = json.loads(corpus_path.read_text(encoding="utf-8"))
+    rows = {row["variant_id"]: row for row in corpus["scenarios"]}
+    rows["D002"]["prompt"] = rows["D001"]["prompt"]
+    split_hashes = harness.corpus_split_hashes(corpus["scenarios"])
+    design["corpus_freeze"]["split_hashes"] = split_hashes
+    design_path.write_text(json.dumps(design, sort_keys=True), encoding="utf-8")
+    design_sha = harness.sha256_file(design_path)
+    corpus["design_sha256"] = design_sha
+    corpus["split_hashes"] = split_hashes
+    corpus_path.write_text(json.dumps(corpus, sort_keys=True), encoding="utf-8")
+
+    with pytest.raises(harness.HarnessError, match="CORPUS_VARIANTS_NOT_DISTINCT"):
+        harness.load_corpus(
+            corpus_path,
+            design_path,
+            harness.sha256_file(corpus_path),
+            design_sha,
+        )
+
+
+def test_v2_design_validation_uses_the_exact_hashed_snapshot(
+    tmp_path: Path, harness, monkeypatch
+) -> None:
+    design_path, design_sha, corpus_path, corpus_sha = _v2_fixture(tmp_path, harness)
+    replacement = json.loads(design_path.read_text(encoding="utf-8"))
+    variants = {row["variant_id"]: row for row in replacement["variants"]}
+    variants["D001"]["route_family"], variants["D016"]["route_family"] = (
+        variants["D016"]["route_family"],
+        variants["D001"]["route_family"],
+    )
+    replacement_text = json.dumps(replacement, sort_keys=True)
+    real_sha256_file = harness.sha256_file
+    replaced = False
+
+    def replace_after_hash(path: Path) -> str:
+        nonlocal replaced
+        digest = real_sha256_file(path)
+        if Path(path) == design_path and not replaced:
+            design_path.write_text(replacement_text, encoding="utf-8")
+            replaced = True
+        return digest
+
+    monkeypatch.setattr(harness, "sha256_file", replace_after_hash)
+
+    scenarios = harness.load_corpus(corpus_path, design_path, corpus_sha, design_sha)
+
+    d001 = next(row for row in scenarios if row.scenario_id == "D001")
+    assert d001.route_family == "explicit"
+
+
+def test_v2_plan_reports_exact_frozen_matrix_and_hashes(
+    tmp_path: Path, harness
+) -> None:
+    design, design_sha, _corpus, corpus_sha = _v2_fixture(tmp_path, harness)
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "plan",
+            "--design",
+            str(design),
+            "--design-sha256",
+            design_sha,
+            "--corpus-sha256",
+            corpus_sha,
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    request = json.loads(completed.stdout)
+    assert request["hermes_sessions"] == 135
+    assert request["maximum_provider_requests"] == 270
+    assert request["design_sha256"] == design_sha
+    assert request["corpus_sha256"] == corpus_sha
+    assert request["candidate_sha256"] == (
+        "836ff0c61774ec6cf5590f1181c37bf62f19d5700990e356a7264314d2c84fbe"
+    )
+    assert request["approval_digest"] == harness.run_approval_digest(
+        candidate_sha256=request["candidate_sha256"],
+        corpus_sha256=corpus_sha,
+        design_sha256=design_sha,
+        provider="openai-codex",
+        model="gpt-5.6-sol",
+        force_full_sweep=False,
+    )
+
+
+def test_v2_runtime_contract_rejects_candidate_or_model_drift(
+    tmp_path: Path, harness
+) -> None:
+    design, design_sha, _corpus, _corpus_sha = _v2_fixture(tmp_path, harness)
+
+    with pytest.raises(harness.HarnessError, match="FROZEN_CANDIDATE_MISMATCH"):
+        harness.validate_v2_runtime_contract(
+            design,
+            design_sha,
+            candidate_sha256="0" * 64,
+            provider="openai-codex",
+            model="gpt-5.6-sol",
+        )
+    with pytest.raises(harness.HarnessError, match="FROZEN_MODEL_STRATUM_MISMATCH"):
+        harness.validate_v2_runtime_contract(
+            design,
+            design_sha,
+            candidate_sha256=(
+                "836ff0c61774ec6cf5590f1181c37bf62f19d5700990e356a7264314d2c84fbe"
+            ),
+            provider="openai-codex",
+            model="different-model",
+        )
 
 
 def test_candidate_tree_hash_is_content_bound_and_install_is_exact(
@@ -124,6 +386,9 @@ def test_sanitized_report_contains_no_prompt_or_output_content(
         "stdout_sha256",
         "stderr_sha256",
         "state_sha256",
+        "route_family",
+        "repeat",
+        "prompt_disclosed",
         "raw_stdout_path",
         "raw_stderr_path",
         "profile_delta",
@@ -134,6 +399,204 @@ def test_sanitized_report_contains_no_prompt_or_output_content(
     assert report["raw_content_retained"] is False
 
 
+def _statistical_results(harness, *, failed: set[tuple[str, int]] | None = None):
+    failed = failed or set()
+    families = {
+        True: ("explicit", "implicit", "recovery", "planning", "swarm"),
+        False: (
+            "trivial_request",
+            "alternative_tracker",
+            "durable_executor_without_beads",
+            "repository_context_without_tracker_work",
+        ),
+    }
+    results = []
+    for expected_load, route_families in families.items():
+        prefix = "D" if expected_load else "N"
+        for family_index, route_family in enumerate(route_families, start=1):
+            for variant in range(1, 6):
+                scenario_id = f"{prefix}{family_index}{variant}"
+                for repeat in range(1, 4):
+                    passed = (scenario_id, repeat) not in failed
+                    observed_load = expected_load if passed else not expected_load
+                    results.append(
+                        harness.ScenarioResult(
+                            scenario_id=scenario_id,
+                            split=("public", "hidden", "sealed")[
+                                (variant + repeat) % 3
+                            ],
+                            expected_load=expected_load,
+                            discovery_events=int(observed_load),
+                            load_events=int(observed_load),
+                            exit_code=0,
+                            stdout_sha256="a" * 64,
+                            stderr_sha256="b" * 64,
+                            state_sha256="c" * 64,
+                            route_family=route_family,
+                            repeat=repeat,
+                        )
+                    )
+    return results
+
+
+def _statistical_report(harness, results):
+    expected_scenarios = [
+        harness.Scenario(
+            scenario_id=row.scenario_id,
+            split=row.split,
+            polarity="positive" if row.expected_load else "negative",
+            prompt="synthetic prompt excluded from reports",
+            expected_load=row.expected_load,
+            route_family=row.route_family,
+            repeat=row.repeat,
+        )
+        for row in _statistical_results(harness)
+    ]
+    return harness.build_report(
+        results,
+        candidate_sha256="d" * 64,
+        corpus_sha256="e" * 64,
+        design_sha256="f" * 64,
+        hermes_commit=harness.FROZEN_HERMES_COMMIT,
+        provider="openai-codex",
+        model="gpt-5.6-sol",
+        default_profile_unchanged=True,
+        expected_scenarios=expected_scenarios,
+    )
+
+
+def test_prd_statistical_gate_passes_complete_perfect_matrix(harness) -> None:
+    report = _statistical_report(harness, _statistical_results(harness))
+
+    assert report["scenario_count"] == 135
+    assert report["budget_sha256"] == harness.BUDGET_CONTRACT_SHA256
+    assert report["prestate_contract_sha256"] == harness.PRESTATE_CONTRACT_SHA256
+    assert report["routing_metrics"]["positive"]["observations"] == 75
+    assert report["routing_metrics"]["negative_restraint"]["observations"] == 60
+    assert report["routing_metrics"]["positive"]["macro_millionths"] == 1_000_000
+    assert (
+        report["routing_metrics"]["negative_restraint"]["macro_millionths"] == 1_000_000
+    )
+    assert report["gate"] == {"passed": True, "failures": []}
+
+
+def test_prd_statistical_report_emits_reconcilable_split_counts(harness) -> None:
+    results = _statistical_results(harness, failed={("D11", 1), ("N11", 1)})
+    results[2] = harness.replace(results[2], exit_code=1)
+    report = _statistical_report(harness, results)
+
+    assert set(report["split_counts"]) == {"public", "hidden", "sealed"}
+    assert sum(row["observations"] for row in report["split_counts"].values()) == 135
+    assert (
+        sum(row["passed"] for row in report["split_counts"].values())
+        == report["passed"]
+    )
+    assert (
+        sum(row["failed"] for row in report["split_counts"].values())
+        == report["failed"]
+    )
+    assert (
+        sum(row["errored"] for row in report["split_counts"].values())
+        == report["errored"]
+    )
+    assert all(
+        row["scored_count"] == row["passed"] + row["failed"]
+        for row in report["split_counts"].values()
+    )
+
+
+def test_prd_statistical_gate_rejects_weak_family_despite_high_micro(harness) -> None:
+    failures = {(f"D1{variant}", 1) for variant in range(1, 6)}
+    results = _statistical_results(harness, failed=failures)
+    for family_index in range(2, 6):
+        template = next(
+            row
+            for row in results
+            if row.expected_load and row.scenario_id == f"D{family_index}1"
+        )
+        results.extend(
+            harness.replace(template, repeat=repeat) for repeat in range(4, 29)
+        )
+    report = _statistical_report(harness, results)
+
+    assert report["passed"] == 230
+    assert report["routing_metrics"]["positive"]["micro_millionths"] > 950_000
+    assert report["routing_metrics"]["positive"]["macro_millionths"] < 950_000
+    assert "POSITIVE_MACRO_BELOW_THRESHOLD" in report["gate"]["failures"]
+    assert report["gate"]["passed"] is False
+
+
+def test_prd_statistical_gate_accepts_exact_macro_threshold_without_flooring(
+    harness,
+) -> None:
+    failures = {("N11", 1), ("N12", 1), ("N21", 1)}
+    report = _statistical_report(
+        harness, _statistical_results(harness, failed=failures)
+    )
+
+    restraint = report["routing_metrics"]["negative_restraint"]
+    assert restraint["successes"] == 57
+    assert restraint["macro_millionths"] == 950_000
+    assert restraint["macro_fraction"] == {"numerator": 19, "denominator": 20}
+    assert report["gate"] == {"passed": True, "failures": []}
+
+
+@pytest.mark.parametrize(
+    ("filter_result", "failure"),
+    [
+        (lambda row: row.expected_load, "NEGATIVE_OBSERVATIONS_INSUFFICIENT"),
+        (
+            lambda row: row.scenario_id != "N15",
+            "NEGATIVE_VARIANTS_PER_FAMILY_INSUFFICIENT",
+        ),
+        (
+            lambda row: not (row.scenario_id == "D11" and row.repeat == 3),
+            "POSITIVE_REPEATS_PER_VARIANT_INSUFFICIENT",
+        ),
+    ],
+)
+def test_prd_statistical_gate_rejects_incomplete_matrix(
+    harness, filter_result, failure
+) -> None:
+    results = [row for row in _statistical_results(harness) if filter_result(row)]
+    report = _statistical_report(harness, results)
+
+    assert failure in report["gate"]["failures"]
+    assert report["gate"]["passed"] is False
+
+
+def test_prd_statistical_gate_treats_unattributed_profile_drift_as_contamination(
+    harness,
+) -> None:
+    results = _statistical_results(harness)
+    results[0] = harness.replace(results[0], profile_delta=["state.db"])
+    report = _statistical_report(harness, results)
+
+    assert report["hard_zero_safety_violations"] == 0
+    assert report["profile_drift_observations"] == 1
+    assert "PROFILE_PRESTATE_CONTAMINATED" in report["gate"]["failures"]
+    assert report["gate"]["passed"] is False
+
+
+def test_prd_statistical_gate_keeps_prompt_disclosure_hard_zero(harness) -> None:
+    results = _statistical_results(harness)
+    results[0] = harness.replace(results[0], prompt_disclosed=True)
+    report = _statistical_report(harness, results)
+
+    assert report["hard_zero_safety_violations"] == 1
+    assert "HARD_ZERO_SAFETY_VIOLATION" in report["gate"]["failures"]
+    assert report["gate"]["passed"] is False
+
+
+def test_prd_statistical_gate_rejects_duplicate_repeat_identity(harness) -> None:
+    results = _statistical_results(harness)
+    results.append(results[0])
+    report = _statistical_report(harness, results)
+
+    assert "DUPLICATE_OBSERVATION_IDENTITY" in report["gate"]["failures"]
+    assert report["gate"]["passed"] is False
+
+
 def test_approval_request_reports_quota_caps_without_a_derivable_secret(
     harness,
 ) -> None:
@@ -142,6 +605,10 @@ def test_approval_request_reports_quota_caps_without_a_derivable_secret(
     assert request["maximum_provider_requests"] == 144
     assert request["maximum_turns_per_session"] == 2
     assert request["paid_api_fallback"] is False
+    assert request["authorization_boundary"] == (
+        "human-operated policy boundary; not cryptographically authenticated "
+        "in plugin-free v1"
+    )
     # scc-ux6: approval_request must never again return a deterministic
     # "required_authorization_text" -- that string was a pure function of
     # public source (provider/model), so an agent could compute a "valid"
@@ -197,6 +664,17 @@ def _run_args(
     ]
 
 
+def _test_approval_digest(harness, corpus: Path, candidate_sha256: str) -> str:
+    return harness.run_approval_digest(
+        candidate_sha256=candidate_sha256,
+        corpus_sha256=harness.sha256_file(corpus),
+        design_sha256=None,
+        provider="openai-codex",
+        model="gpt-5.6-sol",
+        force_full_sweep=False,
+    )
+
+
 # -- scc-ux6: a real single-use authorization token, and an output-path lock
 #
 # On 2026-09-05 an agent computed the harness's old --authorization value
@@ -210,16 +688,36 @@ def _run_args(
 # subprocess is ever spawned.
 
 
+def test_authorization_token_is_bound_to_the_reviewed_run(
+    harness, tmp_path: Path
+) -> None:
+    ledger = tmp_path / "tokens.json"
+    reviewed_digest = "a" * 64
+    token = harness.issue_authorization_token(reviewed_digest, ledger)
+
+    with pytest.raises(harness.HarnessError, match="AUTHORIZATION_PLAN_MISMATCH"):
+        harness.consume_authorization_token(token, "b" * 64, ledger)
+
+    entries = json.loads(ledger.read_text(encoding="utf-8"))
+    assert entries[0]["approval_digest"] == reviewed_digest
+    assert entries[0]["consumed"] is False
+
+    harness.consume_authorization_token(token, reviewed_digest, ledger)
+    assert json.loads(ledger.read_text(encoding="utf-8"))[0]["consumed"] is True
+
+
 def test_ac1_a_fresh_human_issued_token_gates_and_allows_the_launch_to_proceed(
     tmp_path: Path, harness, monkeypatch
 ) -> None:
     """AC scenario: A real one-time authorization token gates every
     quota-consuming launch."""
     ledger = tmp_path / "tokens.json"
-    token = harness.issue_authorization_token(ledger)
-
     calls, scenarios, corpus, default_home = _stub_run_corpus(
         harness, monkeypatch, tmp_path, [(0, 0)] * harness.SCENARIO_COUNT
+    )
+    candidate_sha256 = harness.hash_tree(SKILL)
+    token = harness.issue_authorization_token(
+        _test_approval_digest(harness, corpus, candidate_sha256), ledger
     )
     exit_code = harness.main(
         _run_args(
@@ -231,7 +729,7 @@ def test_ac1_a_fresh_human_issued_token_gates_and_allows_the_launch_to_proceed(
             authorization=token,
             token_ledger=ledger,
             output=tmp_path / "out.json",
-            candidate_sha256=harness.hash_tree(SKILL),
+            candidate_sha256=candidate_sha256,
             corpus_sha256=harness.sha256_file(corpus),
         )
     )
@@ -251,6 +749,7 @@ def test_ac1_a_fresh_human_issued_token_gates_and_allows_the_launch_to_proceed(
     assert entries == [
         {
             "token": token,
+            "approval_digest": entries[0]["approval_digest"],
             "issued_at": entries[0]["issued_at"],
             "consumed": True,
             "consumed_at": entries[0]["consumed_at"],
@@ -291,14 +790,16 @@ def test_ac3_a_token_cannot_be_reused_after_being_consumed_once(
     """AC scenario: A token cannot be reused after it has been consumed once,
     even by a successful or failed prior attempt."""
     ledger = tmp_path / "tokens.json"
-    token = harness.issue_authorization_token(ledger)
+    corpus = _full_fixture(tmp_path, harness)
+    candidate_sha256 = harness.hash_tree(SKILL)
+    approval_digest = _test_approval_digest(harness, corpus, candidate_sha256)
+    token = harness.issue_authorization_token(approval_digest, ledger)
     # A prior "run" invocation already consumed this token -- regardless of
     # whether that invocation completed, failed pre-spend, or errored, the
     # ledger only ever records that it was consumed.
-    harness.consume_authorization_token(token, ledger)
+    harness.consume_authorization_token(token, approval_digest, ledger)
 
     monkeypatch.setattr(harness.subprocess, "run", _no_subprocess_run)
-    corpus = _full_fixture(tmp_path, harness)
     exit_code = harness.main(
         _run_args(
             corpus=corpus,
@@ -309,7 +810,7 @@ def test_ac3_a_token_cannot_be_reused_after_being_consumed_once(
             authorization=token,
             token_ledger=ledger,
             output=tmp_path / "out.json",
-            candidate_sha256=harness.hash_tree(SKILL),
+            candidate_sha256=candidate_sha256,
             corpus_sha256=harness.sha256_file(corpus),
         )
     )
@@ -317,21 +818,22 @@ def test_ac3_a_token_cannot_be_reused_after_being_consumed_once(
     assert "AUTHORIZATION_TOKEN_ALREADY_CONSUMED" in capsys.readouterr().err
 
 
-def test_ac4_a_pre_spend_preflight_failure_does_not_entitle_a_self_authorized_retry(
+def test_ac4_a_pre_spend_preflight_failure_does_not_consume_authorization(
     tmp_path: Path, harness, monkeypatch, capsys
 ) -> None:
-    """AC scenario: A pre-spend failure does not entitle a caller to
-    self-authorize a retry."""
+    """AC scenario: Invalid frozen inputs fail before token consumption."""
     monkeypatch.setattr(harness, "verify_frozen_hermes", lambda _: None)
     monkeypatch.setattr(harness, "verify_default_write_denial", lambda *a, **k: None)
     monkeypatch.setattr(harness.subprocess, "run", _no_subprocess_run)
 
     ledger = tmp_path / "tokens.json"
-    token = harness.issue_authorization_token(ledger)
     corpus = _full_fixture(tmp_path, harness)
     # Deliberately wrong: install_candidate's real hash check fails on the
     # very first lane, before any lane could spend quota.
     wrong_candidate_sha256 = "0" * 64
+    token = harness.issue_authorization_token(
+        _test_approval_digest(harness, corpus, wrong_candidate_sha256), ledger
+    )
 
     def invoke(authorization: str, run_name: str) -> int:
         return harness.main(
@@ -352,20 +854,15 @@ def test_ac4_a_pre_spend_preflight_failure_does_not_entitle_a_self_authorized_re
     first_exit = invoke(token, "first")
     assert first_exit != 0
     assert "CANDIDATE_HASH_MISMATCH" in capsys.readouterr().err
-    # The token was consumed immediately on acceptance, before the preflight
-    # check ran -- so it is already spent even though no quota was spent.
     entries = json.loads(ledger.read_text(encoding="utf-8"))
-    assert entries[0]["consumed"] is True
+    assert entries[0]["consumed"] is False
 
-    # Same agent, second attempt, no newly issued token: rejected outright,
-    # and the harness says plainly that a fresh token is required regardless
-    # of whether the previous attempt spent quota.
+    # The same invalid plan still fails at preflight, not as a consumed token.
     second_exit = invoke(token, "second")
     assert second_exit != 0
     stderr = capsys.readouterr().err
-    assert "AUTHORIZATION_TOKEN_ALREADY_CONSUMED" in stderr
-    assert "fresh" in stderr and "single-use token" in stderr
-    assert "regardless of whether" in stderr and "spent quota" in stderr
+    assert "CANDIDATE_HASH_MISMATCH" in stderr
+    assert "AUTHORIZATION_TOKEN_ALREADY_CONSUMED" not in stderr
 
 
 def test_ac5_two_concurrent_launches_to_the_same_output_path_are_serialized(
@@ -378,10 +875,13 @@ def test_ac5_two_concurrent_launches_to_the_same_output_path_are_serialized(
     # lock under this test process's own (necessarily live) PID.
     holder_lock = harness.acquire_output_lock(output_path)
     ledger = tmp_path / "tokens.json"
-    token = harness.issue_authorization_token(ledger)
     try:
         monkeypatch.setattr(harness.subprocess, "run", _no_subprocess_run)
         corpus = _full_fixture(tmp_path, harness)
+        candidate_sha256 = harness.hash_tree(SKILL)
+        token = harness.issue_authorization_token(
+            _test_approval_digest(harness, corpus, candidate_sha256), ledger
+        )
         exit_code = harness.main(
             _run_args(
                 corpus=corpus,
@@ -392,7 +892,7 @@ def test_ac5_two_concurrent_launches_to_the_same_output_path_are_serialized(
                 authorization=token,
                 token_ledger=ledger,
                 output=output_path,
-                candidate_sha256=harness.hash_tree(SKILL),
+                candidate_sha256=candidate_sha256,
                 corpus_sha256=harness.sha256_file(corpus),
             )
         )
@@ -501,6 +1001,38 @@ def test_scenario_prompt_uses_stdin_and_actual_event_shapes_are_parsed(
     assert result.discovery_events == 1
     assert result.load_events == 1
     assert result.passed is True
+
+
+def test_uninitialized_session_database_has_zero_tool_events(
+    tmp_path: Path, harness
+) -> None:
+    state_db = tmp_path / "state.db"
+    with sqlite3.connect(state_db):
+        pass
+
+    assert harness._parse_tool_events(state_db) == 0
+
+
+def test_session_database_open_uses_owned_rw_uri(
+    tmp_path: Path, harness, monkeypatch
+) -> None:
+    state_db = tmp_path / "state.db"
+    with sqlite3.connect(state_db) as connection:
+        connection.execute(
+            "CREATE TABLE messages (role TEXT, tool_calls TEXT, tool_name TEXT)"
+        )
+
+    real_connect = harness.sqlite3.connect
+    observed = []
+
+    def recording_connect(*args, **kwargs):
+        observed.append((args, kwargs))
+        return real_connect(*args, **kwargs)
+
+    monkeypatch.setattr(harness.sqlite3, "connect", recording_connect)
+
+    assert harness._parse_tool_events(state_db) == 0
+    assert observed == [((f"file:{state_db}?mode=rw",), {"uri": True})]
 
 
 def test_macos_sandbox_denies_default_profile_writes(harness, tmp_path: Path) -> None:
@@ -637,7 +1169,7 @@ def test_full_provider_outage_reports_errored_not_routing_failures(
     assert report["failed"] == 0
     assert report["passed"] == 0
     assert report["scored_count"] == 0
-    assert report["schema_version"].endswith(".v2")
+    assert report["schema_version"].endswith(".v3")
 
 
 def _stub_run_corpus(harness, monkeypatch, tmp_path: Path, outcomes):
@@ -800,6 +1332,35 @@ def test_raw_retention_is_bounded_private_and_survives_lane_teardown(
     assert "xxxx" not in json.dumps(report)
 
 
+def test_v2_private_run_never_retains_raw_error_streams(
+    tmp_path: Path, harness, monkeypatch
+) -> None:
+    calls, scenarios, corpus, default_home = _stub_run_corpus(
+        harness, monkeypatch, tmp_path, [(1, 0)] * harness.SCENARIO_COUNT
+    )
+    scenarios = [harness.replace(row, route_family="explicit") for row in scenarios]
+    runtime_root = tmp_path / "runtime-v2"
+
+    report = harness.run_corpus(
+        scenarios=scenarios,
+        candidate=SKILL,
+        candidate_sha256="d" * 64,
+        corpus_sha256=harness.sha256_file(corpus),
+        hermes_source=tmp_path,
+        runtime_root=runtime_root,
+        default_home=default_home,
+        credentials=None,
+        provider="openai-codex",
+        model="gpt-5.6-sol",
+        force_full_sweep=True,
+        design_sha256="e" * 64,
+    )
+
+    assert len(calls) == harness.SCENARIO_COUNT
+    assert report["raw_content_retained"] is False
+    assert not (runtime_root / "retained").exists()
+
+
 def test_run_scenario_retains_an_errored_lane_on_a_frozen_result(
     tmp_path: Path, harness, monkeypatch
 ) -> None:
@@ -835,6 +1396,82 @@ def test_run_scenario_retains_an_errored_lane_on_a_frozen_result(
     assert stored.read_text(encoding="utf-8") == "provider quota text"
     assert stored.stat().st_mode & 0o777 == 0o600
     assert Path(result.raw_stderr_path).read_text(encoding="utf-8") == "429"
+
+
+def test_run_scenario_refuses_to_retain_an_exact_private_prompt_echo(
+    tmp_path: Path, harness, monkeypatch
+) -> None:
+    private_prompt = "private prompt sentinel 7af3"
+    scenario = harness.Scenario("B001", "public", "positive", private_prompt, True)
+    fake_executable = tmp_path / "hermes"
+    fake_executable.write_text("fixture\n", encoding="utf-8")
+    fake_executable.chmod(0o700)
+
+    def fake_run(command, **kwargs):
+        return SimpleNamespace(
+            returncode=1,
+            stdout=f"provider echoed: {private_prompt}",
+            stderr="",
+        )
+
+    monkeypatch.setattr(harness, "_hermes_executable", lambda _: fake_executable)
+    monkeypatch.setattr(harness.subprocess, "run", fake_run)
+    lane = tmp_path / "lane"
+    lane.mkdir()
+    retention_root = tmp_path / "retained"
+    result = harness._run_scenario(
+        scenario,
+        lane=lane,
+        candidate=SKILL,
+        candidate_sha256=harness.hash_tree(SKILL),
+        hermes_source=tmp_path,
+        provider="openai-codex",
+        model="gpt-5.6-sol",
+        credentials=None,
+        default_home=tmp_path / "default-home",
+        retention_root=retention_root,
+    )
+
+    assert result.prompt_disclosed is True
+    assert result.raw_stdout_path is None
+    assert result.raw_stderr_path is None
+    assert not retention_root.exists()
+
+
+def test_run_scenario_detects_json_escaped_multiline_prompt_disclosure(
+    tmp_path: Path, harness, monkeypatch
+) -> None:
+    private_prompt = "private line one\nprivate line two"
+    scenario = harness.Scenario("B001", "public", "positive", private_prompt, True)
+    fake_executable = tmp_path / "hermes"
+    fake_executable.write_text("fixture\n", encoding="utf-8")
+    fake_executable.chmod(0o700)
+
+    def fake_run(command, **kwargs):
+        return SimpleNamespace(
+            returncode=0,
+            stdout=json.dumps({"echo": private_prompt}),
+            stderr="",
+        )
+
+    monkeypatch.setattr(harness, "_hermes_executable", lambda _: fake_executable)
+    monkeypatch.setattr(harness.subprocess, "run", fake_run)
+    lane = tmp_path / "lane"
+    lane.mkdir()
+    result = harness._run_scenario(
+        scenario,
+        lane=lane,
+        candidate=SKILL,
+        candidate_sha256=harness.hash_tree(SKILL),
+        hermes_source=tmp_path,
+        provider="openai-codex",
+        model="gpt-5.6-sol",
+        credentials=None,
+        default_home=tmp_path / "default-home",
+        retention_root=None,
+    )
+
+    assert result.prompt_disclosed is True
 
 
 def test_retained_stream_truncates_at_the_byte_cap(tmp_path: Path, harness) -> None:
@@ -884,6 +1521,7 @@ def test_exit_codes_never_report_an_outage_as_success(
 ) -> None:
     monkeypatch.setattr(harness, "require_authorization", lambda *a, **k: None)
     monkeypatch.setattr(harness, "load_corpus", lambda *a, **k: [])
+    monkeypatch.setattr(harness, "hash_tree", lambda _: "d" * 64)
     payloads: dict[str, object] = {}
 
     def fake_run_corpus(**kwargs):
@@ -969,7 +1607,30 @@ def test_profile_diff_reports_nothing_when_nothing_changed(
     assert harness._profile_diff(before, after) == []
 
 
-def test_profile_fingerprint_suppresses_ordinary_wal_churn(
+def test_profile_fingerprint_never_mutates_sqlite_files(
+    tmp_path: Path, harness
+) -> None:
+    home = tmp_path / "default-home"
+    home.mkdir()
+    db_path = home / "state.db"
+    connection = sqlite3.connect(str(db_path))
+    connection.execute("PRAGMA journal_mode=WAL")
+    connection.execute("PRAGMA wal_autocheckpoint=0")
+    connection.execute("CREATE TABLE t (x INTEGER)")
+    connection.execute("INSERT INTO t VALUES (1)")
+    connection.commit()
+
+    tracked = (db_path, home / "state.db-wal", home / "state.db-shm")
+    before = {path.name: path.read_bytes() for path in tracked if path.exists()}
+
+    harness._profile_fingerprint(home)
+
+    after = {path.name: path.read_bytes() for path in tracked if path.exists()}
+    connection.close()
+    assert after == before
+
+
+def test_profile_fingerprint_detects_wal_changes_without_checkpointing(
     tmp_path: Path, harness
 ) -> None:
     home = tmp_path / "default-home"
@@ -977,61 +1638,41 @@ def test_profile_fingerprint_suppresses_ordinary_wal_churn(
     db_path = home / "state.db"
     conn = sqlite3.connect(str(db_path))
     conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA wal_autocheckpoint=0")
     conn.execute("CREATE TABLE t (x INTEGER)")
     conn.execute("INSERT INTO t VALUES (1)")
     conn.commit()
-    conn.close()
-    # A committed row is pending checkpoint in the WAL file at this point.
-    assert (home / "state.db-wal").exists()
 
     before = harness._profile_fingerprint(home)
-    assert before.wal_checkpointed is True
-
-    # Ordinary WAL churn: a write that touches state.db-wal but is rolled
-    # back before it commits, followed by a checkpoint. This is exactly the
-    # kind of benign background activity (e.g. a live process's own
-    # bookkeeping) that must never register as a mutation.
-    churn = sqlite3.connect(str(db_path), timeout=5)
-    churn.execute("BEGIN")
-    churn.execute("INSERT INTO t VALUES (2)")
-    churn.execute("ROLLBACK")
-    churn.execute("PRAGMA wal_checkpoint(TRUNCATE)")
-    churn.commit()
-    churn.close()
+    conn.execute("INSERT INTO t VALUES (2)")
+    conn.commit()
 
     after = harness._profile_fingerprint(home)
-    assert after.wal_checkpointed is True
-    assert harness._profile_diff(before, after) == []
+    conn.close()
+    assert harness._profile_diff(before, after) == ["state.db-wal"]
 
 
-def test_profile_diff_falls_back_to_excluding_wal_shm_when_checkpoint_fails(
+def test_profile_diff_compares_wal_but_excludes_volatile_shm(
     tmp_path: Path, harness
 ) -> None:
     home = tmp_path / "default-home"
     home.mkdir()
-    # Not a real SQLite file: _checkpoint_wal cannot run
-    # "PRAGMA wal_checkpoint" against it, so the happy path is unavailable
-    # and the documented fallback applies.
     (home / "state.db").write_bytes(b"not a real sqlite database")
 
     before = harness._profile_fingerprint(home)
-    assert before.wal_checkpointed is False
 
     (home / "state.db-wal").write_bytes(b"wal-bytes-one")
     (home / "state.db-shm").write_bytes(b"shm-bytes-one")
     after_wal_only = harness._profile_fingerprint(home)
-    assert after_wal_only.wal_checkpointed is False
-    # The wal/shm files appeared out of nowhere between the two snapshots --
-    # that would ordinarily be two changed roots, but with the checkpoint
-    # unavailable the fallback excludes them from the equality check.
-    assert harness._profile_diff(before, after_wal_only) == []
+    assert harness._profile_diff(before, after_wal_only) == ["state.db-wal"]
 
-    # state.db itself is still compared under the fallback: a real content
-    # change there must still be caught even while wal/shm stay excluded.
     (home / "state.db").write_bytes(b"different invalid content")
     (home / "state.db-wal").write_bytes(b"wal-bytes-two")
     after_db_change = harness._profile_fingerprint(home)
-    assert harness._profile_diff(before, after_db_change) == ["state.db"]
+    assert harness._profile_diff(before, after_db_change) == [
+        "state.db",
+        "state.db-wal",
+    ]
 
 
 def test_run_corpus_attributes_a_mid_run_mutation_to_its_exact_lane(
