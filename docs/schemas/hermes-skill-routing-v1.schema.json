@@ -1,0 +1,234 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:nous:hermes:skill-routing:v1",
+  "title": "Hermes skill routing metadata structural schema v1",
+  "description": "Structural contract for metadata.hermes.routing. Hermes must also apply the semantic, byte-budget, vocabulary, normalization, and source-trust checks defined by the router design.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "capabilities",
+    "positive_intents"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "hermes.skill-routing.v1"
+    },
+    "aliases": {
+      "type": "array",
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/alias"
+      },
+      "default": []
+    },
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/identifier"
+      }
+    },
+    "positive_intents": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": {
+        "$ref": "#/$defs/positive_intent"
+      }
+    },
+    "negative_intents": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "$ref": "#/$defs/negative_intent"
+      },
+      "default": []
+    },
+    "conflicts": {
+      "type": "array",
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/skill_identity"
+      },
+      "default": []
+    },
+    "required_context": {
+      "$ref": "#/$defs/context_predicates"
+    },
+    "priority": {
+      "type": "integer",
+      "minimum": -100,
+      "maximum": 100,
+      "default": 0
+    },
+    "hard_routes": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "oneOf": [
+          {
+            "$ref": "#/$defs/explicit_invocation"
+          },
+          {
+            "$ref": "#/$defs/repository_policy_key"
+          }
+        ]
+      },
+      "default": []
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96,
+      "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"
+    },
+    "alias": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "skill_identity": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 194,
+      "pattern": "^(?:(?:project|profile|bundled)/[A-Za-z0-9_-]+|(?:org|external|plugin)/[A-Za-z0-9_-]+/[A-Za-z0-9_-]+)$"
+    },
+    "phrase": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160,
+      "pattern": "^(?!.*(?:\\(\\?|\\.\\*|\\.\\+|\\[[^\\]]*\\]|\\\\[AbBdDsSwWZz]|\\^|\\$))[^\\u0000-\\u001f\\u007f\\r\\n]+$"
+    },
+    "terms": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/phrase"
+      }
+    },
+    "context_predicate": {
+      "enum": [
+        "repository",
+        "git_repository",
+        "changed_files",
+        "url_present",
+        "named_artifact"
+      ]
+    },
+    "context_predicates": {
+      "type": "array",
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/context_predicate"
+      },
+      "default": []
+    },
+    "positive_intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "terms"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "terms": {
+          "$ref": "#/$defs/terms"
+        },
+        "capabilities": {
+          "type": "array",
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/identifier"
+          }
+        },
+        "required_context": {
+          "$ref": "#/$defs/context_predicates"
+        }
+      }
+    },
+    "negative_intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "terms",
+        "effect"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "terms": {
+          "$ref": "#/$defs/terms"
+        },
+        "effect": {
+          "enum": [
+            "suppress",
+            "penalize"
+          ]
+        }
+      }
+    },
+    "explicit_invocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "aliases"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "kind": {
+          "const": "explicit_invocation"
+        },
+        "aliases": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/alias"
+          }
+        }
+      }
+    },
+    "repository_policy_key": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "policy_key"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "kind": {
+          "const": "repository_policy_key"
+        },
+        "policy_key": {
+          "$ref": "#/$defs/identifier"
+        }
+      }
+    }
+  }
+}
