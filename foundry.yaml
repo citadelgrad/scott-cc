@@ -15,7 +15,9 @@ profiles:
       - id: file-size
         run: |
           fail=0
-          for f in $(git diff --name-only --diff-filter=d main...HEAD); do
+          # A scheduled triage run evaluates the commit it was invoked for. Comparing
+          # a long-lived branch to main repeatedly rechecks unrelated history.
+          for f in $(git diff --name-only --diff-filter=d HEAD^ HEAD); do
             [ -f "$f" ] || continue
             lines=$(wc -l < "$f")
             if [ "$lines" -gt 1000 ]; then
