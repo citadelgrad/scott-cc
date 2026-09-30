@@ -1,0 +1,11 @@
+{
+  "name": "agent-memory",
+  "description": "Opt-in machine setup for shared persistent agent memory: a runbook skill that installs the Graphiti knowledge-graph MCP server on macOS and wires Claude Code, Codex CLI and Hermes Agent to it (1 skill)",
+  "version": "1.0.0",
+  "author": {
+    "name": "Scott Nixon"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/citadelgrad/scott-cc",
+  "homepage": "https://github.com/citadelgrad/scott-cc/tree/main/plugins/agent-memory"
+}

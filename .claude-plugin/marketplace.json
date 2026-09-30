@@ -118,6 +118,17 @@
       },
       "tags": ["triage", "foundry", "automation", "detectors", "beads"],
       "status": "stable"
+    },
+    {
+      "name": "agent-memory",
+      "source": "./plugins/agent-memory",
+      "description": "Opt-in machine setup for shared persistent agent memory: installs the Graphiti knowledge-graph MCP server on macOS and wires Claude Code, Codex CLI and Hermes Agent to it (1 skill)",
+      "version": "1.0.0",
+      "author": {
+        "name": "Scott Nixon"
+      },
+      "tags": ["memory", "graphiti", "mcp", "knowledge-graph", "macos"],
+      "status": "experimental"
     }
   ]
 }

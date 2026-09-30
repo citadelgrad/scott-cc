@@ -1,0 +1,40 @@
+# Graphiti MCP server + FalkorDB (combined upstream image).
+# Ports come from the Makefile / environment. Secrets are NOT stored here:
+# the key variables below are read from the shell environment or from the
+# git-ignored .env file in this directory (see Makefile SECRETS wrapper).
+services:
+  graphiti:
+    image: ${GRAPHITI_IMAGE:-zepai/knowledge-graph-mcp:latest}
+    container_name: graphiti
+    restart: unless-stopped
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - GROQ_API_KEY=${GROQ_API_KEY:-}
+      - VOYAGE_API_KEY=${VOYAGE_API_KEY:-}
+      - BROWSER=${BROWSER:-0}
+      - FALKORDB_URI=redis://localhost:6379
+      - FALKORDB_DATABASE=default_db
+      - GRAPHITI_GROUP_ID=main
+      - SEMAPHORE_LIMIT=${SEMAPHORE_LIMIT:-5}
+      - CONFIG_PATH=/app/mcp/config/config.yaml
+    volumes:
+      - ./config/config.yaml:/app/mcp/config/config.yaml:ro
+@PATCH_VOLUMES@      - falkordb_data:/var/lib/falkordb/data
+      - mcp_logs:/var/log/graphiti
+    ports:
+      # 127.0.0.1 only: the server has no authentication.
+      - "127.0.0.1:${GRAPHITI_MCP_PORT:-@MCP_PORT@}:8000"   # MCP HTTP at /mcp
+      - "127.0.0.1:${GRAPHITI_DB_PORT:-@DB_PORT@}:6379"    # FalkorDB (Redis protocol)
+      - "127.0.0.1:${GRAPHITI_UI_PORT:-@UI_PORT@}:3000"    # FalkorDB browser UI (only when BROWSER=1)
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6379", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+volumes:
+  falkordb_data:
+  mcp_logs:

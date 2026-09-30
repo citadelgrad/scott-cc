@@ -1,0 +1,28 @@
+# Graphiti memory service. Manage ONLY through these targets.
+# Ports: MCP @MCP_PORT@, FalkorDB @DB_PORT@, UI @UI_PORT@ (override: make up GRAPHITI_MCP_PORT=...).
+# Secrets: @SECRETS_NOTE@
+# Nothing secret is stored in this file.
+SHELL := /bin/bash
+export GRAPHITI_MCP_PORT ?= @MCP_PORT@
+export GRAPHITI_DB_PORT  ?= @DB_PORT@
+export GRAPHITI_UI_PORT  ?= @UI_PORT@
+export SEMAPHORE_LIMIT   ?= 5
+DC = docker compose
+SECRETS = @SECRETS_WRAPPER@
+
+.PHONY: up down restart status logs
+up:
+	$(SECRETS) $(DC) up -d
+	@$(MAKE) --no-print-directory status
+restart:
+	$(DC) down
+	$(SECRETS) $(DC) up -d
+	@$(MAKE) --no-print-directory status
+down:
+	$(DC) down
+status:
+	@$(DC) ps
+	@echo "--- MCP health"; curl -s --max-time 3 http://127.0.0.1:$(GRAPHITI_MCP_PORT)/health || echo "not reachable"
+	@echo; echo "--- recent log"; $(DC) logs --tail=15 graphiti 2>&1 | tail -15
+logs:
+	$(DC) logs -f --tail=100 graphiti

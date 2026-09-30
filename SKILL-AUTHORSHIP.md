@@ -40,6 +40,7 @@ The inline `source` and `sources` metadata in skills such as `grill-me`, `tdd`, 
 
 ## Project-original plugin skills — Scott Nixon (@citadelgrad), author or substantial redesign author
 
+- `plugins/agent-memory/skills/graphiti-setup/SKILL.md`
 - `plugins/browser-automation/skills/browser-use-e2e/SKILL.md`
 - `plugins/browser-automation/skills/browser-use/SKILL.md`
 - `plugins/mutation-testing/skills/mutation-test/SKILL.md`
@@ -93,4 +94,4 @@ Scott maintains these copies but is not presented as their original author. Exac
 
 ## Scope
 
-This inventory covers the 72 installable `SKILL.md` files under `skills/` and `plugins/*/skills/`. It excludes research notes such as `docs/research/LOGGING/LOGGING_SKILL.md` and tool-managed compatibility copies such as `.agents/skills/beads/SKILL.md`; those are not distributed as scott-cc-authored skills.
+This inventory covers the 73 installable `SKILL.md` files under `skills/` and `plugins/*/skills/`. It excludes research notes such as `docs/research/LOGGING/LOGGING_SKILL.md` and tool-managed compatibility copies such as `.agents/skills/beads/SKILL.md`; those are not distributed as scott-cc-authored skills.
