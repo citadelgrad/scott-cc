@@ -49,6 +49,7 @@ Use the plugin route when you also want Claude-specific agents, slash commands, 
 - review-panel - Multi-persona adversarial code and design review
 - variant-explorer - Parallel blind-builder implementation exploration
 - triage - Foundry-resident detect, reproduce, fix, and gate loop
+- agent-memory - Opt-in Graphiti shared memory setup for Claude Code, Codex and Hermes (macOS)
 
 ## Usage
 

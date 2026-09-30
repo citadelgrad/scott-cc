@@ -31,7 +31,7 @@ Install the complete Claude Code plugin, including agents, slash commands, and h
 | Skills | 29 | `init`, `acceptance-criteria`, `cli-design`, `delegate-first`, `grill-me`, `adversarial-reviewer`, `tdd`, `python-simplifier`, `typescript-simplifier`, `go-simplifier`, `rust-simplifier`, `swift-simplifier`, `karpathy-guidelines`, `property-based-testing`, `verified-implementation`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory`, `thinking-in-systems`, `emergent-behavior`, `skillopt-sleep-learned`, `thermo-nuclear`, `google-standard`, `polyglot-idiom`, `concurrency-atomicity` |
 | Hooks | 6 | `terminal-bell` (Stop), `toon-post-hook` (PostToolUse), `prefer-modern-tools` (PreToolUse), `data-layer-guard` (PreToolUse), `post-compaction` (SessionStart after compact/clear), `review-panel-session-identity` (SessionStart) |
 | Templates | 3 | `.pre-commit-config.yaml`, `CLAUDE.md`, `AGENTS.md` |
-| Sub-plugins | 9 | `beads-epic-builder`, `browser-automation`, `research-tools`, `security-suite`, `performance-optimization`, `mutation-testing`, `review-panel`, `variant-explorer`, `triage` |
+| Sub-plugins | 10 | `beads-epic-builder`, `browser-automation`, `research-tools`, `security-suite`, `performance-optimization`, `mutation-testing`, `review-panel`, `variant-explorer`, `triage`, `agent-memory` |
 
 ---
 
@@ -205,6 +205,7 @@ Install from the marketplace:
 | `review-panel` | `stable` | Context-bounded, checkpointed multi-persona adversarial code and design review panel. |
 | `variant-explorer` | `stable` | Parallel blind-builder variant exploration with AC/taste/simplicity judging. |
 | `triage` | `stable` | Foundry-resident triage spine: detect → bead → reproduce → fix → gate loop. |
+| `agent-memory` | `experimental` | Opt-in macOS setup of Graphiti shared memory for Claude Code, Codex and Hermes. |
 
 ---
 
@@ -438,6 +439,18 @@ Foundry-resident triage spine: detect → bead → reproduce → fix → gate lo
 | `detectors/prod-errors` | Consumes a log/Sentry-shaped production error source and emits one normalized triage item per distinct error, stack trace carried verbatim in evidence. |
 
 Two of five detector slots (`lib-upgrades`, `prod-errors`) are implemented in v1; three (`system-upgrades`, `iac-drift`, `security-advisory-sweeps`) are registered but stubbed.
+
+---
+
+### agent-memory
+
+Opt-in machine setup for shared persistent agent memory. It is a separate plugin because it needs Docker and an LLM key, and it edits the global config of up to three agents.
+
+**Skills (1)**
+
+| Skill | Description |
+|-------|-------------|
+| `graphiti-setup` | macOS runbook that installs the Graphiti MCP server (Docker, FalkorDB) and wires Claude Code, Codex CLI and Hermes Agent to it. Bundles preflight, render, wiring and smoke-test scripts, plus hooks that inject current facts into each prompt and save each session. |
 
 ---
 
