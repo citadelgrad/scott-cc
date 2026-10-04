@@ -1,7 +1,7 @@
 {
   "name": "browser-automation",
   "description": "Complete browser testing & validation suite with E2E test generation, browser automation, and UI validation",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Scott Nixon"
   },

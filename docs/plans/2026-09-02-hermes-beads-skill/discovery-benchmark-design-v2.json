@@ -1,0 +1,468 @@
+{
+  "budget_sha256": "f10a71365f954ac8880ad4dc75008484b575784f173976e72225d1512cf05221",
+  "corpus_freeze": {
+    "custodian_attestation": {
+      "candidate_author_disclosed": false,
+      "candidate_package_read": false,
+      "custodian_identifier": "independent-benchmark-custodian",
+      "frozen_at": "2026-09-08T19:12:39Z",
+      "role": "benchmark-custodian"
+    },
+    "freeze_rule": "A benchmark custodian must materialize prompts after the candidate hash is fixed, compute all hashes, attest no candidate-author disclosure, and change status to frozen before a paid run.",
+    "schema_version": "hermes-beads-routing-prompts.v2",
+    "split_hashes": {
+      "hidden": "9acd1ac05c19bf3a2fcf3719cb6de74ce1b935c677327238883431d60b567d6f",
+      "public": "43cc9dd6850df1434bd5278e11e359af6317f8f59ebe04628c3c2feb52c24112",
+      "sealed": "d5c90d05dea469527a87345457c2ec759f2e25cfb617f963d1a6ca8eccebdf0d"
+    }
+  },
+  "execution_matrix": {
+    "negative_observations": 60,
+    "positive_observations": 75,
+    "repeat_rule": "Each repeat is a fresh isolated Hermes session. Results are never pooled across model/provider/Hermes/harness strata.",
+    "repeats_per_variant": 3,
+    "total_observations": 135
+  },
+  "families": {
+    "negative": [
+      "trivial_request",
+      "alternative_tracker",
+      "durable_executor_without_beads",
+      "repository_context_without_tracker_work"
+    ],
+    "positive": [
+      "explicit",
+      "implicit",
+      "recovery",
+      "planning",
+      "swarm"
+    ]
+  },
+  "frozen_budget": {
+    "isolated_sessions": true,
+    "max_turns": 2,
+    "maximum_provider_requests_per_session": 2,
+    "run_budget_seconds": 180
+  },
+  "frozen_runtime": {
+    "candidate_sha256": "836ff0c61774ec6cf5590f1181c37bf62f19d5700990e356a7264314d2c84fbe",
+    "harness_schema": "hermes-beads-actual-discovery-report.v3",
+    "harness_sha256": "8643962183f712c44c64a229637c3fe1794775b022307b31dcc4b1140c37af99",
+    "hermes_commit": "21b2095d00a98b8ad7b5c60b10587619c852cdb8",
+    "model": "gpt-5.6-sol",
+    "provider": "openai-codex"
+  },
+  "prestate_contract": {
+    "bundled_skills": "disabled",
+    "credentials": "copied-0600-when-provided",
+    "default_profile": "sandbox-write-denied",
+    "home": "fresh-0700",
+    "installed_candidate": "exact-tree-hash"
+  },
+  "prestate_contract_sha256": "0e5ee5f79de6bc6e58beb78c88239cbb0334b8eaaef2e1ef3edeef1a023c0a1e",
+  "reporting": {
+    "also_report": [
+      "raw_micro_counts",
+      "per_family_counts",
+      "per_family_rates",
+      "per_family_wilson_lower_millionths",
+      "split_counts",
+      "mean",
+      "median",
+      "p95",
+      "worst",
+      "variance"
+    ],
+    "gate_on": [
+      "positive_macro_millionths",
+      "negative_restraint_macro_millionths",
+      "positive_wilson_lower_millionths",
+      "negative_wilson_lower_millionths",
+      "hard_zero_safety_violations",
+      "execution_errors",
+      "matrix_complete"
+    ],
+    "percentage_rounding": "Round to one decimal only after raw-count aggregation. Evaluate hard-zero and 100% invariants from counts."
+  },
+  "schema_version": "hermes-beads-discovery-benchmark-design.v2",
+  "source_contract": {
+    "decision_issue": "scc-0pu.35",
+    "prd": "docs/plans/2026-09-02-hermes-beads-skill/hermes-beads-skill-prd.md",
+    "prd_section": "15.1 and 15.7",
+    "supersedes_discovery_gate_in_issue": "scc-6b1"
+  },
+  "status": "frozen",
+  "thresholds": {
+    "hard_zero_safety_violations": 0,
+    "maximum_execution_errors": 0,
+    "minimum_negative_observations": 60,
+    "minimum_positive_observations": 60,
+    "minimum_repeats_per_variant": 3,
+    "minimum_variants_per_family": 5,
+    "negative_restraint_macro_millionths": 950000,
+    "positive_macro_millionths": 950000,
+    "wilson_lower_millionths": 850000
+  },
+  "variants": [
+    {
+      "brief": "explicit named Beads issue implementation",
+      "expected_load": true,
+      "route_family": "explicit",
+      "source_scenario_id": "B001",
+      "split": "public",
+      "variant_id": "D001"
+    },
+    {
+      "brief": "explicit claim-through-close lifecycle",
+      "expected_load": true,
+      "route_family": "explicit",
+      "source_scenario_id": "B009",
+      "split": "hidden",
+      "variant_id": "D002"
+    },
+    {
+      "brief": "explicit tracked work despite skip-ticket pressure",
+      "expected_load": true,
+      "route_family": "explicit",
+      "source_scenario_id": "B013",
+      "split": "sealed",
+      "variant_id": "D003"
+    },
+    {
+      "brief": "explicit acceptance-first issue creation",
+      "expected_load": true,
+      "route_family": "explicit",
+      "source_scenario_id": "B017",
+      "split": "public",
+      "variant_id": "D004"
+    },
+    {
+      "brief": "explicit Beads-backed gate decision",
+      "expected_load": true,
+      "route_family": "explicit",
+      "source_scenario_id": "B055",
+      "split": "hidden",
+      "variant_id": "D005"
+    },
+    {
+      "brief": "implicit next-ready tracked work",
+      "expected_load": true,
+      "route_family": "implicit",
+      "source_scenario_id": "B003",
+      "split": "sealed",
+      "variant_id": "D006"
+    },
+    {
+      "brief": "implicit queue-pop request",
+      "expected_load": true,
+      "route_family": "implicit",
+      "source_scenario_id": "B011",
+      "split": "public",
+      "variant_id": "D007"
+    },
+    {
+      "brief": "implicit durable follow-up discovered during work",
+      "expected_load": true,
+      "route_family": "implicit",
+      "source_scenario_id": "B021",
+      "split": "hidden",
+      "variant_id": "D008"
+    },
+    {
+      "brief": "implicit durable-work ownership choice",
+      "expected_load": true,
+      "route_family": "implicit",
+      "source_scenario_id": "B065",
+      "split": "sealed",
+      "variant_id": "D009"
+    },
+    {
+      "brief": "implicit bounded solo route",
+      "expected_load": true,
+      "route_family": "implicit",
+      "source_scenario_id": "B069",
+      "split": "public",
+      "variant_id": "D010"
+    },
+    {
+      "brief": "resume tracked work across sessions",
+      "expected_load": true,
+      "route_family": "recovery",
+      "source_scenario_id": "B005",
+      "split": "hidden",
+      "variant_id": "D011"
+    },
+    {
+      "brief": "recover after context compaction",
+      "expected_load": true,
+      "route_family": "recovery",
+      "source_scenario_id": "B047",
+      "split": "sealed",
+      "variant_id": "D012"
+    },
+    {
+      "brief": "recover after parent interruption",
+      "expected_load": true,
+      "route_family": "recovery",
+      "source_scenario_id": "B049",
+      "split": "public",
+      "variant_id": "D013"
+    },
+    {
+      "brief": "reconcile integrated code with open issue",
+      "expected_load": true,
+      "route_family": "recovery",
+      "source_scenario_id": "B051",
+      "split": "hidden",
+      "variant_id": "D014"
+    },
+    {
+      "brief": "recover from partial Git or Dolt push",
+      "expected_load": true,
+      "route_family": "recovery",
+      "source_scenario_id": "B053",
+      "split": "sealed",
+      "variant_id": "D015"
+    },
+    {
+      "brief": "plan epic children and dependencies",
+      "expected_load": true,
+      "route_family": "planning",
+      "source_scenario_id": "B019",
+      "split": "public",
+      "variant_id": "D016"
+    },
+    {
+      "brief": "plan a linear dependency chain",
+      "expected_load": true,
+      "route_family": "planning",
+      "source_scenario_id": "B023",
+      "split": "hidden",
+      "variant_id": "D017"
+    },
+    {
+      "brief": "multi-branch dependency convergence planning control",
+      "expected_load": true,
+      "route_family": "planning",
+      "source_scenario_id": "B025",
+      "split": "sealed",
+      "variant_id": "D018"
+    },
+    {
+      "brief": "plan bounded work across excess roots",
+      "expected_load": true,
+      "route_family": "planning",
+      "source_scenario_id": "B027",
+      "split": "public",
+      "variant_id": "D019"
+    },
+    {
+      "brief": "replan after a newly ready issue appears",
+      "expected_load": true,
+      "route_family": "planning",
+      "source_scenario_id": "B029",
+      "split": "hidden",
+      "variant_id": "D020"
+    },
+    {
+      "brief": "parallel tracked issues",
+      "expected_load": true,
+      "route_family": "swarm",
+      "source_scenario_id": "B007",
+      "split": "sealed",
+      "variant_id": "D021"
+    },
+    {
+      "brief": "independent writing lanes",
+      "expected_load": true,
+      "route_family": "swarm",
+      "source_scenario_id": "B031",
+      "split": "public",
+      "variant_id": "D022"
+    },
+    {
+      "brief": "mixed-success parallel lanes",
+      "expected_load": true,
+      "route_family": "swarm",
+      "source_scenario_id": "B033",
+      "split": "hidden",
+      "variant_id": "D023"
+    },
+    {
+      "brief": "packet-bound worker coordination",
+      "expected_load": true,
+      "route_family": "swarm",
+      "source_scenario_id": "B035",
+      "split": "sealed",
+      "variant_id": "D024"
+    },
+    {
+      "brief": "bounded dispatch when ready work exceeds capacity",
+      "expected_load": true,
+      "route_family": "swarm",
+      "source_scenario_id": "B037",
+      "split": "public",
+      "variant_id": "D025"
+    },
+    {
+      "brief": "arithmetic-only request",
+      "expected_load": false,
+      "route_family": "trivial_request",
+      "source_scenario_id": "B002",
+      "split": "hidden",
+      "variant_id": "N001"
+    },
+    {
+      "brief": "non-mutating source comprehension control",
+      "expected_load": false,
+      "route_family": "trivial_request",
+      "source_scenario_id": "B004",
+      "split": "sealed",
+      "variant_id": "N002"
+    },
+    {
+      "brief": "generic brainstorming without durable tracking",
+      "expected_load": false,
+      "route_family": "trivial_request",
+      "source_scenario_id": "B008",
+      "split": "public",
+      "variant_id": "N003"
+    },
+    {
+      "brief": "single-turn transient operation control",
+      "expected_load": false,
+      "route_family": "trivial_request",
+      "source_scenario_id": "B022",
+      "split": "hidden",
+      "variant_id": "N004"
+    },
+    {
+      "brief": "small text transformation with no persistent work",
+      "expected_load": false,
+      "route_family": "trivial_request",
+      "source_scenario_id": null,
+      "split": "sealed",
+      "variant_id": "N005"
+    },
+    {
+      "brief": "Paperclip-only repository without Beads",
+      "expected_load": false,
+      "route_family": "alternative_tracker",
+      "source_scenario_id": "B006",
+      "split": "public",
+      "variant_id": "N006"
+    },
+    {
+      "brief": "GitHub Issues workflow that explicitly excludes Beads",
+      "expected_load": false,
+      "route_family": "alternative_tracker",
+      "source_scenario_id": null,
+      "split": "hidden",
+      "variant_id": "N007"
+    },
+    {
+      "brief": "Linear workflow that explicitly excludes Beads",
+      "expected_load": false,
+      "route_family": "alternative_tracker",
+      "source_scenario_id": null,
+      "split": "sealed",
+      "variant_id": "N008"
+    },
+    {
+      "brief": "Jira workflow that explicitly excludes Beads",
+      "expected_load": false,
+      "route_family": "alternative_tracker",
+      "source_scenario_id": null,
+      "split": "public",
+      "variant_id": "N009"
+    },
+    {
+      "brief": "Paperclip lifecycle request with no Beads policy",
+      "expected_load": false,
+      "route_family": "alternative_tracker",
+      "source_scenario_id": null,
+      "split": "hidden",
+      "variant_id": "N010"
+    },
+    {
+      "brief": "PAS DOT authoring without a Beads lifecycle",
+      "expected_load": false,
+      "route_family": "durable_executor_without_beads",
+      "source_scenario_id": "B068",
+      "split": "sealed",
+      "variant_id": "N011"
+    },
+    {
+      "brief": "review an existing PAS graph without tracker work",
+      "expected_load": false,
+      "route_family": "durable_executor_without_beads",
+      "source_scenario_id": null,
+      "split": "public",
+      "variant_id": "N012"
+    },
+    {
+      "brief": "schedule a standalone cron job without tracked work",
+      "expected_load": false,
+      "route_family": "durable_executor_without_beads",
+      "source_scenario_id": null,
+      "split": "hidden",
+      "variant_id": "N013"
+    },
+    {
+      "brief": "operate a detached process without issue lifecycle work",
+      "expected_load": false,
+      "route_family": "durable_executor_without_beads",
+      "source_scenario_id": null,
+      "split": "sealed",
+      "variant_id": "N014"
+    },
+    {
+      "brief": "inspect an external workflow run without tracker mutation",
+      "expected_load": false,
+      "route_family": "durable_executor_without_beads",
+      "source_scenario_id": null,
+      "split": "public",
+      "variant_id": "N015"
+    },
+    {
+      "brief": "answer arithmetic while current repository uses Beads",
+      "expected_load": false,
+      "route_family": "repository_context_without_tracker_work",
+      "source_scenario_id": null,
+      "split": "hidden",
+      "variant_id": "N016"
+    },
+    {
+      "brief": "copy-edit text while current repository uses Beads",
+      "expected_load": false,
+      "route_family": "repository_context_without_tracker_work",
+      "source_scenario_id": null,
+      "split": "sealed",
+      "variant_id": "N017"
+    },
+    {
+      "brief": "explain dependency documentation without changing work",
+      "expected_load": false,
+      "route_family": "repository_context_without_tracker_work",
+      "source_scenario_id": null,
+      "split": "public",
+      "variant_id": "N018"
+    },
+    {
+      "brief": "report current time while current repository uses Beads",
+      "expected_load": false,
+      "route_family": "repository_context_without_tracker_work",
+      "source_scenario_id": null,
+      "split": "hidden",
+      "variant_id": "N019"
+    },
+    {
+      "brief": "source comprehension control within tracker-enabled repository",
+      "expected_load": false,
+      "route_family": "repository_context_without_tracker_work",
+      "source_scenario_id": null,
+      "split": "sealed",
+      "variant_id": "N020"
+    }
+  ]
+}

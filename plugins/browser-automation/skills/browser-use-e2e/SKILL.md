@@ -51,6 +51,9 @@ Generate and execute end-to-end tests using browser-use, an AI-powered browser a
 ```bash
 # Install browser-use
 uv add browser-use python-dotenv
+uv add --dev pytest pytest-asyncio
+# Optional HTML reporting used below
+uv add --dev pytest-html
 uvx browser-use install
 ```
 
@@ -154,7 +157,9 @@ asyncio.run(test_login())
 
 ```python
 # tests/e2e/test_auth.py
+import asyncio
 import pytest
+import pytest_asyncio
 from browser_use import Agent, Browser, ChatBrowserUse
 
 @pytest.fixture
@@ -162,7 +167,7 @@ def sensitive_data():
     from conftest import build_sensitive_data
     return build_sensitive_data()
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def browser():
     b = Browser(headless=True)
     yield b
@@ -184,8 +189,12 @@ async def test_github_login(browser, sensitive_data):
 ### Persistent Profile (2FA Sites)
 
 ```python
+import asyncio
 from pathlib import Path
+import pytest
+from browser_use import Agent, Browser, ChatBrowserUse
 
+@pytest.mark.asyncio
 async def test_with_2fa_profile():
     profile_dir = Path.home() / '.browser-use-profiles' / 'github-2fa'
 
@@ -212,39 +221,12 @@ async def test_with_2fa_profile():
 python scripts/setup_profile.py --service github --profile-name github-2fa
 ```
 
-```python
-# scripts/setup_profile.py
-import argparse
-import asyncio
-from pathlib import Path
-from browser_use import Browser
-
-async def setup_profile(service: str, profile_name: str):
-    profile_dir = Path.home() / '.browser-use-profiles' / profile_name
-    profile_dir.mkdir(parents=True, exist_ok=True)
-
-    urls = {
-        'github': 'https://github.com/login',
-        'google': 'https://accounts.google.com',
-        'gitlab': 'https://gitlab.com/users/sign_in',
-    }
-
-    browser = Browser(headless=False, user_data_dir=str(profile_dir))
-    ctx = await browser.new_context()
-    page = await ctx.new_page()
-    await page.goto(urls.get(service, service))
-
-    input(f'Complete {service} login (including 2FA), then press Enter...')
-    await browser.close()
-    print(f'Profile saved to {profile_dir}')
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--service', required=True)
-    parser.add_argument('--profile-name', required=True)
-    args = parser.parse_args()
-    asyncio.run(setup_profile(args.service, args.profile_name))
-```
+Copy the bundled [setup_profile.py](setup_profile.py) to `scripts/setup_profile.py`.
+It uses the browser-use session API (`start`, `new_page`, `stop`; checked with
+browser-use 0.13.10), closes the browser on errors, and exits nonzero if startup,
+navigation, shutdown, or persisted-profile validation fails. Success verifies a
+readable Chromium profile, not that a service accepted your login; the following
+E2E test must verify authentication. No credentials or cookie values are printed.
 
 ## Running Tests
 

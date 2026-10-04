@@ -1,0 +1,18 @@
+{
+  "citation_accuracy": 1.0,
+  "classification_accuracy": 1.0,
+  "control_false_positive_rate": 0.0,
+  "cost_usd": 0.0,
+  "evidence_calibration": 1.0,
+  "f1": 1.0,
+  "finding_count": 11,
+  "latency_seconds": 3.96,
+  "paired_accuracy": 1.0,
+  "precision": 1.0,
+  "recall": 1.0,
+  "run_to_run_variance": 6.66666666666667e-05,
+  "schema_validity": 1.0,
+  "score": 1.0,
+  "severity_calibration": 1.0,
+  "tokens": 4230
+}
