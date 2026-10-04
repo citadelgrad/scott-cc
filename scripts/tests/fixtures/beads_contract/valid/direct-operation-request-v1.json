@@ -1,0 +1,22 @@
+{
+  "authority_scope": [
+    "x"
+  ],
+  "effect_type": "create",
+  "expected_precondition_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "immutable_intent_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "operation_key": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "payload": {
+    "content": null,
+    "fields_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "issue_id": "scc-x",
+    "issue_type": "task",
+    "other_issue_id": null,
+    "priority": 1,
+    "reason": null,
+    "title": "Implement exact create"
+  },
+  "request_id": "request-00000001",
+  "schema_version": "beads.direct-operation-request.v1",
+  "target_identity": "scc-x"
+}
