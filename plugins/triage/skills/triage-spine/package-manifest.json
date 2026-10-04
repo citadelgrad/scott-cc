@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "required": [
+    "SKILL.md",
+    "references/detector-registry.md",
+    "references/foundry-recipes.md",
+    "scripts/package_contract.py"
+  ],
+  "copies": {
+    "references/foundry-recipes.md": {
+      "source": "plugins/triage/docs/foundry-recipes.md",
+      "sha256": "8c29819f0fe5d6706445ccc3d59382dbc95fecc1b66167896dc721fc1994e6f6"
+    },
+    "scripts/package_contract.py": {
+      "source": "skills/init/scripts/package_contract.py",
+      "sha256": "12633d622b62b770cc1ced7ecf3ad779f6a4e25c771a7ad55a905a190bfad67f"
+    }
+  }
+}

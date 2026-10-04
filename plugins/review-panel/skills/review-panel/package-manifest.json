@@ -1,0 +1,933 @@
+{
+  "version": 1,
+  "required": [
+    "SKILL.md",
+    "references/cast-and-spawn.md",
+    "references/converge-and-pipeline.md",
+    "references/design-lineage.md",
+    "references/dual-mode-contract.md",
+    "references/fix-and-rereview.md",
+    "references/lite-mode.md",
+    "references/merge-and-validate.md",
+    "references/outcome-ledger.md",
+    "references/portable-modes.md",
+    "references/worker-adapters.md",
+    "resource-map.json",
+    "resources/CREDITS.md",
+    "resources/agents/clean-room-alternative.md",
+    "resources/agents/security-engineer.md",
+    "resources/contracts/reviewer-output.md",
+    "resources/contracts/verification-before-completion.md",
+    "resources/formats/ADR-FORMAT.md",
+    "resources/formats/CONTEXT-FORMAT.md",
+    "resources/formats/DATA-MODEL-FORMAT.md",
+    "resources/formats/TASTE-FORMAT.md",
+    "resources/hooks/_guard_base.py",
+    "resources/hooks/data_layer_guard.py",
+    "resources/reviewers/mental-models-catalog.md",
+    "resources/reviewers/persona-catalog.md",
+    "resources/skills/abstraction-quality/INSTRUCTIONS.md",
+    "resources/skills/adr-skill/ADR-TEMPLATE.md",
+    "resources/skills/adr-skill/INSTRUCTIONS.md",
+    "resources/skills/adr-skill/assets/templates/adr-madr.md",
+    "resources/skills/adr-skill/assets/templates/adr-readme.md",
+    "resources/skills/adr-skill/assets/templates/adr-simple.md",
+    "resources/skills/adr-skill/references/adr-conventions.md",
+    "resources/skills/adr-skill/references/examples.md",
+    "resources/skills/adr-skill/references/review-checklist.md",
+    "resources/skills/adr-skill/references/template-variants.md",
+    "resources/skills/adr-skill/scripts/bootstrap_adr.js",
+    "resources/skills/adr-skill/scripts/new_adr.js",
+    "resources/skills/adr-skill/scripts/set_adr_status.js",
+    "resources/skills/adversarial-reviewer/INSTRUCTIONS.md",
+    "resources/skills/adversarial-reviewer/README.md",
+    "resources/skills/adversarial-reviewer/benchmark/baseline-metrics.json",
+    "resources/skills/adversarial-reviewer/benchmark/baseline-results.json",
+    "resources/skills/adversarial-reviewer/benchmark/corpus.json",
+    "resources/skills/adversarial-reviewer/benchmark/noisy-results.json",
+    "resources/skills/adversarial-reviewer/references/agent-contract.md",
+    "resources/skills/adversarial-reviewer/references/benchmark-methodology.md",
+    "resources/skills/adversarial-reviewer/references/clean-room-protocol.md",
+    "resources/skills/adversarial-reviewer/references/control-backed-findings.md",
+    "resources/skills/adversarial-reviewer/references/threat-model-taxonomy.md",
+    "resources/skills/adversarial-reviewer/schemas/adversarial-report-v1.schema.json",
+    "resources/skills/adversarial-reviewer/scripts/adversarial_contract.py",
+    "resources/skills/adversarial-reviewer/tests/fixtures/agent-tool-threat-model.json",
+    "resources/skills/adversarial-reviewer/tests/fixtures/clean-empty.json",
+    "resources/skills/adversarial-reviewer/tests/fixtures/clean-room-handoff.json",
+    "resources/skills/adversarial-reviewer/tests/fixtures/introduced-regression.json",
+    "resources/skills/adversarial-reviewer/tests/fixtures/known-good-sibling.json",
+    "resources/skills/adversarial-reviewer/tests/fixtures/known-vulnerable-pair.json",
+    "resources/skills/adversarial-reviewer/tests/fixtures/missing-credentials.json",
+    "resources/skills/adversarial-reviewer/tests/fixtures/pre-existing-defect.json",
+    "resources/skills/adversarial-reviewer/tests/fixtures/rejected-sql-injection.json",
+    "resources/skills/code-evolution/INSTRUCTIONS.md",
+    "resources/skills/comments-docs/INSTRUCTIONS.md",
+    "resources/skills/comments-docs/references/comments-first-workflow.md",
+    "resources/skills/complexity-recognition/INSTRUCTIONS.md",
+    "resources/skills/data-steward/INSTRUCTIONS.md",
+    "resources/skills/data-steward/package-manifest.json",
+    "resources/skills/data-steward/references/contracts/reviewer-output.md",
+    "resources/skills/data-steward/references/formats/ADR-FORMAT.md",
+    "resources/skills/data-steward/references/formats/CONTEXT-FORMAT.md",
+    "resources/skills/data-steward/references/formats/DATA-MODEL-FORMAT.md",
+    "resources/skills/data-steward/references/formats/TASTE-FORMAT.md",
+    "resources/skills/data-steward/scripts/package_contract.py",
+    "resources/skills/deep-modules/INSTRUCTIONS.md",
+    "resources/skills/design-it-twice/INSTRUCTIONS.md",
+    "resources/skills/design-it-twice/references/pre-mortem-fallback.md",
+    "resources/skills/design-review/INSTRUCTIONS.md",
+    "resources/skills/design-review/references/workflow-builder.md",
+    "resources/skills/diagnose/INSTRUCTIONS.md",
+    "resources/skills/domain-modeling/CONTEXT-AND-ADR.md",
+    "resources/skills/domain-modeling/INSTRUCTIONS.md",
+    "resources/skills/domain-modeling/RED-FLAGS.md",
+    "resources/skills/domain-modeling/TECHNIQUES.md",
+    "resources/skills/domain-modeling/WORKED-EXAMPLE.md",
+    "resources/skills/domain-modeling/package-manifest.json",
+    "resources/skills/domain-modeling/references/CREDITS.md",
+    "resources/skills/domain-modeling/references/formats/ADR-FORMAT.md",
+    "resources/skills/domain-modeling/references/formats/CONTEXT-FORMAT.md",
+    "resources/skills/domain-modeling/references/formats/DATA-MODEL-FORMAT.md",
+    "resources/skills/domain-modeling/references/formats/TASTE-FORMAT.md",
+    "resources/skills/domain-modeling/scripts/package_contract.py",
+    "resources/skills/error-design/INSTRUCTIONS.md",
+    "resources/skills/general-vs-special/INSTRUCTIONS.md",
+    "resources/skills/grill-my-taste/INSTRUCTIONS.md",
+    "resources/skills/grill-my-taste/package-manifest.json",
+    "resources/skills/grill-my-taste/references/formats/ADR-FORMAT.md",
+    "resources/skills/grill-my-taste/references/formats/CONTEXT-FORMAT.md",
+    "resources/skills/grill-my-taste/references/formats/DATA-MODEL-FORMAT.md",
+    "resources/skills/grill-my-taste/references/formats/TASTE-FORMAT.md",
+    "resources/skills/grill-my-taste/scripts/package_contract.py",
+    "resources/skills/grill-the-schema/INSTRUCTIONS.md",
+    "resources/skills/grill-the-schema/package-manifest.json",
+    "resources/skills/grill-the-schema/references/formats/ADR-FORMAT.md",
+    "resources/skills/grill-the-schema/references/formats/CONTEXT-FORMAT.md",
+    "resources/skills/grill-the-schema/references/formats/DATA-MODEL-FORMAT.md",
+    "resources/skills/grill-the-schema/references/formats/TASTE-FORMAT.md",
+    "resources/skills/grill-the-schema/scripts/package_contract.py",
+    "resources/skills/grill-with-docs/INSTRUCTIONS.md",
+    "resources/skills/grill-with-docs/package-manifest.json",
+    "resources/skills/grill-with-docs/references/formats/ADR-FORMAT.md",
+    "resources/skills/grill-with-docs/references/formats/CONTEXT-FORMAT.md",
+    "resources/skills/grill-with-docs/references/formats/DATA-MODEL-FORMAT.md",
+    "resources/skills/grill-with-docs/references/formats/TASTE-FORMAT.md",
+    "resources/skills/grill-with-docs/scripts/package_contract.py",
+    "resources/skills/improve-codebase-architecture/DEEPENING.md",
+    "resources/skills/improve-codebase-architecture/INSTRUCTIONS.md",
+    "resources/skills/improve-codebase-architecture/INTERFACE-DESIGN.md",
+    "resources/skills/improve-codebase-architecture/LANGUAGE.md",
+    "resources/skills/improve-codebase-architecture/package-manifest.json",
+    "resources/skills/improve-codebase-architecture/references/formats/ADR-FORMAT.md",
+    "resources/skills/improve-codebase-architecture/references/formats/CONTEXT-FORMAT.md",
+    "resources/skills/improve-codebase-architecture/references/formats/DATA-MODEL-FORMAT.md",
+    "resources/skills/improve-codebase-architecture/references/formats/TASTE-FORMAT.md",
+    "resources/skills/improve-codebase-architecture/scripts/package_contract.py",
+    "resources/skills/information-hiding/INSTRUCTIONS.md",
+    "resources/skills/information-hiding/references/back-door-leakage.md",
+    "resources/skills/mental-models-adversarial/INSTRUCTIONS.md",
+    "resources/skills/mental-models-adversarial/package-manifest.json",
+    "resources/skills/mental-models-adversarial/references/CREDITS.md",
+    "resources/skills/mental-models-adversarial/references/contracts/reviewer-output.md",
+    "resources/skills/mental-models-adversarial/references/reviewers/mental-models-catalog.md",
+    "resources/skills/mental-models-adversarial/scripts/package_contract.py",
+    "resources/skills/mental-models-economics/INSTRUCTIONS.md",
+    "resources/skills/mental-models-economics/package-manifest.json",
+    "resources/skills/mental-models-economics/references/CREDITS.md",
+    "resources/skills/mental-models-economics/references/contracts/reviewer-output.md",
+    "resources/skills/mental-models-economics/references/reviewers/mental-models-catalog.md",
+    "resources/skills/mental-models-economics/scripts/package_contract.py",
+    "resources/skills/mental-models-simplifier/INSTRUCTIONS.md",
+    "resources/skills/mental-models-simplifier/package-manifest.json",
+    "resources/skills/mental-models-simplifier/references/CREDITS.md",
+    "resources/skills/mental-models-simplifier/references/contracts/reviewer-output.md",
+    "resources/skills/mental-models-simplifier/references/reviewers/mental-models-catalog.md",
+    "resources/skills/mental-models-simplifier/scripts/package_contract.py",
+    "resources/skills/mental-models-systems/INSTRUCTIONS.md",
+    "resources/skills/mental-models-systems/package-manifest.json",
+    "resources/skills/mental-models-systems/references/CREDITS.md",
+    "resources/skills/mental-models-systems/references/contracts/reviewer-output.md",
+    "resources/skills/mental-models-systems/references/reviewers/mental-models-catalog.md",
+    "resources/skills/mental-models-systems/scripts/package_contract.py",
+    "resources/skills/module-boundaries/INSTRUCTIONS.md",
+    "resources/skills/naming-obviousness/INSTRUCTIONS.md",
+    "resources/skills/ponytail-audit/INSTRUCTIONS.md",
+    "resources/skills/ponytail-review/INSTRUCTIONS.md",
+    "resources/skills/pull-complexity-down/INSTRUCTIONS.md",
+    "resources/skills/pull-complexity-down/references/configuration-parameter-audit.md",
+    "resources/skills/red-flags/INSTRUCTIONS.md",
+    "resources/skills/red-flags/references/flag-interaction-map.md",
+    "resources/skills/strategic-mindset/INSTRUCTIONS.md",
+    "resources/skills/taste-review/INSTRUCTIONS.md",
+    "resources/skills/taste-review/package-manifest.json",
+    "resources/skills/taste-review/references/contracts/reviewer-output.md",
+    "resources/skills/taste-review/references/formats/ADR-FORMAT.md",
+    "resources/skills/taste-review/references/formats/CONTEXT-FORMAT.md",
+    "resources/skills/taste-review/references/formats/DATA-MODEL-FORMAT.md",
+    "resources/skills/taste-review/references/formats/TASTE-FORMAT.md",
+    "resources/skills/taste-review/scripts/package_contract.py",
+    "resources/skills/tdd/INSTRUCTIONS.md",
+    "resources/skills/tdd/deep-modules.md",
+    "resources/skills/tdd/interface-design.md",
+    "resources/skills/tdd/mocking.md",
+    "resources/skills/tdd/refactoring.md",
+    "resources/skills/tdd/tests.md",
+    "scripts/checkpoint-claim",
+    "scripts/package_contract.py",
+    "scripts/review-package",
+    "scripts/workspace"
+  ],
+  "copies": {
+    "scripts/workspace": {
+      "source": "plugins/review-panel/scripts/workspace",
+      "sha256": "b1c3ea5e377f91b6553bbcf53b52233d7274bdfe143a17c659f4e123bd4334e9"
+    },
+    "scripts/review-package": {
+      "source": "plugins/review-panel/scripts/review-package",
+      "sha256": "8047f57198ddedf0c71612f534b31f2bd4dd0ee1e210885552062d51f41fb881"
+    },
+    "scripts/checkpoint-claim": {
+      "source": "plugins/review-panel/scripts/checkpoint-claim",
+      "sha256": "ce3f13979f427e7049847f116fb6279d5860e61b50e9ad9227e5a641c3c6c88a"
+    },
+    "references/worker-adapters.md": {
+      "source": "skills/delegate-first/references/worker-adapters.md",
+      "sha256": "988c8ae1675c4f3b0e712dffc680cd04b74b5daa617e28bfb5187a8c40148b19"
+    },
+    "resources/agents/clean-room-alternative.md": {
+      "source": "plugins/review-panel/agents/clean-room-alternative.md",
+      "sha256": "0d726f2cf70cdb2362b92268321cf97bd504a1799db93255b2b260f1c528586e"
+    },
+    "resources/contracts/reviewer-output.md": {
+      "source": "plugins/review-panel/contracts/reviewer-output.md",
+      "sha256": "b2f2ec7596925fe52dac158fdfbca19b3a7d779d619c481e6706a6c0001662d3"
+    },
+    "resources/contracts/verification-before-completion.md": {
+      "source": "plugins/review-panel/contracts/verification-before-completion.md",
+      "sha256": "ea52d15aabaf72bc6b558efe2c126f161b53961090ddcd712000273bfe8c7b6c"
+    },
+    "resources/formats/TASTE-FORMAT.md": {
+      "source": "plugins/review-panel/formats/TASTE-FORMAT.md",
+      "sha256": "0652cedb5c164189d9ad46d39e2643043fe1071396dca8a39829b74918ec79f8"
+    },
+    "resources/formats/CONTEXT-FORMAT.md": {
+      "source": "plugins/review-panel/formats/CONTEXT-FORMAT.md",
+      "sha256": "ef2c1cfe91a5a96592434ab268bbef69790be71ede66de58e9fe32f37e31bd51"
+    },
+    "resources/formats/ADR-FORMAT.md": {
+      "source": "plugins/review-panel/formats/ADR-FORMAT.md",
+      "sha256": "f1f36cd3f8d3b6474ddd5855da4e233bfc4ae1a1c5024909ccf11871819a41b2"
+    },
+    "resources/formats/DATA-MODEL-FORMAT.md": {
+      "source": "plugins/review-panel/formats/DATA-MODEL-FORMAT.md",
+      "sha256": "6daf19f9c9498fcce07a48262a3ddaf83a744c2b700fd1a877b9e7330733d213"
+    },
+    "resources/reviewers/persona-catalog.md": {
+      "source": "plugins/review-panel/reviewers/persona-catalog.md",
+      "sha256": "14f230326a1844d68f98f11ffcf9116a2c06670b12354a6be7494dffdeeb311f",
+      "replacements": [
+        [
+          "../skills/review-panel/references/lite-mode.md",
+          "../../references/lite-mode.md"
+        ]
+      ]
+    },
+    "resources/reviewers/mental-models-catalog.md": {
+      "source": "plugins/review-panel/reviewers/mental-models-catalog.md",
+      "sha256": "014a048e6a2343e8efbf321748e15b1f82ce74b5ca46a0d1096c57da5575bc9f"
+    },
+    "resources/CREDITS.md": {
+      "source": "plugins/review-panel/CREDITS.md",
+      "sha256": "99f82695f3a10bb06768029cf40975dc9ed21bed623ab2aaf3558a6d94168c1f"
+    },
+    "resources/hooks/data_layer_guard.py": {
+      "source": "hooks/data_layer_guard.py",
+      "sha256": "61a3a45cb5f0c672fb4d133c9b316ba849f7fd380e67e6cb247512b9f300feb5"
+    },
+    "resources/hooks/_guard_base.py": {
+      "source": "hooks/_guard_base.py",
+      "sha256": "8f019f1ad99544f0bff970739d63b3a617c567e5b1b12a2a63d1dcb8e65a76aa"
+    },
+    "resources/agents/security-engineer.md": {
+      "source": "plugins/security-suite/agents/security-engineer.md",
+      "sha256": "5c55270a8eabf14bc11a537773ce3693faa5c378707f0934710d54529e4c2f1f"
+    },
+    "resources/skills/abstraction-quality/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/abstraction-quality/SKILL.md",
+      "sha256": "6c29d03e1f967405e759086bbfb6aaaf3dae1319f1278c0445a9fe99cf2a6c20"
+    },
+    "resources/skills/adr-skill/ADR-TEMPLATE.md": {
+      "source": "plugins/review-panel/skills/adr-skill/ADR-TEMPLATE.md",
+      "sha256": "20cc88184403f06f3ede2a169629d57916f913bb9aed8b54c762d8635d4e73ac"
+    },
+    "resources/skills/adr-skill/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/adr-skill/SKILL.md",
+      "sha256": "00d183642f5c540dddaac5f6db4bb75afad4f59ba75b90108b4fd3f7a2407982"
+    },
+    "resources/skills/adr-skill/assets/templates/adr-madr.md": {
+      "source": "plugins/review-panel/skills/adr-skill/assets/templates/adr-madr.md",
+      "sha256": "e4c72e9c06d95deac7888e6326416b064fd13acdd6bc1d12fb6499bcc0cff932"
+    },
+    "resources/skills/adr-skill/assets/templates/adr-readme.md": {
+      "source": "plugins/review-panel/skills/adr-skill/assets/templates/adr-readme.md",
+      "sha256": "d76249824556ed06ded1f45b7446c2f6e515c432e54ca81a61ce57a9c8d347b9"
+    },
+    "resources/skills/adr-skill/assets/templates/adr-simple.md": {
+      "source": "plugins/review-panel/skills/adr-skill/assets/templates/adr-simple.md",
+      "sha256": "107df972c97f55896c3f7e8565b059f26d63e06653d7a23ee3d9f4f33902156c"
+    },
+    "resources/skills/adr-skill/references/adr-conventions.md": {
+      "source": "plugins/review-panel/skills/adr-skill/references/adr-conventions.md",
+      "sha256": "f9da7d97016b12b9f951767c7759bd90e562c30d9e6ac91c7128a038584ff0c7"
+    },
+    "resources/skills/adr-skill/references/examples.md": {
+      "source": "plugins/review-panel/skills/adr-skill/references/examples.md",
+      "sha256": "d535b761b5685e367fe9497e5e75073d546f9035991568c33ea9e67f4df0b25b"
+    },
+    "resources/skills/adr-skill/references/review-checklist.md": {
+      "source": "plugins/review-panel/skills/adr-skill/references/review-checklist.md",
+      "sha256": "f06dec98f8d9c603b434242ad518e54a80e71f0773cb551e6a5139fd5fc4b3d6"
+    },
+    "resources/skills/adr-skill/references/template-variants.md": {
+      "source": "plugins/review-panel/skills/adr-skill/references/template-variants.md",
+      "sha256": "e60cd6e00727222fb9564149717b6e14de55c41f6a9916106e4f5a1a2b390e35"
+    },
+    "resources/skills/adr-skill/scripts/bootstrap_adr.js": {
+      "source": "plugins/review-panel/skills/adr-skill/scripts/bootstrap_adr.js",
+      "sha256": "231338f1a7eff5cf3dcdab4950241b3a7784c95f20957c4ca1ea49f636adaa50"
+    },
+    "resources/skills/adr-skill/scripts/new_adr.js": {
+      "source": "plugins/review-panel/skills/adr-skill/scripts/new_adr.js",
+      "sha256": "b389508bfbde6aa1444153e5f0fc8175e7c18580446ff948d7d86ccc459fdd73"
+    },
+    "resources/skills/adr-skill/scripts/set_adr_status.js": {
+      "source": "plugins/review-panel/skills/adr-skill/scripts/set_adr_status.js",
+      "sha256": "87c22a3af6d6d5e45f32c562c4f6329797e9016304415b521d7ad0ac18b3bb90"
+    },
+    "resources/skills/adversarial-reviewer/README.md": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/README.md",
+      "sha256": "e3e2c7dd727f0e5ed23d46663e5f4cadd9729c1a26ed46994177df988a8076eb"
+    },
+    "resources/skills/adversarial-reviewer/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/SKILL.md",
+      "sha256": "92e6ca752d21544a54f68f26021c4a28d0c77321dab9cbddf1e0fd282d88b9bc"
+    },
+    "resources/skills/adversarial-reviewer/benchmark/baseline-metrics.json": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/benchmark/baseline-metrics.json",
+      "sha256": "5b8d324142a8b65d6d0f71fe50731670856034b0c556010051e1fb05b8ea94d6"
+    },
+    "resources/skills/adversarial-reviewer/benchmark/baseline-results.json": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/benchmark/baseline-results.json",
+      "sha256": "3ae2da848a4d8714d1c25a75c343d30d0ca7b6f187a40a1ab945e14c953673a3"
+    },
+    "resources/skills/adversarial-reviewer/benchmark/corpus.json": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/benchmark/corpus.json",
+      "sha256": "f5d192ed39013a57e500721e452587bc01c4996994d4dc0eb83136adb6c82084"
+    },
+    "resources/skills/adversarial-reviewer/benchmark/noisy-results.json": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/benchmark/noisy-results.json",
+      "sha256": "50f13ca7580f992de9c83ba7281ec74531c55aa48f4f463a368fb7a690f20f25"
+    },
+    "resources/skills/adversarial-reviewer/references/agent-contract.md": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/references/agent-contract.md",
+      "sha256": "5c66e0bc7aa8abac84b246e7248769222d91f5bfe9e6e7f7daff161aef588b2b"
+    },
+    "resources/skills/adversarial-reviewer/references/benchmark-methodology.md": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/references/benchmark-methodology.md",
+      "sha256": "c0f294af6a6a3607d670d5c85312224e766691d313337168ecab823e7d9a5ecd"
+    },
+    "resources/skills/adversarial-reviewer/references/clean-room-protocol.md": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/references/clean-room-protocol.md",
+      "sha256": "5277dfc40c8763ea6dc2d43cc90fa527343b6b307e812dda7313e6d7d1fc3f10"
+    },
+    "resources/skills/adversarial-reviewer/references/control-backed-findings.md": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/references/control-backed-findings.md",
+      "sha256": "b6b74392b76356040e3703c89a1213a81ecce6ca6274700e1618f36bd01d0e00"
+    },
+    "resources/skills/adversarial-reviewer/references/threat-model-taxonomy.md": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/references/threat-model-taxonomy.md",
+      "sha256": "c5a13cb0b07e479ccd7f3dba7ec4b99f982b962ad812229de16cfe9e0a7025e4"
+    },
+    "resources/skills/adversarial-reviewer/schemas/adversarial-report-v1.schema.json": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/schemas/adversarial-report-v1.schema.json",
+      "sha256": "c311d89e2c8dba264a65547176d1eb266d05a2ba62317aaa9181f6032e600e59"
+    },
+    "resources/skills/adversarial-reviewer/scripts/adversarial_contract.py": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/scripts/adversarial_contract.py",
+      "sha256": "938ed37006be9917929303d0f60266e1210a7ad2571fcfa0125ae74f26c20cca",
+      "replacements": [
+        [
+          "\"SKILL.md\"",
+          "\"INSTRUCTIONS.md\""
+        ]
+      ]
+    },
+    "resources/skills/adversarial-reviewer/tests/fixtures/agent-tool-threat-model.json": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/tests/fixtures/agent-tool-threat-model.json",
+      "sha256": "93b10b941d027395de596758c08916cf1365239c2be375b10424a13784575348"
+    },
+    "resources/skills/adversarial-reviewer/tests/fixtures/clean-empty.json": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/tests/fixtures/clean-empty.json",
+      "sha256": "faeaa8f4d88a67ca9319a102d6188b62952f6fe571d4021efb1e65eda03b88a2"
+    },
+    "resources/skills/adversarial-reviewer/tests/fixtures/clean-room-handoff.json": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/tests/fixtures/clean-room-handoff.json",
+      "sha256": "99c024deb4fa657f4a6455272d4c651d028f3ba957e615d7527dde940d5eb9ff"
+    },
+    "resources/skills/adversarial-reviewer/tests/fixtures/introduced-regression.json": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/tests/fixtures/introduced-regression.json",
+      "sha256": "14b92e858c5f405068b918914ab5191b7947882b453a31f868878d782fe0bbb1"
+    },
+    "resources/skills/adversarial-reviewer/tests/fixtures/known-good-sibling.json": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/tests/fixtures/known-good-sibling.json",
+      "sha256": "ef3fc62c7d0c1cbbeb0aa57a0242f82f0fa1a6130a75d342bd9831fb2cc7c647"
+    },
+    "resources/skills/adversarial-reviewer/tests/fixtures/known-vulnerable-pair.json": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/tests/fixtures/known-vulnerable-pair.json",
+      "sha256": "22276c9d586e60541041428b9b912284ec9fe004a6e8f33b539aade806a91a1e"
+    },
+    "resources/skills/adversarial-reviewer/tests/fixtures/missing-credentials.json": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/tests/fixtures/missing-credentials.json",
+      "sha256": "163027f832e6798b0ea1476d1db4341e28b92b11eac5bc91aab04d00b11282bd"
+    },
+    "resources/skills/adversarial-reviewer/tests/fixtures/pre-existing-defect.json": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/tests/fixtures/pre-existing-defect.json",
+      "sha256": "a79a3a12da77d0d8b4b774a53e1c7ac87b156a215d8daf260a8f9115c7e3b5e4"
+    },
+    "resources/skills/adversarial-reviewer/tests/fixtures/rejected-sql-injection.json": {
+      "source": "plugins/review-panel/skills/adversarial-reviewer/tests/fixtures/rejected-sql-injection.json",
+      "sha256": "2c480382f75238888d01995b6443aac1efafb3cf052a6aab6368b9c27ebaa469"
+    },
+    "resources/skills/code-evolution/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/code-evolution/SKILL.md",
+      "sha256": "1927671f0e417b45798ed71721460a3ea49a32444fef23bf44692a0e24ed74d3"
+    },
+    "resources/skills/comments-docs/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/comments-docs/SKILL.md",
+      "sha256": "587cf4972c81e4f3d19d499be084c47bd0546928a8b93a917635d7ce33bd76e0"
+    },
+    "resources/skills/comments-docs/references/comments-first-workflow.md": {
+      "source": "plugins/review-panel/skills/comments-docs/references/comments-first-workflow.md",
+      "sha256": "def2e00aa253261aff3928a2f2c0eb3e0d2b643872d1cc9c3f138c4c481543ff"
+    },
+    "resources/skills/complexity-recognition/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/complexity-recognition/SKILL.md",
+      "sha256": "d14f4a18e30be1cdbbe43af5d1fcd0f0f35f1cc60a3de94706b776bccfe6c1f0"
+    },
+    "resources/skills/data-steward/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/data-steward/SKILL.md",
+      "sha256": "7f7e0c82de0b8028f95f296e5b3a5ddccb9db0a98220423b367aad39c4baa05f"
+    },
+    "resources/skills/data-steward/package-manifest.json": {
+      "source": "plugins/review-panel/skills/data-steward/package-manifest.json",
+      "sha256": "3b8f47479d989de2e9fdafe308a76a826bbdfcf7984323c15c83f2743c09f99c",
+      "replacements": [
+        [
+          "\"SKILL.md\"",
+          "\"INSTRUCTIONS.md\""
+        ]
+      ]
+    },
+    "resources/skills/data-steward/references/contracts/reviewer-output.md": {
+      "source": "plugins/review-panel/skills/data-steward/references/contracts/reviewer-output.md",
+      "sha256": "b2f2ec7596925fe52dac158fdfbca19b3a7d779d619c481e6706a6c0001662d3"
+    },
+    "resources/skills/data-steward/references/formats/ADR-FORMAT.md": {
+      "source": "plugins/review-panel/skills/data-steward/references/formats/ADR-FORMAT.md",
+      "sha256": "f1f36cd3f8d3b6474ddd5855da4e233bfc4ae1a1c5024909ccf11871819a41b2"
+    },
+    "resources/skills/data-steward/references/formats/CONTEXT-FORMAT.md": {
+      "source": "plugins/review-panel/skills/data-steward/references/formats/CONTEXT-FORMAT.md",
+      "sha256": "ef2c1cfe91a5a96592434ab268bbef69790be71ede66de58e9fe32f37e31bd51"
+    },
+    "resources/skills/data-steward/references/formats/DATA-MODEL-FORMAT.md": {
+      "source": "plugins/review-panel/skills/data-steward/references/formats/DATA-MODEL-FORMAT.md",
+      "sha256": "6daf19f9c9498fcce07a48262a3ddaf83a744c2b700fd1a877b9e7330733d213"
+    },
+    "resources/skills/data-steward/references/formats/TASTE-FORMAT.md": {
+      "source": "plugins/review-panel/skills/data-steward/references/formats/TASTE-FORMAT.md",
+      "sha256": "0652cedb5c164189d9ad46d39e2643043fe1071396dca8a39829b74918ec79f8"
+    },
+    "resources/skills/data-steward/scripts/package_contract.py": {
+      "source": "plugins/review-panel/skills/data-steward/scripts/package_contract.py",
+      "sha256": "12633d622b62b770cc1ced7ecf3ad779f6a4e25c771a7ad55a905a190bfad67f"
+    },
+    "resources/skills/deep-modules/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/deep-modules/SKILL.md",
+      "sha256": "00b93853e71f8ca911158050acde7b2669c1458979443dc3669669681a0fc119"
+    },
+    "resources/skills/design-it-twice/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/design-it-twice/SKILL.md",
+      "sha256": "1804c945470975c0947b0009d220661c449c497c7e726aa2372ec20920c77991"
+    },
+    "resources/skills/design-it-twice/references/pre-mortem-fallback.md": {
+      "source": "plugins/review-panel/skills/design-it-twice/references/pre-mortem-fallback.md",
+      "sha256": "09bb79b1cf2844f66cf750afc0820b3bf642482f079069cf50aac1e0bfd4ac3c"
+    },
+    "resources/skills/design-review/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/design-review/SKILL.md",
+      "sha256": "45b0a45c6ea1e83fc52c272d3a470115fa0c2542b36a83e4c72df5e41dacfd49"
+    },
+    "resources/skills/design-review/references/workflow-builder.md": {
+      "source": "plugins/review-panel/skills/design-review/references/workflow-builder.md",
+      "sha256": "0d38b0093433c1ceb14735185a3ded59a436aa46a893ea0417394221fc130751"
+    },
+    "resources/skills/diagnose/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/diagnose/SKILL.md",
+      "sha256": "e93ad0781828400a9f43049c867815622e4d528fbfbadbab054776e11ba3fc89"
+    },
+    "resources/skills/domain-modeling/CONTEXT-AND-ADR.md": {
+      "source": "plugins/review-panel/skills/domain-modeling/CONTEXT-AND-ADR.md",
+      "sha256": "5ed3488d307fb28a75b54532e8d0c016d4844fbd5d7b2e9b4133f4ab021c8830"
+    },
+    "resources/skills/domain-modeling/RED-FLAGS.md": {
+      "source": "plugins/review-panel/skills/domain-modeling/RED-FLAGS.md",
+      "sha256": "d727e6ca20a64e2f7aa9c3caccc05fd3c447ac67b9104f4871f343c0ef545169",
+      "replacements": [
+        [
+          "](./SKILL.md)",
+          "](./INSTRUCTIONS.md)"
+        ]
+      ]
+    },
+    "resources/skills/domain-modeling/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/domain-modeling/SKILL.md",
+      "sha256": "6f788828686dbb7c2ccb0ae14173324675a10816d7f01adbbc42fb19057cbbfb"
+    },
+    "resources/skills/domain-modeling/TECHNIQUES.md": {
+      "source": "plugins/review-panel/skills/domain-modeling/TECHNIQUES.md",
+      "sha256": "4d69d330d0bf7da07a3404c136674ca1e0951133f7f8a7f2c7fce0ae762a9898"
+    },
+    "resources/skills/domain-modeling/WORKED-EXAMPLE.md": {
+      "source": "plugins/review-panel/skills/domain-modeling/WORKED-EXAMPLE.md",
+      "sha256": "1195f2c8b5190831b0b5b04f55fb57fd8dd2191f3a02b86e20910da5250217bb",
+      "replacements": [
+        [
+          "](./SKILL.md)",
+          "](./INSTRUCTIONS.md)"
+        ]
+      ]
+    },
+    "resources/skills/domain-modeling/package-manifest.json": {
+      "source": "plugins/review-panel/skills/domain-modeling/package-manifest.json",
+      "sha256": "54611185893083c64397ca4588bb08702573df4a14a73588a9615b39c039f473",
+      "replacements": [
+        [
+          "\"SKILL.md\"",
+          "\"INSTRUCTIONS.md\""
+        ]
+      ]
+    },
+    "resources/skills/domain-modeling/references/CREDITS.md": {
+      "source": "plugins/review-panel/skills/domain-modeling/references/CREDITS.md",
+      "sha256": "99f82695f3a10bb06768029cf40975dc9ed21bed623ab2aaf3558a6d94168c1f"
+    },
+    "resources/skills/domain-modeling/references/formats/ADR-FORMAT.md": {
+      "source": "plugins/review-panel/skills/domain-modeling/references/formats/ADR-FORMAT.md",
+      "sha256": "f1f36cd3f8d3b6474ddd5855da4e233bfc4ae1a1c5024909ccf11871819a41b2"
+    },
+    "resources/skills/domain-modeling/references/formats/CONTEXT-FORMAT.md": {
+      "source": "plugins/review-panel/skills/domain-modeling/references/formats/CONTEXT-FORMAT.md",
+      "sha256": "ef2c1cfe91a5a96592434ab268bbef69790be71ede66de58e9fe32f37e31bd51"
+    },
+    "resources/skills/domain-modeling/references/formats/DATA-MODEL-FORMAT.md": {
+      "source": "plugins/review-panel/skills/domain-modeling/references/formats/DATA-MODEL-FORMAT.md",
+      "sha256": "6daf19f9c9498fcce07a48262a3ddaf83a744c2b700fd1a877b9e7330733d213"
+    },
+    "resources/skills/domain-modeling/references/formats/TASTE-FORMAT.md": {
+      "source": "plugins/review-panel/skills/domain-modeling/references/formats/TASTE-FORMAT.md",
+      "sha256": "0652cedb5c164189d9ad46d39e2643043fe1071396dca8a39829b74918ec79f8"
+    },
+    "resources/skills/domain-modeling/scripts/package_contract.py": {
+      "source": "plugins/review-panel/skills/domain-modeling/scripts/package_contract.py",
+      "sha256": "12633d622b62b770cc1ced7ecf3ad779f6a4e25c771a7ad55a905a190bfad67f"
+    },
+    "resources/skills/error-design/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/error-design/SKILL.md",
+      "sha256": "62bbb10388eeed9631d7516db9d7d82860335c74605dd26887c8fd4288d7bea7"
+    },
+    "resources/skills/general-vs-special/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/general-vs-special/SKILL.md",
+      "sha256": "ad067448c789e4e1f77b91317bb7ab1267c2fe308878edc9d7d28d988f6f6e36"
+    },
+    "resources/skills/grill-my-taste/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/grill-my-taste/SKILL.md",
+      "sha256": "e5a4abbb8c86319804c3bebb29f31fff7338088be8b496eb184cd38fdb61b4d1"
+    },
+    "resources/skills/grill-my-taste/package-manifest.json": {
+      "source": "plugins/review-panel/skills/grill-my-taste/package-manifest.json",
+      "sha256": "c1c78bbc679d7e175712904cb90006c4049c9dfc51b249e24eb94411972fd0da",
+      "replacements": [
+        [
+          "\"SKILL.md\"",
+          "\"INSTRUCTIONS.md\""
+        ]
+      ]
+    },
+    "resources/skills/grill-my-taste/references/formats/ADR-FORMAT.md": {
+      "source": "plugins/review-panel/skills/grill-my-taste/references/formats/ADR-FORMAT.md",
+      "sha256": "f1f36cd3f8d3b6474ddd5855da4e233bfc4ae1a1c5024909ccf11871819a41b2"
+    },
+    "resources/skills/grill-my-taste/references/formats/CONTEXT-FORMAT.md": {
+      "source": "plugins/review-panel/skills/grill-my-taste/references/formats/CONTEXT-FORMAT.md",
+      "sha256": "ef2c1cfe91a5a96592434ab268bbef69790be71ede66de58e9fe32f37e31bd51"
+    },
+    "resources/skills/grill-my-taste/references/formats/DATA-MODEL-FORMAT.md": {
+      "source": "plugins/review-panel/skills/grill-my-taste/references/formats/DATA-MODEL-FORMAT.md",
+      "sha256": "6daf19f9c9498fcce07a48262a3ddaf83a744c2b700fd1a877b9e7330733d213"
+    },
+    "resources/skills/grill-my-taste/references/formats/TASTE-FORMAT.md": {
+      "source": "plugins/review-panel/skills/grill-my-taste/references/formats/TASTE-FORMAT.md",
+      "sha256": "0652cedb5c164189d9ad46d39e2643043fe1071396dca8a39829b74918ec79f8"
+    },
+    "resources/skills/grill-my-taste/scripts/package_contract.py": {
+      "source": "plugins/review-panel/skills/grill-my-taste/scripts/package_contract.py",
+      "sha256": "12633d622b62b770cc1ced7ecf3ad779f6a4e25c771a7ad55a905a190bfad67f"
+    },
+    "resources/skills/grill-the-schema/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/grill-the-schema/SKILL.md",
+      "sha256": "2670d6b4960b23da815bb054ca21d98b5c3d052a724806f1c9598081fc0606f1"
+    },
+    "resources/skills/grill-the-schema/package-manifest.json": {
+      "source": "plugins/review-panel/skills/grill-the-schema/package-manifest.json",
+      "sha256": "c1c78bbc679d7e175712904cb90006c4049c9dfc51b249e24eb94411972fd0da",
+      "replacements": [
+        [
+          "\"SKILL.md\"",
+          "\"INSTRUCTIONS.md\""
+        ]
+      ]
+    },
+    "resources/skills/grill-the-schema/references/formats/ADR-FORMAT.md": {
+      "source": "plugins/review-panel/skills/grill-the-schema/references/formats/ADR-FORMAT.md",
+      "sha256": "f1f36cd3f8d3b6474ddd5855da4e233bfc4ae1a1c5024909ccf11871819a41b2"
+    },
+    "resources/skills/grill-the-schema/references/formats/CONTEXT-FORMAT.md": {
+      "source": "plugins/review-panel/skills/grill-the-schema/references/formats/CONTEXT-FORMAT.md",
+      "sha256": "ef2c1cfe91a5a96592434ab268bbef69790be71ede66de58e9fe32f37e31bd51"
+    },
+    "resources/skills/grill-the-schema/references/formats/DATA-MODEL-FORMAT.md": {
+      "source": "plugins/review-panel/skills/grill-the-schema/references/formats/DATA-MODEL-FORMAT.md",
+      "sha256": "6daf19f9c9498fcce07a48262a3ddaf83a744c2b700fd1a877b9e7330733d213"
+    },
+    "resources/skills/grill-the-schema/references/formats/TASTE-FORMAT.md": {
+      "source": "plugins/review-panel/skills/grill-the-schema/references/formats/TASTE-FORMAT.md",
+      "sha256": "0652cedb5c164189d9ad46d39e2643043fe1071396dca8a39829b74918ec79f8"
+    },
+    "resources/skills/grill-the-schema/scripts/package_contract.py": {
+      "source": "plugins/review-panel/skills/grill-the-schema/scripts/package_contract.py",
+      "sha256": "12633d622b62b770cc1ced7ecf3ad779f6a4e25c771a7ad55a905a190bfad67f"
+    },
+    "resources/skills/grill-with-docs/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/grill-with-docs/SKILL.md",
+      "sha256": "7d7c1aa524066435e0afb93c7f6a71c8cfc068f0caf5c665a83f1de385bd33a0"
+    },
+    "resources/skills/grill-with-docs/package-manifest.json": {
+      "source": "plugins/review-panel/skills/grill-with-docs/package-manifest.json",
+      "sha256": "c1c78bbc679d7e175712904cb90006c4049c9dfc51b249e24eb94411972fd0da",
+      "replacements": [
+        [
+          "\"SKILL.md\"",
+          "\"INSTRUCTIONS.md\""
+        ]
+      ]
+    },
+    "resources/skills/grill-with-docs/references/formats/ADR-FORMAT.md": {
+      "source": "plugins/review-panel/skills/grill-with-docs/references/formats/ADR-FORMAT.md",
+      "sha256": "f1f36cd3f8d3b6474ddd5855da4e233bfc4ae1a1c5024909ccf11871819a41b2"
+    },
+    "resources/skills/grill-with-docs/references/formats/CONTEXT-FORMAT.md": {
+      "source": "plugins/review-panel/skills/grill-with-docs/references/formats/CONTEXT-FORMAT.md",
+      "sha256": "ef2c1cfe91a5a96592434ab268bbef69790be71ede66de58e9fe32f37e31bd51"
+    },
+    "resources/skills/grill-with-docs/references/formats/DATA-MODEL-FORMAT.md": {
+      "source": "plugins/review-panel/skills/grill-with-docs/references/formats/DATA-MODEL-FORMAT.md",
+      "sha256": "6daf19f9c9498fcce07a48262a3ddaf83a744c2b700fd1a877b9e7330733d213"
+    },
+    "resources/skills/grill-with-docs/references/formats/TASTE-FORMAT.md": {
+      "source": "plugins/review-panel/skills/grill-with-docs/references/formats/TASTE-FORMAT.md",
+      "sha256": "0652cedb5c164189d9ad46d39e2643043fe1071396dca8a39829b74918ec79f8"
+    },
+    "resources/skills/grill-with-docs/scripts/package_contract.py": {
+      "source": "plugins/review-panel/skills/grill-with-docs/scripts/package_contract.py",
+      "sha256": "12633d622b62b770cc1ced7ecf3ad779f6a4e25c771a7ad55a905a190bfad67f"
+    },
+    "resources/skills/improve-codebase-architecture/DEEPENING.md": {
+      "source": "plugins/review-panel/skills/improve-codebase-architecture/DEEPENING.md",
+      "sha256": "9577485f4fc32c0267639a9151bb41c8af0f8f6086e4bf8b84d5b236e30604e9"
+    },
+    "resources/skills/improve-codebase-architecture/INTERFACE-DESIGN.md": {
+      "source": "plugins/review-panel/skills/improve-codebase-architecture/INTERFACE-DESIGN.md",
+      "sha256": "678c3e34f1339015053212b3316bf0b676c70aa251050a0613667d4e755fb35e"
+    },
+    "resources/skills/improve-codebase-architecture/LANGUAGE.md": {
+      "source": "plugins/review-panel/skills/improve-codebase-architecture/LANGUAGE.md",
+      "sha256": "6feca2140439c54a774749e8367f18350899ff69c777144ed2248cd4407949fa"
+    },
+    "resources/skills/improve-codebase-architecture/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/improve-codebase-architecture/SKILL.md",
+      "sha256": "044465cf9b8e6c8d1633375e632e9f7aee93a821e16a388ef9d11b4f6cdf69be"
+    },
+    "resources/skills/improve-codebase-architecture/package-manifest.json": {
+      "source": "plugins/review-panel/skills/improve-codebase-architecture/package-manifest.json",
+      "sha256": "b49c03a734d14288d68b6063cd997d39f1e071b715bae829fedddea0b9b39807",
+      "replacements": [
+        [
+          "\"SKILL.md\"",
+          "\"INSTRUCTIONS.md\""
+        ]
+      ]
+    },
+    "resources/skills/improve-codebase-architecture/references/formats/ADR-FORMAT.md": {
+      "source": "plugins/review-panel/skills/improve-codebase-architecture/references/formats/ADR-FORMAT.md",
+      "sha256": "f1f36cd3f8d3b6474ddd5855da4e233bfc4ae1a1c5024909ccf11871819a41b2"
+    },
+    "resources/skills/improve-codebase-architecture/references/formats/CONTEXT-FORMAT.md": {
+      "source": "plugins/review-panel/skills/improve-codebase-architecture/references/formats/CONTEXT-FORMAT.md",
+      "sha256": "ef2c1cfe91a5a96592434ab268bbef69790be71ede66de58e9fe32f37e31bd51"
+    },
+    "resources/skills/improve-codebase-architecture/references/formats/DATA-MODEL-FORMAT.md": {
+      "source": "plugins/review-panel/skills/improve-codebase-architecture/references/formats/DATA-MODEL-FORMAT.md",
+      "sha256": "6daf19f9c9498fcce07a48262a3ddaf83a744c2b700fd1a877b9e7330733d213"
+    },
+    "resources/skills/improve-codebase-architecture/references/formats/TASTE-FORMAT.md": {
+      "source": "plugins/review-panel/skills/improve-codebase-architecture/references/formats/TASTE-FORMAT.md",
+      "sha256": "0652cedb5c164189d9ad46d39e2643043fe1071396dca8a39829b74918ec79f8"
+    },
+    "resources/skills/improve-codebase-architecture/scripts/package_contract.py": {
+      "source": "plugins/review-panel/skills/improve-codebase-architecture/scripts/package_contract.py",
+      "sha256": "12633d622b62b770cc1ced7ecf3ad779f6a4e25c771a7ad55a905a190bfad67f"
+    },
+    "resources/skills/information-hiding/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/information-hiding/SKILL.md",
+      "sha256": "d3637af0cd162f1e958406ed339a6b19a1d592e95e6b4ad7e541dec4758087ff"
+    },
+    "resources/skills/information-hiding/references/back-door-leakage.md": {
+      "source": "plugins/review-panel/skills/information-hiding/references/back-door-leakage.md",
+      "sha256": "27158ac6758fd4d26925b840925c7783a0a9f2ad90385fbbf52d03d46164aee2"
+    },
+    "resources/skills/mental-models-adversarial/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/mental-models-adversarial/SKILL.md",
+      "sha256": "ed78ae4ba1a5f7139abe8feb5f8bb2980f36f95c9490f97a5adab743284a4297"
+    },
+    "resources/skills/mental-models-adversarial/package-manifest.json": {
+      "source": "plugins/review-panel/skills/mental-models-adversarial/package-manifest.json",
+      "sha256": "c421455ecc1b5ed5871922688b0e51b44d3b6bfe4868c648d3f0150c07832b3f",
+      "replacements": [
+        [
+          "\"SKILL.md\"",
+          "\"INSTRUCTIONS.md\""
+        ]
+      ]
+    },
+    "resources/skills/mental-models-adversarial/references/CREDITS.md": {
+      "source": "plugins/review-panel/skills/mental-models-adversarial/references/CREDITS.md",
+      "sha256": "99f82695f3a10bb06768029cf40975dc9ed21bed623ab2aaf3558a6d94168c1f"
+    },
+    "resources/skills/mental-models-adversarial/references/contracts/reviewer-output.md": {
+      "source": "plugins/review-panel/skills/mental-models-adversarial/references/contracts/reviewer-output.md",
+      "sha256": "b2f2ec7596925fe52dac158fdfbca19b3a7d779d619c481e6706a6c0001662d3"
+    },
+    "resources/skills/mental-models-adversarial/references/reviewers/mental-models-catalog.md": {
+      "source": "plugins/review-panel/skills/mental-models-adversarial/references/reviewers/mental-models-catalog.md",
+      "sha256": "014a048e6a2343e8efbf321748e15b1f82ce74b5ca46a0d1096c57da5575bc9f"
+    },
+    "resources/skills/mental-models-adversarial/scripts/package_contract.py": {
+      "source": "plugins/review-panel/skills/mental-models-adversarial/scripts/package_contract.py",
+      "sha256": "12633d622b62b770cc1ced7ecf3ad779f6a4e25c771a7ad55a905a190bfad67f"
+    },
+    "resources/skills/mental-models-economics/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/mental-models-economics/SKILL.md",
+      "sha256": "c8be5850954efbb4354d4d2caa7965efb08b6ea1679d2af518dd87409df4cd74"
+    },
+    "resources/skills/mental-models-economics/package-manifest.json": {
+      "source": "plugins/review-panel/skills/mental-models-economics/package-manifest.json",
+      "sha256": "c421455ecc1b5ed5871922688b0e51b44d3b6bfe4868c648d3f0150c07832b3f",
+      "replacements": [
+        [
+          "\"SKILL.md\"",
+          "\"INSTRUCTIONS.md\""
+        ]
+      ]
+    },
+    "resources/skills/mental-models-economics/references/CREDITS.md": {
+      "source": "plugins/review-panel/skills/mental-models-economics/references/CREDITS.md",
+      "sha256": "99f82695f3a10bb06768029cf40975dc9ed21bed623ab2aaf3558a6d94168c1f"
+    },
+    "resources/skills/mental-models-economics/references/contracts/reviewer-output.md": {
+      "source": "plugins/review-panel/skills/mental-models-economics/references/contracts/reviewer-output.md",
+      "sha256": "b2f2ec7596925fe52dac158fdfbca19b3a7d779d619c481e6706a6c0001662d3"
+    },
+    "resources/skills/mental-models-economics/references/reviewers/mental-models-catalog.md": {
+      "source": "plugins/review-panel/skills/mental-models-economics/references/reviewers/mental-models-catalog.md",
+      "sha256": "014a048e6a2343e8efbf321748e15b1f82ce74b5ca46a0d1096c57da5575bc9f"
+    },
+    "resources/skills/mental-models-economics/scripts/package_contract.py": {
+      "source": "plugins/review-panel/skills/mental-models-economics/scripts/package_contract.py",
+      "sha256": "12633d622b62b770cc1ced7ecf3ad779f6a4e25c771a7ad55a905a190bfad67f"
+    },
+    "resources/skills/mental-models-simplifier/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/mental-models-simplifier/SKILL.md",
+      "sha256": "82fe37d5358c9421a2846d3f30fe8c49cb57dbd3c85550c8a253c295d32c8476"
+    },
+    "resources/skills/mental-models-simplifier/package-manifest.json": {
+      "source": "plugins/review-panel/skills/mental-models-simplifier/package-manifest.json",
+      "sha256": "c421455ecc1b5ed5871922688b0e51b44d3b6bfe4868c648d3f0150c07832b3f",
+      "replacements": [
+        [
+          "\"SKILL.md\"",
+          "\"INSTRUCTIONS.md\""
+        ]
+      ]
+    },
+    "resources/skills/mental-models-simplifier/references/CREDITS.md": {
+      "source": "plugins/review-panel/skills/mental-models-simplifier/references/CREDITS.md",
+      "sha256": "99f82695f3a10bb06768029cf40975dc9ed21bed623ab2aaf3558a6d94168c1f"
+    },
+    "resources/skills/mental-models-simplifier/references/contracts/reviewer-output.md": {
+      "source": "plugins/review-panel/skills/mental-models-simplifier/references/contracts/reviewer-output.md",
+      "sha256": "b2f2ec7596925fe52dac158fdfbca19b3a7d779d619c481e6706a6c0001662d3"
+    },
+    "resources/skills/mental-models-simplifier/references/reviewers/mental-models-catalog.md": {
+      "source": "plugins/review-panel/skills/mental-models-simplifier/references/reviewers/mental-models-catalog.md",
+      "sha256": "014a048e6a2343e8efbf321748e15b1f82ce74b5ca46a0d1096c57da5575bc9f"
+    },
+    "resources/skills/mental-models-simplifier/scripts/package_contract.py": {
+      "source": "plugins/review-panel/skills/mental-models-simplifier/scripts/package_contract.py",
+      "sha256": "12633d622b62b770cc1ced7ecf3ad779f6a4e25c771a7ad55a905a190bfad67f"
+    },
+    "resources/skills/mental-models-systems/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/mental-models-systems/SKILL.md",
+      "sha256": "e0f7e4d16c290ce756100efff68ce76539168328ce13c7d31019d7c86abaffdb"
+    },
+    "resources/skills/mental-models-systems/package-manifest.json": {
+      "source": "plugins/review-panel/skills/mental-models-systems/package-manifest.json",
+      "sha256": "c421455ecc1b5ed5871922688b0e51b44d3b6bfe4868c648d3f0150c07832b3f",
+      "replacements": [
+        [
+          "\"SKILL.md\"",
+          "\"INSTRUCTIONS.md\""
+        ]
+      ]
+    },
+    "resources/skills/mental-models-systems/references/CREDITS.md": {
+      "source": "plugins/review-panel/skills/mental-models-systems/references/CREDITS.md",
+      "sha256": "99f82695f3a10bb06768029cf40975dc9ed21bed623ab2aaf3558a6d94168c1f"
+    },
+    "resources/skills/mental-models-systems/references/contracts/reviewer-output.md": {
+      "source": "plugins/review-panel/skills/mental-models-systems/references/contracts/reviewer-output.md",
+      "sha256": "b2f2ec7596925fe52dac158fdfbca19b3a7d779d619c481e6706a6c0001662d3"
+    },
+    "resources/skills/mental-models-systems/references/reviewers/mental-models-catalog.md": {
+      "source": "plugins/review-panel/skills/mental-models-systems/references/reviewers/mental-models-catalog.md",
+      "sha256": "014a048e6a2343e8efbf321748e15b1f82ce74b5ca46a0d1096c57da5575bc9f"
+    },
+    "resources/skills/mental-models-systems/scripts/package_contract.py": {
+      "source": "plugins/review-panel/skills/mental-models-systems/scripts/package_contract.py",
+      "sha256": "12633d622b62b770cc1ced7ecf3ad779f6a4e25c771a7ad55a905a190bfad67f"
+    },
+    "resources/skills/module-boundaries/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/module-boundaries/SKILL.md",
+      "sha256": "a560827445c1751ed0f2a29270a76eb3066582a9a26490747abf1f8ee073d7e6"
+    },
+    "resources/skills/naming-obviousness/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/naming-obviousness/SKILL.md",
+      "sha256": "d92b54c731c592f70d54465d3fd6aaff6552d4bb8f7f72f094e689df6c394b06"
+    },
+    "resources/skills/ponytail-audit/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/ponytail-audit/SKILL.md",
+      "sha256": "da6748399dad608f1530979230cd5b05edb25db785bb98067a44fe8874acb1a9"
+    },
+    "resources/skills/ponytail-review/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/ponytail-review/SKILL.md",
+      "sha256": "39befc0f208ddbb8a40457fa25278ab31f365e0a1badce5decddbfd01a7b76bc"
+    },
+    "resources/skills/pull-complexity-down/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/pull-complexity-down/SKILL.md",
+      "sha256": "5f809a7827d8fbcd472e0075a933a9c725f91c24efda76b9b239b87be0b9dd99"
+    },
+    "resources/skills/pull-complexity-down/references/configuration-parameter-audit.md": {
+      "source": "plugins/review-panel/skills/pull-complexity-down/references/configuration-parameter-audit.md",
+      "sha256": "72f66a760a620bac8335bd322e887e5b81bc7b160bbe4be9fb825291117abc1a"
+    },
+    "resources/skills/red-flags/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/red-flags/SKILL.md",
+      "sha256": "645a81409f8698653cc8e5754f94b78c3957b9c16d35f43b01c7abc061e64e92"
+    },
+    "resources/skills/red-flags/references/flag-interaction-map.md": {
+      "source": "plugins/review-panel/skills/red-flags/references/flag-interaction-map.md",
+      "sha256": "5ad92a3ddeee815b554b2c4a83079f2fe336e05d8f745b0c52bad841ba9dee44"
+    },
+    "resources/skills/strategic-mindset/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/strategic-mindset/SKILL.md",
+      "sha256": "73329f0d590eb61b5bf20f1ab030a7102c058d6a61f5c0515bab0396cb58f5f8"
+    },
+    "resources/skills/taste-review/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/taste-review/SKILL.md",
+      "sha256": "89cdbe7d3ccf78faf90d09c3587d7c4bb9cb9126d936d7611cd3887e064bd4c7"
+    },
+    "resources/skills/taste-review/package-manifest.json": {
+      "source": "plugins/review-panel/skills/taste-review/package-manifest.json",
+      "sha256": "3b8f47479d989de2e9fdafe308a76a826bbdfcf7984323c15c83f2743c09f99c",
+      "replacements": [
+        [
+          "\"SKILL.md\"",
+          "\"INSTRUCTIONS.md\""
+        ]
+      ]
+    },
+    "resources/skills/taste-review/references/contracts/reviewer-output.md": {
+      "source": "plugins/review-panel/skills/taste-review/references/contracts/reviewer-output.md",
+      "sha256": "b2f2ec7596925fe52dac158fdfbca19b3a7d779d619c481e6706a6c0001662d3"
+    },
+    "resources/skills/taste-review/references/formats/ADR-FORMAT.md": {
+      "source": "plugins/review-panel/skills/taste-review/references/formats/ADR-FORMAT.md",
+      "sha256": "f1f36cd3f8d3b6474ddd5855da4e233bfc4ae1a1c5024909ccf11871819a41b2"
+    },
+    "resources/skills/taste-review/references/formats/CONTEXT-FORMAT.md": {
+      "source": "plugins/review-panel/skills/taste-review/references/formats/CONTEXT-FORMAT.md",
+      "sha256": "ef2c1cfe91a5a96592434ab268bbef69790be71ede66de58e9fe32f37e31bd51"
+    },
+    "resources/skills/taste-review/references/formats/DATA-MODEL-FORMAT.md": {
+      "source": "plugins/review-panel/skills/taste-review/references/formats/DATA-MODEL-FORMAT.md",
+      "sha256": "6daf19f9c9498fcce07a48262a3ddaf83a744c2b700fd1a877b9e7330733d213"
+    },
+    "resources/skills/taste-review/references/formats/TASTE-FORMAT.md": {
+      "source": "plugins/review-panel/skills/taste-review/references/formats/TASTE-FORMAT.md",
+      "sha256": "0652cedb5c164189d9ad46d39e2643043fe1071396dca8a39829b74918ec79f8"
+    },
+    "resources/skills/taste-review/scripts/package_contract.py": {
+      "source": "plugins/review-panel/skills/taste-review/scripts/package_contract.py",
+      "sha256": "12633d622b62b770cc1ced7ecf3ad779f6a4e25c771a7ad55a905a190bfad67f"
+    },
+    "resources/skills/tdd/INSTRUCTIONS.md": {
+      "source": "plugins/review-panel/skills/tdd/SKILL.md",
+      "sha256": "cbc157dfdee0c5105f946d6c14069ce8ca958b0ba10cbea7132124497c00463e"
+    },
+    "resources/skills/tdd/deep-modules.md": {
+      "source": "plugins/review-panel/skills/tdd/deep-modules.md",
+      "sha256": "f2123700bf953db1740625686c75bdd145efd486357c47c6818c869fee657a32"
+    },
+    "resources/skills/tdd/interface-design.md": {
+      "source": "plugins/review-panel/skills/tdd/interface-design.md",
+      "sha256": "764c5ff0e3fa6b4ab7095eb65ccc7201e090baf19fa16051dfdb72c06d27417d"
+    },
+    "resources/skills/tdd/mocking.md": {
+      "source": "plugins/review-panel/skills/tdd/mocking.md",
+      "sha256": "3ceb807fdf4a47d6a93d4d9a891e5ba6d362a6247bd08adc451feebfc17361ef"
+    },
+    "resources/skills/tdd/refactoring.md": {
+      "source": "plugins/review-panel/skills/tdd/refactoring.md",
+      "sha256": "54fced22dd1911b7094c3fe7979b7c1a40d40be307482c4adf7dc0588f27d6cc"
+    },
+    "resources/skills/tdd/tests.md": {
+      "source": "plugins/review-panel/skills/tdd/tests.md",
+      "sha256": "e12182f5c4c6a844b7c6ab4b8d2623b642aaaae5460fe58ed087efd4f3d5fb8a"
+    },
+    "scripts/package_contract.py": {
+      "source": "skills/init/scripts/package_contract.py",
+      "sha256": "12633d622b62b770cc1ced7ecf3ad779f6a4e25c771a7ad55a905a190bfad67f"
+    }
+  }
+}

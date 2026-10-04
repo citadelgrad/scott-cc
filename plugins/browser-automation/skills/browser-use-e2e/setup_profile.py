@@ -23,6 +23,8 @@ Examples:
 
 import argparse
 import asyncio
+import json
+import sys
 from pathlib import Path
 
 # Known service login URLs
@@ -58,10 +60,12 @@ def list_profiles():
 async def setup_profile(url: str, profile_name: str):
     """Open browser for manual login, save session to profile."""
     try:
-        from browser_use import Browser
-    except ImportError:
-        print("Error: browser-use not installed. Run: uv add browser-use")
-        return
+        # Optional native runtime, checked explicitly when this command is used.
+        from browser_use import Browser  # ty: ignore[unresolved-import]
+    except ImportError as exc:
+        raise RuntimeError(
+            "browser-use not installed. Run: uv add browser-use"
+        ) from exc
 
     profile_dir = PROFILES_DIR / profile_name
     profile_dir.mkdir(parents=True, exist_ok=True)
@@ -79,17 +83,27 @@ async def setup_profile(url: str, profile_name: str):
     browser = Browser(
         headless=False,
         user_data_dir=str(profile_dir),
+        profile_directory="Default",
     )
 
-    ctx = await browser.new_context()  # ty: ignore[unresolved-attribute]
-    page = await ctx.new_page()
-    await page.goto(url)
+    try:
+        await browser.start()
+        await browser.new_page(url=url)
+        input("Press Enter after completing login...")
+    finally:
+        await browser.stop()
 
-    input("Press Enter after completing login...")
-
-    await browser.close()  # ty: ignore[unresolved-attribute]
-
+    # A successful browser shutdown is not proof that anything was persisted.
+    # Validate Chromium's on-disk profile, never print cookie/token contents.
+    preferences = profile_dir / "Default" / "Preferences"
+    try:
+        persisted = json.loads(preferences.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise RuntimeError(f"profile was not persisted: {preferences}") from exc
+    if not isinstance(persisted, dict) or not persisted:
+        raise RuntimeError(f"profile is empty or invalid: {preferences}")
     print(f"\nProfile saved to: {profile_dir}")
+    print("Profile persistence verified; authentication must be verified by your test.")
     print("\nUsage in tests:")
     print(f"  browser = Browser(user_data_dir='{profile_dir}')")
 
@@ -141,8 +155,13 @@ def main():
         else:
             parser.error("--profile-name is required when using --url")
 
-    asyncio.run(setup_profile(url, profile_name))
+    try:
+        asyncio.run(setup_profile(url, profile_name))
+    except Exception as exc:  # noqa: BLE001 - CLI must report any browser failure
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

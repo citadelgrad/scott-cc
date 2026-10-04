@@ -1,0 +1,502 @@
+{
+  "corpus_version": "1.0.0",
+  "frozen": true,
+  "mutable_artifact": "SKILL.md and references only",
+  "budget": {
+    "model": "fixture/offline",
+    "max_tokens": 20000,
+    "max_seconds": 60,
+    "max_tool_calls": 100,
+    "max_cost_usd": 0
+  },
+  "contamination": {
+    "deduplicated": true,
+    "temporal_cutoff": "2026-08-12",
+    "notes": "Synthetic fixtures avoid training-set claims; provenance is explicit."
+  },
+  "examples": [
+    {
+      "id": "introduced-null",
+      "pair": "null",
+      "role": "target",
+      "positive": true,
+      "classification": "introduced_regression",
+      "evidence_status": "reproduced",
+      "severity": "high",
+      "provenance": "synthetic fixture; frozen 2026-08-12",
+      "tags": [
+        "worked_example"
+      ]
+    },
+    {
+      "id": "base-null",
+      "pair": "null",
+      "role": "control",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "provenance": "synthetic base control; frozen 2026-08-12",
+      "tags": [
+        "worked_example"
+      ]
+    },
+    {
+      "id": "preexisting-head",
+      "pair": "preexisting",
+      "role": "target",
+      "positive": true,
+      "classification": "pre_existing_defect",
+      "evidence_status": "reproduced",
+      "severity": "medium",
+      "provenance": "synthetic fixture; frozen 2026-08-12",
+      "tags": [
+        "worked_example"
+      ]
+    },
+    {
+      "id": "preexisting-base",
+      "pair": "preexisting",
+      "role": "control",
+      "positive": true,
+      "classification": "pre_existing_defect",
+      "evidence_status": "reproduced",
+      "severity": "medium",
+      "provenance": "synthetic paired control; frozen 2026-08-12",
+      "tags": [
+        "worked_example"
+      ]
+    },
+    {
+      "id": "sql-clean",
+      "pair": "sql",
+      "role": "target",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "provenance": "unreachable sink fixture; frozen 2026-08-12",
+      "tags": [
+        "worked_example"
+      ]
+    },
+    {
+      "id": "sql-control",
+      "pair": "sql",
+      "role": "control",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "provenance": "clean control; frozen 2026-08-12",
+      "tags": [
+        "worked_example"
+      ]
+    },
+    {
+      "id": "cve-vulnerable",
+      "pair": "cve",
+      "role": "target",
+      "positive": true,
+      "classification": "introduced_regression",
+      "evidence_status": "reproduced",
+      "severity": "catastrophic",
+      "provenance": "synthetic CWE-78 analogue, not a real CVE; frozen 2026-08-12",
+      "tags": [
+        "worked_example"
+      ]
+    },
+    {
+      "id": "cve-fixed",
+      "pair": "cve",
+      "role": "control",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "provenance": "patched synthetic control; frozen 2026-08-12",
+      "tags": [
+        "worked_example"
+      ]
+    },
+    {
+      "id": "credentials-unavailable",
+      "pair": "credentials",
+      "role": "target",
+      "positive": true,
+      "classification": "unsupported_hypothesis",
+      "evidence_status": "hypothesis",
+      "severity": "unknown",
+      "provenance": "unavailable-tool fixture; frozen 2026-08-12",
+      "tags": [
+        "worked_example"
+      ]
+    },
+    {
+      "id": "sibling-good",
+      "pair": "sibling",
+      "role": "control",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "provenance": "known-good sibling control; frozen 2026-08-12",
+      "tags": [
+        "worked_example"
+      ]
+    },
+    {
+      "id": "auth-vulnerable",
+      "pair": "auth",
+      "role": "target",
+      "positive": true,
+      "classification": "introduced_regression",
+      "evidence_status": "reproduced",
+      "severity": "high",
+      "tags": [
+        "cwe",
+        "authorization"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "auth-fixed",
+      "pair": "auth",
+      "role": "control",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "tags": [
+        "cwe",
+        "patched"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "logic-bug",
+      "pair": "logic",
+      "role": "target",
+      "positive": true,
+      "classification": "introduced_regression",
+      "evidence_status": "reproduced",
+      "severity": "medium",
+      "tags": [
+        "non_security_bug"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "logic-base",
+      "pair": "logic",
+      "role": "control",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "tags": [
+        "non_security_bug",
+        "clean"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "clean-patch",
+      "pair": "clean",
+      "role": "target",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "tags": [
+        "clean_patch"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "clean-base",
+      "pair": "clean",
+      "role": "control",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "tags": [
+        "clean_patch"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "interprocedural-bug",
+      "pair": "interprocedural",
+      "role": "target",
+      "positive": true,
+      "classification": "introduced_regression",
+      "evidence_status": "proven",
+      "severity": "high",
+      "tags": [
+        "multi_file",
+        "interprocedural"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "interprocedural-fixed",
+      "pair": "interprocedural",
+      "role": "control",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "tags": [
+        "multi_file",
+        "interprocedural"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "context-pressure-target",
+      "pair": "context",
+      "role": "target",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "tags": [
+        "context_pressure"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "context-pressure-control",
+      "pair": "context",
+      "role": "control",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "tags": [
+        "context_pressure"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "empty-diff",
+      "pair": "empty",
+      "role": "target",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "tags": [
+        "empty_diff"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "empty-control",
+      "pair": "empty",
+      "role": "control",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "tags": [
+        "empty_diff"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "binary-generated-vendor",
+      "pair": "nonreviewable",
+      "role": "target",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "tags": [
+        "binary",
+        "generated",
+        "vendor"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "nonreviewable-control",
+      "pair": "nonreviewable",
+      "role": "control",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "tags": [
+        "binary",
+        "generated",
+        "vendor"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "dead-code-misdirection",
+      "pair": "dead",
+      "role": "target",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "tags": [
+        "dead_code",
+        "unreachable",
+        "test_only",
+        "misleading_comment"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "dead-code-control",
+      "pair": "dead",
+      "role": "control",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "tags": [
+        "dead_code",
+        "unreachable",
+        "test_only",
+        "misleading_comment"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "prompt-injection-target",
+      "pair": "prompt",
+      "role": "target",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "tags": [
+        "prompt_injection"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "prompt-injection-control",
+      "pair": "prompt",
+      "role": "control",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "tags": [
+        "prompt_injection"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "anchored-prior",
+      "pair": "anchor",
+      "role": "target",
+      "positive": true,
+      "classification": "introduced_regression",
+      "evidence_status": "reproduced",
+      "severity": "medium",
+      "tags": [
+        "prior_finding_anchoring"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "blind-control",
+      "pair": "anchor",
+      "role": "control",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "tags": [
+        "prior_finding_anchoring"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "severity-vignette",
+      "pair": "severity",
+      "role": "target",
+      "positive": true,
+      "classification": "introduced_regression",
+      "evidence_status": "reproduced",
+      "severity": "catastrophic",
+      "tags": [
+        "severity_vignette"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "severity-control",
+      "pair": "severity",
+      "role": "control",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "tags": [
+        "severity_vignette"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "schema-malformed",
+      "pair": "schema",
+      "role": "target",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "tags": [
+        "schema_failure"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "schema-control",
+      "pair": "schema",
+      "role": "control",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "tags": [
+        "schema_failure"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "tool-unavailable",
+      "pair": "tool",
+      "role": "target",
+      "positive": true,
+      "classification": "unsupported_hypothesis",
+      "evidence_status": "hypothesis",
+      "severity": "unknown",
+      "tags": [
+        "unavailable_tool"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    },
+    {
+      "id": "tool-control",
+      "pair": "tool",
+      "role": "control",
+      "positive": false,
+      "classification": "none",
+      "evidence_status": "none",
+      "severity": "none",
+      "tags": [
+        "unavailable_tool"
+      ],
+      "provenance": "synthetic contract fixture; frozen 2026-08-12"
+    }
+  ]
+}

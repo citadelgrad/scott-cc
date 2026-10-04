@@ -58,6 +58,30 @@ def write_contract(tmp_path: Path, *, marketplace_description: str) -> None:
     setattr(verify_plugin, "HOOKS_JSON", hooks_path)
 
 
+@pytest.mark.parametrize("bad", [None, "", [], 7, "NOT-kebab"])
+def test_required_names_cannot_match_by_being_invalid(tmp_path, bad):
+    write_contract(tmp_path, marketplace_description="accurate inventory")
+    for path in [verify_plugin.PLUGIN_JSON, verify_plugin.MARKETPLACE_JSON]:
+        data = json.loads(path.read_text())
+        entry = data["plugins"][0] if "plugins" in data else data
+        if bad is None:
+            entry.pop("name")
+        else:
+            entry["name"] = bad
+        path.write_text(json.dumps(data))
+    with pytest.raises(SystemExit):
+        verify_plugin.main()
+
+
+def test_plugin_rejects_malformed_package_metadata(tmp_path):
+    write_contract(tmp_path, marketplace_description="accurate inventory")
+    entry = tmp_path / "plugins/example/skills/alpha/SKILL.md"
+    entry.parent.mkdir(parents=True)
+    entry.write_text("---\nname: alpha\ndescription: []\n---\nProcedure\n")
+    with pytest.raises(SystemExit):
+        verify_plugin.main()
+
+
 def test_matching_root_metadata_passes(tmp_path: Path) -> None:
     write_contract(tmp_path, marketplace_description="accurate inventory")
 

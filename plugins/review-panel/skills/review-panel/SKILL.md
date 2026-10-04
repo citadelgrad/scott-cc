@@ -8,8 +8,7 @@ description: >-
   and loops to convergence or a circuit-break. Not for single-lens checks or
   generating alternative designs (use design-it-twice).
 argument-hint: '[diff, PR, branch, or base..head range to review; --lite, --medium,
-  or --auto to narrow the review tier; --mode=agent for machine output; --resume PATH --checkpoint-sha256 HEX]'
-allowed-tools: Task, Read, Grep, Glob, Bash
+  or --auto to narrow the review tier; --standalone for sequential read-only review; --mode=agent for full-panel machine output; --resume PATH --checkpoint-sha256 HEX]'
 metadata:
   category: technique
   triggers:
@@ -49,13 +48,30 @@ hand or a `foundry` gate invokes unattended.
   question once you're inside a panel run — the choice above is only about whether to enter a
   panel run at all.
 
-## Hard context preflight
+## Capability and package preflight
+
+Before reading the target or starting the full loop, read
+[portable-modes.md](references/portable-modes.md) and execute its preflight.
+This installed package bundles scripts, catalogs, contracts, role prompts and
+transitive lens resources. Resolve paths from this loaded skill directory, never
+from plugin parents or a guessed clone. The [resource map](resource-map.json)
+resolves source-style identifiers to bundled files.
+
+Full mode requires verified native fresh-context workers; it is not restricted to
+Claude, but skill installation alone does not provide delegation. If unavailable,
+stop `subagent_runtime_unavailable` **before work**, and offer explicit
+`--standalone`: useful sequential multi-lens read-only review, **not independent**
+and not a full-panel gate. Never claim independent validation in that mode.
+`Task`/named-agent examples below are mapped through the capability-detected
+adapter, not invented API calls. Preserve all full-mode seat/validation rules.
+
+## Hard context preflight (full mode)
 
 These checks run before CAST and override the normal loop:
 
 1. **Exactly one review target per invocation.** Resolve exactly one review target and finish or
    checkpoint it. Never chain a second panel automatically, even when two related repositories or
-   PRs were changed together. A second target requires a separate invocation in a fresh Claude Code
+   PRs were changed together. A second target requires a separate invocation in a fresh host
    orchestration context.
 2. **Reject oversized monolithic scope.** After packaging and reading only bounded `scope.json`, stop
    with error code `scope_too_large` when the target exceeds **25 files** or **1,500 changed lines**
@@ -161,9 +177,9 @@ rather than re-deriving diffs ad hoc:
    - **Non-empty**: resolve `BASE` and `HEAD` from the given target — a `base..head` range used
      as-is, or a branch name diffed against its merge-base with the default branch (`git
      merge-base` to find `BASE` when only a branch is named).
-2. Run the plugin's `scripts/workspace` script (path relative to the plugin root:
-   `plugins/review-panel/scripts/workspace`, two directories up from this skill's own
-   `skills/review-panel/` location) to resolve (and create, git-ignored) the scratch directory for
+2. Run `bash "$PANEL_DIR/scripts/workspace"` from the target repository root, where
+   `PANEL_DIR` is the absolute directory containing this loaded SKILL.md, to resolve
+   (and create, git-ignored) the scratch directory for
    this run's artifacts. Capture its stdout (the workspace's absolute path, and nothing else) into
    a variable — do not invent a different scratch location, this script is the single source of
    truth so every stage's temp files land in one place.
@@ -172,8 +188,8 @@ rather than re-deriving diffs ad hoc:
    the script's `wrote <path>: ...` stdout summary. This file is the ONE shared diff every seat in
    SPAWN reads — pass its path, not a re-derived `git diff` invocation, to each seat's dispatch
    prompt.
-   - Bare invocation: `plugins/review-panel/scripts/review-package --worktree "$WORKSPACE/review.diff"`.
-   - Range/branch invocation: `plugins/review-panel/scripts/review-package BASE HEAD "$WORKSPACE/review.diff"`.
+   - Bare invocation: `bash "$PANEL_DIR/scripts/review-package" --worktree "$WORKSPACE/review.diff"`.
+   - Range/branch invocation: `bash "$PANEL_DIR/scripts/review-package" BASE HEAD "$WORKSPACE/review.diff"`.
 4. **Do not `Read` this file or a per-file stat into the orchestrator's own context.** Dispatch one
    disposable **scope resolver** that computes the file and line totals mechanically without
    printing `git diff --stat`, `--numstat`, or `--name-only` rows into any model context. It also
@@ -184,7 +200,7 @@ rather than re-deriving diffs ad hoc:
    **never captures per-file output**. Every later stage that needs actual diff content reads the
    packaged file itself in its own disposable context.
 5. If `scripts/workspace` or `scripts/review-package` are unavailable (non-bash environment or a
-   broken plugin install), stop with error code `artifact_packaging_unavailable`. Do not run an
+   broken package install), stop with error code `artifact_packaging_unavailable`. Do not run an
    inline `git diff` or hold diff content in-conversation; that fallback defeats the hard context
    contract and recreates the failure this preflight prevents. Otherwise, apply the Hard context
    preflight's 25-file/1,500-line monolithic scope gate to `$WORKSPACE/scope.json` now, for **every**

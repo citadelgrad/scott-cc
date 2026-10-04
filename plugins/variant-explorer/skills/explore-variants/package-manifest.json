@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "required": [
+    "SKILL.md",
+    "prompts/blind-builder.md",
+    "prompts/variant-judge.md",
+    "references/contracts/reviewer-output.md",
+    "references/formats/ADR-FORMAT.md",
+    "references/formats/CONTEXT-FORMAT.md",
+    "references/formats/DATA-MODEL-FORMAT.md",
+    "references/formats/TASTE-FORMAT.md",
+    "references/lenses/acceptance-criteria.md",
+    "references/lenses/ponytail-review.md",
+    "references/lenses/taste-review.md",
+    "references/worker-adapters.md",
+    "scripts/package_contract.py"
+  ],
+  "copies": {
+    "prompts/blind-builder.md": {
+      "source": "plugins/variant-explorer/agents/blind-builder.md",
+      "sha256": "50a0bfbdf86819fb1b9d51a32753433d36a03d483faaf8a6d779459f8d85933d"
+    },
+    "prompts/variant-judge.md": {
+      "source": "plugins/variant-explorer/agents/variant-judge.md",
+      "sha256": "624cdf64b027ff4d34c2e12b5b4c61c998188b756e6346863827e9bc59d45f4d"
+    },
+    "references/worker-adapters.md": {
+      "source": "skills/delegate-first/references/worker-adapters.md",
+      "sha256": "988c8ae1675c4f3b0e712dffc680cd04b74b5daa617e28bfb5187a8c40148b19"
+    },
+    "references/lenses/acceptance-criteria.md": {
+      "source": "skills/acceptance-criteria/SKILL.md",
+      "sha256": "c1ee97ea0ee6e8a84d3812409b71ea1bd433d9d8a70e05ccef3ef6ffff1e3d0e"
+    },
+    "references/lenses/ponytail-review.md": {
+      "source": "plugins/review-panel/skills/ponytail-review/SKILL.md",
+      "sha256": "39befc0f208ddbb8a40457fa25278ab31f365e0a1badce5decddbfd01a7b76bc"
+    },
+    "references/lenses/taste-review.md": {
+      "source": "plugins/review-panel/skills/taste-review/SKILL.md",
+      "sha256": "03230e40bf7de4d3eeb5287af1cfc5c90fa832b8a45e77b04d6f3c6be215e150",
+      "replacements": [
+        [
+          "references/formats/",
+          "../formats/"
+        ],
+        [
+          "references/contracts/",
+          "../contracts/"
+        ],
+        [
+          "Resolve this skill's directory",
+          "Resolve the enclosing explore-variants package directory"
+        ]
+      ]
+    },
+    "references/formats/TASTE-FORMAT.md": {
+      "source": "plugins/review-panel/skills/taste-review/references/formats/TASTE-FORMAT.md",
+      "sha256": "0652cedb5c164189d9ad46d39e2643043fe1071396dca8a39829b74918ec79f8"
+    },
+    "references/formats/CONTEXT-FORMAT.md": {
+      "source": "plugins/review-panel/skills/taste-review/references/formats/CONTEXT-FORMAT.md",
+      "sha256": "ef2c1cfe91a5a96592434ab268bbef69790be71ede66de58e9fe32f37e31bd51"
+    },
+    "references/formats/ADR-FORMAT.md": {
+      "source": "plugins/review-panel/skills/taste-review/references/formats/ADR-FORMAT.md",
+      "sha256": "f1f36cd3f8d3b6474ddd5855da4e233bfc4ae1a1c5024909ccf11871819a41b2"
+    },
+    "references/formats/DATA-MODEL-FORMAT.md": {
+      "source": "plugins/review-panel/skills/taste-review/references/formats/DATA-MODEL-FORMAT.md",
+      "sha256": "6daf19f9c9498fcce07a48262a3ddaf83a744c2b700fd1a877b9e7330733d213"
+    },
+    "references/contracts/reviewer-output.md": {
+      "source": "plugins/review-panel/skills/taste-review/references/contracts/reviewer-output.md",
+      "sha256": "b2f2ec7596925fe52dac158fdfbca19b3a7d779d619c481e6706a6c0001662d3"
+    },
+    "scripts/package_contract.py": {
+      "source": "skills/init/scripts/package_contract.py",
+      "sha256": "12633d622b62b770cc1ced7ecf3ad779f6a4e25c771a7ad55a905a190bfad67f"
+    }
+  }
+}

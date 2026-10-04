@@ -1,0 +1,838 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/citadelgrad/scott-cc/adversarial-report-v1.schema.json",
+  "title": "Adversarial reviewer report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "outcome",
+    "verdict",
+    "run",
+    "scope",
+    "threat_model",
+    "findings",
+    "residual_risks",
+    "diagnostics",
+    "audit"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "outcome": {
+      "enum": [
+        "completed",
+        "error",
+        "skipped",
+        "empty_diff"
+      ]
+    },
+    "verdict": {
+      "enum": [
+        "ready",
+        "ready_with_fixes",
+        "not_ready",
+        "error",
+        "skipped",
+        "empty_diff"
+      ]
+    },
+    "run": {
+      "type": "object",
+      "required": [
+        "repository",
+        "base_sha",
+        "head_sha",
+        "reviewed_paths",
+        "model",
+        "prompt",
+        "tools",
+        "limitations",
+        "target"
+      ],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "base_sha": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "head_sha": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reviewed_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "model": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "provider",
+            "name",
+            "version"
+          ],
+          "properties": {
+            "provider": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "prompt": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "name",
+            "version",
+            "sha256"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sha256": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "version"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "version": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "target": {
+          "type": "object",
+          "required": [
+            "content_hash",
+            "kind"
+          ],
+          "properties": {
+            "content_hash": {
+              "type": "string",
+              "minLength": 1
+            },
+            "kind": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "scope": {
+      "type": "object",
+      "required": [
+        "bugs",
+        "security",
+        "hostile_input",
+        "existing_findings"
+      ],
+      "properties": {
+        "bugs": {
+          "$ref": "#/$defs/mandatoryScope"
+        },
+        "security": {
+          "$ref": "#/$defs/mandatoryScope"
+        },
+        "hostile_input": {
+          "$ref": "#/$defs/mandatoryScope"
+        },
+        "existing_findings": {
+          "$ref": "#/$defs/conditionalScope"
+        }
+      }
+    },
+    "threat_model": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "applicability",
+            "reason"
+          ],
+          "properties": {
+            "applicability": {
+              "const": "not_applicable"
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "$ref": "#/$defs/threatModel"
+        }
+      ]
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    },
+    "residual_risks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "description",
+          "evidence_status",
+          "blocking"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "evidence_status": {
+            "enum": [
+              "supported",
+              "hypothesis"
+            ]
+          },
+          "blocking": {
+            "const": false
+          }
+        }
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "audit": {
+      "type": "object",
+      "required": [
+        "generated_candidates",
+        "rejected_candidates",
+        "raw_finding_count_reward"
+      ],
+      "properties": {
+        "raw_finding_count_reward": {
+          "const": 0
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "outcome": {
+            "const": "error"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "diagnostics": {
+            "minItems": 1
+          },
+          "verdict": {
+            "const": "error"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "outcome": {
+            "const": "skipped"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "verdict": {
+            "const": "skipped"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "outcome": {
+            "const": "empty_diff"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "verdict": {
+            "const": "empty_diff"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "mandatoryScope": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "const": "examined"
+        }
+      }
+    },
+    "conditionalScope": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "examined",
+            "not_applicable"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        }
+      }
+    },
+    "probe": {
+      "type": "object",
+      "required": [
+        "identity",
+        "executed",
+        "command",
+        "environment",
+        "expected",
+        "observed",
+        "exit_code",
+        "artifacts"
+      ],
+      "properties": {
+        "executed": {
+          "type": "boolean"
+        },
+        "exit_code": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "required": [
+        "id",
+        "rule_id",
+        "title",
+        "fingerprint",
+        "impact",
+        "likelihood",
+        "confidence",
+        "priority",
+        "evidence_status",
+        "classification",
+        "blocking",
+        "blocking_reason",
+        "preconditions",
+        "citation",
+        "target_probe",
+        "control_probe"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "rule_id": {
+          "type": "string",
+          "pattern": "^ADV-[A-Z0-9-]+$"
+        },
+        "title": {
+          "type": "string"
+        },
+        "fingerprint": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "impact": {
+          "enum": [
+            "catastrophic",
+            "high",
+            "medium",
+            "low",
+            "unknown"
+          ]
+        },
+        "likelihood": {
+          "enum": [
+            "certain",
+            "likely",
+            "possible",
+            "unlikely",
+            "unknown"
+          ]
+        },
+        "confidence": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "priority": {
+          "enum": [
+            "P0",
+            "P1",
+            "P2",
+            "P3",
+            "P4"
+          ]
+        },
+        "evidence_status": {
+          "enum": [
+            "reproduced",
+            "proven",
+            "supported",
+            "hypothesis"
+          ]
+        },
+        "classification": {
+          "enum": [
+            "introduced_regression",
+            "pre_existing_defect",
+            "invalid_control",
+            "non_differential",
+            "unsupported_hypothesis",
+            "proven_defect"
+          ]
+        },
+        "blocking": {
+          "type": "boolean"
+        },
+        "blocking_reason": {
+          "type": "string"
+        },
+        "preconditions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "citation": {
+          "oneOf": [
+            {
+              "type": "object",
+              "required": [
+                "kind",
+                "path",
+                "commit",
+                "start_line",
+                "target_hash"
+              ],
+              "properties": {
+                "kind": {
+                  "const": "current_code"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "commit": {
+                  "type": "string"
+                },
+                "start_line": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "end_line": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "target_hash": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "kind",
+                "path",
+                "commit",
+                "diff_side",
+                "hunk",
+                "start_line",
+                "target_hash"
+              ],
+              "properties": {
+                "kind": {
+                  "const": "deleted_diff"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "commit": {
+                  "type": "string"
+                },
+                "diff_side": {
+                  "enum": [
+                    "base",
+                    "head"
+                  ]
+                },
+                "hunk": {
+                  "type": "string"
+                },
+                "start_line": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "target_hash": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "required": [
+                "kind",
+                "path",
+                "target_hash"
+              ],
+              "properties": {
+                "kind": {
+                  "const": "prose_design"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "section": {
+                  "type": "string"
+                },
+                "start_line": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "end_line": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "target_hash": {
+                  "type": "string"
+                }
+              },
+              "anyOf": [
+                {
+                  "required": [
+                    "section"
+                  ]
+                },
+                {
+                  "required": [
+                    "start_line"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "target_probe": {
+          "$ref": "#/$defs/probe"
+        },
+        "control_probe": {
+          "$ref": "#/$defs/probe"
+        },
+        "proof": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "method",
+            "premise",
+            "independent_check",
+            "artifact_sha256"
+          ],
+          "properties": {
+            "method": {
+              "type": "string",
+              "minLength": 1
+            },
+            "premise": {
+              "type": "string",
+              "minLength": 1
+            },
+            "independent_check": {
+              "type": "string",
+              "minLength": 1
+            },
+            "artifact_sha256": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "evidence_status": {
+                "const": "hypothesis"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "blocking": {
+                "const": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "evidence_status": {
+                "const": "reproduced"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "target_probe": {
+                "properties": {
+                  "executed": {
+                    "const": true
+                  }
+                }
+              },
+              "control_probe": {
+                "properties": {
+                  "executed": {
+                    "const": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "evidence_status": {
+                "const": "proven"
+              }
+            },
+            "required": [
+              "evidence_status"
+            ]
+          },
+          "then": {
+            "required": [
+              "proof"
+            ]
+          }
+        }
+      ]
+    },
+    "taxonomy": {
+      "type": "object",
+      "required": [
+        "class",
+        "status"
+      ],
+      "properties": {
+        "class": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "examined",
+            "applicable",
+            "not_applicable",
+            "not_assessed"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "not_applicable",
+                  "not_assessed"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "reason"
+            ],
+            "properties": {
+              "reason": {
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "threatModel": {
+      "type": "object",
+      "required": [
+        "applicability",
+        "assets",
+        "actors",
+        "entry_points",
+        "trust_boundaries",
+        "privileges",
+        "security_objectives",
+        "deployment_assumptions",
+        "abuse_cases",
+        "unknowns",
+        "out_of_scope",
+        "taxonomy"
+      ],
+      "properties": {
+        "applicability": {
+          "const": "applicable"
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "actors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "entry_points": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "trust_boundaries": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "privileges": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "security_objectives": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "deployment_assumptions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "abuse_cases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "unknowns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "out_of_scope": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "taxonomy": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/taxonomy"
+          }
+        }
+      }
+    }
+  }
+}
