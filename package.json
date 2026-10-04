@@ -1,0 +1,6 @@
+{
+  "name": "scott-cc-distribution-tests",
+  "private": true,
+  "engines": {"node": ">=22"},
+  "devDependencies": {"skills": "1.7.0"}
+}

@@ -4,10 +4,12 @@
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import unquote, urlsplit
 
 BEADS_COMMIT = "6c124203e771433a3550c348771a5b5e27fd3c21"
 HERMES_COMMIT = "21b2095d00a98b8ad7b5c60b10587619c852cdb8"
@@ -34,9 +36,76 @@ REQUIRED_FILES = (
     "SKILL.md",
     "README.md",
     "LICENSE.txt",
+    "evals/README.md",
+    "evals/public-dev/corpus-v1.json",
+    "references/dependencies-and-ready-fronts.md",
+    "references/git-and-dolt-boundaries.md",
+    "references/hermes-swarm.md",
+    "references/human-and-async-gates.md",
+    "references/issue-lifecycle.md",
+    "references/issue-quality.md",
+    "references/mental-models.md",
+    "references/operating-modes.md",
+    "references/pas-comparison.md",
+    "references/recovery-and-resume.md",
+    "references/solo-execution.md",
     "references/sources.md",
+    "references/troubleshooting.md",
+    "references/verification-and-closure.md",
+    "references/worker-contract.md",
+    "references/workspace-and-health.md",
+    "schemas/approval-record-v1.schema.json",
+    "schemas/checkpoint-pointer-v1.schema.json",
+    "schemas/direct-operation-record-v1.schema.json",
+    "schemas/direct-operation-request-v1.schema.json",
+    "schemas/durable-executor-result-v1.schema.json",
+    "schemas/durable-handoff-v1.schema.json",
+    "schemas/evaluation-result-v1.schema.json",
+    "schemas/harness-receipt-v1.schema.json",
+    "schemas/lane-freeze-v1.schema.json",
+    "schemas/native-command-event-v1.schema.json",
+    "schemas/operation-journal-event-v1.schema.json",
+    "schemas/operation-result-v1.schema.json",
+    "schemas/ownership-history-event-v1.schema.json",
+    "schemas/ownership-record-v1.schema.json",
+    "schemas/parent-verification-v1.schema.json",
+    "schemas/pending-action-v1.schema.json",
+    "schemas/recovery-probe-v1.schema.json",
+    "schemas/reviewer-result-v1.schema.json",
+    "schemas/run-checkpoint-v1.schema.json",
+    "schemas/run-manifest-v1.schema.json",
+    "schemas/run-request-v1.schema.json",
+    "schemas/safe-command-result-v1.schema.json",
+    "schemas/worker-execution-result-v1.schema.json",
+    "schemas/worker-packet-v1.schema.json",
+    "scripts/beads_coordinator.py",
+    "scripts/beads_ownership.py",
     "scripts/beads_skill_contract.py",
+    "scripts/build_ready_front.py",
+    "scripts/capture_beads_snapshot.py",
+    "scripts/coordinator_front.py",
+    "scripts/coordinator_handoff.py",
+    "scripts/coordinator_integration.py",
+    "scripts/coordinator_state.py",
+    "scripts/coordinator_tracker.py",
+    "scripts/detect_write_conflicts.py",
+    "scripts/direct_operation.py",
+    "scripts/evaluate_skill.py",
+    "scripts/external_export.py",
+    "scripts/generate_schema_runtime.py",
     "scripts/hermes_discovery_harness.py",
+    "scripts/lane_snapshot.py",
+    "scripts/operation_result.py",
+    "scripts/package_lane.py",
+    "scripts/protected_action.py",
+    "scripts/reconcile_run.py",
+    "scripts/safe_bd.py",
+    "scripts/safe_output.py",
+    "scripts/schema_runtime.py",
+    "scripts/validate_lane_freeze.py",
+    "scripts/validate_worker_execution_result.py",
+    "scripts/validate_worker_packet.py",
+    "scripts/worker_result.py",
 )
 REQUIRED_LABELS = (
     "Scope contract:",
@@ -240,13 +309,80 @@ def _reachable_reference_paths(root: Path, skill: str) -> set[Path]:
     return reachable
 
 
-def validate_package(skill_root: Path) -> ContractReport:
-    """Validate a package root without requiring later-stage runtime artifacts."""
-    root = Path(skill_root)
+def _package_path_errors(root: Path, required: tuple[str, ...]) -> list[str]:
+    """Check containment before reading any document or following a link."""
+    root = root.resolve()
     errors: list[str] = []
+
+    def contained(path: Path) -> bool:
+        try:
+            return path.resolve().is_relative_to(root)
+        except (OSError, RuntimeError):
+            return False
+
+    for relative in required:
+        path = root / relative
+        if not contained(path):
+            errors.append(f"unsafe package escape: {relative}")
+        elif not path.is_file():
+            errors.append(f"missing required package file: {relative}")
+    documents = []
+    # os.walk does not descend symlink directories. Inspect them before any
+    # dereference; required children are checked independently above.
+    for directory, dirs, files in os.walk(root, followlinks=False):
+        for name in dirs + files:
+            path = Path(directory) / name
+            if not contained(path):
+                errors.append(f"unsafe package escape: {path.relative_to(root)}")
+            elif path.is_symlink() and not path.exists():
+                errors.append(f"broken package link: {path.relative_to(root)}")
+            elif path.is_file() and path.suffix.lower() == ".md":
+                documents.append(path)
+    if errors:
+        return errors
+    for document in documents:
+        text = document.read_text(encoding="utf-8")
+        links = re.findall(r"\[[^\]]*\]\((<[^>]*>|[^)]+)\)", text)
+        links += re.findall(r"(?m)^ {0,3}\[[^\]]+\]:\s*(<[^>]+>|\S+)", text)
+        for raw in links:
+            target = (
+                raw[1 : raw.index(">")]
+                if raw.startswith("<")
+                else raw.split()[0]
+                if raw.strip()
+                else ""
+            )
+            parsed = urlsplit(target)
+            if parsed.scheme.lower() in {"http", "https", "mailto"}:
+                continue
+            link = unquote(parsed.path)
+            if not link and not parsed.scheme and not parsed.netloc:
+                continue  # Fragment-only link.
+            candidate = document.parent / link
+            if (
+                parsed.scheme
+                or parsed.netloc
+                or Path(link).is_absolute()
+                or "\\" in link
+                or not contained(candidate)
+            ):
+                errors.append(
+                    f"unsafe local link escape: {document.relative_to(root)} -> {target}"
+                )
+            elif not candidate.exists():
+                errors.append(
+                    f"broken local link: {document.relative_to(root)} -> {target}"
+                )
+    return errors
+
+
+def validate_package(skill_root: Path) -> ContractReport:
+    """Validate the complete shipped operational package, not just its spine."""
+    root = Path(skill_root).resolve()
+    errors = _package_path_errors(root, REQUIRED_FILES)
     drift: list[str] = []
-    missing = [path for path in REQUIRED_FILES if not (root / path).is_file()]
-    errors.extend(f"missing required package file: {path}" for path in missing)
+    if any(error.startswith("unsafe") for error in errors):
+        return ContractReport(errors, drift, 0, 0)
     skill_path = root / "SKILL.md"
     if not skill_path.is_file():
         return ContractReport(errors, drift, 0, 0)

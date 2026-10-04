@@ -1,3 +1,11 @@
+[project]
+name = "scott-cc-contracts"
+version = "0.0.0"
+requires-python = ">=3.12,<3.15"
+
+[tool.uv]
+package = false
+
 [tool.ty.environment]
 python-version = "3.12"
 # Skill scripts import each other as flat siblings (e.g. `import safe_bd`),
@@ -9,6 +17,9 @@ python-version = "3.12"
 extra-paths = ["skills/beads/scripts"]
 
 [tool.pytest.ini_options]
+pythonpath = ["."]
+addopts = "--ignore=audit"
+markers = ["installer: real pinned installer and installed-layout contracts (required in full gate)"]
 # These suites build real git repositories, worktrees, and lane tarballs in
 # tmp_path. pytest's default policy keeps every one of them for the last three
 # runs, which is tens of thousands of files of pure debris. Keep only the
@@ -18,5 +29,11 @@ tmp_path_retention_policy = "failed"
 
 [dependency-groups]
 dev = [
+    "hypothesis>=6,<7",
     "jsonschema>=4.26,<5",
+    "pytest>=9.1,<10",
+    "pytest-asyncio>=1,<2",
+    "python-dotenv>=1,<2",
+    "pyyaml>=6,<7",
+    "ruff>=0.15,<0.16",
 ]

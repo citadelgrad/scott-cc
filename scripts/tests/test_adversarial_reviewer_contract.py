@@ -382,36 +382,25 @@ def test_portable_copy_resolves_every_required_runtime_artifact(tmp_path: Path) 
     assert "portable contract OK" in result.stdout
 
 
+@pytest.mark.installer
 @pytest.mark.parametrize("agent", ["codex", "hermes-agent"])
 def test_sandboxed_skills_cli_install_is_self_contained(
     tmp_path: Path, agent: str
 ) -> None:
-    result = subprocess.run(
-        [
-            "npx",
-            "--yes",
-            "skills",
-            "add",
-            str(ROOT),
-            "--skill",
-            "adversarial-reviewer",
-            "--agent",
-            agent,
-            "--copy",
-            "--yes",
-        ],
-        cwd=tmp_path,
-        text=True,
-        capture_output=True,
-        check=False,
-        timeout=120,
+    from scripts.skills_install_contract import (
+        InstallSandbox,
+        assert_copy_install,
+        run_installed_contract,
     )
+
+    box = InstallSandbox(tmp_path)
+    result = box.add(ROOT, "adversarial-reviewer", agent, "project")
     assert result.returncode == 0, result.stdout + result.stderr
-    installed = next(tmp_path.rglob("adversarial_contract.py"))
-    doctor = subprocess.run(
-        [sys.executable, installed, "doctor", "--skill-root", installed.parents[1]],
-        text=True,
-        capture_output=True,
-        check=False,
+    installed = assert_copy_install(
+        box,
+        ROOT / "skills/adversarial-reviewer",
+        "adversarial-reviewer",
+        agent,
+        "project",
     )
-    assert doctor.returncode == 0, doctor.stdout + doctor.stderr
+    run_installed_contract(box, installed)

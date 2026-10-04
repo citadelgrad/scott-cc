@@ -1,0 +1,52 @@
+# Scott's canonical pre-commit config
+# Copy to project root and run: pre-commit install
+#
+# Tools required on PATH: ruff, biome, uv (for ty)
+# Install via Ansible ai-tools role or: brew install ruff biome && uv tool install ty
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+
+  # Python: Ruff linter + formatter
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.12
+    hooks:
+      - id: ruff
+        args: [--fix]
+        types_or: [python, pyi]
+      - id: ruff-format
+        types_or: [python, pyi]
+
+  # Python: ty type checker (via uv)
+  - repo: local
+    hooks:
+      - id: ty
+        name: ty (type check)
+        entry: uv run ty check
+        language: system
+        types: [python]
+        pass_filenames: false
+
+  # TypeScript/JavaScript: Biome linter + formatter
+  - repo: local
+    hooks:
+      - id: biome
+        name: biome (lint + format)
+        entry: biome check --write
+        language: system
+        types_or: [ts, tsx, javascript, jsx]
+        pass_filenames: true
+
+  # Security: detect secrets before commit
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.24.0
+    hooks:
+      - id: gitleaks

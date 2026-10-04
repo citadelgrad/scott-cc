@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "required": [
+    "SKILL.md",
+    "prompts/test-auditor.md",
+    "prompts/test-executor.md",
+    "prompts/test-quality-reviewer.md",
+    "prompts/test-refactor-specialist.md",
+    "prompts/test-saboteur.md",
+    "references/worker-adapters.md",
+    "scripts/package_contract.py"
+  ],
+  "copies": {
+    "prompts/test-auditor.md": {
+      "source": "plugins/mutation-testing/agents/test-auditor.md",
+      "sha256": "e1e231225517f95520290c85c45c2f9eb25fca4bef6222566ab0603f303a6ab2"
+    },
+    "prompts/test-refactor-specialist.md": {
+      "source": "plugins/mutation-testing/agents/test-refactor-specialist.md",
+      "sha256": "bba164f298ea1958f88da7eb6483b5f581850db01177f4315ce6d0018c417bbb"
+    },
+    "prompts/test-saboteur.md": {
+      "source": "plugins/mutation-testing/agents/test-saboteur.md",
+      "sha256": "83859634e45928e6da7a611f6e8388df83a9937b8ec5305a7baeadd4de723814"
+    },
+    "prompts/test-quality-reviewer.md": {
+      "source": "plugins/mutation-testing/agents/test-quality-reviewer.md",
+      "sha256": "cfbf24ac8a67f3b493e2147517f4c52bb34a442a79345c90f3d6f724afed90fb"
+    },
+    "prompts/test-executor.md": {
+      "source": "plugins/mutation-testing/agents/test-executor.md",
+      "sha256": "14d18e0e2530050c5e7d759d0d08783f75674294d56cbebc3836d24f02321220"
+    },
+    "references/worker-adapters.md": {
+      "source": "skills/delegate-first/references/worker-adapters.md",
+      "sha256": "988c8ae1675c4f3b0e712dffc680cd04b74b5daa617e28bfb5187a8c40148b19"
+    },
+    "scripts/package_contract.py": {
+      "source": "skills/init/scripts/package_contract.py",
+      "sha256": "12633d622b62b770cc1ced7ecf3ad779f6a4e25c771a7ad55a905a190bfad67f"
+    }
+  }
+}

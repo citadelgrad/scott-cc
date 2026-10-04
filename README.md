@@ -9,8 +9,10 @@ Created and maintained by **Scott Nixon ([@citadelgrad](https://github.com/citad
 Install selected skills for Codex, Hermes Agent, Claude Code, or another supported agent:
 
 ```bash
-npx skills add citadelgrad/scott-cc
+npx --yes skills@1.7.0 add citadelgrad/scott-cc --copy
 ```
+
+The old floating command `npx skills add citadelgrad/scott-cc` is not reproducible; use the pinned commands above.
 
 The interactive installer lets you choose individual skills and target agents. For exact non-interactive commands, paths, verification, and the skills-only boundary, see **[Install Skills with `npx skills`](docs/skills-cli.md)**.
 
@@ -18,9 +20,19 @@ Install the complete Claude Code plugin, including agents, slash commands, and h
 
 ```bash
 /plugin marketplace add citadelgrad/scott-cc
+/plugin install scott-cc@scott-cc
 ```
 
 `npx skills add` installs portable skills only. It does not install the Claude-specific agents, slash commands, hooks, or sub-plugin runtime wiring.
+
+**Lifecycle and readiness:** repeat the original explicit, pinned `add` selection to
+update; do not use upstream generic update or narrow project remove. See the
+[tested lifecycle alternatives](docs/skills-cli.md#safe-lifecycle-avoid-upstream-updateremove-defects).
+Hermes project skills require a real Git root and explicit `hermes skills trust`
+after review. Custom Pi/Gemini homes are not supported by this installer pin.
+Beads is installable, but its advanced swarm/runtime candidate is **REJECT**
+(`release_eligible=false`), not production-approved; package integrity is not
+live-model safety approval. See [release status](docs/hardened-skills.md).
 
 ## At a Glance
 
@@ -157,12 +169,12 @@ Each of these is runnable directly via its own slash command, and can also be in
 | `data-layer-guard` | `PreToolUse` | Warns and asks for confirmation before an Edit/Write/NotebookEdit touches a data-layer path (migrations, schemas, ORM models — default globs overridable via `.data-guard.json`) without a same-day `DATA-MODEL.md` change-log entry. Interactive/planning-time only: silently no-ops in unattended contexts (`--dangerously-skip-permissions`/`mode:agent`), deferring to the data-steward review seat for unattended enforcement. |
 | `post-compaction` | `SessionStart` (`compact`, `clear`) | Restores the active plan and compact recovery context after Claude Code compacts or clears a session. |
 
-> **Hooks only run when this repo is installed as a plugin.** The hook wiring lives in [`hooks/hooks.json`](hooks/hooks.json), which Claude Code loads and expands `${CLAUDE_PLUGIN_ROOT}` from automatically — but only for plugins installed via `/plugin marketplace add` (or `/plugin install`). The root [`.claude/settings.json`](.claude/settings.json) in this repo ships `"hooks": {}` on purpose: it is the config Claude Code reads if you just `git clone` this repo and open it as a plain project, and `${CLAUDE_PLUGIN_ROOT}` has no meaning there.
+> **Hooks only run when this repo is installed as a plugin.** The hook wiring lives in [`hooks/hooks.json`](hooks/hooks.json), which Claude Code loads and expands `${CLAUDE_PLUGIN_ROOT}` from automatically — but only for plugins installed and enabled via `/plugin install scott-cc@scott-cc` after marketplace registration. The root [`.claude/settings.json`](.claude/settings.json) in this repo ships `"hooks": {}` on purpose: it is the config Claude Code reads if you just `git clone` this repo and open it as a plain project, and `${CLAUDE_PLUGIN_ROOT}` has no meaning there.
 >
-> **Net effect: a plain git-clone checkout has zero hook enforcement active**, including `data-layer-guard` — the guard that's supposed to stop an Edit/Write from silently touching a migration/schema/ORM file without a `DATA-MODEL.md` entry. If you clone this repo directly instead of installing it as a plugin, that protection (and the other three hooks) simply never runs; nothing will warn you that it's missing.
+> **Net effect: a plain git-clone checkout has zero hook enforcement active**, including `data-layer-guard` — the guard that's supposed to stop an Edit/Write from silently touching a migration/schema/ORM file without a `DATA-MODEL.md` entry. If you clone this repo directly instead of installing it as a plugin, that protection (and the other hooks) simply never runs; nothing will warn you that it's missing.
 >
-> If you want the hooks active without installing the plugin, either:
-> - Install via the marketplace (`/plugin marketplace add citadelgrad/scott-cc`) so Claude Code wires `hooks/hooks.json` up for you, or
+> To activate hooks, choose one of these routes:
+> - Register the marketplace (`/plugin marketplace add citadelgrad/scott-cc`), then install `/plugin install scott-cc@scott-cc` so Claude Code wires `hooks/hooks.json` up for you, or
 > - Hand-edit your own `.claude/settings.json` and copy the hook entries from `hooks/hooks.json`, replacing `${CLAUDE_PLUGIN_ROOT}` with the absolute path to your clone (e.g. `/Users/you/scott-cc`).
 
 ---
@@ -184,7 +196,8 @@ Two templates are stored in `templates/`; the `/init` skill uses them to produce
 Install from the marketplace:
 
 ```bash
-/plugin marketplace add citadelgrad/scott-cc/<name>
+/plugin marketplace add citadelgrad/scott-cc
+/plugin install <name>@scott-cc
 ```
 
 **Status** reflects real git activity, not a manual label. Derived from each plugin's `git log -- plugins/<name>/`:
@@ -449,8 +462,8 @@ This plugin is one layer of a three-layer setup system:
 | Layer | What | How |
 |-------|------|-----|
 | 1 — Machine | Ansible `ai-tools` role | `./bootstrap.sh` in macOS-config — clones this repo, installs tools, deploys security configs |
-| 2 — Portable skills | This repo (`scott-cc`) | `npx skills add citadelgrad/scott-cc` — select skills and Codex, Hermes Agent, Claude Code, or other targets |
-| 3 — Claude plugin | This repo (`scott-cc`) | `/plugin marketplace add citadelgrad/scott-cc` in Claude Code |
+| 2 — Portable skills | This repo (`scott-cc`) | `npx --yes skills@1.7.0 add citadelgrad/scott-cc --copy` — select skills and Codex, Hermes Agent, Claude Code, or other targets |
+| 3 — Claude plugin | This repo (`scott-cc`) | `/plugin marketplace add citadelgrad/scott-cc`, then `/plugin install scott-cc@scott-cc` |
 | 4 — Project | `/init` skill | Run per-project to scaffold `CLAUDE.md`, `AGENTS.md`, `.envrc`, `Makefile`, pre-commit hooks |
 
 Full bootstrap instructions and Ansible configuration: **[citadelgrad/macOS-config](https://github.com/citadelgrad/macOS-config)**
@@ -484,13 +497,13 @@ All code follows these principles (enforced by simplifier skills):
 ### Portable Skills for Codex, Hermes Agent, and Other Agents
 
 ```bash
-npx skills add citadelgrad/scott-cc
+npx --yes skills@1.7.0 add citadelgrad/scott-cc --copy
 ```
 
 For a scripted global install into both Codex and Hermes Agent:
 
 ```bash
-npx skills add citadelgrad/scott-cc \
+npx --yes skills@1.7.0 add citadelgrad/scott-cc --copy \
   --skill acceptance-criteria \
   --skill beads \
   --skill tdd \
@@ -506,7 +519,12 @@ See [docs/skills-cli.md](docs/skills-cli.md) for the complete guide.
 
 ```bash
 /plugin marketplace add citadelgrad/scott-cc
+/plugin install scott-cc@scott-cc
 ```
+
+Marketplace registration alone installs no plugin. Review the plugin details,
+choose the intended scope, and confirm it appears in `claude plugin list`.
+Install sub-plugins separately by their marketplace name.
 
 ### Update Existing Installation
 
@@ -518,7 +536,7 @@ See [docs/skills-cli.md](docs/skills-cli.md) for the complete guide.
 
 ```bash
 git clone https://github.com/citadelgrad/scott-cc.git
-/plugin install /path/to/scott-cc
+claude --plugin-dir /absolute/path/to/scott-cc
 ```
 
 ## Requirements

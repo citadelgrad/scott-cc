@@ -12,7 +12,7 @@ from typing import Any
 import pytest
 
 REPO = Path(__file__).resolve().parents[2]
-SCRIPT = REPO / "skills/beads/scripts/evaluate_skill.py"
+SCRIPT = REPO / "evaluation/beads-skill/harness/evaluate_skill.py"
 DISCOVERY_SCRIPT = REPO / "skills/beads/scripts/hermes_discovery_harness.py"
 MANIFEST = REPO / "evaluation/beads-skill/manifests/release-v1.json"
 CORPUS = REPO / "skills/beads/evals/public-dev/corpus-v1.json"

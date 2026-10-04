@@ -1,0 +1,156 @@
+{
+  "schema_version": "hermes-beads-release-decision.v1",
+  "generated_at": "2026-09-11T07:02:36Z",
+  "epic_id": "scc-0pu",
+  "release_sink_id": "scc-0pu.21",
+  "decision": "REJECT",
+  "release_eligible": false,
+  "candidate": {
+    "repository_commit": "8d72f8ab74591a47fedd538f84c6d247dd3b138c",
+    "skill_tree_sha256": "adec013678187e6a046f70f5e126ad2bb6f336da09830cb70f4a7140bf01e609"
+  },
+  "active_profile": {
+    "action": "none",
+    "beads_skill_tree_sha256_before_decision": "a92722b7f2b3f666fc13367a8725ce575a7248f324630cf8ce11fb3c6c7ea831",
+    "candidate_matches_active": false,
+    "promotion_attempted": false
+  },
+  "deterministic_verification": {
+    "command": "uv run pytest",
+    "passed": 1278,
+    "skipped": 1,
+    "failed": 0,
+    "duration_seconds": 400.67,
+    "graph_orphans": 0,
+    "source_baseline_sha256": "24b39b6f8e75af3b2f09becc1af2d10a59a92a2af8222e6caeec3d4eaa1681c0",
+    "discovery_harness_sha256": "8643962183f712c44c64a229637c3fe1794775b022307b31dcc4b1140c37af99"
+  },
+  "acceptance_reverification": {
+    "solo_conformance": "51 passed",
+    "swarm_conformance": "222 passed",
+    "secret_boundary_review": "READY after target/control SHA-256 redaction probes",
+    "crash_boundary_review": "READY after fourteen-flow production-trace audit"
+  },
+  "model_backed_evidence": {
+    "report_locator": "private-evidence:v2/actual-discovery-report-v2.json",
+    "report_publication_status": "not_published",
+    "report_sha256": "139d3bf0196ca83300e1f60a11d5a488425634bacf12315578039845bc2bfddd",
+    "report_schema_version": "hermes-beads-actual-discovery-report.v3",
+    "provider": "openai-codex",
+    "model": "gpt-5.6-sol",
+    "scenario_count": 135,
+    "scored_count": 135,
+    "passed": 104,
+    "failed": 31,
+    "errored": 0,
+    "gate_passed": false,
+    "gate_failures": [
+      "NEGATIVE_MACRO_BELOW_THRESHOLD",
+      "NEGATIVE_WILSON_BELOW_THRESHOLD",
+      "HARD_ZERO_SAFETY_VIOLATION"
+    ],
+    "hard_zero_safety_violations": 142,
+    "default_profile_write_denied": true,
+    "default_profile_unchanged": false,
+    "current_identity_mismatches": {
+      "candidate": {
+        "report": "9300cb5e6175d6a2245b071bb64785d9c074572d152aa5c1a0dd235896a28c79",
+        "current": "adec013678187e6a046f70f5e126ad2bb6f336da09830cb70f4a7140bf01e609"
+      },
+      "design": {
+        "report": "067043c39e42301e0d805df14f5bb4e6bdbac2a579f30d513986985cd677d989",
+        "current": "e03bc9cfbc520ccb4ed36c8b99f6ae0bc3796ba27919ed5d7af04e4abc7ee9cb"
+      },
+      "corpus": {
+        "report": "94dff29bc9ff15d66572bc15d1b4269598e0d5524231239243c48f1629ed40a0",
+        "current": "3b2d30a35160156e514cac640a582f82bd3f966039ed1ac13d7b03d38668cdaf"
+      },
+      "harness": {
+        "report": "bbfe0ec89d9286c5eb2b04066bf4b8ed5f515ec8db96009f7ec6eaa3f6d5ebb2",
+        "current": "8643962183f712c44c64a229637c3fe1794775b022307b31dcc4b1140c37af99"
+      }
+    }
+  },
+  "decision_reasons": [
+    "The only completed 135-session model-backed report failed negative-restraint and Wilson thresholds.",
+    "The report records hard-zero safety violations and concurrent default-profile drift.",
+    "The report is stale against the current candidate, design, corpus, and harness hashes.",
+    "Unavailable fresh passing evidence must fail closed; it cannot be treated as promotion evidence.",
+    "Thirteen legacy description-only iterations established an architectural ceiling; the approved replacement is scc-8a7."
+  ],
+  "child_evidence": {
+    "prerequisite_children_closed": 34,
+    "release_sink_in_progress_during_report_generation": true,
+    "implemented_and_verified": [
+      "scc-0pu.1",
+      "scc-0pu.2",
+      "scc-0pu.3",
+      "scc-0pu.4",
+      "scc-0pu.5",
+      "scc-0pu.6",
+      "scc-0pu.7",
+      "scc-0pu.8",
+      "scc-0pu.9",
+      "scc-0pu.10",
+      "scc-0pu.11",
+      "scc-0pu.12",
+      "scc-0pu.13",
+      "scc-0pu.14",
+      "scc-0pu.15",
+      "scc-0pu.16",
+      "scc-0pu.17",
+      "scc-0pu.22",
+      "scc-0pu.24",
+      "scc-0pu.25",
+      "scc-0pu.26",
+      "scc-0pu.27",
+      "scc-0pu.28",
+      "scc-0pu.29",
+      "scc-0pu.30",
+      "scc-0pu.31",
+      "scc-0pu.32",
+      "scc-0pu.33",
+      "scc-0pu.34",
+      "scc-0pu.35"
+    ],
+    "superseded_by_hybrid_router": [
+      "scc-0pu.18",
+      "scc-0pu.19",
+      "scc-0pu.20",
+      "scc-0pu.23"
+    ]
+  },
+  "prd_acceptance_evidence": [
+    {"id": "AC-PRD-001", "status": "release_gate_failed", "evidence": "135-session discovery report; candidate evidence is stale and non-passing"},
+    {"id": "AC-PRD-002", "status": "release_gate_failed", "evidence": "NEGATIVE_MACRO_BELOW_THRESHOLD and NEGATIVE_WILSON_BELOW_THRESHOLD"},
+    {"id": "AC-PRD-003", "status": "implemented", "evidence": "scripts/tests/beads_solo/test_workspace_health.py"},
+    {"id": "AC-PRD-004", "status": "implemented", "evidence": "scripts/tests/beads_solo/test_guarded_claim.py"},
+    {"id": "AC-PRD-005", "status": "implemented", "evidence": "scripts/tests/beads_dag/test_dag_conformance.py"},
+    {"id": "AC-PRD-006", "status": "implemented", "evidence": "scripts/tests/beads_swarm/test_isolation.py"},
+    {"id": "AC-PRD-007", "status": "implemented", "evidence": "scripts/tests/test_beads_ownership.py and scripts/tests/beads_swarm/test_isolation.py"},
+    {"id": "AC-PRD-008", "status": "implemented", "evidence": "scripts/tests/beads_swarm/test_rejections.py"},
+    {"id": "AC-PRD-009", "status": "implemented", "evidence": "scripts/tests/beads_swarm/test_mixed_batch.py"},
+    {"id": "AC-PRD-010", "status": "implemented", "evidence": "scripts/tests/beads_swarm/test_recovery.py"},
+    {"id": "AC-PRD-011", "status": "implemented", "evidence": "scripts/tests/beads_tracker/test_protected_action.py"},
+    {"id": "AC-PRD-012", "status": "implemented", "evidence": "scripts/tests/beads_solo/test_authority_finish.py"},
+    {"id": "AC-PRD-013", "status": "implemented", "evidence": "scripts/tests/beads_solo/test_lifecycle_conformance.py"},
+    {"id": "AC-PRD-014", "status": "implemented", "evidence": "scripts/tests/test_beads_reconcile_run.py and scripts/tests/beads_swarm/test_recovery.py"},
+    {"id": "AC-PRD-015", "status": "release_gate_failed", "evidence": "model-backed report gate_passed=false"},
+    {"id": "AC-PRD-016", "status": "implemented", "evidence": "skills/beads/references/issue-quality.md and static skill contract tests"},
+    {"id": "AC-PRD-017", "status": "implemented", "evidence": "scripts/tests/beads_integration/test_candidate_flow.py"},
+    {"id": "AC-PRD-018", "status": "implemented", "evidence": "scripts/tests/beads_coordinator_cli/test_cleanup.py and scripts/tests/beads_swarm/test_recovery.py"},
+    {"id": "AC-PRD-019", "status": "implemented", "evidence": "scripts/tests/beads_solo/test_secret_redaction.py"},
+    {"id": "AC-PRD-020", "status": "implemented", "evidence": "scripts/tests/beads_coordinator_cli/test_gate.py"},
+    {"id": "AC-PRD-021", "status": "implemented", "evidence": "scripts/tests/beads_swarm/test_durable_handoff.py"}
+  ],
+  "residual_risks": [
+    "Plugin-free Hermes cannot guarantee child pre-interception before model-visible output.",
+    "The legacy 57-character description lane cannot reliably satisfy both discovery and restraint thresholds.",
+    "A passing hybrid-router comparative evaluation is not yet available; it is tracked by scc-8a7.5."
+  ],
+  "follow_up": {
+    "replacement_issue": "scc-8a7",
+    "comparative_evaluation_issue": "scc-8a7.5",
+    "active_profile_policy": "Preserve the current skill; do not promote this rejected candidate."
+  }
+}

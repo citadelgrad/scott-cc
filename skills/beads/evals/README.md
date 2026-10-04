@@ -2,6 +2,20 @@
 
 This directory contains only the frozen **public development** split. It is illustrative and does not gate release. Validation and sealed-test prompts, expected states, rubrics, sibling fixtures, canaries, and raw outputs stay in access-controlled external stores and must never be copied here or mounted into an evaluated agent.
 
+## Custodian-only tooling
+
+The operational skill does not ship the evaluator, evidence adapter, or frozen
+custodian source contracts. Keep those files outside the evaluated-agent mount.
+In an explicit scott-cc source checkout, use
+`evaluation/beads-skill/harness/evaluate_skill.py` for offline validation and
+scoring. The legacy installed `scripts/evaluate_skill.py --help` explains this
+boundary; every attempted evaluation operation exits 2 with
+`CUSTODIAN_CHECKOUT_REQUIRED`, without searching or importing neighboring clones.
+
+The canonical scorer and all frozen manifests, receipts, and release decisions
+retain their original bytes. This packaging repair neither re-pins historical
+evidence nor authorizes a release.
+
 ## Immutable inputs
 
 `public-dev/corpus-v1.json` copies the 24 public rows, budget profiles, observable assertions, and scoring contract from `benchmark-corpus-design-v1.json`. Its content identity is recovered exactly with:
@@ -14,14 +28,17 @@ sha256(canonical compact sorted-key JSON + LF of
 
 `evaluation/beads-skill/manifests/release-v1.json` pins predecessor file hashes, the public/private split identities, the complete frozen budgets, thresholds, release treatments, local-gap IDs, and a repository-safe scenario index. Private rows in that index contain only ID, split, category, polarity, budget profile, and coverage tags.
 
-Validate the public contract without contacting a provider:
+Validate the public contract without contacting a provider (from a checkout):
 
 ```bash
-uv run --python 3.12 python skills/beads/scripts/evaluate_skill.py validate-corpus \
+uv run --python 3.12 python evaluation/beads-skill/harness/evaluate_skill.py validate-corpus \
   --repo-root . \
   --corpus skills/beads/evals/public-dev/corpus-v1.json \
   --manifest evaluation/beads-skill/manifests/release-v1.json
 ```
+
+Installed packages intentionally cannot perform custodian evaluation. Public-dev
+examples remain available as non-authoritative documentation, not release evidence.
 
 ## Custodian workflow
 

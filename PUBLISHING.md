@@ -45,7 +45,8 @@ Test that your plugin can be installed:
 
 ```bash
 # Install from your GitHub repo
-/plugin install citadelgrad/scott-cc
+/plugin marketplace add citadelgrad/scott-cc
+/plugin install scott-cc@scott-cc
 
 # Verify commands are available (note: commands are namespaced)
 /scott-cc:handoff
@@ -60,38 +61,43 @@ To uninstall and test again:
 
 ### 2.1 Verify cross-agent skills distribution
 
-The same public repository is also a source for the Vercel `skills` CLI. This path installs portable skills, not Claude-specific agents, slash commands, hooks, or sub-plugin wiring.
+Before publishing, install locked verification dependencies and run the gates:
 
 ```bash
-# Static manifest, metadata, grouping, and documentation contract
-uv run python scripts/verify_skills_distribution.py
-
-# Public default-branch discovery
-npx --yes skills@latest add citadelgrad/scott-cc --list
+set -euo pipefail
+make setup-verification
+make verify-distribution
+make verify
 ```
 
-Before publishing, test a local working-tree install without touching real agent configuration:
+The distribution gate tests the **current checkout**, all physical root/plugin
+packages across five targets and both scopes in copy mode, root selection,
+strict metadata/body/asset contracts and safe lifecycle alternatives. Installer
+prerequisites are mandatory; no network-dependent npx/latest fallback or silent
+installer skip is allowed. CI runs `make verify-distribution` on PRs, main pushes,
+and version tags without changed-path filtering. Configure this job as a required
+check in repository branch protection; the workflow alone cannot set that policy.
+The broader native Beads contract suite requires bd 1.2.2; a 1.3.0 run produced
+native contract failures and is not a validated substitute.
+
+After publishing, separately check the **public default branch**:
 
 ```bash
-tmp_home="$(mktemp -d)"
-mkdir -p "$tmp_home/.codex" "$tmp_home/.hermes"
-HOME="$tmp_home" CODEX_HOME="$tmp_home/.codex" HERMES_HOME="$tmp_home/.hermes" \
-  npx --yes skills@latest add . \
-  --skill beads \
-  --agent codex \
-  --agent hermes-agent \
-  --global \
-  --yes
-test -f "$tmp_home/.agents/skills/beads/SKILL.md"
-test -f "$tmp_home/.hermes/skills/beads/SKILL.md"
-rm -r -- "$tmp_home"
+npx --yes skills@1.7.0 add citadelgrad/scott-cc --list
 ```
 
-The interactive user entry point remains deliberately short:
+The old floating command `npx skills add citadelgrad/scott-cc` is not reproducible.
+User installs should pin 1.7.0, select agents/skills explicitly and prefer `--copy`.
+Do not recommend upstream generic update or narrow project remove: use the tested
+[reinstall/quarantine alternatives](docs/skills-cli.md#safe-lifecycle-avoid-upstream-updateremove-defects).
+Hermes project visibility requires a real Git root and explicit trust after review;
+custom Pi/Gemini global homes are unsupported by this pin. A copied prompt does
+not install its plugin runtime or optional tools.
 
-```bash
-npx skills add citadelgrad/scott-cc
-```
+**Beads advanced runtime remains REJECT (`release_eligible=false`)**, not
+production-approved. Do not interpret any green distribution gate as live-model
+safety approval or promotion authorization. Preserve the genuine release receipt
+and review [release status](docs/hardened-skills.md) independently.
 
 ## Step 3: Share Your Plugin
 
@@ -102,7 +108,8 @@ Your README already includes your GitHub username, so users can copy-paste comma
 Share this command with others:
 
 ```bash
-/plugin install citadelgrad/scott-cc
+/plugin marketplace add citadelgrad/scott-cc
+/plugin install scott-cc@scott-cc
 ```
 
 ### Option B: Submit to Community Marketplaces
@@ -144,7 +151,8 @@ Just published my Claude Code setup as a plugin!
 8 commands + 7 agents + 30 skills + beads epic builder for productive web development
 
 Install with:
-/plugin install citadelgrad/scott-cc
+/plugin marketplace add citadelgrad/scott-cc
+/plugin install scott-cc@scott-cc
 
 Features:
 - Security cheatsheets (/security-cheatsheet)
@@ -168,8 +176,8 @@ When you make changes to your local setup:
 cd /path/to/scott-cc
 
 # Make your changes to commands/, hooks/, agents/, skills/, etc.
-python3 scripts/verify_plugin.py
-python3 scripts/verify_skills_distribution.py
+make verify-distribution
+make verify
 
 # Commit your functional changes
 git add .
@@ -179,8 +187,8 @@ git commit -m "Add new command: scott-cc:new-command-name"
 # Example: 1.0.0 -> 1.1.0 in:
 #   .claude-plugin/plugin.json
 #   .claude-plugin/marketplace.json
-python3 scripts/verify_plugin.py
-python3 scripts/verify_skills_distribution.py
+make verify-distribution
+make verify
 
 git add .claude-plugin/plugin.json .claude-plugin/marketplace.json scripts/verify_plugin.py
 # include any new/changed hook files too, e.g. hooks/toon_post_hook.sh
@@ -247,10 +255,15 @@ For major versions, create GitHub releases:
 5. Description: List of features/changes
 6. Click "Publish release"
 
-Users can install specific versions:
+For an exact reviewed release, check out its actual tag in a local clone. Load
+that checkout for a development session (this does not persist an installation):
+
 ```bash
-/plugin install citadelgrad/scott-cc@v1.0.0
+claude --plugin-dir /absolute/path/to/reviewed-checkout
 ```
+
+In `/plugin install <plugin>@<marketplace>`, the `@` suffix identifies the
+marketplace, not a Git tag. See the [official plugin installation guide](https://code.claude.com/docs/en/discover-plugins).
 
 ## Success Metrics
 

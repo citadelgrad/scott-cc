@@ -1,49 +1,38 @@
 #!/usr/bin/env python3
-"""Offline entry point for the frozen Beads skill evaluator."""
+"""Explain the explicit custodian boundary for installed Beads packages."""
 
 from __future__ import annotations
 
-import importlib.util
+import argparse
+import json
 import sys
-from pathlib import Path
 
-_REPO = Path(__file__).resolve().parents[3]
-_IMPL = _REPO / "evaluation/beads-skill/harness/evaluator.py"
-_SPEC = importlib.util.spec_from_file_location("beads_skill_evaluator", _IMPL)
-if _SPEC is None or _SPEC.loader is None:  # pragma: no cover
-    raise RuntimeError("cannot load Beads evaluation harness")
-_MODULE = importlib.util.module_from_spec(_SPEC)
-sys.modules[_SPEC.name] = _MODULE
-_SPEC.loader.exec_module(_MODULE)
+CUSTODIAN_COMMAND = "uv run python evaluation/beads-skill/harness/evaluate_skill.py"
 
-EvaluationError = _MODULE.EvaluationError
-aggregate_results = _MODULE.aggregate_results
-check_thresholds = _MODULE.check_thresholds
-compare_pair = _MODULE.compare_pair
-digest = _MODULE.digest
-normalize_trajectory = _MODULE.normalize_trajectory
-prepare_pair = _MODULE.prepare_pair
-run_treatment_process = _MODULE.run_treatment_process
-scan_contamination = _MODULE.scan_contamination
-score_run = _MODULE.score_run
-validate_corpus = _MODULE.validate_corpus
-validate_semantic_judgment = _MODULE.validate_semantic_judgment
-render_markdown = _MODULE.render_markdown
-main = _MODULE.main
 
-_ADAPTER_SPEC = importlib.util.spec_from_file_location(
-    "beads_skill_evidence_adapter",
-    _REPO / "evaluation/beads-skill/harness/evidence_adapter.py",
-)
-if _ADAPTER_SPEC is None or _ADAPTER_SPEC.loader is None:  # pragma: no cover
-    raise RuntimeError("cannot load Beads evidence adapter")
-_ADAPTER = importlib.util.module_from_spec(_ADAPTER_SPEC)
-sys.modules[_ADAPTER_SPEC.name] = _ADAPTER
-_ADAPTER_SPEC.loader.exec_module(_ADAPTER)
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=(
+            "Evaluation is custodian-only, not part of the installed operational skill. "
+            "From an explicit scott-cc source checkout outside the evaluated-agent "
+            f"filesystem, run: {CUSTODIAN_COMMAND}. "
+            "No neighboring checkout is searched or imported."
+        ),
+    )
+    parser.parse_known_args(argv)
+    print(
+        json.dumps(
+            {
+                "status": "unavailable",
+                "error_code": "CUSTODIAN_CHECKOUT_REQUIRED",
+                "command": CUSTODIAN_COMMAND,
+            }
+        ),
+        file=sys.stderr,
+    )
+    return 2
 
-ADAPTER_VERSION = _ADAPTER.ADAPTER_VERSION
-EVIDENCE_SCHEMA_VERSION = _ADAPTER.EVIDENCE_SCHEMA_VERSION
-adapt_runtime_evidence = _ADAPTER.adapt_runtime_evidence
 
 if __name__ == "__main__":
     raise SystemExit(main())

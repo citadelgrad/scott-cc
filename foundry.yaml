@@ -30,9 +30,17 @@ profiles:
       - id: ruff
         run: uv run ruff check .
         timeout: 5m
+      - id: verification-setup
+        run: make setup-verification
+        timeout: 5m
+        allow_failure: false
+      - id: distribution
+        run: make verify-distribution
+        timeout: 15m
+        allow_failure: false
       - id: test
-        run: uv run pytest
-        timeout: 10m
+        run: make verify
+        timeout: 15m
 
   catalog-audit:
     gates:

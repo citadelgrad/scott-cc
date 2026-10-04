@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "required": [
+    "SKILL.md",
+    "references/CREDITS.md",
+    "references/contracts/reviewer-output.md",
+    "references/reviewers/mental-models-catalog.md",
+    "scripts/package_contract.py"
+  ],
+  "copies": {
+    "references/reviewers/mental-models-catalog.md": {
+      "source": "plugins/review-panel/reviewers/mental-models-catalog.md",
+      "sha256": "014a048e6a2343e8efbf321748e15b1f82ce74b5ca46a0d1096c57da5575bc9f"
+    },
+    "references/contracts/reviewer-output.md": {
+      "source": "plugins/review-panel/contracts/reviewer-output.md",
+      "sha256": "b2f2ec7596925fe52dac158fdfbca19b3a7d779d619c481e6706a6c0001662d3"
+    },
+    "references/CREDITS.md": {
+      "source": "plugins/review-panel/CREDITS.md",
+      "sha256": "99f82695f3a10bb06768029cf40975dc9ed21bed623ab2aaf3558a6d94168c1f"
+    },
+    "scripts/package_contract.py": {
+      "source": "skills/init/scripts/package_contract.py",
+      "sha256": "12633d622b62b770cc1ced7ecf3ad779f6a4e25c771a7ad55a905a190bfad67f"
+    }
+  }
+}

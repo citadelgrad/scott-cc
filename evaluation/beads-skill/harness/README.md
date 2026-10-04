@@ -15,4 +15,4 @@ The module provides:
 - deterministic JSON/Markdown rendering and release-blocking exit codes;
 - fail-closed threshold checking that recomputes the report from immutable pair receipts and honors manifest status and release-matrix blockers.
 
-The public wrapper is `skills/beads/scripts/evaluate_skill.py`. All functionality is Python 3.12 standard library except validation of the already-frozen evaluation-result schema through the package's generated standard-library runtime.
+The custodian wrapper is `evaluation/beads-skill/harness/evaluate_skill.py`. The installed skill's old entrypoint provides migration help and otherwise fails closed; it never imports a neighboring checkout. The scorer and evidence adapter remain outside every installed candidate payload. All functionality is Python 3.12 standard library except validation of the already-frozen evaluation-result schema through the package's generated standard-library runtime.

@@ -21,6 +21,7 @@ DESIGN = (
 DESIGN_V2 = (
     ROOT / "docs/plans/2026-09-02-hermes-beads-skill/discovery-benchmark-design-v2.json"
 )
+RELEASE_DECISION = ROOT / "evaluation/beads-skill/public-reports/release-v1.json"
 SKILL = ROOT / "skills/beads"
 
 
@@ -94,14 +95,37 @@ def _v2_fixture(tmp_path: Path, harness):
     return design_path, design_sha256, corpus_path, harness.sha256_file(corpus_path)
 
 
-def test_v2_frozen_design_is_metadata_only_and_binds_current_candidate(harness) -> None:
+def test_v2_frozen_design_is_metadata_only_and_candidate_mismatch_blocks_release(
+    harness,
+) -> None:
     design = json.loads(DESIGN_V2.read_text(encoding="utf-8"))
 
     assert harness.sha256_file(DESIGN_V2) == (
         "e03bc9cfbc520ccb4ed36c8b99f6ae0bc3796ba27919ed5d7af04e4abc7ee9cb"
     )
     assert design["status"] == "frozen"
-    assert design["frozen_runtime"]["candidate_sha256"] == harness.hash_tree(SKILL)
+    frozen_candidate = design["frozen_runtime"]["candidate_sha256"]
+    current_candidate = harness.hash_tree(SKILL)
+    if frozen_candidate != current_candidate:
+        # Exercise the real gate for today's bytes. Historical decisions record
+        # the candidate at evaluation time, not every subsequent packaging edit.
+        with pytest.raises(harness.HarnessError, match="FROZEN_CANDIDATE_MISMATCH"):
+            harness.validate_v2_runtime_contract(
+                DESIGN_V2,
+                harness.sha256_file(DESIGN_V2),
+                candidate_sha256=current_candidate,
+                provider=design["frozen_runtime"]["provider"],
+                model=design["frozen_runtime"]["model"],
+            )
+        decision = json.loads(RELEASE_DECISION.read_text(encoding="utf-8"))
+        assert decision["decision"] == "REJECT"
+        assert decision["release_eligible"] is False
+        recorded_candidate = decision["candidate"]["skill_tree_sha256"]
+        mismatch = decision["model_backed_evidence"]["current_identity_mismatches"][
+            "candidate"
+        ]
+        assert mismatch["current"] == recorded_candidate
+        assert mismatch["report"] != recorded_candidate
     assert design["frozen_runtime"]["harness_sha256"] == harness.sha256_file(SCRIPT)
     assert len(design["variants"]) == 45
     assert all("prompt" not in variant for variant in design["variants"])
