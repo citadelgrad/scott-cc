@@ -1,2 +1,39 @@
+[project]
+name = "scott-cc-contracts"
+version = "0.0.0"
+requires-python = ">=3.12,<3.15"
+
+[tool.uv]
+package = false
+
 [tool.ty.environment]
 python-version = "3.12"
+# Skill scripts import each other as flat siblings (e.g. `import safe_bd`),
+# because at runtime they are executed from inside their own directory. ty
+# resolves a sibling import only when it checks a file in that same
+# directory, so a test under scripts/tests/ that imports one of them fails to
+# resolve without this. Add the directory as a search path, so the type
+# checker sees the same module layout the runtime does.
+extra-paths = ["skills/beads/scripts"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+addopts = "--ignore=audit"
+markers = ["installer: real pinned installer and installed-layout contracts (required in full gate)"]
+# These suites build real git repositories, worktrees, and lane tarballs in
+# tmp_path. pytest's default policy keeps every one of them for the last three
+# runs, which is tens of thousands of files of pure debris. Keep only the
+# directories belonging to tests that actually failed, which is the only case
+# where the fixture tree is worth inspecting.
+tmp_path_retention_policy = "failed"
+
+[dependency-groups]
+dev = [
+    "hypothesis>=6,<7",
+    "jsonschema>=4.26,<5",
+    "pytest>=9.1,<10",
+    "pytest-asyncio>=1,<2",
+    "python-dotenv>=1,<2",
+    "pyyaml>=6,<7",
+    "ruff>=0.15,<0.16",
+]
