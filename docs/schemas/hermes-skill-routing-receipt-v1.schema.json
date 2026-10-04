@@ -1,0 +1,489 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:nous:hermes:skill-routing-receipt:v1",
+  "title": "Hermes skill routing receipt v1",
+  "description": "Structural receipt contract. Schema validation is necessary but does not sanitize arbitrary values; receipts must be built from typed internal values and pass the leak checks defined by the router design.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "decision_id",
+    "request_ref",
+    "router",
+    "registry",
+    "route_class",
+    "outcome",
+    "confidence_millionths",
+    "candidates",
+    "selected",
+    "classifier",
+    "budgets",
+    "cache",
+    "errors"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "hermes.skill-routing-receipt.v1"
+    },
+    "decision_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{16,64}$"
+    },
+    "request_ref": {
+      "type": "string",
+      "pattern": "^hmac:[0-9a-f]{64}$"
+    },
+    "router": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "config_digest"
+      ],
+      "properties": {
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "config_digest": {
+          "$ref": "#/$defs/digest"
+        }
+      }
+    },
+    "registry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "digest",
+        "policy_digest",
+        "eligible_count",
+        "invalid_metadata_count"
+      ],
+      "properties": {
+        "digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "policy_digest": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "eligible_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "invalid_metadata_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        }
+      }
+    },
+    "route_class": {
+      "enum": [
+        "runtime_attachment",
+        "explicit",
+        "repository_policy",
+        "retrieval",
+        "classifier",
+        "legacy",
+        "none"
+      ]
+    },
+    "outcome": {
+      "enum": [
+        "selected",
+        "none",
+        "clarify",
+        "error"
+      ]
+    },
+    "confidence_millionths": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1000000
+    },
+    "candidates": {
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "$ref": "#/$defs/candidate"
+      }
+    },
+    "selected": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "$ref": "#/$defs/selection"
+      }
+    },
+    "classifier": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/classifier"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "budgets": {
+      "$ref": "#/$defs/budgets"
+    },
+    "cache": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registry",
+        "query",
+        "classifier"
+      ],
+      "properties": {
+        "registry": {
+          "enum": [
+            "hit",
+            "miss",
+            "rebuilt"
+          ]
+        },
+        "query": {
+          "enum": [
+            "hit",
+            "miss",
+            "not_applicable"
+          ]
+        },
+        "classifier": {
+          "enum": [
+            "hit",
+            "miss",
+            "not_applicable"
+          ]
+        }
+      }
+    },
+    "errors": {
+      "type": "array",
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "REGISTRY_INVALID",
+          "POLICY_INVALID",
+          "EXPLICIT_COLLISION",
+          "CONFLICT_UNRESOLVED",
+          "CLASSIFIER_TIMEOUT",
+          "CLASSIFIER_INVALID",
+          "CLASSIFIER_COST_UNAVAILABLE",
+          "METADATA_INVALID",
+          "METADATA_UNTRUSTED",
+          "BUDGET_EXCEEDED",
+          "SKILL_LOAD_FAILED"
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "skill_identity": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 194,
+      "pattern": "^(?:(?:project|profile|bundled)/[A-Za-z0-9_-]+|(?:org|external|plugin)/[A-Za-z0-9_-]+/[A-Za-z0-9_-]+)$"
+    },
+    "evidence_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "skill_id",
+        "source_tier",
+        "metadata_status",
+        "score_millionths",
+        "evidence_ids",
+        "decision"
+      ],
+      "properties": {
+        "skill_id": {
+          "$ref": "#/$defs/skill_identity"
+        },
+        "source_tier": {
+          "enum": [
+            "project",
+            "profile",
+            "org",
+            "plugin",
+            "external",
+            "bundled"
+          ]
+        },
+        "metadata_status": {
+          "enum": [
+            "valid",
+            "legacy",
+            "untrusted",
+            "invalid"
+          ]
+        },
+        "score_millionths": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "evidence_ids": {
+          "type": "array",
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/evidence_id"
+          }
+        },
+        "decision": {
+          "enum": [
+            "selected",
+            "below_floor",
+            "negative_veto",
+            "context_missing",
+            "conflict",
+            "budget_cut",
+            "invalid_metadata",
+            "ineligible",
+            "classifier_rejected"
+          ]
+        }
+      }
+    },
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "skill_id",
+        "reason_code",
+        "load_state"
+      ],
+      "properties": {
+        "skill_id": {
+          "$ref": "#/$defs/skill_identity"
+        },
+        "reason_code": {
+          "enum": [
+            "attached",
+            "exact_name",
+            "exact_alias",
+            "policy_required",
+            "retrieval_accept",
+            "classifier_accept",
+            "legacy_accept"
+          ]
+        },
+        "load_state": {
+          "enum": [
+            "selected",
+            "loaded",
+            "deferred_budget",
+            "load_failed"
+          ]
+        }
+      }
+    },
+    "classifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "used",
+        "provider_id",
+        "model_id",
+        "api_call_count",
+        "rate_limit_debit",
+        "candidate_count",
+        "input_tokens",
+        "output_tokens",
+        "latency_ms",
+        "cost_usd_micros",
+        "cache_hit",
+        "verdict",
+        "confidence_millionths"
+      ],
+      "properties": {
+        "used": {
+          "const": true
+        },
+        "provider_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_.-]+$"
+        },
+        "model_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:/-]+$"
+        },
+        "api_call_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "rate_limit_debit": {
+          "$ref": "#/$defs/rate_limit_debit"
+        },
+        "candidate_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "input_tokens": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 768
+        },
+        "output_tokens": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 96
+        },
+        "latency_ms": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2000
+        },
+        "cost_usd_micros": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cache_hit": {
+          "type": "boolean"
+        },
+        "verdict": {
+          "enum": [
+            "select",
+            "none",
+            "clarify",
+            "timeout",
+            "invalid"
+          ]
+        },
+        "confidence_millionths": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1000000
+        }
+      }
+    },
+    "budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidate_k",
+        "selected_count",
+        "routing_input_tokens",
+        "routing_output_tokens",
+        "routing_cost_usd_micros",
+        "routing_api_calls",
+        "routing_rate_limit_requests",
+        "routing_rate_limit_input_tokens",
+        "routing_rate_limit_output_tokens",
+        "total_latency_ms",
+        "within_budget"
+      ],
+      "properties": {
+        "candidate_k": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 12
+        },
+        "selected_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "routing_input_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "routing_output_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "routing_cost_usd_micros": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "routing_api_calls": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "routing_rate_limit_requests": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "routing_rate_limit_input_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "routing_rate_limit_output_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_latency_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "within_budget": {
+          "type": "boolean"
+        }
+      }
+    },
+    "rate_limit_debit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requests",
+        "input_tokens",
+        "output_tokens"
+      ],
+      "properties": {
+        "requests": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "input_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "output_tokens": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}
