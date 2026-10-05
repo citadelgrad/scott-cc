@@ -8,15 +8,17 @@ metadata:
 
 Execute each selected component in this order. For each one, print what you're doing.
 
-Resolve the installed plugin root once before running any selected component:
+Resolve `INIT_SKILL_DIR` to the absolute directory containing the **loaded** init
+`SKILL.md`, using the host's skill-location metadata. Do not infer it from the project
+cwd, a clone, or `CLAUDE_PLUGIN_ROOT`. If the host does not expose the location, ask
+for it before any writes. Templates are bundled in that directory:
 
 ```bash
-SCOTT_CC_DIR="${CLAUDE_PLUGIN_ROOT:?CLAUDE_PLUGIN_ROOT is not set}"
-test -d "$SCOTT_CC_DIR/templates" || {
-  echo "scott-cc templates not found under $SCOTT_CC_DIR" >&2
-  exit 1
-}
+: "${INIT_SKILL_DIR:?Set to the directory of the loaded init SKILL.md}"
+python3 "$INIT_SKILL_DIR/scripts/scaffold.py" doctor
 ```
+
+Stop on a nonzero exit; never substitute a template from another installation.
 
 Do not search `$HOME` for a clone named `scott-cc`; marketplace installs may live elsewhere, and
 multiple clones make that lookup ambiguous.
@@ -33,14 +35,14 @@ If `.git/` already exists, skip and note it. All other components that touch `.g
 
 ### CLAUDE.md
 
-Source: `templates/CLAUDE.md` in the scott-cc repo
+Source: `templates/CLAUDE.md` in this installed init package
 Destination: `./CLAUDE.md`
 
 Steps:
-1. If `CLAUDE.md` already exists, ask the user: "CLAUDE.md already exists — overwrite? (y/n)"
+1. If `CLAUDE.md` already exists, skip it. To replace it, obtain explicit approval, preserve a backup, and use the file editing tool; the copy helper never overwrites.
 2. Copy the file:
    ```bash
-   cp "$SCOTT_CC_DIR/templates/CLAUDE.md" ./CLAUDE.md
+   python3 "$INIT_SKILL_DIR/scripts/scaffold.py" copy CLAUDE.md .
    ```
 3. Add `CLAUDE.md`, `AGENTS.md`, and `.envrc` to `.gitignore` if not already present (all three are personal/local config, not project config). The `||` branch creates `.gitignore` if it doesn't exist:
    ```bash
@@ -186,7 +188,7 @@ If `Makefile` already exists, skip it — do not overwrite, do not ask.
 
 ### pre-commit
 
-Source: `templates/.pre-commit-config.yaml` in the scott-cc repo (use `$SCOTT_CC_DIR` from the CLAUDE.md step above)
+Source: `templates/.pre-commit-config.yaml` in this installed init package (use `$INIT_SKILL_DIR` from the CLAUDE.md step above)
 Destination: `./.pre-commit-config.yaml`
 
 Check tool availability first:
@@ -197,10 +199,10 @@ command -v pre-commit >/dev/null 2>&1 || { echo "pre-commit not found — instal
 **Why `pre-commit install` is NOT used:** beads sets `core.hooksPath = .beads/hooks/`, which overrides `.git/hooks/` entirely. `pre-commit install` detects `core.hooksPath` and refuses to run (exits 1 with "Cowardly refusing to install hooks with `core.hooksPath` set"). Do not run it. Hook environments install lazily on the first commit that triggers `pre-commit run`.
 
 Steps:
-1. If `.pre-commit-config.yaml` already exists, ask: "`.pre-commit-config.yaml` already exists — overwrite? (y/n)"
+1. If `.pre-commit-config.yaml` already exists, skip it. Obtain explicit approval and preserve a backup before any replacement; the copy helper never overwrites.
 2. Copy the template:
    ```bash
-   cp "$SCOTT_CC_DIR/templates/.pre-commit-config.yaml" ./.pre-commit-config.yaml
+   python3 "$INIT_SKILL_DIR/scripts/scaffold.py" copy .pre-commit-config.yaml .
    ```
 3. Write the chain into `.beads/hooks/pre-commit` using this decision tree:
    - **Already chained:** `grep -q 'pre-commit run' .beads/hooks/pre-commit 2>/dev/null` → if true, skip (idempotent).

@@ -8,6 +8,12 @@
 # Python build artifacts
 __pycache__/
 *.pyc
+.venv/
+.pytest_cache/
+
+# Locked verification dependencies and isolated agent worktrees
+node_modules/
+.worktrees/
 
 # Local settings (users should not commit these)
 .claude/settings.local.json

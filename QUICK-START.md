@@ -5,7 +5,7 @@
 ### Skills for Codex, Hermes Agent, Claude Code, and others
 
 ```bash
-npx skills add citadelgrad/scott-cc
+npx --yes skills@1.7.0 add citadelgrad/scott-cc --copy
 ```
 
 Use Space to select skills, then choose target agents such as Codex and Hermes Agent. Their automation IDs are `codex` and `hermes-agent`.
@@ -13,7 +13,7 @@ Use Space to select skills, then choose target agents such as Codex and Hermes A
 For a non-interactive global install into both:
 
 ```bash
-npx skills add citadelgrad/scott-cc \
+npx --yes skills@1.7.0 add citadelgrad/scott-cc --copy \
   --skill acceptance-criteria \
   --skill beads \
   --skill tdd \
@@ -23,12 +23,22 @@ npx skills add citadelgrad/scott-cc \
   --yes
 ```
 
+The old floating command `npx skills add citadelgrad/scott-cc` is not reproducible; use the pinned commands above.
+
+This route installs skills only. Hermes project installs require a real Git root
+and explicit `hermes skills trust` after reviewing the repository. Custom Pi/Gemini
+home overrides are not honored by skills 1.7.0. Avoid upstream generic update and
+narrow project remove; replay explicit selection/mode or use the documented quarantine.
+Beads' advanced runtime candidate is **REJECT**, `release_eligible=false`, and is
+not production-approved; a successful portable install does not promote it.
+
 This route installs skills only. See [docs/skills-cli.md](docs/skills-cli.md) for all options, locations, verification, and removal.
 
 ### Complete Claude Code plugin
 
 ```bash
 /plugin marketplace add citadelgrad/scott-cc
+/plugin install scott-cc@scott-cc
 ```
 
 Use the plugin route when you also want Claude-specific agents, slash commands, hooks, and sub-plugins.

@@ -15,9 +15,29 @@ This SKILL.md documents two procedures: **Procedure A (hole-finding)**, a whole-
 backed by `scripts/catalog_seat_audit.py`, and **Procedure B (new-skill evaluation)**, a
 single-candidate comparison against the already-known catalog text.
 
+## Maintainer-repository preflight (both procedures)
+
+This is a **scott-cc maintainer-only** workflow, not a catalog scanner for an
+arbitrary project. Individual installation supplies the instructions and the
+read-only preflight; the caller must explicitly provide `--repo-root` identifying
+the intended maintainer checkout. Never guess clones, search `$HOME`, use the
+installed package's parents, or assume the current project is scott-cc.
+
+Resolve `<skill-dir>` from this loaded SKILL.md and run:
+
+```bash
+python3 <skill-dir>/scripts/maintainer_inputs.py --repo-root <explicit-checkout>
+```
+
+Stop on failure before either procedure. The JSON identifies the verified audit
+script, catalog, skills directory and design-review definition. Inspect these
+inputs only at that explicit checkout. Confirm it is the caller's intended
+repository; the layout check is not proof of trust in the contents. Do not execute
+a script from an untrusted repository without authorization.
+
 ## Procedure A: Hole-finding
 
-1. Run `uv run python scripts/catalog_seat_audit.py --out <tmp>/report.md`.
+1. From the verified repository root, run `uv run python <script> --catalog <catalog> --skills-dir <skills_dir> --design-review <design_review> --out <new-artifact>/report.md`, substituting the absolute paths returned by preflight. Choose a fresh output path: refuse to reuse a previous report so stale output cannot mask a script failure.
 2. Check whether the report was actually written before proceeding — see "Script failure" below.
    If it was, read `<tmp>/report.md` as the sole input. Do not separately re-read the raw catalog
    or skill directory contents to re-derive facts the script already computed mechanically.
@@ -69,8 +89,10 @@ findings, the artifact says so explicitly instead of being empty.
    "read the report once, don't re-derive facts."
    - **Missing description**: if the candidate's frontmatter has no `description` field, stop and
      report insufficient information rather than guessing one of the four recommendation types.
-3. **Compare against the existing catalog** (`persona-catalog.md`'s already-known content — no
-   script invocation needed here, unlike Procedure A):
+3. **Compare against the verified catalog**: read `catalog` and `design_review`
+   returned by preflight once (or reuse them only if their recorded hashes still
+   match). Do not assume prior conversation contains the intended catalog. No
+   audit-script invocation is needed for this procedure:
    - Existing seats' `cast-when` criteria (Seat Summary Table) — does the candidate overlap an
      existing seat's trigger?
    - The Excluded section's stated reasons — does the candidate look like a construction/build/

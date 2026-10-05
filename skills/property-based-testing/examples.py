@@ -6,10 +6,10 @@ Run with: pytest examples.py  (requires: uv add hypothesis pytest)
 import base64
 import bisect
 import json
+from fractions import Fraction
 
-from hypothesis import given  # ty: ignore[unresolved-import]
-from hypothesis import strategies as st  # ty: ignore[unresolved-import]
-
+from hypothesis import example, given
+from hypothesis import strategies as st
 
 # ---------------------------------------------------------------------------
 # Helpers under test (minimal implementations so the file runs standalone)
@@ -42,8 +42,7 @@ def binary_search(xs: list, target) -> int:
 def custom_max(xs: list):
     result = xs[0]
     for x in xs[1:]:
-        if x > result:
-            result = x
+        result = max(result, x)
     return result
 
 
@@ -174,15 +173,17 @@ def test_sort_with_new_maximum_ends_last(xs, extra):
 
 
 @given(
-    st.lists(st.floats(allow_nan=False, allow_infinity=False), min_size=1),
+    st.lists(
+        st.floats(allow_nan=False, allow_infinity=False), min_size=1, max_size=100
+    ),
     st.integers(min_value=1, max_value=100),
 )
+@example([1e308, -1e308], 2)
 def test_scaling_inputs_scales_sum(xs, k):
-    """Multiplying every element by k multiplies the total sum by k."""
-    assert sum(x * k for x in xs) == pytest.approx(sum(xs) * k)
-
-
-# ---------------------------------------------------------------------------
-# pytest.approx import needed for the last test
-# ---------------------------------------------------------------------------
-import pytest  # noqa: E402  (placed after tests for readability)
+    """Scaling a sum is an exact rational identity, not a float identity."""
+    # The former float property overflows on [1e308, -1e308], k=2:
+    # sum(x*k ...) becomes NaN while sum(xs)*k is zero. A tolerance cannot
+    # fix overflow. Fraction preserves each finite input's exact binary value
+    # and performs the algebra without overflow or cancellation rounding.
+    exact = [Fraction(x) for x in xs]
+    assert sum(x * k for x in exact) == sum(exact) * k

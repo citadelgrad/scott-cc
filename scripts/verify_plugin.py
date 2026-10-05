@@ -12,6 +12,11 @@ PLUGIN_JSON = ROOT / ".claude-plugin" / "plugin.json"
 MARKETPLACE_JSON = ROOT / ".claude-plugin" / "marketplace.json"
 HOOKS_JSON = ROOT / "hooks" / "hooks.json"
 
+try:
+    from scripts.verify_skills_distribution import package_metadata_errors, skill_paths
+except ModuleNotFoundError:
+    from verify_skills_distribution import package_metadata_errors, skill_paths
+
 COMMAND_PATH_RE = re.compile(r"\$\{CLAUDE_PLUGIN_ROOT\}/([^\s\"']+)")
 
 
@@ -80,6 +85,17 @@ def empty_skill_bodies(root: Path) -> list[Path]:
     return empty
 
 
+def validate_name(payload: dict, path: Path) -> None:
+    name = payload.get("name")
+    if not isinstance(name, str) or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", name):
+        fail(f"required name in {path} must be a nonempty kebab-case string")
+    for field in ("version", "description"):
+        if field in payload and (
+            not isinstance(payload[field], str) or not payload[field].strip()
+        ):
+            fail(f"{field} in {path} must be a nonempty string")
+
+
 def main() -> int:
     plugin = load_json(PLUGIN_JSON)
     marketplace = load_json(MARKETPLACE_JSON)
@@ -97,6 +113,26 @@ def main() -> int:
     root_plugin = marketplace_plugins[0]
     if not isinstance(root_plugin, dict):
         fail(f"expected first plugin entry to be an object in {MARKETPLACE_JSON}")
+
+    validate_name(plugin, PLUGIN_JSON)
+    seen_names = set()
+    for entry in marketplace_plugins:
+        if not isinstance(entry, dict):
+            fail(f"expected plugin object in {MARKETPLACE_JSON}")
+        validate_name(entry, MARKETPLACE_JSON)
+        if entry["name"] in seen_names:
+            fail(f"duplicate marketplace plugin name: {entry['name']}")
+        seen_names.add(entry["name"])
+        source = entry.get("source")
+        if (
+            not isinstance(source, str)
+            or not source
+            or Path(source).is_absolute()
+            or not (ROOT / source).resolve().is_relative_to(ROOT.resolve())
+        ):
+            fail(f"plugin source must be a contained relative path: {source!r}")
+    if (ROOT / root_plugin["source"]).resolve() != ROOT.resolve():
+        fail("first marketplace entry must point to the root plugin")
 
     for field in ("name", "description", "version"):
         plugin_value = plugin.get(field)
@@ -119,6 +155,7 @@ def main() -> int:
         sub_plugin = load_json(sub_plugin_json)
         if not isinstance(sub_plugin, dict):
             fail(f"expected object in {sub_plugin_json}")
+        validate_name(sub_plugin, sub_plugin_json)
         sub_name = sub_plugin.get("name")
         sub_version = sub_plugin.get("version")
         if sub_name != name:
@@ -158,6 +195,12 @@ def main() -> int:
             str(path.relative_to(ROOT)) for path in sorted(empty_skills)
         )
         fail(f"skill files have missing or empty procedure bodies: {display_paths}")
+
+    metadata_errors = [
+        error for path in skill_paths(ROOT) for error in package_metadata_errors(path)
+    ]
+    if metadata_errors:
+        fail("; ".join(metadata_errors))
 
     if not referenced_paths:
         print(
