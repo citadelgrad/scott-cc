@@ -7,8 +7,8 @@ This repository participates in a four-layer setup system. Full machine bootstra
 | Layer | What | How |
 |-------|------|-----|
 | 1 — Machine | Ansible `ai-tools` role | `./bootstrap.sh` in macOS-config — clones this repo, installs tools, deploys security configs |
-| 2 — Portable skills | This repo (scott-cc) | `npx skills add citadelgrad/scott-cc` — select skills for Codex, Hermes Agent, Claude Code, or other agents |
-| 3 — Claude plugin | This repo (scott-cc) | `/plugin marketplace add citadelgrad/scott-cc` in Claude Code |
+| 2 — Portable skills | This repo (scott-cc) | `npx --yes skills@1.7.0 add citadelgrad/scott-cc --copy` — select skills for Codex, Hermes Agent, Claude Code, or other agents |
+| 3 — Claude plugin | This repo (scott-cc) | `/plugin marketplace add citadelgrad/scott-cc`, then `/plugin install scott-cc@scott-cc` in Claude Code |
 | 4 — Project | `/init` skill | Run per-project to scaffold CLAUDE.md, AGENTS.md, .envrc, Makefile, pre-commit hooks |
 
 ## Where This Plugin Fits
@@ -36,6 +36,21 @@ flowchart TB
 ```
 
 The portable path installs only `SKILL.md` packages. Claude-specific agents, commands, hooks, and sub-plugin wiring require the Claude plugin path. See [skills-cli.md](skills-cli.md).
+
+## Installation and release boundaries
+
+Use Node 22+ and the pinned skills 1.7.0 copy-mode commands in [skills-cli.md](skills-cli.md).
+Installation does not provide plugin-only agents/hooks, optional external tools,
+or runtime safety certification. Hermes project discovery requires the real Git
+root and explicit `hermes skills trust` after review. Nondefault Pi/Gemini home
+overrides are unsupported by the pinned global installer. Preserve original
+selection/scope/mode through explicit re-add; avoid upstream update/remove defects
+using the tested lifecycle alternatives. The advanced Beads runtime candidate is
+REJECT (`release_eligible=false`), not production-approved.
+
+Maintainers run `make setup-verification`, then `make verify-distribution` for the
+complete package/installer gate and `make verify` for the broader repository suite.
+No native-agent model calls are part of these package gates.
 
 ## Project Init Sequence
 

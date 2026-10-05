@@ -11,9 +11,9 @@ Credentials are loaded from .env.test using domain-prefixed naming:
 
 import os
 from pathlib import Path
-from typing import Dict
 
 import pytest
+import pytest_asyncio
 from dotenv import load_dotenv
 
 # Load test credentials
@@ -31,7 +31,7 @@ DOMAIN_MAP = {
 }
 
 
-def build_sensitive_data() -> Dict[str, Dict[str, str]]:
+def build_sensitive_data() -> dict[str, dict[str, str]]:
     """
     Build browser-use sensitive_data dict from environment variables.
 
@@ -48,7 +48,7 @@ def build_sensitive_data() -> Dict[str, Dict[str, str]]:
 
     for key in os.environ:
         # Find user/email keys
-        if not (key.endswith("_USER") or key.endswith("_EMAIL")):
+        if not key.endswith(("_USER", "_EMAIL")):
             continue
 
         prefix = key.rsplit("_", 1)[0]
@@ -93,23 +93,24 @@ def get_profile_path(profile_name: str) -> Path:
 
 
 @pytest.fixture
-def sensitive_data() -> Dict[str, Dict[str, str]]:
+def sensitive_data() -> dict[str, dict[str, str]]:
     """Fixture providing credentials for browser-use agents."""
     return build_sensitive_data()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def browser():
     """Fixture providing a browser-use Browser instance."""
-    from browser_use import Browser
+    # Optional native runtime; not a dependency of distribution verification.
+    from browser_use import Browser  # ty: ignore[unresolved-import]
 
     headless = os.getenv("HEADLESS", "true").lower() == "true"
     browser = Browser(headless=headless)
     yield browser
-    await browser.close()  # ty: ignore[unresolved-attribute]
+    await browser.close()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def browser_with_profile(request):
     """
     Fixture providing browser with persistent profile.
@@ -119,7 +120,7 @@ async def browser_with_profile(request):
         async def test_something(browser_with_profile):
             ...
     """
-    from browser_use import Browser
+    from browser_use import Browser  # ty: ignore[unresolved-import]
 
     profile_name = request.param
     profile_path = get_profile_path(profile_name)
@@ -132,11 +133,11 @@ async def browser_with_profile(request):
         user_data_dir=str(profile_path),
     )
     yield browser
-    await browser.close()  # ty: ignore[unresolved-attribute]
+    await browser.close()
 
 
 def get_llm():
     """Get the default LLM for browser-use agents."""
-    from browser_use import ChatBrowserUse
+    from browser_use import ChatBrowserUse  # ty: ignore[unresolved-import]
 
     return ChatBrowserUse()

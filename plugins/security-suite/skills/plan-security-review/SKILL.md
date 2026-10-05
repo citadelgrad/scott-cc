@@ -26,6 +26,13 @@ build-ready, before implementation starts.
 (review-panel's `Security` seat, which casts `security-suite:security-engineer`
 on diffs at review time). This skill only reads plan/PRD/spec documents.
 
+## Portable package preflight
+
+Run `python3 <skill-dir>/scripts/package_contract.py doctor` before reviewing.
+The topic catalog and source checklist are bundled and drift-checked. Named
+Claude agents are not required for this document-review workflow; use the live
+agent's read and web-fetch capabilities, or explicitly label offline mode.
+
 ## When to Use
 
 - A planning or grilling session (e.g. `grill-with-docs`) has just concluded
@@ -49,7 +56,7 @@ conversation context:
    - Third-party dependencies added
    - Trust boundaries crossed
 3. Map each delta to OWASP cheatsheet topics, reusing
-   [security-advisor.md](../../agents/security-advisor.md)'s "Available Topics
+   [security-advisor.md](references/security-advisor.md)'s "Available Topics
    by Category" table — link to it, do not duplicate it. The table below seeds
    the most common delta → topic mappings for quick lookup:
 
@@ -81,7 +88,7 @@ conversation context:
 
 ### Built-in checklist (offline fallback)
 
-Derived from [security-suite/README.md](../../README.md)'s Security
+Derived from [security-suite/README.md](references/security-suite.md)'s Security
 Checklist — use this when WebFetch is unavailable:
 
 - No hardcoded secrets or credentials

@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+"""Atomically claim a review-panel checkpoint for one resume session."""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import re
+import stat
+import sys
+from pathlib import Path
+
+IDENTIFIER_RE = re.compile(r"[A-Za-z0-9_-]{1,128}\Z")
+SHA256_RE = re.compile(r"[0-9a-f]{64}\Z")
+
+
+def fail(message: str, code: int) -> int:
+    print(message, file=sys.stderr)
+    return code
+
+
+def load_checkpoint(path: Path) -> tuple[str, str] | None:
+    try:
+        path_stat = path.lstat()
+        if path.is_symlink() or not stat.S_ISREG(path_stat.st_mode):
+            return None
+        canonical_workspace = (Path.cwd() / ".review-panel" / "workspace").resolve()
+        if path.parent.resolve() != canonical_workspace:
+            return None
+        raw = path.read_bytes()
+        payload = json.loads(raw)
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None
+    if not isinstance(payload, dict):
+        return None
+    checkpoint_id = payload.get("checkpoint_id")
+    if not isinstance(checkpoint_id, str) or not IDENTIFIER_RE.fullmatch(checkpoint_id):
+        return None
+    return checkpoint_id, hashlib.sha256(raw).hexdigest()
+
+
+def main() -> int:
+    if len(sys.argv) != 4:
+        return fail(
+            "usage: checkpoint-claim CHECKPOINT SESSION_ID EXPECTED_SHA256",
+            2,
+        )
+
+    checkpoint = Path(sys.argv[1])
+    session_id = sys.argv[2]
+    expected_sha256 = sys.argv[3]
+    if not IDENTIFIER_RE.fullmatch(session_id):
+        return fail("invalid_session_id", 2)
+    if not SHA256_RE.fullmatch(expected_sha256):
+        return fail("invalid_expected_checkpoint_hash", 2)
+
+    loaded = load_checkpoint(checkpoint)
+    if loaded is None:
+        return fail("invalid_checkpoint", 2)
+    checkpoint_id, actual_sha256 = loaded
+    if actual_sha256 != expected_sha256:
+        return fail("checkpoint_hash_mismatch", 2)
+
+    claim_directory = checkpoint.parent / "checkpoint-claims"
+    try:
+        claim_directory.mkdir(mode=0o700, exist_ok=True)
+        if claim_directory.is_symlink() or not claim_directory.is_dir():
+            return fail("checkpoint_claim_failed", 2)
+    except OSError:
+        return fail("checkpoint_claim_failed", 2)
+
+    claim = claim_directory / f"{expected_sha256}.claim"
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    payload = (
+        json.dumps(
+            {
+                "checkpoint_id": checkpoint_id,
+                "checkpoint_sha256": expected_sha256,
+                "resumed_by_session_id": session_id,
+            },
+            separators=(",", ":"),
+        )
+        + "\n"
+    )
+
+    try:
+        descriptor = os.open(claim, flags, 0o600)
+    except FileExistsError:
+        return fail("checkpoint_already_consumed", 3)
+    except OSError:
+        return fail("checkpoint_claim_failed", 2)
+
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+    except OSError:
+        try:
+            claim.unlink()
+        except OSError:
+            pass
+        return fail("checkpoint_claim_failed", 2)
+
+    print(payload, end="")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

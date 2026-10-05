@@ -56,16 +56,18 @@ repos:
     hooks:
       - id: plugin-manifest-contract
         name: plugin manifest contract
-        entry: python3 scripts/verify_plugin.py
+        entry: uv run --frozen python scripts/verify_plugin.py
         language: system
         pass_filenames: false
-        files: ^(?:\.claude-plugin/.*\.json|plugins/.*/\.claude-plugin/plugin\.json|plugins/[^/]+/skills/[^/]+/SKILL\.md|hooks/hooks\.json|scripts/verify_plugin\.py)$
+        files: ^(?:skills/|plugins/|\.agents/|\.claude-plugin/|hooks/|scripts/|docs/|SKILL-AUTHORSHIP\.md$|README\.md$|QUICK-START\.md$|PUBLISHING\.md$|skills\.sh\.json$|package.*\.json$|pyproject\.toml$|uv\.lock$)
+        always_run: true
       - id: skills-distribution-contract
         name: skills CLI distribution contract
-        entry: python3 scripts/verify_skills_distribution.py
+        entry: uv run --frozen python scripts/verify_skills_distribution.py
         language: system
         pass_filenames: false
-        files: ^(?:skills\.sh\.json|skills/.*/SKILL\.md|README\.md|QUICK-START\.md|docs/skills-cli\.md|scripts/verify_skills_distribution\.py)$
+        files: ^(?:skills/|plugins/|\.agents/|\.claude-plugin/|hooks/|scripts/|docs/|SKILL-AUTHORSHIP\.md$|README\.md$|QUICK-START\.md$|PUBLISHING\.md$|skills\.sh\.json$|package.*\.json$|pyproject\.toml$|uv\.lock$)
+        always_run: true
       - id: skill-xref-check
         name: review-panel skill cross-reference check
         entry: python3 hooks/skill_xref_check.py

@@ -10,8 +10,8 @@ metadata:
   triggers: [project-setup, scaffolding, templates]
 uses:
   templates:
-    - ${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md
-    - ${CLAUDE_PLUGIN_ROOT}/templates/pre-commit-config.yaml
+    - templates/CLAUDE.md
+    - templates/.pre-commit-config.yaml
   tools:
     - beads (bd init)
     - direnv

@@ -6,7 +6,6 @@ description: Use when the user wants to explore multiple independent implementat
   against AC conformance, TASTE.md, and simplicity, producing a ranked shortlist.
   N defaults to 3 (refuses N=1, clamps N>6).
 argument-hint: '[spec or design question, or path to one] [--n N] [--ac <path>]'
-allowed-tools: Task, Read, Write, Grep, Glob, Bash
 metadata:
   category: technique
   triggers:
@@ -25,6 +24,36 @@ scores every surviving variant, and this skill hands the human a ranked shortlis
 
 **Builders never see each other's work. Judges see all of it.** That asymmetry is the whole
 point: contamination-free generation, informed comparison.
+
+## Capability preflight
+
+Resolve `<skill-dir>` from the loaded SKILL.md and run
+`python3 <skill-dir>/scripts/package_contract.py doctor` before any worktrees.
+Read [worker-adapters.md](references/worker-adapters.md). Bundle-local prompts:
+[blind-builder](prompts/blind-builder.md), [variant-judge](prompts/variant-judge.md).
+The required [taste lens](references/lenses/taste-review.md),
+[simplicity lens](references/lenses/ponytail-review.md), and
+[acceptance-criteria procedure](references/lenses/acceptance-criteria.md) ship here.
+
+- **Native independent mode:** verify fresh-context workers and isolated working
+  directories using the live host schema. Use the bundled prompts with those
+  workers; named `variant-explorer:*` types are optional Claude-plugin shortcuts
+  only when exposed. Never invent `Agent`, `isolation` or `subagent_type` fields.
+- **No fresh workers:** full blind generation/judging is `unsupported`. Stop
+  before worktrees and offer an explicitly user-approved **sequential comparison**
+  instead. That mode runs one builder role at a time in separate worktrees and
+  then applies each judge rubric in this conversation. It is **not independent**,
+  not blind, and not parallel; never claim contamination-free generation or
+  independent validation. If those guarantees are required, do not proceed.
+- In either mode, verify worktree isolation, spec/AC hashes, actual test execution,
+  output artifacts and permission boundaries. Preserve failed/lost variants.
+  A worktree isolates files, not reasoning. No tool means no simulated tool call.
+
+These adapter instructions override source prompt examples and metadata. Give
+workers the explicit input packet and bounded output-artifact contract below;
+do not return the source prompts' example inline scorecards. For judging, use the
+bundled lenses by path rather than invoking an uninstalled companion skill.
+No provider/model pin in a prompt authorizes a new paid invocation.
 
 ## Context architecture contract
 
@@ -73,9 +102,10 @@ point: contamination-free generation, informed comparison.
 Parse `$ARGUMENTS`:
 
 - **Spec**: the design question or feature spec, inline or as a file path.
-- **Acceptance criteria**: from `--ac <path>` if given. If absent, dispatch the root plugin's
-  `acceptance-criteria` skill (`skills/acceptance-criteria/SKILL.md`) against the spec to generate
-  one before proceeding — every builder and judge needs concrete, testable AC to work against.
+- **Acceptance criteria**: from `--ac <path>` if given. If absent, apply the bundled
+  [acceptance-criteria procedure](references/lenses/acceptance-criteria.md) to the
+  spec and confirm the criteria before proceeding. Every builder and judge needs
+  concrete, testable AC; no root plugin installation is required.
 - **N**: from `--n N`. Default `3` if omitted or non-numeric.
 
 Persist normalized spec and AC text before reading them into any builder prompt. Reject either
@@ -94,10 +124,12 @@ Both refusal and clamping are explicit, reported behaviors — never a silent su
 
 ### Phase 2 — Spawn N blind builders (AC1, AC3)
 
-Dispatch N `Agent` calls with `isolation: "worktree"` and `subagent_type:
-"variant-explorer:blind-builder"`, all in a **single message** so they run in parallel. If N is 6,
-sub-batch as 5 then 1 (mirrors `cast-and-spawn.md`'s ≤5-concurrent-per-batch convention) rather
-than firing all 6 in one burst.
+Pin the approved base revision and create N isolated worktrees with explicit paths.
+Dispatch the [blind-builder prompt](prompts/blind-builder.md) through the verified
+native adapter in batches of at most five (six builders means five then one).
+If the user explicitly accepted sequential comparison, perform one role at a time
+instead and label every artifact `sequential-not-independent`. Never implicitly
+send conversation history, sibling work or the preferred approach to a fresh builder.
 
 Each builder's prompt contains **only** references to:
 
@@ -138,12 +170,13 @@ with zero survivors.
 ### Phase 4 — Judge panel (AC2)
 
 Dispatch judges against the **surviving** variants, giving each judge the hashed builder-manifest
-path plus hashed spec/AC paths (not inline content). Each judge is one `Agent` call using
-`subagent_type: "variant-explorer:variant-judge"`, told which single axis to score:
+path plus hashed spec/AC paths (not inline content). Each judge uses the bundled
+[variant-judge prompt](prompts/variant-judge.md) through the native adapter, told
+which single axis to score (or a disclosed sequential rubric pass):
 
 1. **AC-conformance judge** — native to this plugin, no cross-plugin dependency. Checks every
    variant against every AC item, citing which item(s) it satisfies or fails by ID.
-2. **Taste judge** — instructed to invoke the installed `review-panel:taste-review` skill and follow its
+2. **Taste judge** — instructed to read the bundled `references/lenses/taste-review.md` and follow its
    review procedure. **Dispatch this judge only if `TASTE.md` exists at the repo root.** This is
    not a new decision made here — it is `formats/TASTE-FORMAT.md`'s existing, binding commitment:
    *"No TASTE.md file: the taste review seat never casts (no generic fallback), and Phase 4
@@ -151,7 +184,7 @@ path plus hashed spec/AC paths (not inline content). Each judge is one `Agent` c
    than silently skipping."* If `TASTE.md` is absent, skip this dispatch entirely and mark every
    scorecard's taste axis `"omitted — no TASTE.md at repo root"` rather than producing an empty or
    generic score.
-3. **Simplicity judge** — instructed to invoke the installed `review-panel:ponytail-review` skill
+3. **Simplicity judge** — instructed to read the bundled `references/lenses/ponytail-review.md`
    and follow its exact lens and output format
    (`L<line>: <tag> <what>. <replacement>.`, ending `net: -<N> lines possible.` or
    `Lean already. Ship.`).
@@ -195,18 +228,16 @@ remains, say so explicitly rather than forcing an arbitrary order — let the hu
    never silently.
 
 The winning worktree and branch are left as-is for the human to merge or open a PR from — this
-skill does not auto-merge the winner. `isolation: "worktree"` only auto-cleans a worktree when its
-agent made no changes; every surviving builder here made changes, so every worktree (winner
-included, until the human merges it) needs this explicit handling.
+skill does not auto-merge the winner. Do not assume native worker teardown removes
+worktrees. Every surviving worktree remains a recovery artifact until the approved
+integration/cleanup checks have completed.
 
-## Non-Local Execution (documented recipe only — not implemented in v1)
+## Non-local execution
 
-A Foundry/Reck run maps Phase 2's N builder dispatches onto N PAS tasks running in containers
-instead of local `Agent` worktree dispatch — one PAS task per variant, each given the same
-spec/AC/angle triple as the local path. The judge panel becomes a follow-on PAS task that runs
-once all N builder tasks report complete or failed, reading each container's output the same way
-Phase 4 reads worktree paths locally. This is prose only, matching `cast-and-spawn.md`'s
-documented no-`Task` fallback sections — no code exists for this path in v1.
+Use container/PAS/Reck adapters only if actually available, documented and
+explicitly authorized. Verify artifact transfer and the same context/filesystem
+isolation guarantees before dispatch; this package does not implement those
+services. If unavailable, report `unsupported`, not a launched job.
 
 ## Output Contract
 
@@ -224,8 +255,9 @@ The final report states, in order:
 
 ## Dependency Direction
 
-This skill depends on `review-panel`'s `taste-review` and `ponytail-review` skills for two of the
-judge panel's three axes — this is the sanctioned direction. `review-panel` must never import
+This package vendors drift-checked snapshots of `review-panel`'s `taste-review`
+and `ponytail-review` for two judging axes; no installed companion is required.
+`package-manifest.json` records the source and deterministic path rewrites. `review-panel` must never import
 from or special-case `variant-explorer`, and must never gain any worktree-spawning or execution
 machinery; that machinery stays entirely inside this plugin.
 

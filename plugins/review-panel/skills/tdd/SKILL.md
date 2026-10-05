@@ -1,145 +1,157 @@
 ---
 name: tdd
-description: Use when the user wants to build features or fix bugs using TDD, mentions
-  "red-green-refactor", wants integration tests, or asks for test-first development.
-  Design-philosophy-oriented TDD grounded in Ousterhout's deep modules and interface
-  design for testability.
+description: Use when implementing a feature or bug fix test-first, when the user requests red-green-refactor, or when behavior needs a durable regression test through a public interface.
+license: MIT
 metadata:
   category: discipline
-  triggers:
-  - test-driven-development
-  - tdd
-  - testing
-  - red-green-refactor
+  triggers: [tdd, red-green-refactor, test-first, regression-test, mutation-testing]
+  source: https://github.com/mattpocock/skills/tree/main/skills/engineering/tdd
 ---
-
-<!--
-  Redundancy check (scc-ns8.6): This skill is DISTINCT from
-  superpowers:test-driven-development (the only other TDD-labeled skill
-  reachable from this marketplace; no `tdd` skill exists in scott-cc's own
-  top-level skills/ directory). superpowers:test-driven-development is a
-  strict process-discipline skill centered on an "Iron Law" (no production
-  code without a failing test first) with a rationalization-busting
-  checklist. This local `tdd` skill is design-philosophy-oriented, grounded
-  in Ousterhout's "A Philosophy of Software Design" (deep modules, interface
-  design for testability, when/what to mock, refactor candidates). The two
-  are complementary, not overlapping: one enforces *when* to write tests,
-  the other guides *how* to design testable code and tests. Both are kept.
--->
 
 # Test-Driven Development
 
+Build one behavior at a time through an observed Red → Green → Refactor cycle.
+
 ## When to Use
-- Building features or fixing bugs using TDD with red-green-refactor
-- Writing integration tests or test-first development
-- Design-philosophy-oriented TDD grounded in deep modules and interface design for testability
+- Implementing a feature or bug fix test-first
+- The user requests red-green-refactor workflow
+- Behavior needs a durable regression test through a public interface
+- Building confidence that new code actually works through observed failure → pass cycles
 
-## Philosophy
+## Non-Negotiable Constraint
 
-**Core principle**: Tests should verify behavior through public interfaces, not implementation details. Code can change entirely; tests shouldn't.
+DO NOT write or modify implementation code until a new or changed test has failed for the expected behavioral reason.
 
-**Good tests** are integration-style: they exercise real code paths through public APIs. They describe _what_ the system does, not _how_ it does it. A good test reads like a specification - "user can checkout with valid cart" tells you exactly what capability exists. These tests survive refactors because they don't care about internal structure.
+A test that fails because of syntax, imports, fixtures, environment setup, or an unrelated defect is not Red. A test that already passes proves nothing about the requested change. If implementation was changed first, stop and remove only that unverified change before restarting from the test.
 
-**Bad tests** are coupled to implementation. They mock internal collaborators, test private methods, or verify through external means (like querying a database directly instead of using the interface). The warning sign: your test breaks when you refactor, but behavior hasn't changed. If you rename an internal function and tests fail, those tests were testing implementation, not behavior.
+## Cycle
 
-See [tests.md](tests.md) for examples and [mocking.md](mocking.md) for mocking guidelines.
+### 1. Choose one vertical slice
 
-## Anti-Pattern: Horizontal Slices
+- Define one externally observable behavior and the public seam that exposes it.
+- Prefer an end-to-end or integration reproduction closest to the user path; use a unit seam only when it is the correct public boundary.
+- Use expected values from a specification, known-good literal, or independent worked example. Never recompute the expected result with the production algorithm.
 
-**DO NOT write all tests first, then all implementation.** This is "horizontal slicing" - treating RED as "write all tests" and GREEN as "write all code."
+### 2. Red
 
-This produces **crap tests**:
+- Write one minimal test for that behavior.
+- Run the narrowest command that exercises it.
+- Record the failing test name, exit status, and failure reason.
+- Confirm the failure is caused by missing or incorrect behavior.
 
-- Tests written in bulk test _imagined_ behavior, not _actual_ behavior
-- You end up testing the _shape_ of things (data structures, function signatures) rather than user-facing behavior
-- Tests become insensitive to real changes - they pass when behavior breaks, fail when behavior is fine
-- You outrun your headlights, committing to test structure before understanding the implementation
+No observed, relevant failure means no implementation edit.
 
-**Correct approach**: Vertical slices via tracer bullets. One test → one implementation → repeat. Each test responds to what you learned from the previous cycle. Because you just wrote the code, you know exactly what behavior matters and how to verify it.
+### 3. Green
 
-```
-WRONG (horizontal):
-  RED:   test1, test2, test3, test4, test5
-  GREEN: impl1, impl2, impl3, impl4, impl5
-
-RIGHT (vertical):
-  RED→GREEN: test1→impl1
-  RED→GREEN: test2→impl2
-  RED→GREEN: test3→impl3
-  ...
-```
-
-## Workflow
-
-### 1. Planning
-
-When exploring the codebase, use the project's domain glossary so that test names and interface vocabulary match the project's language, and respect ADRs in the area you're touching.
-
-Before writing any code:
-
-- [ ] Confirm with user what interface changes are needed
-- [ ] Confirm with user which behaviors to test (prioritize)
-- [ ] Identify opportunities for [deep modules](deep-modules.md) (small interface, deep implementation)
-- [ ] Design interfaces for [testability](interface-design.md)
-- [ ] List the behaviors to test (not implementation steps)
-- [ ] Get user approval on the plan
-
-Ask: "What should the public interface look like? Which behaviors are most important to test?"
-
-**You can't test everything.** Confirm with the user exactly which behaviors matter most. Focus testing effort on critical paths and complex logic, not every possible edge case.
-
-### 2. Tracer Bullet
-
-Write ONE test that confirms ONE thing about the system:
-
-```
-RED:   Write test for first behavior → test fails
-GREEN: Write minimal code to pass → test passes
-```
-
-This is your tracer bullet - proves the path works end-to-end.
-
-### 3. Incremental Loop
-
-For each remaining behavior:
-
-```
-RED:   Write next test → fails
-GREEN: Minimal code to pass → passes
-```
-
-Rules:
-
-- One test at a time
-- Only enough code to pass current test
-- Don't anticipate future tests
-- Keep tests focused on observable behavior
+- Write the smallest implementation that makes the failing test pass.
+- Do not anticipate later slices, broaden APIs, or refactor unrelated code.
+- Re-run the focused test, then the relevant surrounding suite.
 
 ### 4. Refactor
 
-After all tests pass, look for [refactor candidates](refactoring.md):
+- Refactor only while green.
+- Remove duplication and improve names or boundaries without adding behavior.
+- Re-run the focused and surrounding tests after each meaningful refactor.
 
-- [ ] Extract duplication
-- [ ] Deepen modules (move complexity behind simple interfaces)
-- [ ] Apply SOLID principles where natural
-- [ ] Consider what new code reveals about existing code
-- [ ] Run tests after each refactor step
+### 5. Repeat
 
-**Never refactor while RED.** Get to GREEN first.
+Start the next behavior with a new failing test. Do not batch all tests before all implementation; that horizontal slicing tests imagined structure instead of learned behavior.
 
-## Checklist Per Cycle
+## Test Quality Rules
 
+- Test behavior through public interfaces, not private methods or internal call order.
+- Avoid over-mocking; mocks at owned boundaries should verify a real contract.
+- Name tests as behavioral specifications.
+- Keep each test independent and deterministic.
+- A refactor that preserves behavior should not require test rewrites.
+
+## Design for Testability
+
+The process above and this design guidance are one canonical payload, published
+byte-identically as both root `tdd` and review-panel `tdd`. Maintain the root copy;
+never rename one variant or let installer selection change its behavior.
+
+Before the first test, agree on interface changes and prioritized behaviors with
+the user (or use the already-approved task). Use the project's domain glossary
+for names and respect relevant ADRs. List behaviors, not implementation steps;
+ask for clarification only when the public seam or requirements are unclear.
+
+Prefer [deep modules](deep-modules.md): small interfaces hiding substantial
+implementation. Design those interfaces for [testability](interface-design.md).
+Good integration-style [tests](tests.md) exercise real paths and describe what
+the system does. Internal mocks, private-method assertions and tests that break
+on behavior-preserving renames are warning signs. Follow [mocking.md](mocking.md)
+for external boundaries rather than mocking every collaborator.
+
+The first Red → Green pair is a tracer bullet through the real path. Do not write
+all tests then all code: that commits to imagined structure before learning from
+each slice. Once green, inspect [refactor candidates](refactoring.md), deepen
+modules and remove duplication without speculative features. Re-run tests after
+each change; never refactor while Red.
+
+### Review-panel seat: test-design-quality axis only
+
+When cast as a **read-only reviewer**, evaluate tests using these quality rules
+and support files; do not begin implementation, mutate tests, or pretend to have
+observed their historical Red phase. Report unverified process history as unknown.
+When implementing a fix, the strict Red/Green constraint above applies in full.
+
+## Mutation-Testing Gate
+
+After the requested slices are green and refactored, discover the installed
+`mutation-test` skill through the host's registry and use its capability preflight
+on the changed source file. It is an optional companion, not bundled here. The
+Claude plugin adapter's invocation is:
+
+```text
+/mutation-testing:mutation-test --quick <changed-file-or-directory>
 ```
-[ ] Test describes behavior, not implementation
-[ ] Test uses public interface only
-[ ] Test would survive internal refactor
-[ ] Code is minimal for this test
-[ ] No speculative features added
-```
+
+Review surviving mutations rather than chasing a score blindly. A meaningful survivor becomes the next Red test and starts another cycle. If the companion or its required capabilities are unavailable, report the mutation gate as unavailable; do not fabricate a result or silently substitute line coverage.
+
+## Evidence at Handoff
+
+Report:
+
+- Red: command and expected failure observed
+- Green: focused and surrounding test commands passed
+- Refactor: what changed without behavioral expansion
+- Mutation: killed/surviving mutations, or the exact availability blocker
+
+## Anti-Rationalization
+
+| Rationalization | Reality |
+|---|---|
+| "The change is trivial" | Trivial changes break. Test takes 30 seconds. Not permission to skip Red. |
+| "I will add tests afterward" | Test-after is not TDD. Tests passing immediately prove nothing about the new behavior. |
+| "Existing coverage already covers this" | Existing coverage is not proof the new behavior was driven by a failing test. |
+| "I'll write all the tests first, then implement" | That's horizontal slicing. TDD is vertical: one test, one implementation, repeat. |
+| "Refactoring while red is fine if I'm careful" | Refactoring while red destroys the diagnostic signal. Get green first. |
+| "This is about spirit, not ritual" | The letter IS the spirit. TDD's value comes from the specific sequence. |
+
+## Red Flags — STOP and Restart
+
+- Implementation code written before a test failed
+- "I already manually tested it"
+- Multiple tests written before any implementation
+- Refactoring while tests are failing
+- "This is different because..."
+
+All of these mean: delete the unverified code, start over with a failing test.
+
+## Common Mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Testing private methods | Test behavior through public interfaces only |
+| Over-mocking everything | Mock at owned boundaries; verify real contracts |
+| Batching all tests before implementation | One test → one implementation → repeat |
+| Chasing mutation score blindly | Review surviving mutations; meaningful survivors become new Red tests |
+| Skipping the Refactor step | Refactor while green to maintain code quality |
 
 ## Limitations
 - Use this skill only when the task clearly matches the scope described above.
-- TDD biases toward caution — for throwaway scripts or exploration, strict TDD may be overhead.
-- Requires a working test runner and framework in the project.
-- Design-philosophy approach may differ from pure red-green-refactor TDD; both are valid.
-- Stop and ask for clarification if the behavior to test, testing framework, or test scope is unclear.
+- TDD biases toward caution over speed — for throwaway scripts or exploration, strict TDD may be overhead.
+- Requires a working test runner and framework in the project; does not set up test infrastructure.
+- Mutation testing gate requires the optional mutation-test skill and a working test runner.
+- Stop and ask for clarification if the behavior to test, the public seam, or the testing framework is unclear.
