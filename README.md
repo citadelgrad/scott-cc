@@ -1,6 +1,6 @@
 # Scott's Agent Skills and Claude Code Setup
 
-Portable agent skills plus a modular Claude Code plugin suite for productive development. The core plugin provides **8 slash commands**, **7 specialized AI agents**, **30 skills**, **6 hooks**, and **2 stored templates that produce 3 project artifacts**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, multi-persona code review, and more.
+Portable agent skills plus a modular Claude Code plugin suite for productive development. The core plugin provides **9 slash commands**, **7 specialized AI agents**, **31 skills**, **6 hooks**, and **2 stored templates that produce 3 project artifacts**. Specialized sub-plugins add beads epic workflows, browser automation, mutation testing, multi-persona code review, and more.
 
 Created and maintained by **Scott Nixon ([@citadelgrad](https://github.com/citadelgrad))**. See [Skill Authorship and Provenance](SKILL-AUTHORSHIP.md) for the per-skill inventory and [review-panel credits](plugins/review-panel/CREDITS.md) for original creators of vendored and adopted work.
 
@@ -38,16 +38,16 @@ live-model safety approval. See [release status](docs/hardened-skills.md).
 
 | Type | Count | Names |
 |------|------:|-------|
-| Commands | 8 | `delegate-first`, `gha`, `handoff`, `security-cheatsheet`, `thermo-nuclear`, `google-standard`, `polyglot-idiom`, `concurrency-atomicity` |
+| Commands | 9 | `delegate-first`, `gha`, `handoff`, `security-cheatsheet`, `thermo-nuclear`, `google-standard`, `polyglot-idiom`, `concurrency-atomicity`, `subtractive-review` |
 | Agents | 7 | `api-debugger`, `backend-architect`, `deep-research-agent`, `frontend-architect`, `refactoring-expert`, `requirements-analyst`, `system-architect` |
-| Skills | 30 | `init`, `acceptance-criteria`, `beads`, `cli-design`, `delegate-first`, `grill-me`, `adversarial-reviewer`, `tdd`, `python-simplifier`, `typescript-simplifier`, `go-simplifier`, `rust-simplifier`, `swift-simplifier`, `karpathy-guidelines`, `property-based-testing`, `verified-implementation`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory`, `thinking-in-systems`, `emergent-behavior`, `skillopt-sleep-learned`, `thermo-nuclear`, `google-standard`, `polyglot-idiom`, `concurrency-atomicity` |
+| Skills | 31 | `init`, `acceptance-criteria`, `beads`, `cli-design`, `delegate-first`, `grill-me`, `adversarial-reviewer`, `tdd`, `python-simplifier`, `typescript-simplifier`, `go-simplifier`, `rust-simplifier`, `swift-simplifier`, `karpathy-guidelines`, `property-based-testing`, `verified-implementation`, `context7`, `context-file-optimizer`, `c4-diagram`, `writing-about-engineering`, `writing-skills-excellence`, `pas-pipeline`, `reck-factory`, `thinking-in-systems`, `emergent-behavior`, `skillopt-sleep-learned`, `thermo-nuclear`, `google-standard`, `polyglot-idiom`, `concurrency-atomicity`, `subtractive-review` |
 | Hooks | 6 | `terminal-bell` (Stop), `toon-post-hook` (PostToolUse), `prefer-modern-tools` (PreToolUse), `data-layer-guard` (PreToolUse), `post-compaction` (SessionStart after compact/clear), `review-panel-session-identity` (SessionStart) |
 | Templates | 3 | `.pre-commit-config.yaml`, `CLAUDE.md`, `AGENTS.md` |
 | Sub-plugins | 9 | `beads-epic-builder`, `browser-automation`, `research-tools`, `security-suite`, `performance-optimization`, `mutation-testing`, `review-panel`, `variant-explorer`, `triage` |
 
 ---
 
-## Commands (8)
+## Commands (9)
 
 | Command | Description |
 |---------|-------------|
@@ -59,6 +59,7 @@ live-model safety approval. See [release status](docs/hardened-skills.md).
 | `/scott-cc:google-standard` | Review against Google's published Standard of Code Review. Favors approving once a change definitely improves code health, even if imperfect, using the Nit:/blocking distinction. |
 | `/scott-cc:polyglot-idiom` | Per-language idiom review for Java, C++, C#, Ruby, or PHP. Excludes Python, TypeScript, Go, Rust, and Swift, which have dedicated simplifier skills. |
 | `/scott-cc:concurrency-atomicity` | Concurrency-correctness review for race conditions, TOCTOU, deadlock/lock-ordering, and transactional atomicity, grounded in real CWE reference entries. |
+| `/scott-cc:subtractive-review` | Subtractive-neglect review: forces a subtraction-first search before any additive fix is accepted, checks Chesterton's fence, and judges options on net system complexity. |
 
 ---
 
@@ -88,7 +89,7 @@ live-model safety approval. See [release status](docs/hardened-skills.md).
 
 ---
 
-## Skills (30)
+## Skills (31)
 
 ### Project Setup
 
@@ -156,6 +157,7 @@ Each of these is runnable directly via its own slash command, and can also be in
 | `google-standard` | Google's published Standard of Code Review. Biased toward approval once a change definitely improves code health, even if imperfect; separates blocking findings from optional `Nit:` findings. |
 | `polyglot-idiom` | Per-language idiom checkpoints for Java, C++, C#, Ruby, and PHP, grounded in the Gemini code-quality research. Excludes Python, TypeScript, Go, Rust, and Swift, which have (or will have) dedicated simplifier skills. |
 | `concurrency-atomicity` | Four-checkpoint concurrency-correctness review — race conditions, TOCTOU, deadlock/lock-ordering, and transactional atomicity — grounded in fetched CWE reference entries (CWE-362, CWE-367, CWE-833, CWE-667, CWE-662). |
+| `subtractive-review` | Counters subtractive neglect: forces a subtraction-first search (remove the cause, requirement, layer, state, dependency, step) before any additive fix is accepted, checks Chesterton's fence, and judges options on net system complexity. Based on Adams et al., *Nature* 2021. |
 
 ---
 

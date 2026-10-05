@@ -56,7 +56,7 @@ marketplace's explicit paths. Equal-name TDD and adversarial packages must be
 byte-identical mirrors; the repository-local `.agents/skills/beads` development
 stub is not the distributed Beads package.
 
-There are 30 core skills; the complete physical inventory also includes optional
+There are 31 core skills; the complete physical inventory also includes optional
 plugin packages and equal-name mirrors.
 
 Avoid `--all` (every skill and agent) and blanket `--skill '*'`: discovery also

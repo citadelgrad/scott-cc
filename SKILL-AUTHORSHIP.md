@@ -28,6 +28,7 @@ Git history was used to verify repository authorship, but commit authorship alon
 - `skills/reck-factory/SKILL.md`
 - `skills/rust-simplifier/SKILL.md`
 - `skills/skillopt-sleep-learned/SKILL.md`
+- `skills/subtractive-review/SKILL.md`
 - `skills/swift-simplifier/SKILL.md`
 - `skills/tdd/SKILL.md`
 - `skills/thermo-nuclear/SKILL.md`
