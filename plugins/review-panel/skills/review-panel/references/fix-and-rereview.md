@@ -95,7 +95,7 @@ CONVERGE's raw material; fixer reasoning never enters the orchestrator context.
 re-read the edited location (or, where the project has one, run the relevant lint/typecheck/test
 command per its `Bash` boundary above) and confirmed the fix is present and correct — not simply
 assert completion because an edit was made. This is the same discipline
-[`contracts/verification-before-completion.md`](../../../contracts/verification-before-completion.md)
+[`contracts/verification-before-completion.md`](../resources/contracts/verification-before-completion.md)
 formalizes; this plugin does not wire that contract into the loop as a separate gate (RE-REVIEW's
 freshly-repackaged-diff re-check, immediately below, is itself the structural, always-run
 verification step for the loop as a whole), but the fixer's own per-finding "fixed" claims are a

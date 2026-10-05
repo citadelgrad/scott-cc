@@ -17,6 +17,17 @@ metadata:
 
 # Triage Spine (System 2 v1)
 
+## Runtime preflight (before side effects)
+
+Run `python3 <skill-dir>/scripts/package_contract.py doctor` to verify bundled
+references. Installing this package does not install its orchestration runtime.
+Before Phase 3, verify `bd`, `claude`, `jq`, PAS, the `acceptance-criteria` skill
+and the full Claude `review-panel` command are available in the selected project.
+Also verify the fresh-item launcher and writable artifact store below. If any
+prerequisite is missing, report `RUNTIME_UNAVAILABLE` and stop without creating
+beads or modifying the project. A non-Claude agent can inspect/validate intake,
+but must not pretend a sequential in-session run satisfies fresh-process gates.
+
 ## When to Use
 - Running a full triage pipeline on detected issues (lib upgrades, prod errors, etc.)
 - Processing triage items through intake, validation, reproduction, diagnosis, and fix
@@ -253,7 +264,7 @@ matching the Triage Item Contract above regardless of which registered detector 
 
 ## Foundry wiring
 
-See [../../docs/foundry-recipes.md](../../docs/foundry-recipes.md) for how each detector, this
+See [foundry-recipes.md](references/foundry-recipes.md) for how each detector, this
 spine's gate step, and two other schedulable entries from earlier phases are wired into
 `foundry.yaml`. This skill does not create or modify any `foundry.yaml` file itself — wiring is a
 Foundry-side concern, same convention `plan-security-review`'s "Foundry note" already establishes.

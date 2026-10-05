@@ -6,9 +6,12 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
+import re
 import sys
 from pathlib import Path
 from typing import Any, cast
+from urllib.parse import unquote, urlsplit
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_VERSION = "1.0.0"
@@ -568,25 +571,78 @@ def evaluate(corpus: dict[str, Any], results: dict[str, Any]) -> dict[str, float
     }
 
 
-def doctor(skill_root: Path = SKILL_ROOT) -> list[str]:
-    errors: list[str] = [
-        f"missing portable artifact: {path}"
-        for path in REQUIRED_ARTIFACTS
-        if not (skill_root / path).is_file()
-    ]
-    for markdown in skill_root.rglob("*.md"):
-        text = markdown.read_text(encoding="utf-8")
-        for token in text.split("](")[1:]:
-            target = token.split(")", 1)[0].split("#", 1)[0].strip("<>")
+def _package_path_errors(root: Path, required: tuple[str, ...]) -> list[str]:
+    """Check containment before reading any document or following a link."""
+    root = root.resolve()
+    errors: list[str] = []
+
+    def contained(path: Path) -> bool:
+        try:
+            return path.resolve().is_relative_to(root)
+        except (OSError, RuntimeError):
+            return False
+
+    for relative in required:
+        path = root / relative
+        if not contained(path):
+            errors.append(f"unsafe package escape: {relative}")
+        elif not path.is_file():
+            errors.append(f"missing required package file: {relative}")
+    documents = []
+    # os.walk does not descend symlink directories. Inspect them before any
+    # dereference; required children are checked independently above.
+    for directory, dirs, files in os.walk(root, followlinks=False):
+        for name in dirs + files:
+            path = Path(directory) / name
+            if not contained(path):
+                errors.append(f"unsafe package escape: {path.relative_to(root)}")
+            elif path.is_symlink() and not path.exists():
+                errors.append(f"broken package link: {path.relative_to(root)}")
+            elif path.is_file() and path.suffix.lower() == ".md":
+                documents.append(path)
+    if errors:
+        return errors
+    for document in documents:
+        text = document.read_text(encoding="utf-8")
+        links = re.findall(r"\[[^\]]*\]\((<[^>]*>|[^)]+)\)", text)
+        links += re.findall(r"(?m)^ {0,3}\[[^\]]+\]:\s*(<[^>]+>|\S+)", text)
+        for raw in links:
+            target = (
+                raw[1 : raw.index(">")]
+                if raw.startswith("<")
+                else raw.split()[0]
+                if raw.strip()
+                else ""
+            )
+            parsed = urlsplit(target)
+            if parsed.scheme.lower() in {"http", "https", "mailto"}:
+                continue
+            link = unquote(parsed.path)
+            if not link and not parsed.scheme and not parsed.netloc:
+                continue  # Fragment-only link.
+            candidate = document.parent / link
             if (
-                target
-                and "://" not in target
-                and not target.startswith(("#", "/"))
-                and not (markdown.parent / target).resolve().exists()
+                parsed.scheme
+                or parsed.netloc
+                or Path(link).is_absolute()
+                or "\\" in link
+                or not contained(candidate)
             ):
                 errors.append(
-                    f"broken portable link: {markdown.relative_to(skill_root)} -> {target}"
+                    f"unsafe local link escape: {document.relative_to(root)} -> {target}"
                 )
+            elif not candidate.exists():
+                errors.append(
+                    f"broken local link: {document.relative_to(root)} -> {target}"
+                )
+    return errors
+
+
+def doctor(skill_root: Path = SKILL_ROOT) -> list[str]:
+    skill_root = skill_root.resolve()
+    errors = _package_path_errors(skill_root, REQUIRED_ARTIFACTS)
+    if errors:
+        return errors
     try:
         schema = load_json(skill_root / "schemas/adversarial-report-v1.schema.json")
         if schema.get("$schema") != "https://json-schema.org/draft/2020-12/schema":
@@ -603,12 +659,13 @@ def load_json(path: Path) -> Any:
 def schema_errors(report: Any, skill_root: Path = SKILL_ROOT) -> list[str]:
     try:
         from jsonschema import Draft202012Validator
+        from jsonschema.exceptions import SchemaError
     except ImportError:
         return ["JSON Schema validation unavailable: install jsonschema>=4.26"]
     schema = load_json(skill_root / "schemas/adversarial-report-v1.schema.json")
     try:
         Draft202012Validator.check_schema(schema)
-    except Exception as exc:
+    except SchemaError as exc:
         return [f"invalid bundled JSON Schema: {exc}"]
     return [
         "schema violation at "

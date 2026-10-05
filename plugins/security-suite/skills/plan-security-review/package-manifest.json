@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "required": [
+    "SKILL.md",
+    "references/security-advisor.md",
+    "references/security-suite.md",
+    "scripts/package_contract.py"
+  ],
+  "copies": {
+    "references/security-advisor.md": {
+      "source": "plugins/security-suite/agents/security-advisor.md",
+      "sha256": "60648f8959ae3c82a156e40a6475e1e58a0b28c4a9cb1f1d2a6cb069820202af"
+    },
+    "references/security-suite.md": {
+      "source": "plugins/security-suite/README.md",
+      "sha256": "a31e08328d41538b78c2b471bd118ff2f6292bf35df54a72928152ba413493e9"
+    },
+    "scripts/package_contract.py": {
+      "source": "skills/init/scripts/package_contract.py",
+      "sha256": "12633d622b62b770cc1ced7ecf3ad779f6a4e25c771a7ad55a905a190bfad67f"
+    }
+  }
+}

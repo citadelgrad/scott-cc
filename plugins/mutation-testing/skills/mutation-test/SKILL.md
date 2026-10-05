@@ -3,7 +3,6 @@ name: mutation-test
 description: Use when auditing test quality, finding zombie tests, or identifying
   gaps in test coverage. Runs comprehensive mutation testing and proposes refactoring
   based on mutation survival analysis.
-allowed-tools: Task(mutation-testing:test-quality-reviewer)
 metadata:
   category: technique
   triggers:
@@ -16,6 +15,60 @@ metadata:
 # Mutation Testing Skill
 
 Run mutation testing to identify weak tests through semantic code mutations and bounded parallel test execution.
+
+## Capability preflight
+
+Resolve `<skill-dir>` from the loaded SKILL.md. Before reading the target or
+creating worktrees, run `python3 <skill-dir>/scripts/package_contract.py doctor`
+and read [worker-adapters.md](references/worker-adapters.md).
+
+The role prompts are bundled, not dependent on named plugin agents:
+[test-quality-reviewer](prompts/test-quality-reviewer.md),
+[test-saboteur](prompts/test-saboteur.md), [test-executor](prompts/test-executor.md),
+[test-auditor](prompts/test-auditor.md), and
+[test-refactor-specialist](prompts/test-refactor-specialist.md).
+
+- With native workers, use the actual exposed dispatch schema and pass the role
+  prompt plus explicit artifact/worktree paths. Named `mutation-testing:*` agents
+  are an optional Claude plugin adapter, usable only if listed. `Task(...)` in
+  source prompts is illustrative, not a portable API; translate through the
+  adapter. Frontmatter model names do not authorize unavailable/paid models.
+- Without workers, run the roles **sequentially in this conversation**, retaining
+  isolated worktrees per mutant and all budgets below. This is **not independent**
+  review and not parallel execution. State that limitation in the report. If the
+  caller requires separate agents, report `unsupported` before mutating anything.
+- No worktree/test-command isolation: stop `ISOLATION_UNAVAILABLE`, even in
+  sequential mode. Never modify the primary checkout to simulate isolation.
+- A requested resume requires a genuinely fresh host session and atomic checkpoint
+  claim support; otherwise report `unsupported` before continuing. An environment
+  variable alone does not demonstrate fresh context.
+
+These adapter and scope rules override tool-call examples in the source prompts.
+Do not recursively dispatch an orchestrator if nested delegation is unavailable:
+the current coordinator runs the five roles with the same bounded artifacts.
+
+### Sequential execution contract
+
+1. Pin one source file, baseline commit/approved dirty snapshot, explicit test
+   command, timeout and scratch root. Run the unmodified baseline in an isolated
+   worktree; a failing baseline stops the experiment.
+2. Generate at most the selected mutation budget. Each mutant gets a separate
+   worktree from the same baseline, one reviewed semantic change, and a recorded
+   patch/hash. Never carry one mutation into the next.
+3. Execute the exact baseline command in each mutant's absolute worktree. Persist
+   stdout, stderr, exit status and duration. A behavioral test failure kills a
+   mutant; a timeout, import/setup failure or invalid mutation is inconclusive,
+   not a kill. Preserve evidence and restore nothing by destructive reset in the
+   user's checkout.
+4. Audit surviving mutations against the behavior contract. Equivalent/out-of-scope
+   mutants are classified with reasons; a passing test alone does not prove it is
+   a useless test. Compute the observed killed/(killed + survived) score with code;
+   report the denominator and inconclusive/excluded counts. No denominator means
+   no score. Never extrapolate this finite sample to all possible bugs.
+5. Propose refactors; do not delete tests or apply changes without approval.
+   Verify approved changes with the original suite and the same mutation corpus.
+   Persist each batch checkpoint and obey the artifact limits below. Report the
+   actual commands/results, not the illustrative sample outputs later in this file.
 
 ## Context architecture contract
 
@@ -37,7 +90,7 @@ Run mutation testing to identify weak tests through semantic code mutations and 
   mutations in it or to inline worker payloads.
 - **Continuation contract:** After each batch, write `checkpoint.json` containing the request hash,
   artifact SHA-256 values, completed mutation IDs, and next batch. Resume only in a fresh
-  `claude -p` process with `MUTATION_TEST_FRESH_RESUME=1`, a different session ID, and the expected
+  host process (the Claude plugin adapter uses `claude -p`) with `MUTATION_TEST_FRESH_RESUME=1`, a different session ID, and the expected
   checkpoint SHA-256; atomically claim that hash and reject mismatches or replay.
 - **Mechanical-test contract:** `scripts/tests/test_mutation_test_context_budget.py` asserts the
   target, mutation, batch, concurrency, manifest, summary, isolation, and fresh-resume bounds.
@@ -46,7 +99,7 @@ Run mutation testing to identify weak tests through semantic code mutations and 
 
 ```bash
 /mutation-test stripe_handler.py              # Standard mode (15 mutations)
-/mutation-test --quick api/payments/          # Quick mode (5 mutations)
+/mutation-test --quick api/payments/handler.py # Quick mode (5 mutations)
 /mutation-test --deep billing.py              # Deep mode (30 mutations max)
 /mutation-test                                # Smart mode (auto-detects target)
 ```
@@ -136,7 +189,7 @@ Apply refactoring? [Y/n]
 
 ## How It Works
 
-The skill launches the test-quality-reviewer agent, which orchestrates:
+The selected native or sequential adapter applies the test-quality-reviewer role, which orchestrates:
 
 1. **test-saboteur**: Creates semantic mutations (boundary conditions, return values, boolean logic)
 2. **test-executor** (batches of ≤5): Runs test suite against each mutation
@@ -219,8 +272,8 @@ def test_discount_at_boundary():
 
 Output:
 ```
-Deep mutation test (35 mutations):
-Mutation Score: 78% (27/35 caught)
+Deep mutation test (30 mutations):
+Mutation Score: 80% (24/30 caught)
 
 Good coverage! Minor gaps:
 - Add test for subscription renewal edge case
@@ -242,7 +295,7 @@ Estimated improvement: 78% → 85%
 /mutation-test --deep         # 30 mutations max (thorough)
 
 # Focus on specific areas
-/mutation-test --focus=retry_logic api/
+/mutation-test --focus=retry_logic api/handler.py
 
 # Skip test removal confirmation
 /mutation-test --auto-approve
@@ -446,7 +499,7 @@ Committed changes and updated beads issue.
 
 ---
 
-**This skill launches the test-quality-reviewer agent which orchestrates the full mutation testing workflow using 4 specialized sub-agents.**
+**The five bundled role prompts support native workers or the explicitly disclosed sequential workflow above. No named agent is assumed installed.**
 
 ## Limitations
 - Use this skill only when the task clearly matches the scope described above.

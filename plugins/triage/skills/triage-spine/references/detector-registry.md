@@ -5,10 +5,14 @@ slots with working detector skills is not. Each slot's job is to emit zero or mo
 `SKILL.md`'s Triage Item Contract; the spine consumes any of them identically regardless of which
 slot produced it.
 
+Detectors are separately selected companion packages, not dependencies copied
+inside this spine. The source links below are maintainer documentation; supplied
+triage items can be validated without installing or invoking a detector.
+
 | Slot (`source` value) | Status | Skill | What it scans |
 |---|---|---|---|
-| `lib-upgrades` | **Implemented (v1)** | [`skills/detectors/lib-upgrades/SKILL.md`](../../detectors/lib-upgrades/SKILL.md) | Manifest/lockfiles for outdated or CVE-flagged dependencies |
-| `prod-errors` | **Implemented (v1)** | [`skills/detectors/prod-errors/SKILL.md`](../../detectors/prod-errors/SKILL.md) | Log/Sentry-shaped input for stack-trace-bearing production errors |
+| `lib-upgrades` | **Implemented (v1)** | [lib-upgrades source](https://github.com/citadelgrad/scott-cc/blob/main/plugins/triage/skills/detectors/lib-upgrades/SKILL.md) | Manifest/lockfiles for outdated or CVE-flagged dependencies |
+| `prod-errors` | **Implemented (v1)** | [prod-errors source](https://github.com/citadelgrad/scott-cc/blob/main/plugins/triage/skills/detectors/prod-errors/SKILL.md) | Log/Sentry-shaped input for stack-trace-bearing production errors |
 | `system-upgrades` | Stub — not yet implemented | — | OS/runtime/base-image version drift (e.g. EOL'd language runtime, outdated base Docker image) |
 | `iac-drift` | Stub — not yet implemented | — | Infrastructure-as-code drift between declared config (Terraform/Ansible) and live infrastructure state |
 | `security-advisory-sweeps` | Stub — not yet implemented | — | Periodic sweep of security advisory feeds (e.g. GitHub Security Advisories, OSV) not already caught by `lib-upgrades`' point-in-time manifest scan |

@@ -1,0 +1,9 @@
+# The audit receipt includes file-integrity hashes, not credentials.
+# Only this exact byte-verified fixture hash is excluded, never a file or rule.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Verified SHA-256 of the missing-credentials.json test fixture"
+regexTarget = "secret"
+regexes = ['''^163027f832e6798b0ea1476d1db4341e28b92b11eac5bc91aab04d00b11282bd$''']

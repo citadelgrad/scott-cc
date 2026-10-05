@@ -7,6 +7,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 SCRIPT_PATH = Path(__file__).resolve().parents[1] / "verify_skills_distribution.py"
 spec = importlib.util.spec_from_file_location("verify_skills_distribution", SCRIPT_PATH)
 assert spec is not None and spec.loader is not None
@@ -152,3 +154,71 @@ def test_portable_adversarial_reviewer_must_match_plugin_source(tmp_path: Path) 
     errors = verify.validate(tmp_path)
 
     assert any("portable adversarial-reviewer drift" in error for error in errors)
+
+
+@pytest.mark.parametrize(
+    "link",
+    ["references/missing.md", "../outside.md", "%2e%2e/outside.md", "/absolute.md"],
+)
+def test_required_local_links_must_exist_inside_the_package(tmp_path, link):
+    write_repo(tmp_path)
+    entry = tmp_path / "skills/alpha/SKILL.md"
+    (tmp_path / "skills/outside.md").write_text("outside the package")
+    entry.write_text(entry.read_text() + f"\nRead [required]({link}).\n")
+    assert any(
+        "asset" in error or "link" in error for error in verify.validate(tmp_path)
+    )
+
+
+def test_source_symlink_cannot_be_silently_dereferenced_by_installer(tmp_path):
+    write_repo(tmp_path)
+    outside = tmp_path / "outside.txt"
+    outside.write_text("sensitive canary")
+    (tmp_path / "skills/alpha/leak.txt").symlink_to(outside)
+    assert any("symlink" in error for error in verify.validate(tmp_path))
+
+
+def test_duplicate_install_names_require_equal_whole_payloads(tmp_path):
+    write_repo(tmp_path)
+    mirror = tmp_path / "plugins/example/skills/alpha"
+    mirror.mkdir(parents=True)
+    original = tmp_path / "skills/alpha"
+    (mirror / "SKILL.md").write_bytes((original / "SKILL.md").read_bytes())
+    (mirror / "reference.md").write_text("missing in portable package")
+    assert any("duplicate install name" in error for error in verify.validate(tmp_path))
+    (original / "reference.md").write_text("missing in portable package")
+    assert not any(
+        "duplicate install name" in error for error in verify.validate(tmp_path)
+    )
+
+
+@pytest.mark.parametrize("location", ["skills/alpha", "plugins/test/skills/deep/alpha"])
+@pytest.mark.parametrize(
+    "header,body",
+    [
+        ("name: alpha\ndescription: null", "Procedure"),
+        ("name: alpha\ndescription: []", "Procedure"),
+        ("name: alpha\ndescription: true", "Procedure"),
+        ("name: alpha\ndescription: 42", "Procedure"),
+        ("name: alpha\ndescription: {key: value}", "Procedure"),
+        ("name: alpha\ndescription: [invalid", "Procedure"),
+        ("name: alpha\ndescription: ok\ndescription: duplicate", "Procedure"),
+        ("name: alpha\ndescription: '   '", "Procedure"),
+        ("name: alpha\ndescription: " + "x" * 1025, "Procedure"),
+        ("name: alpha\ndescription: ok\nmetadata:\n  a: 1\n  a: 2", "Procedure"),
+        ("name: ../escape\ndescription: ok", "Procedure"),
+        ("name: alpha\ndescription: ok", "  \n"),
+    ],
+)
+def test_all_package_metadata_and_bodies_fail_closed(tmp_path, location, header, body):
+    write_repo(tmp_path)
+    skill = tmp_path / location / "SKILL.md"
+    skill.parent.mkdir(parents=True, exist_ok=True)
+    skill.write_text(f"---\n{header}\n---\n{body}\n")
+    errors = verify.validate(tmp_path)
+    assert any(
+        location + "/SKILL.md" in error
+        and "authorship" not in error
+        and "SKILL-AUTHORSHIP" not in error
+        for error in errors
+    ), errors

@@ -1,7 +1,7 @@
 {
   "name": "security-suite",
   "description": "Security-focused development with security advisory and vulnerability scanning agents",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Scott Nixon"
   },

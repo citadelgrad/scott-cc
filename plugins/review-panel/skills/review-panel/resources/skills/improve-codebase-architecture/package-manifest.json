@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "required": [
+    "DEEPENING.md",
+    "INTERFACE-DESIGN.md",
+    "LANGUAGE.md",
+    "INSTRUCTIONS.md",
+    "references/formats/ADR-FORMAT.md",
+    "references/formats/CONTEXT-FORMAT.md",
+    "references/formats/DATA-MODEL-FORMAT.md",
+    "references/formats/TASTE-FORMAT.md",
+    "scripts/package_contract.py"
+  ],
+  "copies": {
+    "references/formats/TASTE-FORMAT.md": {
+      "source": "plugins/review-panel/formats/TASTE-FORMAT.md",
+      "sha256": "0652cedb5c164189d9ad46d39e2643043fe1071396dca8a39829b74918ec79f8"
+    },
+    "references/formats/CONTEXT-FORMAT.md": {
+      "source": "plugins/review-panel/formats/CONTEXT-FORMAT.md",
+      "sha256": "ef2c1cfe91a5a96592434ab268bbef69790be71ede66de58e9fe32f37e31bd51"
+    },
+    "references/formats/ADR-FORMAT.md": {
+      "source": "plugins/review-panel/formats/ADR-FORMAT.md",
+      "sha256": "f1f36cd3f8d3b6474ddd5855da4e233bfc4ae1a1c5024909ccf11871819a41b2"
+    },
+    "references/formats/DATA-MODEL-FORMAT.md": {
+      "source": "plugins/review-panel/formats/DATA-MODEL-FORMAT.md",
+      "sha256": "6daf19f9c9498fcce07a48262a3ddaf83a744c2b700fd1a877b9e7330733d213"
+    },
+    "scripts/package_contract.py": {
+      "source": "skills/init/scripts/package_contract.py",
+      "sha256": "12633d622b62b770cc1ced7ecf3ad779f6a4e25c771a7ad55a905a190bfad67f"
+    }
+  }
+}

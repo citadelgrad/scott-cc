@@ -239,10 +239,10 @@ finding. This is the no-self-grading rule: a seat cannot validate its own findin
 
 ### Clean-room/blind independence
 
-Use `../adversarial-reviewer/references/clean-room-protocol.md` for each validator dispatch. Freeze
+Use `../resources/skills/adversarial-reviewer/references/clean-room-protocol.md` for each validator dispatch. Freeze
 the raw target and Phase-1 restatement before exposing prior findings; record `process_isolated`,
 `prompt_blinded`, or `self_reset`, and never count `self_reset` as independent corroboration. Use
-`../adversarial-reviewer/references/control-backed-findings.md` to validate candidates against the
+`../resources/skills/adversarial-reviewer/references/control-backed-findings.md` to validate candidates against the
 target and a named known control; unsupported hypotheses cannot reach FIX or silently block. The
 dispatch happens in two ordered phases within the same validator subagent — **blind restatement
 first, original claim second** — because showing the
