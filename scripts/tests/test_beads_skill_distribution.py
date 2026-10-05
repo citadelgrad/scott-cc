@@ -64,9 +64,9 @@ def test_catalogs_and_install_docs_publish_beads_and_current_counts() -> None:
     publishing = (ROOT / "PUBLISHING.md").read_text(encoding="utf-8")
     authorship = (ROOT / "SKILL-AUTHORSHIP.md").read_text(encoding="utf-8")
 
-    assert "## Skills (30)" in readme
-    assert re.search(r"\*\*30 skills\*\*", readme)
-    assert "- 30 skills" in quick_start
-    assert "30 core skills" in skills_cli
-    assert "30 skills + beads epic builder" in publishing
-    assert "73 installable `SKILL.md` files" in authorship
+    assert "## Skills (31)" in readme
+    assert re.search(r"\*\*31 skills\*\*", readme)
+    assert "- 31 skills" in quick_start
+    assert "31 core skills" in skills_cli
+    assert "31 skills + beads epic builder" in publishing
+    assert "74 installable `SKILL.md` files" in authorship
