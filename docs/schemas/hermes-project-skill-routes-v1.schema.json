@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:nous:hermes:project-skill-routes:v1",
+  "title": "Hermes trusted project skill routes structural schema v1",
+  "description": "Structural contract for <trusted-git-root>/.hermes/skill-routes.yaml. Hermes must also apply the semantic, byte-budget, vocabulary, normalization, resolution, and source-trust checks defined by the router design.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "rules"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "hermes.project-skill-routes.v1"
+    },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": {
+        "$ref": "#/$defs/rule"
+      }
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96,
+      "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"
+    },
+    "skill_identity": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 194,
+      "pattern": "^(?:(?:project|profile|bundled)/[A-Za-z0-9_-]+|(?:org|external|plugin)/[A-Za-z0-9_-]+/[A-Za-z0-9_-]+)$"
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "policy_key",
+        "when",
+        "require"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/identifier"
+        },
+        "policy_key": {
+          "$ref": "#/$defs/identifier"
+        },
+        "when": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "operation_any"
+          ],
+          "properties": {
+            "operation_any": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 16,
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/$defs/identifier"
+              }
+            }
+          }
+        },
+        "require": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/skill_identity"
+          }
+        }
+      }
+    }
+  }
+}
