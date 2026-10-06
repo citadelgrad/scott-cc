@@ -202,7 +202,7 @@ def test_run_profile_rejects_command_contract_drift(tmp_path, monkeypatch):
         tmp_path / "fake-bd",
         "#!/bin/sh\n"
         'if [ "$1" = version ]; then\n'
-        "  echo 'bd version 1.2.2 (Fake)'\n"
+        "  echo 'bd version 1.3.1 (Fake)'\n"
         'elif [ "$1" = where ] && [ "$2" = --help ]; then\n'
         "  echo 'this help text has drifted from the pinned contract'\n"
         "else\n"

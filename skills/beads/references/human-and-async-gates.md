@@ -4,7 +4,7 @@ description: >-
   gates, and direct non-reusable protected actions.
 metadata:
   tags: "beads, human, gates, approvals, protected-actions"
-  source: "local Hermes-first architecture; Beads v1.2.2 compatibility baseline"
+  source: "local Hermes-first architecture; Beads v1.3.1 compatibility baseline"
 ---
 # Human and asynchronous gates
 
@@ -19,7 +19,7 @@ capabilities rather than writing tracker or run state itself.
 
 Before using gate commands, inspect current safe `bd human --help`,
 `bd gate --help`, and relevant command help. The details below describe the
-pinned Beads v1.2.2 compatibility baseline; drift requires re-verification.
+pinned Beads v1.3.1 compatibility baseline; drift requires re-verification.
 
 ## Contents
 
@@ -36,7 +36,7 @@ pinned Beads v1.2.2 compatibility baseline; drift requires re-verification.
 | CI | Typed successful required checks for the exact commit/tree and current policy | Missing, failed, stale, wrong-target, truncated, or unevaluable CI remains unresolved. |
 | PR merge | Exact merged target/ref readback | Approval alone, wrong ref, unmerged state, failed readback, or changed head does not resolve. |
 | Timer | Live CLI-defined timer resolution for that timer gate | Apply only timer semantics; do not generalize timeout behavior to other gate types. |
-| Local `bead` gate on pinned v1.2.2 | None in v1 | Return `unsupported/inconclusive`; prevent protected transition and close. |
+| Local `bead` gate on pinned v1.3.1 | None in v1 | Return `unsupported/inconclusive`; prevent protected transition and close. |
 | Protected execution | Direct, current, non-reusable human/current-harness action plus exact target readback | Persisted parent-attested evidence cannot authorize it; return `HUMAN_ACTION_REQUIRED`. |
 
 ## Pinned Beads traps

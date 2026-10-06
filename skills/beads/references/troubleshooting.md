@@ -4,7 +4,7 @@ description: >-
   delegation, isolation, checkpoints, results, integration, and sync failures.
 metadata:
   tags: "beads, troubleshooting, recovery, hermes"
-  source: "local Hermes-first architecture; Beads v1.2.2 compatibility baseline"
+  source: "local Hermes-first architecture; Beads v1.3.1 compatibility baseline"
 ---
 # Troubleshooting
 
@@ -60,13 +60,13 @@ Run `bd prime` after a new/compacted session and use safe command-specific
 safety-relevant pinned claim, return `UNSUPPORTED_BD_VERSION` or
 `CLI_CONTRACT_DRIFT`; do not guess or silently rewrite the reference.
 
-Pinned identities used by this package are Beads 1.2.2 at
-`6c124203e771433a3550c348771a5b5e27fd3c21` and the approved Hermes 0.21.0
+Pinned identities used by this package are Beads 1.3.1 at
+`c1c4b642ac1c08d8c828007a1c2f96e47e43ef7c` and the approved Hermes 0.21.0
 snapshot at `21b2095d00a98b8ad7b5c60b10587619c852cdb8`.
 
 ## Quality-command traps
 
-`bd preflight` in Beads 1.2.2 is an upstream-Beads contributor checklist, not a
+`bd preflight` in Beads 1.3.1 is an upstream-Beads contributor checklist, not a
 generic host-repository test gate. Its `--fix` is not implemented. Warnings or
 skips do not prove the host build passed. Run the repository’s own required
 commands separately.

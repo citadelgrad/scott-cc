@@ -172,8 +172,8 @@ XDG/npm/uv caches, Git config, temp directories and cwd. No real profile is used
 `make verify` is the local full gate; `make verify-distribution` is the mandatory
 portable distribution gate used by CI/release, including the complete matrix.
 `uv run pytest -m 'not installer'` is a fast developer subset, **not** release
-verification. The broader native Beads contract suite requires **bd 1.2.2**. A local 1.3.0
-run produced native contract failures; do not treat that version as compatible
+verification. The broader native Beads contract suite requires **bd 1.3.1**. Other versions
+fail closed with `UNSUPPORTED_BD_VERSION`; do not treat a version as compatible
 just because package installs pass. Optional PAS/native-Hermes probes report
 their own availability separately.
 

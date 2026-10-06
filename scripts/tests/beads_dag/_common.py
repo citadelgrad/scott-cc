@@ -56,7 +56,7 @@ def build_snapshot(step: dict[str, Any]) -> dict[str, Any]:
         "schema_version": "beads.issue-snapshot.v1",
         "captured_at": "2026-09-04T00:00:00.000000Z",
         "workspace_sha256": "0" * 64,
-        "cli_version": "1.2.2",
+        "cli_version": "1.3.1",
         "root_issue_id": step.get("root_issue_id"),
         "ready": step["ready"],
         "blocked": step.get("blocked", []),

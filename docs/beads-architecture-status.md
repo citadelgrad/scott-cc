@@ -19,7 +19,7 @@ The paired evaluator's [not-evaluated report](../evaluation/beads-skill/public-r
 
 ## Compatibility and verification
 
-The native lifecycle conformance fixtures target **Beads 1.2.2**, as recorded in the [source baseline](plans/2026-09-02-hermes-beads-skill/source-baseline-v1.json). A different installed CLI version is not proof of compatibility. Use an isolated pinned executable on PATH for these tests; never downgrade or migrate the user's live tracker database as a test setup step.
+The native lifecycle conformance fixtures target **Beads 1.3.1**, the version pinned in `skills/beads/scripts/safe_bd.py`. The frozen v1 [source baseline](plans/2026-09-02-hermes-beads-skill/source-baseline-v1.json) records the original 1.2.2 pin. Beads 1.3.1 claims are leases (`lease_expires_at`, `heartbeat_at`) that a supervisor can revert with `bd reclaim`. A different installed CLI version is not proof of compatibility. Use an isolated pinned executable on PATH for these tests; never downgrade or migrate the user's live tracker database as a test setup step.
 
 `uv sync --frozen` and `uv run pytest` exercise local contracts, recovery, fixtures, and evaluation gates. Optional frozen-Hermes/PAS checks require their documented external runtimes. These tests neither spend a model-evaluation budget nor authorize default-profile promotion.
 

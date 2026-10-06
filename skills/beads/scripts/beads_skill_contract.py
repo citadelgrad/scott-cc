@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
-BEADS_COMMIT = "6c124203e771433a3550c348771a5b5e27fd3c21"
+BEADS_COMMIT = "c1c4b642ac1c08d8c828007a1c2f96e47e43ef7c"
 HERMES_COMMIT = "21b2095d00a98b8ad7b5c60b10587619c852cdb8"
 AGENT_SKILLS_COMMIT = "69ef37e9424c0a7ea9dd2293b559e43ec8176379"
 HERMES_DESCRIPTION_VISIBLE_CHARS = 57

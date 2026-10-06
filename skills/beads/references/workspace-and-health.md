@@ -4,13 +4,13 @@ description: >-
   version before any lifecycle mutation.
 metadata:
   tags: "beads, workspace, health, dolt, preflight"
-  source: "Beads 1.2.2 live help and frozen Hermes Beads v1 plan"
+  source: "Beads 1.3.1 live help and frozen Hermes Beads v1 plan"
   verified: "2026-09-03"
 ---
 
 # Workspace and health
 
-Verified against Beads `1.2.2`. Use this reference when workspace identity,
+Verified against Beads `1.3.1`. Use this reference when workspace identity,
 storage health, or command compatibility is abnormal. Every model-visible Beads
 read must use a closed `safe_bd.py` profile. If the adapter or required profile
 is unavailable, return `blocked` or `inconclusive`; there is no native-output
@@ -113,7 +113,7 @@ to invoke native `bd` and expose its output. Prime, help forwarded to the model,
 workspace, health, issue, ready/blocker, gate, history, and mutation readback all
 cross the same mandatory allowlist/redaction/size/codec boundary.
 
-The verified baseline is Beads `1.2.2`. Compare safety-relevant live help with
+The verified baseline is Beads `1.3.1`. Compare safety-relevant live help with
 the frozen manifest. Unsupported version means `UNSUPPORTED_BD_VERSION`;
 changed mutation semantics means `CLI_CONTRACT_DRIFT`. Both stop the affected
 mutation until reviewed. Never guess replacement syntax.

@@ -4,14 +4,14 @@ description: >-
   scoped implementation, current evidence, guarded close, and truthful handoff.
 metadata:
   tags: "beads, solo, claim, verification, closure, handoff"
-  source: "Beads 1.2.2 live help and frozen Hermes Beads v1 plan"
+  source: "Beads 1.3.1 live help and frozen Hermes Beads v1 plan"
   verified: "2026-09-03"
 ---
 
 # Solo execution
 
 This is the complete one-hop route for one issue. Verified against Beads
-`1.2.2`. Command examples name native semantics; invoke them through the
+`1.3.1`. Command examples name native semantics; invoke them through the
 package's closed safe Beads/direct-operation transport when that runtime is
 present. Its live help and schemas define exact profile names and result fields.
 If a required transport, stable operation identity, or sanitized readback is
@@ -34,7 +34,7 @@ Before the first tracker or implementation write:
 
 1. Capture physical repository root, Git common directory, branch, `HEAD`, and
    `git status --short`. Do not expose secret-file contents.
-2. Resolve `type -a bd`; require Go/Dolt Beads `1.2.2` or an explicitly reviewed
+2. Resolve `type -a bd`; require Go/Dolt Beads `1.3.1` or an explicitly reviewed
    compatible contract.
 3. Run safe `prime` and `where` reads; confirm the workspace belongs to the
    intended repository and is healthy enough for the required reads/writes.
@@ -194,9 +194,9 @@ Report these milestones separately:
 4. code delivered to a Git remote.
 
 Without remote authority, report the first two observed local milestones only.
-Do not run `bd sync`; released `1.2.2` has no usable command by that name. A
-successful `bd dolt push` process is not remote proof when no remote is
-configured or the remote head cannot be read back.
+Do not run `bd sync`; on `1.3.1` it pulls from and pushes to the Dolt remote and
+is not an approved profile. A successful `bd dolt push` process is not remote
+proof when no remote is configured or the remote head cannot be read back.
 
 ## Terminal outcomes
 

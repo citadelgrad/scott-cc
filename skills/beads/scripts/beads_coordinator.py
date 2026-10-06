@@ -75,7 +75,7 @@ def _result(
         "workspace": {
             "repository_root": manifest["repository_root"],
             "workspace_sha256": manifest["workspace_identity_sha256"],
-            "cli_version": "1.2.2",
+            "cli_version": "1.3.1",
         },
         "observed_changes": [],
         "authority": {
@@ -141,7 +141,7 @@ def _run_status_recover(args: argparse.Namespace) -> int:
 # Shared helpers for the new subcommand surface.
 # ---------------------------------------------------------------------------
 
-CLI_VERSION = "1.2.2"
+CLI_VERSION = "1.3.1"
 
 # coordinator_integration / coordinator_state / beads_ownership / reconcile_run
 # all raise or return a lowercase, operation_result-adjacent vocabulary, except

@@ -4,7 +4,7 @@ description: >-
   fresh-snapshot ready-front selection for tracked DAG work.
 metadata:
   tags: "beads, dependencies, DAG, readiness, scheduling"
-  source: "local normative contract grounded in Beads v1.2.2"
+  source: "local normative contract grounded in Beads v1.3.1"
 ---
 
 # Dependencies and ready fronts
@@ -26,7 +26,7 @@ Read `X -> Y` as **X needs Y**. Translate ambiguous prose before writing an
 edge: “Y before X” becomes “X needs Y,” hence `X -> Y`. Do not infer order from
 issue IDs, creation order, priority, or `parent-child` hierarchy.
 
-Pinned Beads v1.2.2 exposes two equivalent forms:
+Pinned Beads v1.3.1 exposes two equivalent forms:
 
 ```bash
 bd dep add X Y --type blocks
@@ -38,7 +38,7 @@ the issue before `--blocks` is the prerequisite.
 
 `parent-child` describes hierarchy, not ordinary prerequisite sequencing. A
 child does not wait for its parent to close merely because it is a child.
-Pinned v1.2.2 can nevertheless suppress descendants when their parent has an
+Pinned v1.3.1 can nevertheless suppress descendants when their parent has an
 active blocker or future defer state, so scoped readiness must still come from
 live `bd ready` output.
 
@@ -104,7 +104,7 @@ views. `null` from `human list` or `gate list` may be normalized to an empty
 collection only after successful exit and schema validation.
 
 Do not use `bd ready --explain` as the scoped membership oracle on pinned
-v1.2.2: its explanation path is diagnostic and does not honor normal ready
+v1.3.1: its explanation path is diagnostic and does not honor normal ready
 filters such as `--parent` consistently.
 
 ## Tracker readiness is necessary, not sufficient
@@ -144,7 +144,7 @@ bd --readonly gate show GATE_ID --json
 bd --readonly show GATE_ID --json
 ```
 
-On v1.2.2, even `gate check --dry-run` is rejected under global `--readonly`.
+On v1.3.1, even `gate check --dry-run` is rejected under global `--readonly`.
 Only the authorized parent may run the mutation-free probe without that flag:
 
 ```bash
