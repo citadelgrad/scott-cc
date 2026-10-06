@@ -4,13 +4,13 @@ description: >-
   and uncertain-effect lifecycle transitions.
 metadata:
   tags: "beads, lifecycle, claim, close, reopen, recovery"
-  source: "Beads 1.2.2 live help and frozen Hermes Beads v1 plan"
+  source: "Beads 1.3.1 live help and frozen Hermes Beads v1 plan"
   verified: "2026-09-03"
 ---
 
 # Issue lifecycle
 
-Verified against Beads `1.2.2`. Consult live help for current status values and
+Verified against Beads `1.3.1`. Consult live help for current status values and
 flags. Never teach a transition from remembered syntax when help has drifted.
 All model-visible help, issue, readiness, blocker, gate, history, and mutation
 readback uses a closed `safe_bd.py` profile. Missing profile coverage blocks the
@@ -57,7 +57,13 @@ which replay of unknown-target queue-pop could claim a second issue.
 status to `in_progress`; it is idempotent when already claimed by that actor.
 Use it only after a fresh exact-ID readiness/status/assignee/blocker check.
 Native known-ID claim checks claimability, not dependency readiness: pinned
-`1.2.2` can claim an issue that `bd blocked` still reports.
+`1.3.1` can claim an issue that `bd blocked` still reports.
+
+On `1.3.1` a claim is a lease. The claim records `lease_expires_at` and
+`heartbeat_at`, and `bd reclaim` run by a supervisor reverts a claim whose lease
+expired. A long task must refresh its lease with `bd heartbeat`, and must read
+the exact ID back before close to confirm that it still holds the claim. Do not
+use `--force` to take another actor's live claim.
 
 After either operation, require exact ID, expected actor, `in_progress`, current
 eligibility, and resolved effect from exact readback. Same actor is not a
@@ -106,7 +112,7 @@ open blocker is a real guard; native acceptance is still not proof that AC,
 verification, review, or gate policy passed.
 
 Use `bd reopen <exact-id> --reason <reason> --json`, not a generic status
-update. In `1.2.2`, reopen sets status to `open`, clears closure metadata, and
+update. In `1.3.1`, reopen sets status to `open`, clears closure metadata, and
 emits the dedicated Reopened event. Verify all of those effects before claiming
 repair.
 

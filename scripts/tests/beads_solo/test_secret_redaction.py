@@ -117,7 +117,7 @@ def _base_operation_result(tmp_path):
         "workspace": {
             "repository_root": str(tmp_path),
             "workspace_sha256": "a" * 64,
-            "cli_version": "1.2.2",
+            "cli_version": "1.3.1",
         },
         "observed_changes": [],
         "authority": {

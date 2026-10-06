@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Closed, pinned Beads 1.2.2 transport built on safe_output."""
+"""Closed, pinned Beads 1.3.1 transport built on safe_output."""
 
 from __future__ import annotations
 
@@ -18,23 +18,23 @@ sys.path.insert(0, str(Path(__file__).parent))
 import safe_output
 import schema_runtime
 
-PINNED_BD_VERSION = "1.2.2"
+PINNED_BD_VERSION = "1.3.1"
 CLI_CONTRACT_HASHES = {
-    "bd prime": "993713b7b4f06101731ee8e8efb3f0e692858c273525a91ae4bb8b3b053384ba",
-    "bd create --help": "d06e962277a4faaab8c8e5e9e59875bcca4a84aee26f03bfb47a42557e74ce74",
-    "bd update --help": "562e3f92ccc173e40c0a9a83302cd32b0cd961e33412b192352f1205583f2130",
-    "bd close --help": "ed1e73d5d8ff9714bdbeca9c57ab7cdd8eff66c5d0167fc3f76715be7faa2521",
-    "bd dep --help": "ec0134ef777218dd5fefc958e30079acb2f0a96aa451a6d5a22124f3e77d1943",
-    "bd ready --help": "7d485a5c4eb3505c1e2e4fa700ddbf80964a25c6fd047341a2ccfc9872b97393",
-    "bd list --help": "30152e05c7e2a24cd32df82552985523be97629e531f20dd394b8d4ab00982b8",
-    "bd dep list --help": "3579c552baf306fa2cb4e744926f3ad2522eef73409c364ea660d2c98872b996",
-    "bd where --help": "82156d7531699d1e59c4975a6215d77280fdfc10c7b4293074cf99c7cfafc30c",
-    "bd show --help": "010c34cfe1bf28beedf9c90978979a957e612ce8bd8a56c5b47e2cdde5038179",
-    "bd comments --help": "93b32055bff1e98ec6970e7fb4fca4eaba878725e796fad5763abdf59a4b7cfb",
-    "bd comments add --help": "b5e23626a28b8408a96eaf75ea2a3cb9c4815f8695469cd4e034383a0038e82c",
-    "bd human --help": "eef6aff710c947fb2e2ab297583d22049a2bc6c38715f5284a6ed4bf1666a61c",
-    "bd gate --help": "16959572cdfc30b030828c6ae440f42933872fef4e876ae14603ce0f8d8e3bf0",
-    "bd worktree --help": "a32cd089a3c55e14fa90b9a3785eb7c0db2786f4c47a5f99954cd63a677a7fa9",
+    "bd prime": "f1b1e872203d52d8aca25d51af392ee69e2cc724146053030381e76f538b0c98",
+    "bd create --help": "84ceba7a23d671e03df858e857845d819b6c91e1ffd07d0583bdc918aa727465",
+    "bd update --help": "1428e04018db2ca649c221374f1220c066e3f39b0e6ef86aea3aabc2b7b0d5f0",
+    "bd close --help": "8a9982220de9d3e872c0f2ae49ee00b5227b7edc274c100a61a1a01c4365aa70",
+    "bd dep --help": "eb0c228b258fd5586976788f03af4fd108fd437595f495486ce2952ced32ec05",
+    "bd ready --help": "49a9904b9b4b9a983a3af36c947fc94ff67bc0391705494b18eb599d9b55ed03",
+    "bd list --help": "135fdfddf72c5c16404759b68eb6b27c0d62b2842cdbb5f196cc50963c3d3545",
+    "bd dep list --help": "5c74d26b18483ca500cd35869f84131bad79deb4c0773446a5799e3bc30c23c8",
+    "bd where --help": "9090f26b1e11fe4022b65de25d07d38a91a4bb2fcd892d6c76cabf639fad38b6",
+    "bd show --help": "feccb0abd468724b5c9c0e0dcdb1c1518408759251a217141ff996f2643aa9b0",
+    "bd comments --help": "8b738d42548e2b31fd8196505fabcfd1aeb81419c4d741a99b52d0a81943c42f",
+    "bd comments add --help": "25d5ad7c46b2168894c113265642ea68e730fbef38d670e14ea7cedd4aee50cf",
+    "bd human --help": "6500d96e247564de59a0dba3bc35f1a00c17845ac51977c962670bc9cc0825ab",
+    "bd gate --help": "0bfc8a756cdbc63633fced4c4b19911a3f97e0f7d0a3948eab0dabdcfbad1760",
+    "bd worktree --help": "a014191eb1d4c8c03b42e3d61b813e428f295129cad2873164e5b3824e74e809",
 }
 PROFILE_CONTRACT_COMMANDS = {
     "workspace_where": "bd where --help",
@@ -217,6 +217,11 @@ _ISSUE_FIELDS = frozenset(
         "blocked_by",
         "blocked_by_count",
         "dependency_type",
+        "revision",
+        "lease_expires_at",
+        "heartbeat_at",
+        "comments_omitted",
+        "schema_version",
     }
 )
 _LIST_FIELDS = _ISSUE_FIELDS
@@ -627,6 +632,8 @@ _ISSUE_STRING_FIELDS = frozenset(
         "external_ref",
         "spec_id",
         "dependency_type",
+        "lease_expires_at",
+        "heartbeat_at",
     }
 )
 _ISSUE_INTEGER_FIELDS = frozenset(
@@ -637,6 +644,7 @@ _ISSUE_INTEGER_FIELDS = frozenset(
         "dependency_count",
         "dependent_count",
         "blocked_by_count",
+        "schema_version",
     }
 )
 _STATUS_SUMMARY_FIELDS = frozenset(
@@ -653,6 +661,8 @@ _STATUS_SUMMARY_FIELDS = frozenset(
         "total_issues",
     }
 )
+# bd >= 1.3 reports an opaque signed int64 row revision as a decimal string.
+_INT64_DECIMAL = re.compile(r"0|-?[1-9][0-9]{0,18}")
 _DEPENDENCY_FIELDS = frozenset(
     {"issue_id", "depends_on_id", "type", "created_at", "created_by", "metadata"}
 )
@@ -664,6 +674,14 @@ def _string(value: Any, *, nullable: bool = True) -> bool:
 
 def _exact_integer(value: Any, *, nullable: bool = True) -> bool:
     return (type(value) is int and value >= 0) or (nullable and value is None)
+
+
+def _int64_decimal(value: Any) -> bool:
+    return (
+        isinstance(value, str)
+        and _INT64_DECIMAL.fullmatch(value) is not None
+        and -(2**63) <= int(value) < 2**63
+    )
 
 
 def _validate_issue_record(value: Mapping[str, Any]) -> None:
@@ -707,6 +725,10 @@ def _validate_issue_record(value: Mapping[str, Any]) -> None:
                         break
         elif key == "metadata":
             valid = item is None or isinstance(item, dict)
+        elif key == "comments_omitted":
+            valid = isinstance(item, bool)
+        elif key == "revision":
+            valid = _int64_decimal(item)
         else:
             valid = False
         if not valid:

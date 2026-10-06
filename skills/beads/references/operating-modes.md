@@ -4,13 +4,13 @@ description: >-
   execution, planning/creation, recovery, gates, and durable handoff.
 metadata:
   tags: "beads, routing, operating-modes, pressure-resistance"
-  source: "Beads 1.2.2 live help and frozen Hermes Beads v1 plan"
+  source: "Beads 1.3.1 live help and frozen Hermes Beads v1 plan"
   verified: "2026-09-03"
 ---
 
 # Operating modes
 
-Verified against Beads `1.2.2`. The frozen command-contract manifest is
+Verified against Beads `1.3.1`. The frozen command-contract manifest is
 `source-baseline-v1.json`, SHA-256
 `24b39b6f8e75af3b2f09becc1af2d10a59a92a2af8222e6caeec3d4eaa1681c0`.
 Safe-profile output and current `bd <command> --help` outrank this prose. A

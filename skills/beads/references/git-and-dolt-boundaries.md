@@ -4,13 +4,13 @@ description: >-
   delivery planes separate under explicit authority and readback.
 metadata:
   tags: "beads, git, dolt, worktrees, authority, remote"
-  source: "Beads 1.2.2 live help and frozen Hermes Beads v1 plan"
+  source: "Beads 1.3.1 live help and frozen Hermes Beads v1 plan"
   verified: "2026-09-03"
 ---
 
 # Git and Dolt boundaries
 
-Verified against Beads `1.2.2`. Git and Beads/Dolt are separate state planes.
+Verified against Beads `1.3.1`. Git and Beads/Dolt are separate state planes.
 Similar repository URLs or one successful command never collapse their
 identity, authority, or proof requirements.
 All model-visible Beads/Dolt status, history, and mutation readback must pass
@@ -108,8 +108,9 @@ when explicitly told not to commit/push, stop after reporting local evidence.
 
 ## Dolt synchronization
 
-Released `1.2.2` has no usable `bd sync`. Do not invent it. Cross-clone tracker
-synchronization is explicit `bd dolt pull` and `bd dolt push`, each only under
+Released `1.3.1` has a `bd sync` that pulls from and pushes to the Dolt remote.
+It is not part of the approved profiles; do not run it from this package.
+Cross-clone tracker synchronization is explicit `bd dolt pull` and `bd dolt push`, each only under
 its own authority and conflict-safe preflight. Inspect current live help before
 use.
 

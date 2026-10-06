@@ -58,7 +58,7 @@ def _tracked_snapshot(repo: Path) -> tuple[str, tuple[tuple[str, str], ...]]:
 def _native_workspace(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> tuple[Path, str]:
-    """Create a fully initialized, isolated native bd 1.2.2 workspace."""
+    """Create a fully initialized, isolated native bd 1.3.1 workspace."""
     repo = tmp_path / "repo"
     repo.mkdir()
     home = tmp_path / "home"

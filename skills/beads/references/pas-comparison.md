@@ -98,8 +98,9 @@ In plugin-free v1:
 6. Valid work enters the ordinary parent scope/AC/review/candidate/readback path.
 7. Coordinator `update-tracker` alone performs guarded tracker notes/closure.
 
-There is no automatic cross-actor claim transfer. Beads 1.2.2 lacks a
-conditional atomic transfer primitive; calling this an “ownership transfer”
+There is no automatic cross-actor claim transfer. Beads 1.3.1 adds
+`--if-assignee`/`--if-status` update guards, but this package has not adopted
+them as a reviewed transfer primitive; calling this an “ownership transfer”
 would hide an unsafe saga.
 
 ## Unknown launch and return

@@ -4,13 +4,13 @@ description: >-
   independent review, guarded closure, and exact local or remote readback.
 metadata:
   tags: "beads, verification, evidence, review, closure"
-  source: "Beads 1.2.2 live help and frozen Hermes Beads v1 plan"
+  source: "Beads 1.3.1 live help and frozen Hermes Beads v1 plan"
   verified: "2026-09-03"
 ---
 
 # Verification and closure
 
-Verified against Beads `1.2.2`. Native command success is one observation, not
+Verified against Beads `1.3.1`. Native command success is one observation, not
 proof that the issue's behavior, review, gates, or remote delivery succeeded.
 Every model-visible Beads issue, gate, history, status, and mutation readback
 must pass through a closed `safe_bd.py` profile; unavailable profile coverage is

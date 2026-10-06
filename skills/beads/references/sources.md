@@ -8,11 +8,11 @@ They are not claims about newer upstream releases.
 ## Beads
 
 - Project: [`gastownhall/beads`](https://github.com/gastownhall/beads)
-- Version: `1.2.2`
-- Tag object: `8ed120b1b3afdb75345719c2d3fef07a81860ab8`
-- Immutable commit: [`6c124203e771433a3550c348771a5b5e27fd3c21`](https://github.com/gastownhall/beads/commit/6c124203e771433a3550c348771a5b5e27fd3c21)
-- Upstream skill: [`plugins/beads/skills/beads/SKILL.md`](https://raw.githubusercontent.com/gastownhall/beads/6c124203e771433a3550c348771a5b5e27fd3c21/plugins/beads/skills/beads/SKILL.md)
-- License: [MIT at the pinned commit](https://raw.githubusercontent.com/gastownhall/beads/6c124203e771433a3550c348771a5b5e27fd3c21/LICENSE)
+- Version: `1.3.1`
+- Tag object: `89f02da95627111df8c3ab7c24ef3897eecaa570`
+- Immutable commit: [`c1c4b642ac1c08d8c828007a1c2f96e47e43ef7c`](https://github.com/gastownhall/beads/commit/c1c4b642ac1c08d8c828007a1c2f96e47e43ef7c)
+- Upstream skill: [`plugins/beads/skills/beads/SKILL.md`](https://raw.githubusercontent.com/gastownhall/beads/c1c4b642ac1c08d8c828007a1c2f96e47e43ef7c/plugins/beads/skills/beads/SKILL.md)
+- License: [MIT at the pinned commit](https://raw.githubusercontent.com/gastownhall/beads/c1c4b642ac1c08d8c828007a1c2f96e47e43ef7c/LICENSE)
 - Copyright: Copyright (c) 2025 Beads Contributors
 - Pinned upstream skill SHA-256: `01555fe65d19be401d820d9dec029cd048fb0791d433b4b575374477d6f1d827`
 

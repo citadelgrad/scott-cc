@@ -36,7 +36,7 @@ def test_closed_profiles_build_exact_readonly_argv(tmp_path: Path) -> None:
     with pytest.raises(safe_bd.SafeBdError, match="UNKNOWN_ARGUMENT"):
         safe_bd.SafeBdRequest("ready_list", {"shell": True}, tmp_path, None)
     resolved_homebrew = safe_bd.build_argv(
-        request, executable=Path("/opt/homebrew/Cellar/beads/1.2.2/bin/beads")
+        request, executable=Path("/opt/homebrew/Cellar/beads/1.3.1/bin/beads")
     )
     assert resolved_homebrew[0].endswith("/bin/beads")
 
@@ -146,8 +146,8 @@ def test_marker_profile_writes_to_the_real_comments_read_surface(
     version = subprocess.run(
         [executable, "version"], check=True, capture_output=True, text=True
     ).stdout
-    if not version.startswith("bd version 1.2.2"):
-        pytest.skip(f"requires bd 1.2.2, found {version.strip()}")
+    if not version.startswith("bd version 1.3.1"):
+        pytest.skip(f"requires bd 1.3.1, found {version.strip()}")
 
     repository = tmp_path / "repo"
     subprocess.run(["git", "init", "-q", str(repository)], check=True)
@@ -220,19 +220,19 @@ def test_pinned_live_contract_hashes_are_complete() -> None:
     safe_bd = _load()
     assert (
         safe_bd.CLI_CONTRACT_HASHES["bd prime"]
-        == "993713b7b4f06101731ee8e8efb3f0e692858c273525a91ae4bb8b3b053384ba"
+        == "f1b1e872203d52d8aca25d51af392ee69e2cc724146053030381e76f538b0c98"
     )
     assert (
         safe_bd.CLI_CONTRACT_HASHES["bd show --help"]
-        == "010c34cfe1bf28beedf9c90978979a957e612ce8bd8a56c5b47e2cdde5038179"
+        == "feccb0abd468724b5c9c0e0dcdb1c1518408759251a217141ff996f2643aa9b0"
     )
     assert (
         safe_bd.CLI_CONTRACT_HASHES["bd comments --help"]
-        == "93b32055bff1e98ec6970e7fb4fca4eaba878725e796fad5763abdf59a4b7cfb"
+        == "8b738d42548e2b31fd8196505fabcfd1aeb81419c4d741a99b52d0a81943c42f"
     )
     assert (
         safe_bd.CLI_CONTRACT_HASHES["bd comments add --help"]
-        == "b5e23626a28b8408a96eaf75ea2a3cb9c4815f8695469cd4e034383a0038e82c"
+        == "25d5ad7c46b2168894c113265642ea68e730fbef38d670e14ea7cedd4aee50cf"
     )
     assert len(safe_bd.CLI_CONTRACT_HASHES) == 15
 
@@ -283,6 +283,49 @@ def test_issue_records_allow_real_defer_and_due_fields_with_exact_types(
         )
         with pytest.raises(safe_bd.SafeBdError, match="BD_OUTPUT_DRIFT"):
             safe_bd.decode_output(request, f"[{malformed}]")
+
+
+def test_issue_records_allow_bd_1_3_lease_and_revision_fields_with_exact_types(
+    tmp_path: Path,
+) -> None:
+    safe_bd = _load()
+    request = safe_bd.SafeBdRequest(
+        "issue_get", {"issue_id": "scc-main"}, tmp_path, None
+    )
+    base = {
+        "id": "scc-main",
+        "title": "ok",
+        "status": "in_progress",
+        "lease_expires_at": "2026-10-06T20:53:47Z",
+        "heartbeat_at": "2026-10-06T20:48:47Z",
+        "comments_omitted": True,
+        "schema_version": 1,
+    }
+    for revision in ("0", "-1633033074046990312", "9223372036854775807"):
+        result = safe_bd.decode_output(
+            request, json.dumps([{**base, "revision": revision}])
+        )
+        assert result[0]["revision"] == revision
+        assert result[0]["lease_expires_at"] == "2026-10-06T20:53:47Z"
+
+    for field, value in (
+        ("revision", 7),
+        ("revision", None),
+        ("revision", ""),
+        ("revision", "-0"),
+        ("revision", "007"),
+        ("revision", "9223372036854775808"),
+        ("revision", "-9223372036854775809"),
+        ("revision", "12a"),
+        ("lease_expires_at", 7),
+        ("heartbeat_at", False),
+        ("comments_omitted", "true"),
+        ("comments_omitted", None),
+        ("schema_version", "1"),
+    ):
+        malformed = json.dumps([{**base, field: value}])
+        with pytest.raises(safe_bd.SafeBdError, match="BD_OUTPUT_DRIFT"):
+            safe_bd.decode_output(request, malformed)
 
 
 def test_nested_credential_fields_are_redacted(tmp_path: Path) -> None:
@@ -566,13 +609,13 @@ def test_version_probe_ignores_unrelated_sanitized_stderr(tmp_path: Path) -> Non
     safe_bd = _load()
     fake = tmp_path / "bd"
     fake.write_text(
-        "#!/bin/sh\nprintf 'bd version 1.2.2 (Homebrew)\\n'\nprintf 'workspace warning\\n' >&2\n",
+        "#!/bin/sh\nprintf 'bd version 1.3.1 (Homebrew)\\n'\nprintf 'workspace warning\\n' >&2\n",
         encoding="utf-8",
     )
     os.chmod(fake, 0o700)
     assert (
         safe_bd._probe_text(fake, tmp_path, ("version",), include_stderr=False)
-        == "bd version 1.2.2 (Homebrew)\n"
+        == "bd version 1.3.1 (Homebrew)\n"
     )
 
 
@@ -603,7 +646,7 @@ def test_run_profile_rejects_command_contract_drift(
     fake.write_text(
         "#!/bin/sh\n"
         'if [ "$1" = version ]; then\n'
-        "  printf 'bd version 1.2.2 (Homebrew)\\n'\n"
+        "  printf 'bd version 1.3.1 (Homebrew)\\n'\n"
         "else\n"
         "  printf 'drifted help\\n'\n"
         "fi\n",
@@ -630,7 +673,7 @@ def test_text_profile_accepts_sanitized_stderr(
     fake.write_text(
         "#!/bin/sh\n"
         'if [ "$1" = version ]; then\n'
-        "  printf 'bd version 1.2.2 (Homebrew)\\n'\n"
+        "  printf 'bd version 1.3.1 (Homebrew)\\n'\n"
         "else\n"
         "  printf 'embedded diagnostic\\n' >&2\n"
         "fi\n",

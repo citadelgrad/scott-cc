@@ -4,13 +4,13 @@ description: >-
   then verify exact fields, dependency edges, lint totals, and readiness.
 metadata:
   tags: "beads, issue-creation, acceptance-criteria, lint, dependencies"
-  source: "Beads 1.2.2 live help and frozen Hermes Beads v1 plan"
+  source: "Beads 1.3.1 live help and frozen Hermes Beads v1 plan"
   verified: "2026-09-03"
 ---
 
 # Issue quality
 
-Verified against Beads `1.2.2`. Every create requires both a caller-stable
+Verified against Beads `1.3.1`. Every create requires both a caller-stable
 request identity and a caller-fixed exact issue ID before mutation. If the
 installed guarded creation capability cannot supply and probe both, creation is
 `blocked`; never fall back to generated-ID creation or retry because a later
@@ -104,7 +104,7 @@ behavior itself.
    in their proper fields. Use `--json` and the preallocated exact ID through the
    approved profile; never accept a native generated ID.
 6. Execute once through the package's guarded safe creation path. Native
-   `bd create --json` returns one JSON object on pinned `1.2.2`; do not assume an
+   `bd create --json` returns one JSON object on pinned `1.3.1`; do not assume an
    array or expose raw free text.
 7. Parse the result and require its ID to equal the caller-fixed ID exactly.
 8. Read that exact ID back and compare every requested field: title,
@@ -117,7 +117,7 @@ behavior itself.
    `bd ready --json` or `bd blocked --json`. A zero edge-command exit alone is
    insufficient.
 11. Run `bd lint <exact-id> --json` and parse reported totals/results/warnings.
-    Pinned `1.2.2` may exit zero while reporting warnings.
+    Pinned `1.3.1` may exit zero while reporting warnings.
 12. Emit success only when exact fields, all requested edges, cycle result,
     lint expectations, and readiness behavior agree. Otherwise return
     `CREATE_READBACK_FAILED` with applied and missing effects.

@@ -77,8 +77,8 @@ prerequisites are mandatory; no network-dependent npx/latest fallback or silent
 installer skip is allowed. CI runs `make verify-distribution` on PRs, main pushes,
 and version tags without changed-path filtering. Configure this job as a required
 check in repository branch protection; the workflow alone cannot set that policy.
-The broader native Beads contract suite requires bd 1.2.2; a 1.3.0 run produced
-native contract failures and is not a validated substitute.
+The broader native Beads contract suite requires bd 1.3.1. Other versions fail
+closed with `UNSUPPORTED_BD_VERSION` and are not validated substitutes.
 
 After publishing, separately check the **public default branch**:
 
