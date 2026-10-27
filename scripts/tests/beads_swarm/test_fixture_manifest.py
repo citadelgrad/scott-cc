@@ -26,9 +26,55 @@ REQUIRED_REJECTION_CASES = {
     "unknown_primary_result",
 }
 REQUIRED_CRASH_FLOWS = {
+    "start_run_initial_publication",
     "lane_freeze",
+    "lane_verify",
+    "lane_review_record",
+    "candidate_build",
+    "candidate_apply",
     "durable_handoff_launch",
+    "durable_handoff_accept",
     "direct_operation_close",
+    "claim_front",
+    "close_lanes",
+    "protected_action_resolve",
+    "approval_consume",
+    "finish_run",
+}
+REQUIRED_BOUNDARY_FAMILIES = {
+    "journal",
+    "native",
+    "checkpoint",
+    "pointer",
+    "approval",
+}
+REQUIRED_BOUNDARY_FLOWS = {
+    "journal": REQUIRED_CRASH_FLOWS,
+    "native": {
+        "candidate_apply",
+        "direct_operation_close",
+        "claim_front",
+        "close_lanes",
+    },
+    "checkpoint": {
+        "start_run_initial_publication",
+        "lane_freeze",
+        "lane_verify",
+        "lane_review_record",
+        "candidate_build",
+        "candidate_apply",
+        "finish_run",
+    },
+    "pointer": {
+        "start_run_initial_publication",
+        "lane_freeze",
+        "lane_verify",
+        "lane_review_record",
+        "candidate_build",
+        "candidate_apply",
+        "finish_run",
+    },
+    "approval": {"approval_consume", "protected_action_resolve"},
 }
 REQUIRED_NATIVE_IO_CRASH_POINTS = {
     (prefix, phase)
@@ -65,6 +111,7 @@ EXACT_FIELDS = {
     "crash-resume-convergence": COMMON_FIELDS
     | {
         "crash_flows",
+        "boundary_families",
         "native_io_crash_points",
         "expected_max_native_replays",
         "expected_terminal_states",
@@ -115,10 +162,25 @@ def test_case_fixtures_declare_machine_checkable_verdicts() -> None:
     assert recovery["expected_resume_status"] in recovery["expected_terminal_states"]
     assert recovery["expected_repeat_status"] in recovery["expected_terminal_states"]
     assert {flow["id"] for flow in recovery["crash_flows"]} == REQUIRED_CRASH_FLOWS
+    assert set(recovery["boundary_families"]) == REQUIRED_BOUNDARY_FAMILIES
+    assert {
+        name: set(family["required_flows"])
+        for name, family in recovery["boundary_families"].items()
+        if set(family) == {"required_flows"}
+    } == REQUIRED_BOUNDARY_FLOWS
     assert all(
         set(flow) == {"id", "scope", "boundary_selector", "crash_points"}
         and flow["scope"]
-        and flow["boundary_selector"] in {"all", "after_handoff_", "after_operation_"}
+        and flow["boundary_selector"]
+        in {
+            "all",
+            "initial_publication",
+            "journal_checkpoint_pointer",
+            "after_handoff_",
+            "after_operation_",
+            "approval",
+            "after_finish_",
+        }
         and flow["crash_points"]
         and all(
             set(point) == {"boundary", "occurrence"} for point in flow["crash_points"]
@@ -137,6 +199,13 @@ def test_case_fixtures_declare_machine_checkable_verdicts() -> None:
         "durable_handoff_result",
     }
     assert all(len(case) >= 2 for case in recovery["recovery_scenarios"])
+
+    consecutive = next(
+        case
+        for case in recovery["recovery_scenarios"]
+        if case["id"] == "consecutive_roots"
+    )
+    assert consecutive["repository_mode"] == "shared"
 
     isolated = json.loads(
         (FIXTURES / "01_isolated_swarm.json").read_text(encoding="utf-8")

@@ -70,7 +70,8 @@
     {
       "id": "consecutive_roots",
       "expected_runs": 2,
-      "expected_status": "success"
+      "expected_status": "success",
+      "repository_mode": "shared"
     },
     {
       "id": "unknown_late_child",
@@ -89,6 +90,117 @@
     }
   ],
   "crash_flows": [
+    {
+      "id": "start_run_initial_publication",
+      "scope": "root start from request allocation through checkpoint-1, root-pointer readback, checkpoint-2, and request-active publication",
+      "crash_points": [
+        {
+          "boundary": "after_request_publication",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_run_directory_create",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_manifest_rename",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 3
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 3
+        },
+        {
+          "boundary": "after_checkpoint_acceptance",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_pointer_publication",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 4
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 4
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 5
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 5
+        },
+        {
+          "boundary": "after_operation_effect",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 6
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 6
+        },
+        {
+          "boundary": "after_pointer_publication",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 7
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 7
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 8
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 8
+        },
+        {
+          "boundary": "after_checkpoint_acceptance",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_pointer_publication",
+          "occurrence": 3
+        },
+        {
+          "boundary": "after_request_publication",
+          "occurrence": 2
+        }
+      ],
+      "boundary_selector": "initial_publication"
+    },
     {
       "id": "lane_freeze",
       "scope": "successful parent freeze of one imported, checkpointed lane",
@@ -225,12 +337,168 @@
       "boundary_selector": "all"
     },
     {
+      "id": "lane_verify",
+      "scope": "successful parent verification of one frozen lane through atomic evidence publication and durable checkpoint publication",
+      "crash_points": [
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_checkpoint_acceptance",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_pointer_publication",
+          "occurrence": 1
+        }
+      ],
+      "boundary_selector": "journal_checkpoint_pointer"
+    },
+    {
+      "id": "lane_review_record",
+      "scope": "successful parent recording of an independent high-risk lane review through durable checkpoint publication",
+      "crash_points": [
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_checkpoint_acceptance",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_pointer_publication",
+          "occurrence": 1
+        }
+      ],
+      "boundary_selector": "journal_checkpoint_pointer"
+    },
+    {
+      "id": "candidate_build",
+      "scope": "successful candidate construction from verified frozen lanes through durable candidate checkpoint publication",
+      "crash_points": [
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 3
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 3
+        },
+        {
+          "boundary": "after_checkpoint_acceptance",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_pointer_publication",
+          "occurrence": 1
+        }
+      ],
+      "boundary_selector": "journal_checkpoint_pointer"
+    },
+    {
+      "id": "candidate_apply",
+      "scope": "successful candidate apply from PREPARED intent through native Git readback and durable checkpoint publication",
+      "crash_points": [
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 3
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 3
+        },
+        {
+          "boundary": "after_checkpoint_acceptance",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_pointer_publication",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 4
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 4
+        },
+        {
+          "boundary": "after_checkpoint_acceptance",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_pointer_publication",
+          "occurrence": 2
+        }
+      ],
+      "boundary_selector": "journal_checkpoint_pointer"
+    },
+    {
       "id": "durable_handoff_launch",
       "scope": "successful parent publication and journaling of one durable handoff launch",
       "crash_points": [
         {
+          "boundary": "after_journal_write",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 1
+        },
+        {
           "boundary": "after_handoff_launch_prepared",
           "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 2
         },
         {
           "boundary": "after_handoff_launch_resolved",
@@ -240,9 +508,64 @@
       "boundary_selector": "after_handoff_"
     },
     {
+      "id": "durable_handoff_accept",
+      "scope": "successful parent acceptance of one immutable durable executor result through guarded tracker readback",
+      "crash_points": [
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_handoff_accept_prepared",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_handoff_accept_resolved",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 3
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 3
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 4
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 4
+        }
+      ],
+      "boundary_selector": "after_handoff_"
+    },
+    {
       "id": "direct_operation_close",
       "scope": "successful parent TRACKER_CLOSE from frozen intent through exact readback",
       "crash_points": [
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 1
+        },
         {
           "boundary": "after_operation_prepared",
           "occurrence": 1
@@ -256,11 +579,242 @@
           "occurrence": 1
         },
         {
+          "boundary": "after_journal_write",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 2
+        },
+        {
           "boundary": "after_operation_resolved",
           "occurrence": 1
         }
       ],
       "boundary_selector": "after_operation_"
+    },
+    {
+      "id": "claim_front",
+      "scope": "successful parent claim from local lease preparation through one native claim and resolved journal",
+      "crash_points": [
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_operation_prepared",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_operation_marker",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_operation_effect",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_operation_resolved",
+          "occurrence": 1
+        }
+      ],
+      "boundary_selector": "after_operation_"
+    },
+    {
+      "id": "close_lanes",
+      "scope": "successful eligible parent lane close through one native close and resolved journal",
+      "crash_points": [
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_operation_prepared",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_operation_marker",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_operation_effect",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_operation_resolved",
+          "occurrence": 1
+        }
+      ],
+      "boundary_selector": "after_operation_"
+    },
+    {
+      "id": "protected_action_resolve",
+      "scope": "successful protected-action receipt resolution publication",
+      "crash_points": [
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 1
+        }
+      ],
+      "boundary_selector": "approval"
+    },
+    {
+      "id": "approval_consume",
+      "scope": "one-shot parent-attested approval consumption from PREPARED through APPLIED resolution",
+      "crash_points": [
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 2
+        }
+      ],
+      "boundary_selector": "approval"
+    },
+    {
+      "id": "finish_run",
+      "scope": "successful root finish through checkpoint, ownership releases, terminal pointer, and terminal request publication",
+      "crash_points": [
+        {
+          "boundary": "after_finish_checkpoint",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_finish_pointer_prepared",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_finish_lane_releases",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_finish_root_release_recorded",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_journal_write",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_journal_fsync",
+          "occurrence": 2
+        },
+        {
+          "boundary": "after_finish_pointer",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_finish_root_lock_release",
+          "occurrence": 1
+        },
+        {
+          "boundary": "after_finish_request_terminal",
+          "occurrence": 1
+        }
+      ],
+      "boundary_selector": "after_finish_"
     }
-  ]
+  ],
+  "boundary_families": {
+    "journal": {
+      "required_flows": [
+        "start_run_initial_publication",
+        "lane_freeze",
+        "lane_verify",
+        "lane_review_record",
+        "candidate_build",
+        "candidate_apply",
+        "durable_handoff_launch",
+        "durable_handoff_accept",
+        "direct_operation_close",
+        "claim_front",
+        "close_lanes",
+        "protected_action_resolve",
+        "approval_consume",
+        "finish_run"
+      ]
+    },
+    "native": {
+      "required_flows": [
+        "candidate_apply",
+        "direct_operation_close",
+        "claim_front",
+        "close_lanes"
+      ]
+    },
+    "checkpoint": {
+      "required_flows": [
+        "start_run_initial_publication",
+        "lane_freeze",
+        "lane_verify",
+        "lane_review_record",
+        "candidate_build",
+        "candidate_apply",
+        "finish_run"
+      ]
+    },
+    "pointer": {
+      "required_flows": [
+        "start_run_initial_publication",
+        "lane_freeze",
+        "lane_verify",
+        "lane_review_record",
+        "candidate_build",
+        "candidate_apply",
+        "finish_run"
+      ]
+    },
+    "approval": {
+      "required_flows": [
+        "protected_action_resolve",
+        "approval_consume"
+      ]
+    }
+  }
 }

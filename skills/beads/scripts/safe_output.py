@@ -171,6 +171,25 @@ def is_sensitive_label(value: str) -> bool:
     return bool(_ASCII_SENSITIVE_LABEL.search(normalized))
 
 
+def _secret_digests(sensitive: SensitiveSet) -> tuple[str, ...]:
+    """Return lowercase SHA-256 hex encodings of configured secrets.
+
+    SHA-256 is defined by FIPS 180-4 section 6.2. A digest of known secret
+    material remains correlatable sensitive data, so output boundaries redact
+    every case-insensitive hexadecimal representation without requiring callers to
+    predict and configure those transforms independently.
+    https://doi.org/10.6028/NIST.FIPS.180-4
+    """
+    return tuple(
+        sorted(
+            {
+                hashlib.sha256(secret.encode("utf-8", "strict")).hexdigest()
+                for secret in sensitive.values
+            }
+        )
+    )
+
+
 # Unicode classification follows the security mechanisms in UTS #39; normalization
 # is classification-only and never changes persisted ordinary text or identities.
 # https://www.unicode.org/reports/tr39/
@@ -187,11 +206,12 @@ def sanitize_value(
             return SanitizedValue(
                 "REDACTION_FAILED", None, 0, "AMBIGUOUS_CREDENTIAL_LABEL"
             )
-        secrets = sorted(set(sensitive.values), key=lambda item: (-len(item), item))
-        if any(not item or len(item.encode("utf-8")) < 8 for item in secrets):
+        if any(not item or len(item.encode("utf-8")) < 8 for item in sensitive.values):
             return SanitizedValue(
                 "REDACTION_FAILED", None, 0, "SENSITIVE_VALUE_AMBIGUOUS"
             )
+        secrets = sorted(set(sensitive.values), key=lambda item: (-len(item), item))
+        digests = _secret_digests(sensitive)
         clean = value
         count = 0
         for secret in secrets:
@@ -199,10 +219,21 @@ def sanitize_value(
             if occurrences:
                 clean = clean.replace(secret, "[REDACTED]")
                 count += occurrences
+        for digest in digests:
+            clean, found = re.subn(
+                re.escape(digest), "[REDACTED]", clean, flags=re.IGNORECASE
+            )
+            count += found
         for pattern in (_PEM, _LABEL, _TOKEN, _URL_AUTH):
             clean, found = pattern.subn("[REDACTED]", clean)
             count += found
-        if any(secret in clean for secret in secrets) or _contains_bad_unicode(clean):
+        if (
+            any(secret in clean for secret in secrets)
+            or any(
+                re.search(re.escape(digest), clean, re.IGNORECASE) for digest in digests
+            )
+            or _contains_bad_unicode(clean)
+        ):
             return SanitizedValue(
                 "REDACTION_FAILED", None, 0, "REDACTION_RESCAN_FAILED"
             )

@@ -38,14 +38,18 @@ def test_run_command_redacts_before_owner_mode_persistence(tmp_path: Path) -> No
     safe = _load()
     os.chmod(tmp_path, 0o700)
     sentinel = "synthetic-secret-value-0123456789"
+    digest = hashlib.sha256(sentinel.encode("utf-8")).hexdigest()
+    mixed_case_digest = "".join(
+        char.upper() if index % 2 else char for index, char in enumerate(digest)
+    )
     stdout_log = tmp_path / "stdout.log"
     stderr_log = tmp_path / "stderr.log"
-    code = "import sys; print(sys.argv[1]); print('ok', file=sys.stderr)"
+    code = "import sys; print(sys.stdin.read(), end=''); print('ok', file=sys.stderr)"
     spec = safe.CommandSpec(
         profile="hermetic",
-        argv=(sys.executable, "-c", code, sentinel),
+        argv=(sys.executable, "-c", code),
         cwd=tmp_path,
-        stdin_bytes=None,
+        stdin_bytes=f"{sentinel}\n{digest}\n{mixed_case_digest}\n".encode(),
         timeout_seconds=10,
         stdout_limit_bytes=1024,
         stderr_limit_bytes=1024,
@@ -60,8 +64,10 @@ def test_run_command_redacts_before_owner_mode_persistence(tmp_path: Path) -> No
         callback=lambda out, err: (out, err),
     )
     assert result.status == "SUCCESS"
-    assert captured == ("[REDACTED]\n", "ok\n")
+    assert captured == ("[REDACTED]\n[REDACTED]\n[REDACTED]\n", "ok\n")
     assert sentinel.encode() not in stdout_log.read_bytes()
+    assert digest.encode() not in stdout_log.read_bytes()
+    assert mixed_case_digest.encode() not in stdout_log.read_bytes()
     assert stat.S_IMODE(stdout_log.stat().st_mode) == 0o600
 
 
