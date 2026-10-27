@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>SkillRanker × Hermes — Architecture Decision Brief</title>
+  <style>
+    :root {
+      --ink: #17201c;
+      --muted: #5d6862;
+      --paper: #f2efe6;
+      --surface: #fffdf7;
+      --surface-2: #f8f5ed;
+      --line: #d5cebe;
+      --line-strong: #9e988b;
+      --green: #176449;
+      --green-soft: #dcece3;
+      --amber: #9b5919;
+      --amber-soft: #f6e7d1;
+      --red: #9d3a34;
+      --red-soft: #f3dcda;
+      --blue: #315b78;
+      --blue-soft: #dfeaf1;
+      --purple: #655184;
+      --purple-soft: #e9e2f1;
+      --shadow: 0 14px 42px rgba(31, 38, 33, .08);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(rgba(255,255,255,.28) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.28) 1px, transparent 1px),
+        var(--paper);
+      background-size: 26px 26px;
+      font-family: var(--sans);
+      line-height: 1.55;
+    }
+    a { color: var(--blue); text-underline-offset: 3px; }
+    a:hover { text-decoration-thickness: 2px; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    .page { width: min(1480px, calc(100% - 56px)); margin: 0 auto; padding: 30px 0 76px; }
+    header {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(28px, 5vw, 60px);
+      color: #fbf8ee;
+      background: #18221d;
+      border: 2px solid #18221d;
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+    header::after {
+      content: "";
+      position: absolute;
+      width: 360px; height: 360px;
+      right: -120px; top: -155px;
+      border: 56px solid rgba(112, 197, 155, .14);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .eyebrow { color: #8ed0ad; letter-spacing: .15em; font-size: .77rem; font-weight: 850; text-transform: uppercase; }
+    h1 { max-width: 940px; margin: 12px 0 16px; font-size: clamp(2.25rem, 5vw, 4.55rem); line-height: 1.05; letter-spacing: -.05em; }
+    .lede { max-width: 920px; margin: 0; color: #d4ddd7; font-size: clamp(1rem, 1.35vw, 1.22rem); }
+    .status-row { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 26px; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 7px 11px; border: 1px solid rgba(255,255,255,.2); border-radius: 999px; color: #ecf1ed; font-size: .8rem; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #7bd3a6; box-shadow: 0 0 0 4px rgba(123,211,166,.14); }
+    nav { position: sticky; top: 8px; z-index: 10; display: flex; gap: 7px; flex-wrap: wrap; margin: 18px 0; padding: 8px; background: rgba(242,239,230,.91); border: 1px solid var(--line); border-radius: 14px; backdrop-filter: blur(14px); }
+    nav a { padding: 7px 10px; color: var(--ink); background: rgba(255,255,255,.7); border: 1px solid var(--line); border-radius: 999px; text-decoration: none; font-size: .79rem; font-weight: 760; }
+    nav a:hover { background: #fff; border-color: var(--line-strong); }
+    section { margin-top: 22px; padding: clamp(22px, 4vw, 38px); background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); }
+    h2 { margin: 0 0 9px; font-size: clamp(1.55rem, 3vw, 2.35rem); line-height: 1.08; letter-spacing: -.035em; }
+    h3 { margin: 0 0 8px; font-size: 1.04rem; line-height: 1.2; }
+    h4 { margin: 0 0 7px; font-size: .84rem; letter-spacing: .07em; text-transform: uppercase; }
+    p { overflow-wrap: anywhere; }
+    .section-intro { max-width: 900px; margin: 0 0 22px; color: var(--muted); }
+    .citation { font-size: .68em; vertical-align: super; font-weight: 800; text-decoration: none; margin-left: 2px; }
+    code { color: #244d69; background: #e7eef2; padding: 2px 5px; border-radius: 5px; font-family: var(--mono); font-size: .86em; overflow-wrap: anywhere; }
+    .verdict {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(250px, .75fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+    .verdict-main { padding: clamp(23px, 4vw, 38px); color: #f9f5e9; background: var(--green); border-radius: 16px; }
+    .verdict-main .label { display: inline-block; padding: 5px 8px; border: 1px solid rgba(255,255,255,.28); border-radius: 999px; font: 750 .72rem var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+    .verdict-main strong { display: block; max-width: 760px; margin-top: 15px; font-size: clamp(1.75rem, 3.5vw, 3.15rem); line-height: 1.03; letter-spacing: -.04em; }
+    .verdict-main p { max-width: 780px; margin: 15px 0 0; color: #d9ede3; }
+    .verdict-side { display: grid; gap: 10px; }
+    .mini-verdict { padding: 17px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface-2); }
+    .mini-verdict b { display: block; margin-bottom: 3px; }
+    .mini-verdict span { color: var(--muted); font-size: .86rem; }
+    .yes { border-left: 5px solid var(--green); }
+    .wait { border-left: 5px solid var(--amber); }
+    .no { border-left: 5px solid var(--red); }
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-top: 18px; }
+    .stat { padding: 16px; border: 1px solid var(--line); border-radius: 13px; background: #faf7ef; }
+    .stat strong { display: block; font-size: clamp(1.5rem, 3vw, 2.5rem); line-height: 1; letter-spacing: -.045em; }
+    .stat span { display: block; margin-top: 7px; color: var(--muted); font-size: .82rem; }
+    .stat.good strong { color: var(--green); }
+    .stat.warn strong { color: var(--amber); }
+    .stat.bad strong { color: var(--red); }
+    .switcher { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 18px; }
+    .switcher button, .filter-btn {
+      cursor: pointer;
+      border: 1px solid var(--line-strong);
+      color: var(--ink);
+      background: #fff;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font: 760 .78rem var(--sans);
+    }
+    .switcher button[aria-pressed="true"], .filter-btn[aria-pressed="true"] { color: #fff; background: var(--ink); border-color: var(--ink); }
+    .architecture-shell { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: stretch; }
+    .diagram-panel { min-width: 0; padding: 14px; border: 1px solid var(--line); border-radius: 15px; background: #faf8f1; overflow: hidden; }
+    .diagram-panel svg { display: block; width: 100%; height: auto; min-width: 0; }
+    .diagram-note { padding: 18px; border: 1px solid #b8c8d2; border-radius: 15px; background: var(--blue-soft); }
+    .diagram-note p { color: #304b5c; font-size: .9rem; }
+    .diagram-note ul { columns: 2; column-gap: 34px; padding-left: 20px; margin-bottom: 0; }
+    .diagram-note li { margin: 7px 0; font-size: .87rem; }
+    .arch-layer { transition: opacity .2s ease; }
+    .arch-muted { opacity: .13; }
+    .comparison-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 15px; }
+    table { width: 100%; border-collapse: collapse; min-width: 920px; font-size: .88rem; }
+    th, td { padding: 12px 13px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+    th { position: sticky; top: 0; color: var(--muted); background: #f6f2e8; letter-spacing: .06em; text-transform: uppercase; font-size: .68rem; }
+    tr:last-child td { border-bottom: 0; }
+    td:first-child { font-weight: 780; }
+    .hermes-col { background: rgba(220,236,227,.35); }
+    .ranker-col { background: rgba(243,220,218,.22); }
+    .pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border: 1px solid; border-radius: 999px; font-size: .72rem; font-weight: 820; white-space: nowrap; }
+    .pill.good { color: var(--green); background: var(--green-soft); border-color: #a8cdbb; }
+    .pill.warn { color: var(--amber); background: var(--amber-soft); border-color: #dfbf93; }
+    .pill.bad { color: var(--red); background: var(--red-soft); border-color: #d9aaa6; }
+    .pill.info { color: var(--blue); background: var(--blue-soft); border-color: #b5cad8; }
+    .use-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 13px; }
+    .use-card { min-width: 0; padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: #fbf8f0; }
+    .use-card.recommended { border-top: 6px solid var(--green); }
+    .use-card.conditional { border-top: 6px solid var(--amber); }
+    .use-card.niche { border-top: 6px solid var(--purple); }
+    .use-card ul { padding-left: 19px; margin: 12px 0 0; }
+    .use-card li { margin: 7px 0; font-size: .88rem; }
+    .options-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 15px; }
+    .option-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+    .option { min-width: 0; display: flex; flex-direction: column; gap: 9px; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: #fbf9f2; }
+    .option[data-status="adopt"] { border-top: 6px solid var(--green); }
+    .option[data-status="gate"] { border-top: 6px solid var(--amber); }
+    .option[data-status="reject"] { border-top: 6px solid var(--red); }
+    .option.hidden { display: none; }
+    .option .why { color: var(--muted); font-size: .85rem; }
+    .option dl { display: grid; grid-template-columns: 88px minmax(0,1fr); gap: 5px 8px; margin: 4px 0; font-size: .79rem; }
+    .option dt { color: var(--muted); }
+    .option dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
+    .option .recommendation { margin-top: auto; padding-top: 10px; border-top: 1px solid var(--line); font-weight: 800; }
+    .risk-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(280px, .9fr); gap: 15px; }
+    .blocker { padding: 20px; border: 1px solid #d8aaa5; border-left: 7px solid var(--red); border-radius: 14px; background: var(--red-soft); }
+    .blocker + .blocker { margin-top: 12px; }
+    .blocker h3 { color: #742b27; }
+    .blocker p { margin-bottom: 0; color: #623c39; }
+    .not-advice { font: 750 .72rem var(--mono); letter-spacing: .04em; text-transform: uppercase; }
+    .gate-list { margin: 0; padding: 0; list-style: none; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+    .gate-list li { display: grid; grid-template-columns: 26px minmax(0,1fr); gap: 10px; padding: 13px 15px; background: #fbf8f0; border-bottom: 1px solid var(--line); }
+    .gate-list li:last-child { border-bottom: 0; }
+    .gate-icon { color: var(--amber); font-weight: 900; }
+    .gate-list b { display: block; }
+    .gate-list span { color: var(--muted); font-size: .82rem; }
+    .pipeline { display: grid; grid-template-columns: repeat(9, minmax(0,1fr)); gap: 7px; align-items: stretch; margin-top: 18px; }
+    .step { min-width: 0; min-height: 100px; display: grid; place-content: center; padding: 11px 7px; border: 1px solid var(--line); border-radius: 11px; text-align: center; background: var(--surface-2); font-weight: 780; font-size: .78rem; }
+    .step small { display: block; margin-top: 5px; color: var(--muted); font-weight: 500; }
+    .step.det { border-color: #a9cdbb; background: var(--green-soft); }
+    .step.local { border-color: #b8cbd8; background: var(--blue-soft); }
+    .step.remote { border-color: #dfbf93; background: var(--amber-soft); border-style: dashed; }
+    .step.final { color: #fff; border-color: var(--ink); background: var(--ink); }
+    .arrow { display: grid; place-items: center; color: var(--blue); font-size: 1.3rem; font-weight: 900; }
+    .benchmark-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 15px; }
+    .treatments { display: grid; gap: 8px; }
+    .treatment { display: grid; grid-template-columns: 34px minmax(0,1fr) auto; gap: 10px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #faf7ef; }
+    .treatment .num { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 8px; color: #fff; background: var(--blue); font: 800 .75rem var(--mono); }
+    .treatment b { display: block; font-family: var(--mono); font-size: .82rem; overflow-wrap: anywhere; }
+    .treatment span { color: var(--muted); font-size: .78rem; }
+    .hard-gates { padding: 18px; color: #f8f4e9; background: var(--ink); border-radius: 14px; }
+    .hard-gates ul { margin: 10px 0 0; padding-left: 20px; }
+    .hard-gates li { margin: 7px 0; color: #dce2dd; font-size: .86rem; }
+    .hard-gates strong { color: #8cd2ad; }
+    .lessons { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
+    .lesson { min-width: 0; padding: 18px; border: 1px solid var(--line); border-radius: 13px; background: #faf7ef; }
+    .lesson .icon { width: 32px; height: 32px; display: grid; place-items: center; margin-bottom: 10px; border-radius: 9px; color: #fff; background: var(--blue); font-weight: 900; }
+    .lesson p { margin: 0; color: var(--muted); font-size: .84rem; }
+    .source-list { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 9px; margin: 16px 0 0; padding: 0; list-style: none; }
+    .source-list li { min-width: 0; padding: 12px 14px; border: 1px solid var(--line); border-radius: 11px; background: #faf8f2; font-size: .81rem; overflow-wrap: anywhere; }
+    .source-list b { display: inline-grid; place-items: center; width: 25px; height: 25px; margin-right: 7px; color: #fff; background: var(--blue); border-radius: 7px; font-family: var(--mono); }
+    .source-list a { font-weight: 700; }
+    .local-evidence { margin-top: 18px; padding: 15px; border-left: 5px solid var(--blue); background: var(--blue-soft); border-radius: 11px; }
+    .local-evidence ul { columns: 2; column-gap: 28px; margin-bottom: 0; padding-left: 19px; }
+    .local-evidence li { margin: 5px 0; break-inside: avoid; font: .78rem var(--mono); overflow-wrap: anywhere; }
+    footer { margin-top: 18px; padding: 16px 4px; color: var(--muted); font-size: .78rem; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+    @media (max-width: 1120px) {
+      .option-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .lessons { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .pipeline { grid-template-columns: 1fr 34px 1fr 34px 1fr; }
+      .pipeline .step:nth-of-type(n+6), .pipeline .arrow:nth-of-type(n+6) { margin-top: 2px; }
+    }
+    @media (max-width: 840px) {
+      .page { width: min(100% - 22px, 1480px); padding-top: 11px; }
+      nav { position: static; }
+      .verdict, .architecture-shell, .risk-layout, .benchmark-grid { grid-template-columns: 1fr; }
+      .diagram-note ul { columns: 1; }
+      .stats, .use-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .source-list { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      header, section { border-radius: 14px; }
+      h1 { font-size: 2.1rem; line-height: 1.07; }
+      .stats, .use-grid, .option-grid, .lessons { grid-template-columns: 1fr; }
+      .local-evidence ul { columns: 1; }
+      .pipeline { grid-template-columns: 1fr; }
+      .pipeline .arrow { min-height: 28px; transform: rotate(90deg); }
+      .treatment { grid-template-columns: 34px minmax(0,1fr); }
+      .treatment > .pill { grid-column: 2; justify-self: start; }
+    }
+    @media print {
+      body { background: #fff; }
+      .page { width: 100%; }
+      header, section { box-shadow: none; break-inside: avoid; }
+      nav, .switcher, .options-top .switcher { display: none; }
+      .option.hidden { display: flex; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">Architecture decision brief · Hermes skill routing</div>
+      <h1>Borrow the guardrails.<br>Do not adopt the router.</h1>
+      <p class="lede">SkillRanker has several sharp defensive ideas, but its TypeSafe-first, two-call architecture conflicts with the local-first Hermes router we are designing. The right move is to preserve Hermes, import a few independently expressed contracts, and gate any Jev experiment behind written permission and a private benchmark.</p>
+      <div class="status-row">
+        <span class="hero-badge"><span class="dot"></span> Recommendation: ideas-only adoption</span>
+        <span class="hero-badge">SkillRanker runtime: no-go</span>
+        <span class="hero-badge">Native Jev lane: permission-gated</span>
+        <span class="hero-badge">Research snapshot: 2026-09-19</span>
+      </div>
+    </header>
+
+    <nav aria-label="Brief sections">
+      <a href="#decision">Decision</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#comparison">Comparison</a>
+      <a href="#use-cases">Use cases</a>
+      <a href="#options">Options</a>
+      <a href="#gates">Legal gates</a>
+      <a href="#experiment">Experiment</a>
+      <a href="#lessons">What to borrow</a>
+      <a href="#sources">Sources</a>
+    </nav>
+
+    <section id="decision">
+      <div class="verdict">
+        <article class="verdict-main">
+          <span class="label">The call</span>
+          <strong>Keep Hermes’s hybrid router. Use SkillRanker as a design donor, not a dependency.</strong>
+          <p>A future Jev integration should be a narrow, one-request ambiguity backend over two to five sanitized candidates—never a replacement for deterministic routes, local retrieval, policy authority, conflict checks, multi-skill selection, receipts, or calibration.</p>
+        </article>
+        <aside class="verdict-side" aria-label="Decision summary">
+          <div class="mini-verdict yes"><b>Adopt now</b><span>Opaque handles, exact response validation, layered abstention, bounded outputs, capability discovery.</span></div>
+          <div class="mini-verdict wait"><b>Evaluate later</b><span>A native Jev ambiguity backend—only after written authorization and on synthetic data first.</span></div>
+          <div class="mini-verdict no"><b>Reject</b><span>Full replacement, vendoring, required subprocess integration, full-body disclosure, two calls per ordinary turn.</span></div>
+        </aside>
+      </div>
+      <div class="stats" aria-label="Key architectural bounds">
+        <div class="stat good"><strong>0</strong><span>Provider calls for exact, policy, high-confidence, and no-evidence routes</span></div>
+        <div class="stat good"><strong>≤ 1</strong><span>Provider request on a genuinely ambiguous Hermes turn</span></div>
+        <div class="stat good"><strong>2–5</strong><span>Sanitized candidates exposed to an optional classifier</span></div>
+        <div class="stat bad"><strong>2 / 254</strong><span>SkillRanker’s normal remote stages / maximum wide Choice candidates<a class="citation" href="#src-1">[1]</a></span></div>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <h2>The systems share a problem, not an architecture</h2>
+      <p class="section-intro">Both systems want to stop an agent from guessing from a thin skill index. SkillRanker asks Jev to do broad semantic ranking, then a detailed rerank. Hermes first resolves authority and local evidence, reserving one provider call for a small gray zone.</p>
+      <div class="switcher" role="group" aria-label="Architecture diagram mode">
+        <button type="button" data-arch-mode="both" aria-pressed="true">Compare both</button>
+        <button type="button" data-arch-mode="ranker" aria-pressed="false">SkillRanker focus</button>
+        <button type="button" data-arch-mode="hermes" aria-pressed="false">Hermes focus</button>
+      </div>
+      <div class="architecture-shell">
+        <figure class="diagram-panel" aria-labelledby="architecture-caption">
+          <svg viewBox="0 0 1040 620" role="img" aria-labelledby="arch-title arch-desc">
+            <title id="arch-title">SkillRanker and Hermes skill-routing flows</title>
+            <desc id="arch-desc">The upper flow shows SkillRanker using two broad TypeSafe calls. The lower flow shows Hermes using deterministic routes, local retrieval, and at most one bounded ambiguity call.</desc>
+            <defs>
+              <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#315b78"/></marker>
+              <marker id="arrow-amber" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#9b5919"/></marker>
+              <marker id="arrow-green" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#176449"/></marker>
+            </defs>
+
+            <g id="skillranker-layer" class="arch-layer">
+              <title>SkillRanker two-stage remote ranking</title>
+              <rect x="18" y="18" width="1004" height="252" rx="18" fill="#f6e7d1" stroke="#9b5919" stroke-width="2"/>
+              <text x="42" y="51" fill="#6d3d11" font-family="system-ui" font-size="22" font-weight="800">SkillRanker · provider-first advisory pipeline</text>
+              <text x="42" y="75" fill="#78583a" font-family="system-ui" font-size="13">Explicit requests bypass the network; ordinary implicit ranking normally uses two TypeSafe stages.</text>
+              <g id="sr-context"><title>Recent normalized conversation context</title><rect x="42" y="105" width="138" height="88" rx="11" fill="#fffaf1" stroke="#9b5919"/><text x="111" y="138" text-anchor="middle" fill="#3d2a17" font-size="14" font-family="system-ui" font-weight="700">Recent context</text><text x="111" y="162" text-anchor="middle" fill="#78583a" font-size="11" font-family="system-ui">normalized messages</text></g>
+              <line x1="180" y1="149" x2="228" y2="149" stroke="#9b5919" stroke-width="2" marker-end="url(#arrow-amber)"/>
+              <g id="sr-wide"><title>Wide TypeSafe Choice and skill-needed gate</title><rect x="240" y="95" width="182" height="108" rx="11" fill="#fff4de" stroke="#9b5919" stroke-width="2"/><text x="331" y="127" text-anchor="middle" fill="#6d3d11" font-size="14" font-family="system-ui" font-weight="800">Jev call 1</text><text x="331" y="151" text-anchor="middle" fill="#78583a" font-size="11" font-family="system-ui">need gate + wide Choice</text><text x="331" y="174" text-anchor="middle" fill="#78583a" font-size="11" font-family="system-ui">up to 254 summaries</text></g>
+              <line x1="422" y1="149" x2="470" y2="149" stroke="#9b5919" stroke-width="2" marker-end="url(#arrow-amber)"/>
+              <g id="sr-bodies"><title>Shortlisted skill bodies are read</title><rect x="482" y="105" width="146" height="88" rx="11" fill="#fffaf1" stroke="#9b5919"/><text x="555" y="138" text-anchor="middle" fill="#3d2a17" font-size="14" font-family="system-ui" font-weight="700">Read shortlist</text><text x="555" y="162" text-anchor="middle" fill="#78583a" font-size="11" font-family="system-ui">body excerpts</text></g>
+              <line x1="628" y1="149" x2="676" y2="149" stroke="#9b5919" stroke-width="2" marker-end="url(#arrow-amber)"/>
+              <g id="sr-rerank"><title>Per-candidate fit rerank against NONE</title><rect x="688" y="95" width="168" height="108" rx="11" fill="#fff4de" stroke="#9b5919" stroke-width="2"/><text x="772" y="127" text-anchor="middle" fill="#6d3d11" font-size="14" font-family="system-ui" font-weight="800">Jev call 2</text><text x="772" y="151" text-anchor="middle" fill="#78583a" font-size="11" font-family="system-ui">candidate vs NONE</text><text x="772" y="174" text-anchor="middle" fill="#78583a" font-size="11" font-family="system-ui">up to 32 candidates</text></g>
+              <line x1="856" y1="149" x2="900" y2="149" stroke="#9b5919" stroke-width="2" marker-end="url(#arrow-amber)"/>
+              <g id="sr-output"><title>Ranked advisory output</title><rect x="912" y="105" width="86" height="88" rx="11" fill="#9b5919" stroke="#75400f"/><text x="955" y="138" text-anchor="middle" fill="#fff" font-size="13" font-family="system-ui" font-weight="800">Ranked</text><text x="955" y="159" text-anchor="middle" fill="#fff1de" font-size="10" font-family="system-ui">advice</text></g>
+              <text x="42" y="235" fill="#6d3d11" font-size="12" font-family="system-ui" font-weight="700">Strong abstention and validation; larger disclosure surface and provider dependence.</text>
+            </g>
+
+            <g id="hermes-layer" class="arch-layer">
+              <title>Hermes deterministic and local-first hybrid routing</title>
+              <rect x="18" y="294" width="1004" height="308" rx="18" fill="#dcece3" stroke="#176449" stroke-width="2"/>
+              <text x="42" y="327" fill="#124a37" font-family="system-ui" font-size="22" font-weight="800">Hermes · authority-first hybrid router</text>
+              <text x="42" y="351" fill="#3d6655" font-family="system-ui" font-size="13">Model-free routes first; local retrieval second; one optional classifier call only when the evidence is genuinely ambiguous.</text>
+              <g id="h-input"><title>Current-turn intent and trusted context booleans</title><rect x="42" y="388" width="122" height="92" rx="11" fill="#f8fffb" stroke="#176449"/><text x="103" y="422" text-anchor="middle" fill="#153b2e" font-size="14" font-family="system-ui" font-weight="700">Turn intent</text><text x="103" y="446" text-anchor="middle" fill="#3d6655" font-size="11" font-family="system-ui">bounded context</text></g>
+              <line x1="164" y1="434" x2="203" y2="434" stroke="#176449" stroke-width="2" marker-end="url(#arrow-green)"/>
+              <g id="h-deterministic"><title>Attachments, exact invocation, and trusted project policy</title><rect x="215" y="378" width="158" height="112" rx="11" fill="#eef9f3" stroke="#176449" stroke-width="2"/><text x="294" y="410" text-anchor="middle" fill="#124a37" font-size="14" font-family="system-ui" font-weight="800">Deterministic</text><text x="294" y="435" text-anchor="middle" fill="#3d6655" font-size="11" font-family="system-ui">exact + policy routes</text><text x="294" y="459" text-anchor="middle" fill="#176449" font-size="11" font-family="system-ui" font-weight="700">0 provider calls</text></g>
+              <line x1="373" y1="434" x2="412" y2="434" stroke="#315b78" stroke-width="2" marker-end="url(#arrow-blue)"/>
+              <g id="h-retrieval"><title>Mandatory BM25 and optional local embeddings</title><rect x="424" y="378" width="158" height="112" rx="11" fill="#e8f1f6" stroke="#315b78" stroke-width="2"/><text x="503" y="410" text-anchor="middle" fill="#25475e" font-size="14" font-family="system-ui" font-weight="800">Local retrieval</text><text x="503" y="435" text-anchor="middle" fill="#46667a" font-size="11" font-family="system-ui">BM25 + optional vector</text><text x="503" y="459" text-anchor="middle" fill="#315b78" font-size="11" font-family="system-ui" font-weight="700">bounded metadata</text></g>
+              <line x1="582" y1="434" x2="621" y2="434" stroke="#315b78" stroke-width="2" marker-end="url(#arrow-blue)"/>
+              <g id="h-ambiguity"><title>Frozen ambiguity predicate decides whether a classifier is allowed</title><path d="M633 434 L706 373 L779 434 L706 495 Z" fill="#fff3de" stroke="#9b5919" stroke-width="2"/><text x="706" y="419" text-anchor="middle" fill="#6d3d11" font-size="13" font-family="system-ui" font-weight="800">Actually</text><text x="706" y="439" text-anchor="middle" fill="#6d3d11" font-size="13" font-family="system-ui" font-weight="800">ambiguous?</text><text x="706" y="460" text-anchor="middle" fill="#9b5919" font-size="10" font-family="system-ui">2–5 candidates</text></g>
+              <line x1="779" y1="434" x2="818" y2="434" stroke="#9b5919" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrow-amber)"/>
+              <g id="h-jev"><title>Optional one-request classifier backend after permission</title><rect x="830" y="378" width="158" height="112" rx="11" fill="#fff3de" stroke="#9b5919" stroke-width="2" stroke-dasharray="7 5"/><text x="909" y="408" text-anchor="middle" fill="#6d3d11" font-size="14" font-family="system-ui" font-weight="800">Optional Jev</text><text x="909" y="432" text-anchor="middle" fill="#78583a" font-size="11" font-family="system-ui">one pinned request</text><text x="909" y="454" text-anchor="middle" fill="#78583a" font-size="11" font-family="system-ui">opaque IDs only</text><text x="909" y="475" text-anchor="middle" fill="#9b5919" font-size="10" font-family="system-ui" font-weight="700">permission-gated</text></g>
+              <path d="M706 495 L706 542 L422 542" fill="none" stroke="#176449" stroke-width="2" marker-end="url(#arrow-green)"/>
+              <text x="718" y="525" fill="#176449" font-size="11" font-family="system-ui" font-weight="700">no evidence / failure → 0 skills</text>
+              <path d="M909 490 L909 559 L540 559" fill="none" stroke="#176449" stroke-width="2" marker-end="url(#arrow-green)"/>
+              <g id="h-output"><title>Hermes selects zero to three compatible skills and emits a content-free receipt</title><rect x="276" y="520" width="250" height="61" rx="11" fill="#176449" stroke="#104c36"/><text x="401" y="546" text-anchor="middle" fill="#fff" font-size="14" font-family="system-ui" font-weight="800">Select 0–3 compatible skills</text><text x="401" y="566" text-anchor="middle" fill="#dff2e8" font-size="10" font-family="system-ui">guarded load + content-free receipt</text></g>
+            </g>
+          </svg>
+          <figcaption id="architecture-caption" class="sr-only">Comparison of SkillRanker's provider-first flow and Hermes's authority-first hybrid flow.</figcaption>
+        </figure>
+        <aside class="diagram-note">
+          <h3>Why Hermes is the better foundation</h3>
+          <p>The model is not allowed to overrule known authority or compensate for missing evidence by guessing.</p>
+          <ul>
+            <li><strong>Exact means exact:</strong> attachments, explicit IDs, and trusted policy bypass classification.</li>
+            <li><strong>Local evidence is mandatory:</strong> BM25 always runs; embeddings are optional and local.</li>
+            <li><strong>Ambiguity is a predicate:</strong> not a synonym for “a model might help.”</li>
+            <li><strong>Composition matters:</strong> Hermes can select up to three complementary skills and reject conflicts.</li>
+            <li><strong>Failure is restraint:</strong> timeout, malformed output, or unknown cost does not broaden routing.</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section id="comparison">
+      <h2>Concrete behavior comparison</h2>
+      <p class="section-intro">SkillRanker’s engineering discipline is real. The mismatch is that its model sits at the center of implicit routing, while Hermes treats a model as an optional tie-breaker.</p>
+      <div class="comparison-wrap">
+        <table>
+          <thead><tr><th>Decision concern</th><th class="hermes-col">Hermes hybrid design</th><th class="ranker-col">SkillRanker reviewed snapshot</th><th>Implication</th></tr></thead>
+          <tbody>
+            <tr><td>Primary role</td><td class="hermes-col">Native pre-turn router and guarded loader</td><td class="ranker-col">Standalone Rust advisory CLI/library</td><td><span class="pill info">Different layer</span></td></tr>
+            <tr><td>Deterministic routes</td><td class="hermes-col">Attachments, exact ID/alias, trusted operation-scoped policy</td><td class="ranker-col">Explicit skill references</td><td>Hermes has broader authority semantics.</td></tr>
+            <tr><td>Retrieval</td><td class="hermes-col">Mandatory local BM25; optional local vectors; RRF</td><td class="ranker-col">Wide Jev Choice; local reduction mainly beyond the 254-option provider limit</td><td><span class="pill good">Hermes wins locality</span></td></tr>
+            <tr><td>Provider calls</td><td class="hermes-col">Zero normally; at most one only for frozen ambiguity</td><td class="ranker-col">Normally two TypeSafe calls for fresh implicit ranking<a class="citation" href="#src-1">[1]</a></td><td><span class="pill good">Lower critical-path risk</span></td></tr>
+            <tr><td>Remote candidates</td><td class="hermes-col">At most five sanitized candidates</td><td class="ranker-col">Up to 254 wide, then up to 32 detailed</td><td>Different privacy and latency budget.</td></tr>
+            <tr><td>Skill content sent</td><td class="hermes-col">No bodies, linked files, paths, repository content, or arbitrary frontmatter</td><td class="ranker-col">Recent context, summaries, and shortlisted body excerpts</td><td><span class="pill bad">Boundary mismatch</span></td></tr>
+            <tr><td>Selection semantics</td><td class="hermes-col">Zero to three complementary, non-conflicting skills</td><td class="ranker-col">Ranked results; normal suggestion flow chooses at most one</td><td>Skill composition is not equivalent.</td></tr>
+            <tr><td>Policy authority</td><td class="hermes-col">Trusted project policy plus deterministic operation predicates</td><td class="ranker-col">No equivalent repository-policy authority model</td><td><span class="pill bad">Would regress policy</span></td></tr>
+            <tr><td>Feedback/calibration</td><td class="hermes-col">Designed as a first-class outcome loop</td><td class="ranker-col">Feedback, calibration, rank, and hook capabilities were marked planned in the reviewed registry<a class="citation" href="#src-3">[3]</a></td><td>Do not buy roadmap as runtime.</td></tr>
+            <tr><td>Packaging</td><td class="hermes-col">Python/Hermes-native target</td><td class="ranker-col">Rust 2024, Rust 1.95, pinned nightly, unpublished crate, Git dependencies<a class="citation" href="#src-4">[4]</a></td><td><span class="pill warn">Operational drag</span></td></tr>
+            <tr><td>Failure states</td><td class="hermes-col">No skill, clarification, typed unavailable/error; deterministic results survive</td><td class="ranker-col">Strong discriminated statuses and bounded validation</td><td><span class="pill good">Pattern worth borrowing</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="use-cases">
+      <h2>Ideal use cases</h2>
+      <p class="section-intro">There is a legitimate home for each shape. The mistake would be treating a TypeSafe-first advisory router as a drop-in implementation of Hermes’s policy-aware runtime.</p>
+      <div class="use-grid">
+        <article class="use-card recommended">
+          <h3>Hermes hybrid router</h3>
+          <span class="pill good">Default foundation</span>
+          <ul>
+            <li>Default routing inside Hermes.</li>
+            <li>Exact requests and authoritative project policy.</li>
+            <li>Privacy-sensitive repositories and offline/degraded operation.</li>
+            <li>Zero-to-three skill composition with conflicts.</li>
+            <li>Auditable receipts and outcome calibration.</li>
+          </ul>
+        </article>
+        <article class="use-card conditional">
+          <h3>Native Jev ambiguity lane</h3>
+          <span class="pill warn">Conditional experiment</span>
+          <ul>
+            <li>Two to five genuinely plausible candidates.</li>
+            <li>One request with a Choice plus independent fit questions.</li>
+            <li>Opaque IDs and approved metadata only.</li>
+            <li>Private synthetic benchmark before any canary.</li>
+            <li>Explicit opt-in; never enabled by key presence.</li>
+          </ul>
+        </article>
+        <article class="use-card niche">
+          <h3>SkillRanker</h3>
+          <span class="pill info">Standalone niche</span>
+          <ul>
+            <li>TypeSafe-first agents with explicit disclosure consent.</li>
+            <li>Manual or shadow ranking over a large roster.</li>
+            <li>Single-skill recommendation where two calls are acceptable.</li>
+            <li>Research on wide semantic ranking and near-miss rejection.</li>
+            <li>Not Hermes’s default turn-critical path.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="options">
+      <div class="options-top">
+        <div>
+          <h2>Integration options</h2>
+          <p class="section-intro" style="margin-bottom:0">One option is clearly best now; one may become useful later. The rest add complexity while weakening the architecture.</p>
+        </div>
+        <div class="switcher" role="group" aria-label="Filter integration options" style="margin:0">
+          <button class="filter-btn" type="button" data-filter="all" aria-pressed="true">All <span id="visible-count">6</span></button>
+          <button class="filter-btn" type="button" data-filter="adopt" aria-pressed="false">Adopt</button>
+          <button class="filter-btn" type="button" data-filter="gate" aria-pressed="false">Gated</button>
+          <button class="filter-btn" type="button" data-filter="reject" aria-pressed="false">Rejected</button>
+        </div>
+      </div>
+      <div class="option-grid" id="option-grid">
+        <article class="option" data-status="adopt">
+          <div><span class="pill good">Adopt now</span></div>
+          <h3>Ideas-only adoption</h3>
+          <p class="why">Independently express the strongest defensive contracts inside Hermes without importing the runtime.</p>
+          <dl><dt>Compatibility</dt><dd>High</dd><dt>Disclosure</dt><dd>None added</dd><dt>Dependency</dt><dd>None</dd><dt>Legal exposure</dt><dd>Lowest; still avoid copying implementation</dd></dl>
+          <div class="recommendation">Best immediate choice.</div>
+        </article>
+        <article class="option" data-status="gate">
+          <div><span class="pill warn">Permission-gated</span></div>
+          <h3>Native Jev ambiguity backend</h3>
+          <p class="why">Use the documented TypeSafe primitive only where Hermes already proved local ambiguity.</p>
+          <dl><dt>Compatibility</dt><dd>High</dd><dt>Disclosure</dt><dd>Small, controlled</dd><dt>Dependency</dt><dd>TypeSafe availability</dd><dt>Calls</dt><dd>Exactly one</dd></dl>
+          <div class="recommendation">Preferred experiment after written terms clearance.</div>
+        </article>
+        <article class="option" data-status="gate">
+          <div><span class="pill warn">Research only</span></div>
+          <h3>SkillRanker shadow comparator</h3>
+          <p class="why">A black-box benchmark could test whether wide ranking finds candidates local retrieval misses.</p>
+          <dl><dt>Compatibility</dt><dd>Medium</dd><dt>Disclosure</dt><dd>Large</dd><dt>Dependency</dt><dd>Binary + TypeSafe</dd><dt>Effect</dt><dd>Never controls selection</dd></dl>
+          <div class="recommendation">Only with separate author and provider permission.</div>
+        </article>
+        <article class="option" data-status="reject">
+          <div><span class="pill bad">Reject</span></div>
+          <h3>Required subprocess adapter</h3>
+          <p class="why">Adds process startup, binary discovery, schema translation, duplicate budgets, and two remote stages.</p>
+          <dl><dt>Compatibility</dt><dd>Low–medium</dd><dt>Disclosure</dt><dd>Large</dd><dt>Dependency</dt><dd>High</dd><dt>Failure modes</dt><dd>Duplicated</dd></dl>
+          <div class="recommendation">Wrong default boundary.</div>
+        </article>
+        <article class="option" data-status="reject">
+          <div><span class="pill bad">Reject</span></div>
+          <h3>Vendored Rust library</h3>
+          <p class="why">Absorbs nightly/toolchain/Git dependency risk and creates a large derivative that still needs architectural surgery.</p>
+          <dl><dt>Compatibility</dt><dd>Low</dd><dt>Packaging</dt><dd>High burden</dd><dt>License risk</dt><dd>Highest</dd><dt>Maintainability</dt><dd>Poor</dd></dl>
+          <div class="recommendation">Maximum coupling, minimum leverage.</div>
+        </article>
+        <article class="option" data-status="reject">
+          <div><span class="pill bad">Reject</span></div>
+          <h3>Full replacement</h3>
+          <p class="why">Deletes Hermes’s local retrieval, policy authority, provider boundary, multi-skill semantics, and feedback architecture.</p>
+          <dl><dt>Compatibility</dt><dd>Low</dd><dt>Privacy</dt><dd>Regression</dd><dt>Latency</dt><dd>Regression</dd><dt>Determinism</dt><dd>Regression</dd></dl>
+          <div class="recommendation">Solves the wrong system.</div>
+        </article>
+      </div>
+    </section>
+
+    <section id="gates">
+      <h2>The immediate blocker is permission, not engineering</h2>
+      <p class="section-intro"><span class="not-advice">Engineering risk assessment · not legal advice.</span> Possessing a TypeSafe API key does not authorize SkillRanker use or a third-party Hermes integration.</p>
+      <div class="risk-layout">
+        <div>
+          <article class="blocker">
+            <h3>SkillRanker license rider</h3>
+            <p>The reviewed license withholds rights from OpenAI, Anthropic, affiliates, and people or entities acting for their benefit. Its definition of “use” expressly includes analysis, execution, testing, benchmarking, indexing, and incorporation.<a class="citation" href="#src-2">[2]</a> In this OpenAI-hosted agent context, that is a hard stop absent explicit written permission.</p>
+          </article>
+          <article class="blocker">
+            <h3>TypeSafe preview terms</h3>
+            <p>The current public terms limit API use to evaluation, prohibit providing products or services to third parties, prohibit development of similar or competing products, and prohibit publishing benchmarks or performance information.<a class="citation" href="#src-5">[5]</a> A production Hermes backend and a public comparison both require written clarification or amended terms.</p>
+          </article>
+          <article class="blocker">
+            <h3>Privacy is not zero retention</h3>
+            <p>TypeSafe says it does not train or fine-tune models on input, but its policy permits collecting prompts, processing and improving services, disclosure to service providers, and retention for as long as reasonably necessary.<a class="citation" href="#src-6">[6]</a> Start with synthetic prompts even after evaluation permission is obtained.</p>
+          </article>
+        </div>
+        <ul class="gate-list" aria-label="Required written clearances">
+          <li><span class="gate-icon">□</span><div><b>Identity and scope</b><span>Name the user/entity and the OpenAI-hosted agent context.</span></div></li>
+          <li><span class="gate-icon">□</span><div><b>Private evaluation</b><span>Allow synthetic benchmark calls and internal result analysis.</span></div></li>
+          <li><span class="gate-icon">□</span><div><b>Third-party integration</b><span>Allow an optional Hermes backend distributed to users.</span></div></li>
+          <li><span class="gate-icon">□</span><div><b>Benchmark reporting</b><span>Clarify what may be published and under what review.</span></div></li>
+          <li><span class="gate-icon">□</span><div><b>Retention and deletion</b><span>Document storage, service providers, deletion, and security.</span></div></li>
+          <li><span class="gate-icon">□</span><div><b>Model stability</b><span>Provide a versioned model and support expectations.</span></div></li>
+          <li><span class="gate-icon">□</span><div><b>Separate permissions</b><span>SkillRanker execution rights and TypeSafe API rights are distinct.</span></div></li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="experiment">
+      <h2>If clearance arrives: test one narrow hypothesis</h2>
+      <p class="section-intro">The hypothesis is not “Jev can rank skills.” TypeSafe already publishes evidence that a two-call suggestion can reduce wrong and needless loads on a synthetic Hermes benchmark.<a class="citation" href="#src-8">[8]</a> The useful question is whether one sanitized Jev call improves only the ambiguous cases that Hermes local retrieval cannot confidently resolve.</p>
+      <div class="pipeline" aria-label="Proposed permission-gated Jev experiment flow">
+        <div class="step det">Exact + policy<small>always deterministic</small></div><div class="arrow">→</div>
+        <div class="step local">Local retrieval<small>BM25 + vectors</small></div><div class="arrow">→</div>
+        <div class="step local">Ambiguity gate<small>frozen predicate</small></div><div class="arrow">→</div>
+        <div class="step remote">One Jev call<small>2–5 opaque IDs</small></div><div class="arrow">→</div>
+        <div class="step final">Hermes decides<small>0–3 compatible</small></div>
+      </div>
+      <div class="benchmark-grid" style="margin-top:20px">
+        <div class="treatments">
+          <h3>Five frozen treatments</h3>
+          <div class="treatment"><span class="num">01</span><div><b>legacy_57</b><span>Current truncated-index control</span></div><span class="pill info">Baseline</span></div>
+          <div class="treatment"><span class="num">02</span><div><b>hybrid_lexical</b><span>Deterministic routes + BM25</span></div><span class="pill info">Local</span></div>
+          <div class="treatment"><span class="num">03</span><div><b>hybrid_full_local</b><span>BM25 + local embeddings + full Hermes logic</span></div><span class="pill good">Target</span></div>
+          <div class="treatment"><span class="num">04</span><div><b>hybrid_jev_ambiguity</b><span>Same Hermes pipeline plus one bounded Jev tie-breaker</span></div><span class="pill warn">Gated</span></div>
+          <div class="treatment"><span class="num">05</span><div><b>skillranker_shadow</b><span>Black-box comparator; never changes loaded skills</span></div><span class="pill bad">Separate permission</span></div>
+        </div>
+        <aside class="hard-gates">
+          <h3>Promotion is intentionally hard</h3>
+          <ul>
+            <li><strong>100%</strong> exact and trusted-policy route accuracy.</li>
+            <li><strong>Zero</strong> provider calls outside frozen ambiguity.</li>
+            <li><strong>Zero</strong> prompt, body, path, secret, repository, or tool-output disclosure.</li>
+            <li><strong>≤ 1</strong> provider request per ambiguous turn.</li>
+            <li><strong>≥ 95%</strong> positive-family recall and negative-family restraint.</li>
+            <li><strong>Strictly better</strong> ambiguous-case quality at equal provider-call budget.</li>
+            <li><strong>≤ 2,000 ms</strong> classifier p95.</li>
+            <li><strong>Zero</strong> infrastructure errors in the frozen final run.</li>
+          </ul>
+          <p style="margin-bottom:0;color:#aebbb3;font-size:.78rem">Pin <code style="background:#2f3d35;color:#dcece3">jev-1.13.0</code> for each stratum. TypeSafe warns that aliases move and answers may change; returned model identity must be recorded.<a class="citation" href="#src-7" style="color:#8ed0ad">[7]</a></p>
+        </aside>
+      </div>
+    </section>
+
+    <section id="lessons">
+      <h2>What Hermes should borrow now</h2>
+      <p class="section-intro">These are general defensive contracts, expressed in Hermes’s own architecture. They do not require a runtime dependency.</p>
+      <div class="lessons">
+        <article class="lesson"><div class="icon">01</div><h3>Opaque provider handles</h3><p>Bind provider-facing IDs locally. Never let names, paths, or option text become authority.</p></article>
+        <article class="lesson"><div class="icon">02</div><h3>Exact response sets</h3><p>Reject missing, unknown, duplicate, out-of-range, or non-normalized answers as one invalid classifier result.</p></article>
+        <article class="lesson"><div class="icon">03</div><h3>Layered abstention</h3><p>Separate global need, candidate fit, score and margin, eligibility, and conflict checks.</p></article>
+        <article class="lesson"><div class="icon">04</div><h3>Typed outcomes</h3><p>Distinguish selected, abstain, unavailable, and error without storing content-bearing rationale.</p></article>
+        <article class="lesson"><div class="icon">05</div><h3>Versioned model identity</h3><p>Moving aliases cannot share thresholds or calibration strata with a pinned model revision.</p></article>
+        <article class="lesson"><div class="icon">06</div><h3>Capability discovery</h3><p>Integrations should query implemented capabilities instead of inferring them from version numbers or README prose.</p></article>
+        <article class="lesson"><div class="icon">07</div><h3>Robustness permutations</h3><p>Test option order, opaque-ID renaming, decoys, near-duplicates, malformed outputs, and hostile metadata.</p></article>
+        <article class="lesson"><div class="icon">08</div><h3>Scores are not outcomes</h3><p>Provider confidence and rank softmax weights remain uncalibrated until tied to actual Hermes usefulness data.</p></article>
+      </div>
+    </section>
+
+    <section id="sources">
+      <h2>Evidence and provenance</h2>
+      <p class="section-intro">SkillRanker claims are tied to immutable commit snapshots. TypeSafe claims point to first-party terms, privacy, model, and cookbook pages. The SkillRanker <code>main</code> branch moved repeatedly during research, so it is deliberately not used as a factual citation target.</p>
+      <ol class="source-list">
+        <li id="src-1"><b>1</b><a href="https://github.com/Dicklesworthstone/skillranker/tree/876b37bfa58ec67eb44ba81488c92795b17ea014" target="_blank" rel="noreferrer">SkillRanker implementation snapshot</a><br><small>Commit 876b37…</small></li>
+        <li id="src-2"><b>2</b><a href="https://github.com/Dicklesworthstone/skillranker/blob/93423348dd098e143c6b048e4409fd012fc48582/LICENSE" target="_blank" rel="noreferrer">SkillRanker license</a><br><small>Commit 934233…</small></li>
+        <li id="src-3"><b>3</b><a href="https://github.com/Dicklesworthstone/skillranker/blob/876b37bfa58ec67eb44ba81488c92795b17ea014/src/capabilities.rs" target="_blank" rel="noreferrer">SkillRanker capability registry</a><br><small>Implemented versus planned capabilities</small></li>
+        <li id="src-4"><b>4</b><a href="https://github.com/Dicklesworthstone/skillranker/blob/876b37bfa58ec67eb44ba81488c92795b17ea014/Cargo.toml" target="_blank" rel="noreferrer">SkillRanker Cargo manifest</a><br><small>Runtime and packaging constraints</small></li>
+        <li id="src-5"><b>5</b><a href="https://typesafe.ai/terms" target="_blank" rel="noreferrer">TypeSafe terms of service</a><br><small>Evaluation, third-party use, competition, benchmark publication</small></li>
+        <li id="src-6"><b>6</b><a href="https://typesafe.ai/privacy" target="_blank" rel="noreferrer">TypeSafe privacy policy</a><br><small>Input collection, service providers, retention, no-training statement</small></li>
+        <li id="src-7"><b>7</b><a href="https://docs.typesafe.ai/models.md" target="_blank" rel="noreferrer">TypeSafe model documentation</a><br><small>Jev 1.13, pricing, limits, moving aliases</small></li>
+        <li id="src-8"><b>8</b><a href="https://docs.typesafe.ai/cookbooks/skill_suggestion.md" target="_blank" rel="noreferrer">TypeSafe skill-suggestion cookbook</a><br><small>Vendor-published Hermes benchmark and two-call design</small></li>
+      </ol>
+      <div class="local-evidence">
+        <h3>Local Hermes design evidence</h3>
+        <ul>
+          <li>docs/plans/2026-09-08-hermes-hybrid-skill-router.md</li>
+          <li>docs/schemas/hermes-skill-routing-v1.schema.json</li>
+          <li>docs/schemas/hermes-project-skill-routes-v1.schema.json</li>
+          <li>docs/schemas/hermes-skill-routing-receipt-v1.schema.json</li>
+          <li>scripts/tests/test_hermes_hybrid_skill_router_contract.py</li>
+          <li>.hermes/plans/2026-09-19_121530-skillranker-typesafe-hermes-evaluation.md</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer>
+      Design source: this repository’s existing engineering-brief visual language, matched from <code>docs/reports/review-panel-context-hardening.html</code>. Self-contained HTML; no remote CSS, fonts, or scripts. Prepared 2026-09-19.
+    </footer>
+  </main>
+
+  <script>
+    (() => {
+      const archButtons = [...document.querySelectorAll('[data-arch-mode]')];
+      const ranker = document.getElementById('skillranker-layer');
+      const hermes = document.getElementById('hermes-layer');
+      function setArchitecture(mode) {
+        ranker.classList.toggle('arch-muted', mode === 'hermes');
+        hermes.classList.toggle('arch-muted', mode === 'ranker');
+        archButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.archMode === mode)));
+      }
+      archButtons.forEach(button => button.addEventListener('click', () => setArchitecture(button.dataset.archMode)));
+
+      const filterButtons = [...document.querySelectorAll('[data-filter]')];
+      const options = [...document.querySelectorAll('.option')];
+      const count = document.getElementById('visible-count');
+      function setFilter(filter) {
+        let visible = 0;
+        options.forEach(option => {
+          const show = filter === 'all' || option.dataset.status === filter;
+          option.classList.toggle('hidden', !show);
+          if (show) visible += 1;
+        });
+        count.textContent = String(visible);
+        filterButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.filter === filter)));
+      }
+      filterButtons.forEach(button => button.addEventListener('click', () => setFilter(button.dataset.filter)));
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>ai-cli × scott-cc — Research Brief</title>
+  <style>
+    :root {
+      --ink: #17211d;
+      --muted: #58665f;
+      --paper: #f2eee4;
+      --surface: #fffdf7;
+      --surface-2: #f8f4ea;
+      --line: #d6cfbf;
+      --green: #1f6a50;
+      --green-soft: #dcece3;
+      --amber: #a65f14;
+      --amber-soft: #f5e5cf;
+      --red: #9d4037;
+      --red-soft: #f2ddda;
+      --blue: #315d7c;
+      --blue-soft: #e0eaf1;
+      --violet: #655084;
+      --violet-soft: #ece5f3;
+      --shadow: 0 16px 44px rgba(38, 42, 36, .08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(rgba(255,255,255,.32) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.32) 1px, transparent 1px),
+        var(--paper);
+      background-size: 26px 26px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+    a { color: var(--blue); text-underline-offset: 3px; }
+    a:hover { color: #1f4058; }
+    code, .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      overflow-wrap: anywhere;
+    }
+    code { color: #244b68; background: #e8eef2; border-radius: 5px; padding: 2px 5px; font-size: .86em; }
+    .page { width: min(1480px, calc(100% - 56px)); margin: 0 auto; padding: 30px 0 72px; }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      color: #fdf9ee;
+      background: var(--ink);
+      border-radius: 22px;
+      padding: clamp(28px, 5vw, 60px);
+      box-shadow: var(--shadow);
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 360px;
+      height: 360px;
+      right: -128px;
+      top: -150px;
+      border: 54px solid rgba(127, 202, 166, .14);
+      border-radius: 50%;
+    }
+    .eyebrow { color: #91d5b4; letter-spacing: .14em; font-size: .78rem; font-weight: 850; text-transform: uppercase; }
+    h1 { max-width: 980px; margin: 12px 0 16px; font-size: clamp(2.2rem, 5vw, 4.5rem); line-height: 1.03; letter-spacing: -.026em; }
+    .lede { max-width: 980px; margin: 0; color: #d5ddd8; font-size: clamp(1rem, 1.4vw, 1.22rem); }
+    .verdict {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 16px;
+      align-items: center;
+      max-width: 1030px;
+      margin-top: 28px;
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 14px;
+      background: rgba(255,255,255,.07);
+    }
+    .verdict-mark { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 12px; background: #d99237; color: #1b211e; font-weight: 950; font-size: 1.25rem; }
+    .verdict strong { display: block; font-size: 1rem; color: #ffd99e; text-transform: uppercase; letter-spacing: .08em; }
+    .verdict p { margin: 3px 0 0; color: #edf1ee; }
+    .meta { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 22px; position: relative; z-index: 1; }
+    .badge { display: inline-flex; align-items: center; gap: 7px; border: 1px solid rgba(255,255,255,.2); border-radius: 999px; padding: 7px 11px; color: #e9efeb; font-size: .8rem; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #8bdaaf; box-shadow: 0 0 0 4px rgba(139,218,175,.14); }
+    .nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0; }
+    .nav a { color: var(--ink); background: rgba(255,255,255,.72); border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; text-decoration: none; font-size: .84rem; font-weight: 760; }
+    .nav a:hover { background: #fff; }
+    section { margin-top: 22px; padding: clamp(22px, 4vw, 38px); background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); }
+    h2 { margin: 0 0 8px; font-size: clamp(1.5rem, 3vw, 2.25rem); letter-spacing: -.03em; line-height: 1.12; }
+    h3 { margin: 0 0 8px; font-size: 1.05rem; }
+    .section-intro { color: var(--muted); max-width: 910px; margin: 0 0 24px; }
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .metric { min-width: 0; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-2); }
+    .metric strong { display: block; font-size: clamp(1.55rem, 3.4vw, 2.65rem); line-height: 1; letter-spacing: -.04em; }
+    .metric span { display: block; margin-top: 8px; color: var(--muted); font-size: .84rem; }
+    .metric.good strong { color: var(--green); }
+    .metric.warn strong { color: var(--amber); }
+    .metric.bad strong { color: var(--red); }
+    .callout { padding: 18px 20px; border-left: 5px solid var(--amber); border-radius: 12px; background: var(--amber-soft); }
+    .callout strong { color: #6b3c0a; }
+    .fact-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; margin-top: 18px; }
+    .fact-card { min-width: 0; border: 1px solid var(--line); border-radius: 14px; padding: 18px; background: #fcfaf4; }
+    .fact-card .kind { display: inline-block; margin-bottom: 10px; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: .08em; font-size: .68rem; font-weight: 850; }
+    .kind.fact { color: #1b4b3a; background: var(--green-soft); }
+    .kind.inference { color: #684007; background: var(--amber-soft); }
+    .kind.hypothesis { color: #473462; background: var(--violet-soft); }
+    .fact-card p { margin: 0; color: var(--muted); }
+    .system-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr); gap: 20px; align-items: start; }
+    .diagram { overflow-x: auto; border: 1px solid var(--line); border-radius: 15px; background: #fbf8f0; padding: 12px; }
+    .diagram svg { display: block; width: 100%; min-width: 720px; height: auto; color: var(--ink); }
+    .scroll-hint { display: none; }
+    .diagram-note { display: grid; gap: 10px; }
+    .boundary { padding: 15px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
+    .boundary strong { display: block; margin-bottom: 4px; }
+    .boundary.keep { border-left: 5px solid var(--green); }
+    .boundary.shadow { border-left: 5px solid var(--amber); }
+    .boundary.never { border-left: 5px solid var(--red); }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 16px; }
+    .filter-button {
+      appearance: none;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: var(--surface-2);
+      color: var(--ink);
+      font: inherit;
+      font-size: .83rem;
+      font-weight: 760;
+      cursor: pointer;
+    }
+    .filter-button:hover, .filter-button[aria-pressed="true"] { color: #fff; background: var(--ink); border-color: var(--ink); }
+    .fit-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .fit-card { min-width: 0; border: 1px solid var(--line); border-radius: 15px; padding: 19px; background: #fcfaf4; }
+    .fit-card[hidden] { display: none; }
+    .fit-head { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; }
+    .status { flex: 0 0 auto; border-radius: 999px; padding: 5px 9px; font-size: .7rem; font-weight: 880; text-transform: uppercase; letter-spacing: .06em; }
+    .status.pilot { color: #714009; background: var(--amber-soft); }
+    .status.keep { color: #1d513e; background: var(--green-soft); }
+    .status.reject { color: #762f29; background: var(--red-soft); }
+    .fit-card dl { margin: 14px 0 0; display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 8px 10px; font-size: .88rem; }
+    .fit-card dt { color: var(--muted); font-weight: 760; }
+    .fit-card dd { margin: 0; }
+    .fit-card details { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 11px; }
+    summary { cursor: pointer; color: var(--blue); font-weight: 760; }
+    .experiment-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .experiment { min-width: 0; position: relative; padding: 20px; border: 1px solid var(--line); border-radius: 15px; background: #fcfaf4; }
+    .number { width: 30px; height: 30px; display: grid; place-items: center; margin-bottom: 14px; border-radius: 8px; background: var(--blue); color: white; font: 850 .78rem ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .experiment ul { padding-left: 18px; margin: 12px 0 0; }
+    .experiment li { margin: 7px 0; }
+    .kill { margin-top: 14px; padding: 11px; border-radius: 9px; color: #6b2721; background: var(--red-soft); font-size: .84rem; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; }
+    table { width: 100%; min-width: 820px; border-collapse: collapse; background: #fcfaf4; font-size: .88rem; }
+    th, td { padding: 12px 14px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+    th { color: var(--muted); text-transform: uppercase; letter-spacing: .07em; font-size: .69rem; background: #f5f0e5; }
+    tr:last-child td { border-bottom: 0; }
+    .ledger-status { font-weight: 850; white-space: nowrap; }
+    .ledger-status.supported { color: var(--green); }
+    .ledger-status.weakened, .ledger-status.unresolved { color: var(--amber); }
+    .ledger-status.rejected { color: var(--red); }
+    .risk-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+    .risk { min-width: 0; padding: 17px; border: 1px solid var(--line); border-radius: 13px; background: #fcfaf4; }
+    .risk h3 { display: flex; gap: 8px; align-items: center; }
+    .risk h3::before { content: "!"; display: grid; place-items: center; width: 23px; height: 23px; border-radius: 6px; color: #742e28; background: var(--red-soft); font-size: .75rem; }
+    .risk p { margin: 7px 0 0; font-size: .9rem; }
+    .decision { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .decision-step { padding: 17px; border-radius: 13px; border: 1px solid var(--line); background: var(--surface-2); }
+    .decision-step strong { display: block; color: var(--blue); margin-bottom: 5px; }
+    .source-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px 16px; }
+    .source { min-width: 0; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+    .source-id { width: 32px; height: 26px; display: grid; place-items: center; border-radius: 6px; background: var(--blue-soft); color: var(--blue); font: 800 .72rem ui-monospace, monospace; }
+    .source p { margin: 2px 0 0; color: var(--muted); font-size: .8rem; }
+    .local-source { color: var(--ink); font-size: .83rem; overflow-wrap: anywhere; }
+    footer { margin-top: 20px; padding: 18px 4px; color: var(--muted); font-size: .82rem; }
+    .visible-count { color: var(--muted); font-size: .8rem; margin-left: auto; }
+    @media (max-width: 1050px) {
+      .metrics, .fact-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .experiment-grid { grid-template-columns: 1fr; }
+      .system-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 760px) {
+      .page { width: min(100% - 20px, 1480px); padding-top: 10px; }
+      .hero { border-radius: 16px; }
+      .verdict { grid-template-columns: 1fr; }
+      .fit-grid, .risk-grid, .decision, .source-grid { grid-template-columns: 1fr; }
+      .fit-card dl { grid-template-columns: 1fr; gap: 2px; }
+      .fit-card dd { margin-bottom: 8px; }
+      .visible-count { width: 100%; margin-left: 0; }
+      .scroll-hint { position: sticky; left: 0; z-index: 1; display: block; width: max-content; margin: 0 0 8px; padding: 4px 8px; border-radius: 999px; color: #6d4b20; background: var(--amber-soft); font-size: .72rem; font-weight: 800; }
+    }
+    @media (max-width: 480px) {
+      .metrics, .fact-grid { grid-template-columns: 1fr; }
+      section { padding: 19px 16px; }
+      h1 { font-size: 2.25rem; }
+    }
+    @media print {
+      body { background: #fff; }
+      .page { width: 100%; }
+      .hero, section { box-shadow: none; break-inside: avoid; }
+      .nav, .controls { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <div class="eyebrow">Adversarial research brief · 19 September 2026</div>
+      <h1><span class="mono">ai-cli</span> is a useful sensor.<br>It is not your harness.</h1>
+      <p class="lede">Vercel Labs' terminal-native AI SDK has one narrow fit in scott-cc: a pinned, shadow-only semantic classifier for bounded experiments. Its JSON contract is clean. Its judgment is still probabilistic, prompt-injectable, network-bound, and weaker than the controls already built into PAS, Beads, Review Panel, and Hermes evaluation.</p>
+      <div class="verdict">
+        <div class="verdict-mark" aria-hidden="true">?</div>
+        <div><strong>Conditional pilot only</strong><p>Pin <code>ai-cli@0.5.1</code>, test it on public or synthetic fixtures, and keep every answer advisory. Do not make it a release gate, PAS dependency, triage authority, research source, or deterministic-evaluator replacement.</p></div>
+      </div>
+      <div class="meta">
+        <span class="badge"><span class="dot"></span> Stable source inspected</span>
+        <span class="badge">Tag v0.5.1 · <span class="mono">89ab662</span></span>
+        <span class="badge">Apache-2.0 · Node ≥22</span>
+        <span class="badge">Bead scc-mc8</span>
+      </div>
+    </header>
+
+    <nav class="nav" aria-label="Report sections">
+      <a href="#answer">Answer</a><a href="#boundary">Boundary</a><a href="#capabilities">Capabilities</a><a href="#fit">Fit matrix</a><a href="#experiments">Experiments</a><a href="#risks">Risks</a><a href="#ledger">Falsification</a><a href="#sources">Sources</a>
+    </nav>
+
+    <section id="answer">
+      <h2>The answer in four numbers</h2>
+      <p class="section-intro">The source and published package support a modest conclusion, not a platform rewrite.</p>
+      <div class="metrics">
+        <div class="metric good"><strong>1</strong><span>Relevant primitive: <code>ai evaluate</code></span></div>
+        <div class="metric bad"><strong>0</strong><span><code>filter</code>, <code>rank</code>, or <code>pick</code> commands in v0.5.1</span></div>
+        <div class="metric warn"><strong>1</strong><span>Evaluation model currently listed: <code>typesafe-ai/jev</code></span></div>
+        <div class="metric"><strong>55</strong><span>Focused upstream evaluate tests passed in the research checkout</span></div>
+      </div>
+      <div class="callout" style="margin-top:18px"><strong>The trap:</strong> exit code <code>0</code> means the evaluation request produced a valid answer. It does not mean the answer was “true,” confident, safe, or above your threshold. False and uncertain answers also exit <code>0</code>.</div>
+      <div class="fact-grid">
+        <article class="fact-card"><span class="kind fact">Verified fact</span><h3>A coherent shell contract</h3><p>Boolean, Choice, and Score questions share one unchanged text or JSON state. Success returns JSON; malformed input, provider failure, timeout, and invalid answers fail without partial JSON.</p></article>
+        <article class="fact-card"><span class="kind inference">Inference</span><h3>A semantic sensor, not an evaluator framework</h3><p>The caller still owns thresholds, abstention, tie-breaking, batching, evidence, contamination controls, authorization, budgets, and side effects.</p></article>
+        <article class="fact-card"><span class="kind hypothesis">Untested hypothesis</span><h3>Cheap diagnostics may be useful</h3><p>Jev could add subjective labels or post-validation ordering. No repository-specific live evaluation yet proves better accuracy, calibration, stability, or throughput.</p></article>
+      </div>
+    </section>
+
+    <section id="boundary">
+      <h2>Where it belongs</h2>
+      <p class="section-intro">Keep the existing control plane intact. Put <code>ai-cli</code> beside it as a removable observer, never inside the authority path.</p>
+      <div class="system-grid">
+        <figure class="diagram">
+          <div class="scroll-hint" aria-hidden="true">Swipe diagram →</div>
+          <svg viewBox="0 0 820 420" role="img" aria-labelledby="system-title system-desc">
+            <title id="system-title">Recommended ai-cli boundary in scott-cc</title>
+            <desc id="system-desc">Deterministic harness evidence flows to authoritative gates. A copied, redacted artifact may also flow to an isolated ai-cli shadow evaluator, whose advisory annotation reaches a human but never feeds the gate.</desc>
+            <defs>
+              <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#315d7c"/></marker>
+              <marker id="arrow-warn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#a65f14"/></marker>
+            </defs>
+            <rect id="execution-zone" x="24" y="36" width="484" height="336" rx="20" fill="#f8f4ea" stroke="#d6cfbf" stroke-width="2"><title>Authoritative execution and evidence zone</title></rect>
+            <text x="48" y="68" font-size="15" font-weight="800" fill="#58665f">AUTHORITATIVE PATH</text>
+            <rect id="harness" x="55" y="105" width="176" height="88" rx="14" fill="#e0eaf1" stroke="#315d7c" stroke-width="2"><title>Existing coding and evaluation harnesses</title></rect>
+            <text x="143" y="137" text-anchor="middle" font-size="17" font-weight="800" fill="#17211d">PAS · Beads</text>
+            <text x="143" y="162" text-anchor="middle" font-size="15" fill="#58665f">Review · Hermes</text>
+            <line x1="231" y1="149" x2="307" y2="149" stroke="#315d7c" stroke-width="3" marker-end="url(#arrow)"/>
+            <rect id="evidence" x="316" y="105" width="160" height="88" rx="14" fill="#dcece3" stroke="#1f6a50" stroke-width="2"><title>Hash-bound deterministic evidence</title></rect>
+            <text x="396" y="137" text-anchor="middle" font-size="17" font-weight="800" fill="#17211d">Evidence</text>
+            <text x="396" y="162" text-anchor="middle" font-size="14" fill="#58665f">hashes · events · tests</text>
+            <line x1="396" y1="193" x2="396" y2="245" stroke="#315d7c" stroke-width="3" marker-end="url(#arrow)"/>
+            <rect id="gate" x="316" y="254" width="160" height="80" rx="14" fill="#dcece3" stroke="#1f6a50" stroke-width="2"><title>Deterministic gate with release authority</title></rect>
+            <text x="396" y="286" text-anchor="middle" font-size="17" font-weight="800" fill="#17211d">Gate</text>
+            <text x="396" y="310" text-anchor="middle" font-size="14" fill="#58665f">pass · fail · unavailable</text>
+            <rect id="shadow-zone" x="547" y="36" width="248" height="336" rx="20" fill="#fff7ea" stroke="#dfb579" stroke-width="2" stroke-dasharray="8 7"><title>Isolated advisory shadow zone</title></rect>
+            <text x="571" y="68" font-size="15" font-weight="800" fill="#8a5314">OPTIONAL SHADOW</text>
+            <line x1="476" y1="149" x2="587" y2="149" stroke="#a65f14" stroke-width="3" stroke-dasharray="7 6" marker-end="url(#arrow-warn)"/>
+            <text x="528" y="133" text-anchor="middle" font-size="11" fill="#8a5314">copy + redact</text>
+            <rect id="ai-cli" x="588" y="105" width="166" height="88" rx="14" fill="#f5e5cf" stroke="#a65f14" stroke-width="2"><title>ai-cli evaluate pinned as a shadow-only semantic classifier</title></rect>
+            <text x="671" y="137" text-anchor="middle" font-size="18" font-weight="850" fill="#17211d">ai evaluate</text>
+            <text x="671" y="162" text-anchor="middle" font-size="14" fill="#6d4b20">advisory · untrusted</text>
+            <line x1="671" y1="193" x2="671" y2="245" stroke="#a65f14" stroke-width="3" marker-end="url(#arrow-warn)"/>
+            <rect id="human" x="588" y="254" width="166" height="80" rx="14" fill="#ece5f3" stroke="#655084" stroke-width="2"><title>Human reviews the advisory annotation</title></rect>
+            <text x="671" y="286" text-anchor="middle" font-size="17" font-weight="800" fill="#17211d">Human review</text>
+            <text x="671" y="310" text-anchor="middle" font-size="14" fill="#58665f">annotation only</text>
+            <path d="M 588 296 C 530 296, 530 296, 480 296" fill="none" stroke="#9d4037" stroke-width="3" stroke-dasharray="4 7"/>
+            <text x="535" y="322" text-anchor="middle" font-size="12" font-weight="800" fill="#9d4037">NO GATE INPUT</text>
+          </svg>
+        </figure>
+        <div class="diagram-note">
+          <div class="boundary keep"><strong>Keep authoritative</strong>Deterministic evidence derivation, hashes, contamination checks, authorization, budgets, review validation, severity, and release decisions.</div>
+          <div class="boundary shadow"><strong>Allow in shadow</strong>A copied, minimized, redacted fixture may receive a Boolean, Choice, or Score annotation. Errors and unavailability remain data.</div>
+          <div class="boundary never"><strong>Never delegate</strong>Tool authorization, issue acceptance, severity changes, fix dispatch, security decisions, release gates, arithmetic, or exact counting.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="capabilities">
+      <h2>What v0.5.1 actually provides</h2>
+      <p class="section-intro">This table intentionally separates command shape from semantic quality. A good parser does not make a good judge.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Capability</th><th>Verified contract</th><th>What it does not buy</th><th>Evidence</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Typed evaluate</strong></td><td>Repeatable Boolean, Choice, and Score questions, or a JSON question map; one unchanged input state; one model; 30s default deadline and two retries.</td><td>No batching policy, threshold, abstention, explanation, evidence, or side-effect control.</td><td><a href="https://github.com/vercel-labs/ai-cli/blob/89ab66227644ad909e9c61a316176ceabe6c96f1/packages/ai-cli/src/commands/evaluate.ts#L41-L143">evaluate.ts</a></td></tr>
+          <tr><td><strong>Machine output</strong></td><td>JSON answers, usage, warnings, response, and optional provider metadata. Invalid requests fail without partial JSON.</td><td>Exit <code>0</code> is transport/contract success, not semantic truth.</td><td><a href="https://github.com/vercel-labs/ai-cli/blob/89ab66227644ad909e9c61a316176ceabe6c96f1/packages/ai-cli/src/commands/evaluate.test.ts#L259-L313">evaluate tests</a></td></tr>
+          <tr><td><strong>Input validation</strong></td><td>Rejects empty/binary input, malformed JSON-looking input, duplicate IDs, unknown fields, invalid criteria, unsafe model IDs, and invalid retry values.</td><td>No defense against instructions embedded inside otherwise valid state.</td><td><a href="https://github.com/vercel-labs/ai-cli/blob/89ab66227644ad909e9c61a316176ceabe6c96f1/packages/ai-cli/src/lib/evaluation.ts#L48-L147">evaluation.ts</a></td></tr>
+          <tr><td><strong>Model discovery</strong></td><td><code>ai models --type evaluation --json</code> fetches a live Gateway catalog with a five-second timeout. Research observed one evaluation model.</td><td>A live alias and catalog are not a reproducibility lock.</td><td><a href="https://github.com/vercel-labs/ai-cli/blob/89ab66227644ad909e9c61a316176ceabe6c96f1/packages/ai-cli/src/lib/models.ts#L97-L206">models.ts</a></td></tr>
+          <tr><td><strong>Portable skill</strong></td><td>The Git tag includes a broad 255-line <code>SKILL.md</code> covering media, text, evaluation, and output behavior.</td><td>The npm package does not ship that skill; wholesale import would duplicate unrelated local guidance.</td><td><a href="https://github.com/vercel-labs/ai-cli/blob/89ab66227644ad909e9c61a316176ceabe6c96f1/skills/ai-cli/SKILL.md">upstream skill</a></td></tr>
+          <tr><td><strong>Filter / rank / pick</strong></td><td><span class="ledger-status rejected">Absent.</span> PR #92 replaced those unshipped record commands with <code>evaluate</code>; the published binary reports “unknown command.”</td><td>Any record ranking is caller code with caller-owned iteration, ties, thresholds, and failure policy.</td><td><a href="https://github.com/vercel-labs/ai-cli/pull/92">PR #92</a></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="fit">
+      <h2>Fit with the current harness</h2>
+      <p class="section-intro">Filter the cards by disposition. Every card names the existing alternative, the possible gain, the failure mode, and the test that would change the recommendation.</p>
+      <div class="controls" role="group" aria-label="Filter fit cards">
+        <button class="filter-button" type="button" data-filter="all" aria-pressed="true">All</button>
+        <button class="filter-button" type="button" data-filter="pilot" aria-pressed="false">Pilot</button>
+        <button class="filter-button" type="button" data-filter="keep" aria-pressed="false">Keep out</button>
+        <button class="filter-button" type="button" data-filter="reject" aria-pressed="false">Reject</button>
+        <span class="visible-count" aria-live="polite">7 surfaces shown</span>
+      </div>
+      <div class="fit-grid">
+        <article class="fit-card" data-status="pilot"><div class="fit-head"><h3>Beads evaluation harness</h3><span class="status pilot">Pilot</span></div><dl><dt>Existing</dt><dd>Typed evidence derivation, deterministic scoring, contamination controls, bounded blinded semantic reports with no hard authority.</dd><dt>Possible gain</dt><dd>Cheap telemetry on subjective dimensions deterministic events cannot express.</dd><dt>Risk</dt><dd>No explanation field, no blinding or bounds, prompt injection, and behavioral drift.</dd><dt>Decision</dt><dd>Separate shadow adapter only; never alter release thresholds or aggregate deterministic scores.</dd></dl><details><summary>Discriminating test</summary><p>Run 40 frozen, blinded candidate/control artifacts with human labels and three repeats. Measure calibration, flip rate, adversarial failures, latency, and missing output. Deterministic reports must remain byte-identical with the adapter off and on.</p></details></article>
+        <article class="fit-card" data-status="pilot"><div class="fit-head"><h3>Review Panel ordering</h3><span class="status pilot">Pilot</span></div><dl><dt>Existing</dt><dd>Quote-the-line evidence gate, confidence anchors, fingerprints, and independent validators.</dd><dt>Possible gain</dt><dd>Low-cost ordering of already validated findings for human attention.</dd><dt>Risk</dt><dd>Automation bias and false promotion if model probability appears before validation.</dd><dt>Decision</dt><dd>At most post-validation display ordering. Never omit findings or override deterministic severity.</dd></dl><details><summary>Discriminating test</summary><p>Replay 25 historical findings and compare top-k usefulness against severity plus confidence. Reject if any Critical is demoted or any rejected finding outranks a validated Critical.</p></details></article>
+        <article class="fit-card" data-status="keep"><div class="fit-head"><h3>Triage spine</h3><span class="status keep">Keep out</span></div><dl><dt>Existing</dt><dd>Schema validation, explicit severity, E2E reproduction, PAS dispatch, and Review Panel gate.</dd><dt>Possible gain</dt><dd>An advisory duplicate or ambiguity label.</dd><dt>Risk</dt><dd>Untrusted detector evidence can steer Jev and violate fail-closed lifecycle ordering.</dd><dt>Decision</dt><dd>No intake, severity, reproduction, fix, or terminal-status authority. Annotation only after schema validation.</dd></dl><details><summary>Discriminating test</summary><p>Use 30 archived items plus injection and negation cases. Require zero changes to acceptance, severity, or side effects.</p></details></article>
+        <article class="fit-card" data-status="reject"><div class="fit-head"><h3>PAS pipeline</h3><span class="status reject">Reject</span></div><dl><dt>Existing</dt><dd>Validated DOT, explicit provider/model review, subscription CLIs, bounds, checkpoints, and trust policy.</dd><dt>Possible gain</dt><dd>Little: <code>ai-cli</code> is a one-shot evaluator, not a coding-agent executor.</dd><dt>Risk</dt><dd>A second paid API/key path bypasses PAS provider review and cost controls.</dd><dt>Decision</dt><dd>Do not add it as a PAS provider or node in v0.5.1.</dd></dl><details><summary>What would change this?</summary><p>A proposal would need exact model pinning, provider auditability, no implicit paid fallback, DOT validation, and checkpoint semantics. v0.5.1 does not provide them.</p></details></article>
+        <article class="fit-card" data-status="keep"><div class="fit-head"><h3>Hermes discovery harness</h3><span class="status keep">Keep out</span></div><dl><dt>Existing</dt><dd>Frozen commit/model/provider, candidate and corpus hashes, single-use authorization, request/time caps, and systemic-failure aborts.</dd><dt>Possible gain</dt><dd>Post-run labels for relevance or failure taxonomy.</dd><dt>Risk</dt><dd>A mutable external model contaminates a frozen stratum and cannot replace actual Hermes behavior.</dd><dt>Decision</dt><dd>Never enter execution or scoring. A postprocessor needs separate authorization, hashes, budget, and unavailable state.</dd></dl><details><summary>Discriminating test</summary><p>Use a frozen 20-scenario copy. Harness receipts and scores must remain unchanged, and semantic failure must neither pass nor fail the benchmark.</p></details></article>
+        <article class="fit-card" data-status="reject"><div class="fit-head"><h3>Deep research</h3><span class="status reject">Reject</span></div><dl><dt>Existing</dt><dd>Primary sources, citations, provenance, confidence, and adversarial falsification.</dd><dt>Possible gain</dt><dd>Atomic labels over evidence already collected.</dd><dt>Risk</dt><dd><code>ai-cli</code> has no search, browsing, retrieval, citation, or provenance mechanism.</dd><dt>Decision</dt><dd>Not a research agent or source authority. At most a post-collection labeler.</dd></dl><details><summary>Discriminating test</summary><p>Compare 20 quote/claim pairs against deterministic quote matching plus human review. Citations must remain external and unchanged.</p></details></article>
+        <article class="fit-card" data-status="reject"><div class="fit-head"><h3>Portable ai-cli skill</h3><span class="status reject">Reject full import</span></div><dl><dt>Existing</dt><dd>Provider CLI, PAS, evaluation, review, and artifact skills with local trust boundaries.</dd><dt>Possible gain</dt><dd>Agent-readable <code>ai evaluate</code> syntax.</dd><dt>Risk</dt><dd>The upstream skill is broad, not in npm, and mostly duplicates unrelated generation guidance.</dd><dt>Decision</dt><dd>Do not import wholesale. If the pilot works, write a minimal pinned evaluate-only adapter.</dd></dl><details><summary>Discriminating test</summary><p>Give agents five evaluation tasks with and without a 30-line adapter. Retain it only if contract errors fall without irrelevant tool selection rising.</p></details></article>
+      </div>
+    </section>
+
+    <section id="experiments">
+      <h2>Three experiments worth running</h2>
+      <p class="section-intro">No live model call was authorized or needed for this research. These are deliberately small, reversible, and falsifiable.</p>
+      <div class="experiment-grid">
+        <article class="experiment"><div class="number">01</div><h3>Blinded shadow judge</h3><p><strong>Question:</strong> does Jev add useful semantic diagnostics to Beads evaluation?</p><ul><li>40 frozen candidate/control artifacts.</li><li>At most three atomic questions each.</li><li>Three repeats; <code>--max-retries 0</code>.</li><li>Public, synthetic, or redacted data only.</li><li>Hash state, questions, catalog, package, and output.</li></ul><div class="kill"><strong>Kill it if:</strong> it fails the predeclared baseline, flip-rate, injection, latency, or unavailable-output limit—or changes one deterministic score.</div></article>
+        <article class="experiment"><div class="number">02</div><h3>Post-validation ordering</h3><p><strong>Question:</strong> does a cheap score improve what humans review first?</p><ul><li>25 historical validated/rejected findings.</li><li>One actionability Score and one user-risk Boolean.</li><li>Blind treatment labels.</li><li>Include injected code quotes.</li><li>Never drop an item or cross severity classes.</li></ul><div class="kill"><strong>Kill it if:</strong> any Critical is demoted, a rejected item outranks a validated Critical, or repeated ordering is unstable.</div></article>
+        <article class="experiment"><div class="number">03</div><h3>Operational drift canary</h3><p><strong>Question:</strong> can package pinning plus canaries make drift visible?</p><ul><li>12 positive, negative, boundary, and injection fixtures.</li><li>Verify npm integrity and CLI contract.</li><li>Assert <code>filter/rank/pick</code> remain absent.</li><li>Snapshot the evaluation catalog.</li><li>Inspect response model and provider metadata.</li></ul><div class="kill"><strong>Kill promotion if:</strong> model identity is mutable or answer drift breaches the stability bar. Package pinning alone is not model pinning.</div></article>
+      </div>
+    </section>
+
+    <section id="risks">
+      <h2>Controls before the first paid call</h2>
+      <p class="section-intro">The token price is tiny. The governance surface is not.</p>
+      <div class="risk-grid">
+        <article class="risk"><h3>Prompt injection</h3><p><strong>Fact:</strong> TypeSafe documents that adversarial state can move Jev answers.</p><p><strong>Control:</strong> minimize and quote state, use explicit criteria, add injection/negation fixtures, and treat every answer as untrusted advisory data.</p></article>
+        <article class="risk"><h3>Private-data disclosure</h3><p><strong>Fact:</strong> input traverses Vercel AI Gateway to TypeSafe; Gateway retention claims do not govern the upstream provider.</p><p><strong>Control:</strong> public/synthetic/redacted fixtures only until data classification, DPA, and eligible per-request ZDR are verified.</p></article>
+        <article class="risk"><h3>Model drift</h3><p><strong>Fact:</strong> the executable is pinnable; <code>typesafe-ai/jev</code> and the live catalog are mutable.</p><p><strong>Control:</strong> log catalog, response model, package integrity, hashes, date, usage, and provider metadata; reapprove on change.</p></article>
+        <article class="risk"><h3>Cost and retries</h3><p><strong>Fact:</strong> evaluate defaults to two retries and a 30-second deadline.</p><p><strong>Control:</strong> <code>--max-retries 0</code>, short timeout, hard byte/question/call caps, explicit spend ceiling, and no automatic paid fallback.</p></article>
+        <article class="risk"><h3>Artifact leakage</h3><p><strong>Fact:</strong> output may retain provider body, headers, metadata, warnings, and usage.</p><p><strong>Control:</strong> restricted ephemeral raw output, bounded normalized receipt, stripped bodies/headers, and hashes instead of bulky state.</p></article>
+        <article class="risk"><h3>Runtime availability</h3><p><strong>Fact:</strong> inference is network-bound and authenticated; catalog discovery can warn and return an empty list.</p><p><strong>Control:</strong> represent auth, timeout, provider, invalid-answer, and unavailable separately. None may silently pass or fail the real gate.</p></article>
+        <article class="risk"><h3>Young API surface</h3><p><strong>Fact:</strong> <code>experimental_evaluate</code> replaced three commands between 0.5.0 and 0.5.1; 0.5.2 followed two days later.</p><p><strong>Control:</strong> pin package and integrity, isolate behind an adapter, freeze fixtures, and contract-test every upgrade.</p></article>
+        <article class="risk"><h3>Runtime documentation mismatch</h3><p><strong>Fact:</strong> package metadata says Node ≥22; the installation page also mentions Bun. The published bundle ran under Node 22.22.3.</p><p><strong>Control:</strong> make package metadata and tested artifact authoritative; avoid a global install.</p></article>
+      </div>
+    </section>
+
+    <section id="decision">
+      <h2>Adoption decision tree</h2>
+      <div class="decision">
+        <div class="decision-step"><strong>1 · Is the result authoritative?</strong>If it can change a release, security decision, issue state, severity, tool call, or deterministic score: <span class="ledger-status rejected">reject ai-cli</span>.</div>
+        <div class="decision-step"><strong>2 · Is the input sensitive?</strong>If it includes secrets, private source, customer data, or raw transcripts without approved ZDR and contracts: <span class="ledger-status rejected">do not send it</span>.</div>
+        <div class="decision-step"><strong>3 · Is the gain measurable?</strong>If a frozen, blinded pilot beats a baseline under predeclared quality, stability, latency, injection, and cost bars: keep a narrow optional adapter. Otherwise delete it.</div>
+      </div>
+    </section>
+
+    <section id="ledger">
+      <h2>Falsification ledger</h2>
+      <p class="section-intro">The strongest result of the research is what did not survive contact with source and tests.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Verdict</th><th>Candidate claim</th><th>Strongest counter-evidence</th><th>Practical update</th></tr></thead>
+        <tbody>
+          <tr><td class="ledger-status rejected">REJECTED</td><td>v0.5.1 provides <code>filter</code>, <code>rank</code>, and <code>pick</code>.</td><td>The tag deletes their implementation; the index omits them; each published command exits 1 as unknown.</td><td>Only <code>evaluate</code> is in scope.</td></tr>
+          <tr><td class="ledger-status supported">SUPPORTED</td><td>v0.5.1 has a coherent machine-facing evaluate contract.</td><td>The semantics and some limits remain delegated to an experimental SDK/provider.</td><td>Trust parsing, output, and error shape within the pin—not judgment correctness.</td></tr>
+          <tr><td class="ledger-status rejected">REJECTED</td><td>CLI exit success can serve as semantic pass/fail.</td><td>Valid false and uncertain answers also exit 0.</td><td>Exit status is not a policy threshold.</td></tr>
+          <tr><td class="ledger-status weakened">WEAKENED</td><td>It directly fits the local bounded semantic-report schema.</td><td>The local schema requires bounded explanations; <code>evaluate</code> returns typed answers, not prose reasoning.</td><td>Use a separate shadow receipt. Never invent explanations.</td></tr>
+          <tr><td class="ledger-status rejected">REJECTED</td><td>It can replace deterministic Beads or Review Panel evidence checks.</td><td>It observes no tool trajectory, derives no hashes, detects no contamination, and independently verifies no source quote.</td><td>Keep deterministic and independent validation authoritative.</td></tr>
+          <tr><td class="ledger-status weakened">WEAKENED</td><td>Pinning <code>ai-cli@0.5.1</code> makes evaluation reproducible.</td><td>The live catalog and Jev alias are mutable; judgments are probabilistic.</td><td>Call it traceable, not reproducible.</td></tr>
+          <tr><td class="ledger-status rejected">REJECTED</td><td>Typed output makes hostile state safe.</td><td>Official Jev guidance says injected instructions and framing can move answers.</td><td>Types reduce parsing ambiguity, not trust risk.</td></tr>
+          <tr><td class="ledger-status weakened">WEAKENED</td><td>Gateway use is privacy-safe by default.</td><td>Vercel's retention policy does not govern upstream providers; ZDR needs eligibility and explicit options.</td><td>Start with public or synthetic fixtures only.</td></tr>
+          <tr><td class="ledger-status unresolved">UNRESOLVED</td><td>Jev materially improves scott-cc diagnostics or prioritization.</td><td>No repository-specific labeled live evaluation was authorized; upstream tests mock the Gateway.</td><td>Run the three bounded experiments before adoption.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="sources">
+      <h2>Evidence index</h2>
+      <p class="section-intro">Source code and tests outrank docs; immutable commit links outrank moving pages. Local file references explain the existing controls being compared.</p>
+      <div class="source-grid">
+        <div class="source"><span class="source-id">S1</span><div><a href="https://github.com/vercel-labs/ai-cli/blob/89ab66227644ad909e9c61a316176ceabe6c96f1/packages/ai-cli/package.json#L1-L55">Package identity</a><p>Version, license, Node engine, files, dependencies.</p></div></div>
+        <div class="source"><span class="source-id">S2</span><div><a href="https://github.com/vercel-labs/ai-cli/blob/89ab66227644ad909e9c61a316176ceabe6c96f1/packages/ai-cli/src/commands/evaluate.ts#L41-L143">Evaluate command</a><p>Flags, stdin, model, timeout, request, JSON output.</p></div></div>
+        <div class="source"><span class="source-id">S3</span><div><a href="https://github.com/vercel-labs/ai-cli/blob/89ab66227644ad909e9c61a316176ceabe6c96f1/packages/ai-cli/src/lib/evaluation.ts#L48-L147">Input validation</a><p>UTF-8, input mode, IDs, question schema.</p></div></div>
+        <div class="source"><span class="source-id">S4</span><div><a href="https://github.com/vercel-labs/ai-cli/blob/89ab66227644ad909e9c61a316176ceabe6c96f1/packages/ai-cli/src/lib/evaluation.ts#L155-L254">Evaluation call</a><p>Criteria, retries, provider options, single SDK call.</p></div></div>
+        <div class="source"><span class="source-id">S5</span><div><a href="https://github.com/vercel-labs/ai-cli/blob/89ab66227644ad909e9c61a316176ceabe6c96f1/packages/ai-cli/src/commands/evaluate.test.ts#L91-L139">Success tests</a><p>Complete JSON and mixed typed request.</p></div></div>
+        <div class="source"><span class="source-id">S6</span><div><a href="https://github.com/vercel-labs/ai-cli/blob/89ab66227644ad909e9c61a316176ceabe6c96f1/packages/ai-cli/src/commands/evaluate.test.ts#L259-L313">Exit/error tests</a><p>Zero probability succeeds; failures emit no partial JSON.</p></div></div>
+        <div class="source"><span class="source-id">S7</span><div><a href="https://github.com/vercel-labs/ai-cli/blob/89ab66227644ad909e9c61a316176ceabe6c96f1/packages/ai-cli/src/lib/models.ts#L97-L206">Model discovery</a><p>Live catalog, cache, timeout, fallback behavior.</p></div></div>
+        <div class="source"><span class="source-id">S8</span><div><a href="https://github.com/vercel-labs/ai-cli/pull/92">PR #92</a><p>Record commands replaced with typed evaluate.</p></div></div>
+        <div class="source"><span class="source-id">S9</span><div><a href="https://ai-cli.dev/docs/evaluate">Evaluate docs</a><p>Current command, input, output, and threshold warnings.</p></div></div>
+        <div class="source"><span class="source-id">S10</span><div><a href="https://docs.typesafe.ai/models">TypeSafe models</a><p>Jev pricing, context, aliases, limits, data claims.</p></div></div>
+        <div class="source"><span class="source-id">S11</span><div><a href="https://docs.typesafe.ai/model-jaggedness/jev-1.13">Jev limitations</a><p>Numerics, dates, context rot, injection, generation.</p></div></div>
+        <div class="source"><span class="source-id">S12</span><div><a href="https://vercel.com/docs/ai-gateway/security-and-compliance/zdr">Gateway ZDR</a><p>Eligibility, routing, provider options, caveats.</p></div></div>
+        <div class="source"><span class="source-id">S13</span><div><a href="https://vercel.com/docs/ai-gateway/faq">Gateway FAQ</a><p>Retention, metadata, providers, retries, costs.</p></div></div>
+        <div class="source"><span class="source-id">S14</span><div><a href="https://registry.npmjs.org/ai-cli/-/ai-cli-0.5.1.tgz">Published package</a><p>Registry artifact analyzed and integrity recorded.</p></div></div>
+        <div class="source"><span class="source-id">L1</span><div class="local-source"><strong>Deterministic evaluator:</strong><br><span class="mono">evaluation/beads-skill/harness/README.md:1–18</span><br><span class="mono">evaluation/beads-skill/harness/evaluator.py:388–426, 676–887</span></div></div>
+        <div class="source"><span class="source-id">L2</span><div class="local-source"><strong>Hermes bounds:</strong><br><span class="mono">skills/beads/scripts/hermes_discovery_harness.py:647–740, 1883–1950</span></div></div>
+        <div class="source"><span class="source-id">L3</span><div class="local-source"><strong>Review validation:</strong><br><span class="mono">plugins/review-panel/skills/review-panel/references/merge-and-validate.md:21–70, 130–220</span></div></div>
+        <div class="source"><span class="source-id">L4</span><div class="local-source"><strong>Triage lifecycle:</strong><br><span class="mono">plugins/triage/skills/triage-spine/SKILL.md:38–58, 82–188</span></div></div>
+        <div class="source"><span class="source-id">L5</span><div class="local-source"><strong>PAS provider boundary:</strong><br><span class="mono">skills/pas-pipeline/SKILL.md:40–68, 97–105</span></div></div>
+      </div>
+    </section>
+
+    <footer>
+      Self-contained engineering brief generated from an adversarial deep-research pass. Design source: scott-cc's existing paper-and-ink engineering brief style in <span class="mono">docs/reports/review-panel-context-hardening.html</span>. No external fonts, scripts, images, or runtime assets.
+    </footer>
+  </main>
+  <script>
+    (() => {
+      const buttons = [...document.querySelectorAll('[data-filter]')];
+      const cards = [...document.querySelectorAll('.fit-card[data-status]')];
+      const count = document.querySelector('.visible-count');
+      function applyFilter(filter) {
+        let visible = 0;
+        for (const card of cards) {
+          const show = filter === 'all' || card.dataset.status === filter;
+          card.hidden = !show;
+          if (show) visible += 1;
+        }
+        for (const button of buttons) {
+          button.setAttribute('aria-pressed', String(button.dataset.filter === filter));
+        }
+        count.textContent = `${visible} surface${visible === 1 ? '' : 's'} shown`;
+      }
+      for (const button of buttons) {
+        button.addEventListener('click', () => applyFilter(button.dataset.filter));
+      }
+    })();
+  </script>
+</body>
+</html>

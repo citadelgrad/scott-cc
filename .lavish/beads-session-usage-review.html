@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Beads Usage Review — Last 50 Sessions</title>
+  <style>
+    :root {
+      --ink: #16201c;
+      --muted: #5b6862;
+      --paper: #f3f0e8;
+      --surface: #fffdf7;
+      --surface-2: #faf7ef;
+      --line: #d8d2c3;
+      --green: #1e6b50;
+      --green-soft: #dcece4;
+      --amber: #a65f14;
+      --amber-soft: #f5e7d3;
+      --red: #a23f35;
+      --red-soft: #f3ddda;
+      --blue: #315b7d;
+      --blue-soft: #dfe9f1;
+      --shadow: 0 14px 40px rgba(35, 39, 34, .08);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(rgba(255,255,255,.32) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.32) 1px, transparent 1px),
+        var(--paper);
+      background-size: 26px 26px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+    button, input { font: inherit; }
+    a { color: var(--blue); }
+    code {
+      color: #244b68;
+      background: #e8eef2;
+      padding: 2px 5px;
+      border-radius: 5px;
+      font-family: var(--mono);
+      font-size: .84em;
+      overflow-wrap: anywhere;
+    }
+    .page { width: min(1480px, calc(100% - 64px)); margin: 0 auto; padding: 36px 0 72px; }
+    header {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(30px, 5vw, 58px);
+      color: #fdf9ee;
+      background: var(--ink);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+    header::after {
+      content: "";
+      position: absolute;
+      width: 330px;
+      height: 330px;
+      right: -120px;
+      top: -145px;
+      border: 52px solid rgba(113, 192, 155, .17);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .eyebrow { color: #8dd2ae; letter-spacing: .14em; font-size: .78rem; font-weight: 800; text-transform: uppercase; }
+    h1 { max-width: 920px; margin: 12px 0 16px; font-size: clamp(2.2rem, 5vw, 4.5rem); line-height: 1.02; letter-spacing: -.045em; }
+    .lede { max-width: 950px; margin: 0; color: #d6ddd8; font-size: clamp(1rem, 1.35vw, 1.22rem); }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+    .badge { display: inline-flex; align-items: center; gap: 8px; padding: 7px 11px; border: 1px solid rgba(255,255,255,.18); border-radius: 999px; color: #e8eee9; font-size: .82rem; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #7dd5a8; box-shadow: 0 0 0 4px rgba(125,213,168,.14); }
+    nav { display: flex; gap: 8px; flex-wrap: wrap; margin: 22px 0; }
+    nav a { color: var(--ink); background: rgba(255,255,255,.68); border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; text-decoration: none; font-size: .84rem; font-weight: 750; }
+    nav a:hover, nav a:focus-visible { background: #fff; outline: 2px solid var(--blue); outline-offset: 2px; }
+    section { margin-top: 24px; padding: clamp(22px, 4vw, 38px); background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); min-width: 0; }
+    h2 { margin: 0 0 8px; font-size: clamp(1.45rem, 3vw, 2.2rem); letter-spacing: -.025em; }
+    h3 { margin: 0 0 8px; font-size: 1.04rem; }
+    p { margin-top: 0; }
+    .section-intro { color: var(--muted); max-width: 860px; margin: 0 0 24px; }
+    .metrics { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+    .metric { min-width: 0; padding: 18px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface-2); }
+    .metric strong { display: block; font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1; letter-spacing: -.04em; }
+    .metric span { display: block; color: var(--muted); margin-top: 8px; font-size: .83rem; }
+    .metric.good strong { color: var(--green); }
+    .metric.warn strong { color: var(--amber); }
+    .metric.danger strong { color: var(--red); }
+    .callout { display: grid; grid-template-columns: 9px minmax(0, 1fr); gap: 16px; margin-top: 20px; padding: 19px 20px; background: var(--green-soft); border: 1px solid #b4d6c5; border-radius: 14px; }
+    .callout .bar { border-radius: 999px; background: var(--green); }
+    .callout strong { display: block; margin-bottom: 3px; }
+    .callout p { margin: 0; }
+    .comparison { display: grid; grid-template-columns: minmax(0, 1fr) 58px minmax(0, 1fr); gap: 14px; align-items: stretch; }
+    .state { min-width: 0; border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+    .state.before { background: var(--amber-soft); border-color: #dfc3a0; }
+    .state.after { background: var(--green-soft); border-color: #b4d6c5; }
+    .state ul { margin: 12px 0 0; padding-left: 20px; }
+    .state li { margin: 7px 0; }
+    .arrow { display: grid; place-items: center; color: var(--green); font-size: 2rem; font-weight: 900; }
+    .flow-wrap { overflow-x: auto; margin-top: 22px; padding: 8px 2px 10px; }
+    .flow { min-width: 940px; display: grid; grid-template-columns: repeat(11, minmax(80px, 1fr)); align-items: center; gap: 8px; }
+    .node { min-width: 0; min-height: 96px; display: grid; place-content: center; text-align: center; padding: 12px 8px; border: 1px solid #b9c8d4; background: var(--blue-soft); border-radius: 12px; font-weight: 800; font-size: .82rem; }
+    .node.required { color: #fdf9ee; background: var(--green); border-color: var(--green); }
+    .node small { display: block; color: inherit; opacity: .72; font-weight: 550; margin-top: 5px; }
+    .connector { color: var(--blue); text-align: center; font-weight: 900; }
+    .toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 18px 0; }
+    .toolbar-label { color: var(--muted); font-size: .8rem; font-weight: 750; margin-right: 4px; }
+    .filter { appearance: none; padding: 7px 11px; color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 999px; cursor: pointer; font-weight: 750; font-size: .8rem; }
+    .filter[aria-pressed="true"] { color: white; background: var(--ink); border-color: var(--ink); }
+    .recommendations { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .recommendation { min-width: 0; padding: 20px; background: #fcfaf4; border: 1px solid var(--line); border-radius: 14px; }
+    .recommendation[hidden] { display: none; }
+    .rec-top { display: flex; align-items: flex-start; gap: 12px; }
+    .number { flex: 0 0 auto; width: 30px; height: 30px; display: grid; place-items: center; color: white; background: var(--blue); border-radius: 8px; font: 800 .78rem var(--mono); }
+    .rec-title { min-width: 0; flex: 1; }
+    .rec-title h3 { margin-bottom: 3px; }
+    .severity { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: .76rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+    .severity::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--amber); }
+    [data-priority="P2"] .severity::before { background: var(--blue); }
+    .evidence { margin: 15px 0 0; padding: 12px 14px; background: #fff; border-left: 3px solid var(--line); color: var(--muted); font-size: .86rem; }
+    .action { margin: 13px 0 0; font-size: .9rem; }
+    .action strong { color: var(--green); }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    th, td { padding: 12px 14px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+    th { color: var(--muted); background: var(--surface-2); text-transform: uppercase; letter-spacing: .07em; font-size: .7rem; }
+    tr:last-child td { border-bottom: 0; }
+    .good-text { color: var(--green); font-weight: 800; }
+    .warn-text { color: var(--amber); font-weight: 800; }
+    .danger-text { color: var(--red); font-weight: 800; }
+    .review-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 16px; }
+    .decision, .select-plan { min-width: 0; padding: 22px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-2); }
+    fieldset { margin: 14px 0 0; padding: 0; border: 0; }
+    legend { margin-bottom: 10px; font-weight: 800; }
+    .choice { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; align-items: start; padding: 11px 12px; margin: 8px 0; background: white; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
+    .choice:has(input:checked) { background: var(--green-soft); border-color: #8ebfa8; }
+    .choice input { margin-top: 4px; }
+    .choice strong { display: block; }
+    .choice small { display: block; color: var(--muted); margin-top: 2px; }
+    .button-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+    .button { padding: 9px 13px; border: 1px solid var(--ink); border-radius: 9px; cursor: pointer; font-weight: 800; }
+    .button.primary { color: white; background: var(--ink); }
+    .button.secondary { color: var(--ink); background: transparent; }
+    .button:hover, .button:focus-visible { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(35,39,34,.12); outline: 2px solid var(--blue); outline-offset: 2px; }
+    .queue-status { min-height: 24px; margin-top: 10px; color: var(--green); font-size: .82rem; font-weight: 750; }
+    .session-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 0; margin: 16px 0 0; list-style: none; }
+    .session-list li { min-width: 0; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; }
+    .session-list strong { display: block; margin-bottom: 4px; }
+    .session-id { display: block; color: var(--muted); font: .74rem var(--mono); overflow-wrap: anywhere; }
+    footer { margin-top: 20px; padding: 18px 4px; color: var(--muted); font-size: .82rem; }
+    @media (max-width: 1100px) {
+      .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .recommendations { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 760px) {
+      .page { width: min(100% - 20px, 1480px); padding-top: 10px; }
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .comparison, .review-grid { grid-template-columns: 1fr; }
+      .arrow { transform: rotate(90deg); min-height: 42px; }
+      .session-list { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 460px) { .metrics { grid-template-columns: 1fr; } }
+    @media print {
+      body { background: white; }
+      .page { width: 100%; }
+      header, section { box-shadow: none; break-inside: avoid; }
+      nav, .toolbar, .button-row, .queue-status { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">Engineering workflow review · Beads</div>
+      <h1>Excellent issue quality. Inconsistent lifecycle discipline.</h1>
+      <p class="lede">A review of the 50 most recent titled Hermes sessions found that the content inside Beads is generally rigorous. The opportunity is not “more Beads.” It is a mechanical entry-and-exit contract for every durable engineering session.</p>
+      <div class="status-row">
+        <span class="badge"><span class="dot"></span> Evidence extracted from actual tool calls</span>
+        <span class="badge">50 sessions reviewed</span>
+        <span class="badge">41 interactive · 9 cron</span>
+        <span class="badge">Read-only review</span>
+      </div>
+    </header>
+
+    <nav aria-label="Report sections">
+      <a href="#scorecard">Scorecard</a>
+      <a href="#workflow">Current → target</a>
+      <a href="#recommendations">Recommendations</a>
+      <a href="#evidence">Evidence</a>
+      <a href="#strengths">Strengths</a>
+      <a href="#review">Review decisions</a>
+    </nav>
+
+    <section id="scorecard">
+      <h2>What the sessions say</h2>
+      <p class="section-intro">Counts below are based on executable terminal calls, not Beads commands appearing in injected skill instructions.</p>
+      <div class="metrics">
+        <article class="metric"><strong>50</strong><span>Recent titled sessions reviewed</span></article>
+        <article class="metric"><strong>41</strong><span>Interactive sessions after excluding cron</span></article>
+        <article class="metric good"><strong>27</strong><span>Interactive sessions that used Beads</span></article>
+        <article class="metric danger"><strong>0</strong><span>Sessions that ran a project-appropriate lifecycle gate</span></article>
+        <article class="metric warn"><strong>9</strong><span>Sessions that used a schema-skew bypass</span></article>
+      </div>
+      <div class="callout">
+        <span class="bar" aria-hidden="true"></span>
+        <div><strong>The thesis</strong><p>Issue modeling is already above average: strong acceptance criteria, dependencies, evidence notes, and close reasons. The missing layer is a fail-closed lifecycle around that good data.</p></div>
+      </div>
+    </section>
+
+    <section id="workflow">
+      <h2>From optional bookkeeping to an owning-work contract</h2>
+      <p class="section-intro">Today, sessions often inspect Beads but do not mechanically prove ownership or completion. The target workflow makes every state transition explicit.</p>
+      <div class="comparison">
+        <article class="state before">
+          <h3>Observed pattern</h3>
+          <ul>
+            <li>Run <code>bd prime</code> or <code>bd show</code>.</li>
+            <li>Perform substantial implementation or operational work.</li>
+            <li>Sometimes update notes or close; sometimes stop at a prose summary.</li>
+            <li>Application tests run, but Beads preflight does not.</li>
+            <li>Schema bypasses survive beyond their recovery window.</li>
+          </ul>
+        </article>
+        <div class="arrow" aria-hidden="true">→</div>
+        <article class="state after">
+          <h3>Recommended contract</h3>
+          <ul>
+            <li>Discover one owning bead and inspect its scope.</li>
+            <li>Atomically claim or confirm ownership before work.</li>
+            <li>Append bounded evidence and remaining risks.</li>
+            <li>Run a project-owned Beads lifecycle verifier.</li>
+            <li>Close, defer, or leave a resumable checkpoint—never ambiguous limbo.</li>
+          </ul>
+        </article>
+      </div>
+      <div class="flow-wrap" aria-label="Recommended Beads lifecycle">
+        <div class="flow">
+          <div class="node">PRIME<small>load project context</small></div><div class="connector">→</div>
+          <div class="node">SEARCH<small>avoid duplicates</small></div><div class="connector">→</div>
+          <div class="node required">CLAIM<small>bind ownership</small></div><div class="connector">→</div>
+          <div class="node">WORK<small>execute + verify</small></div><div class="connector">→</div>
+          <div class="node required">VERIFY<small>project-aware lifecycle gate</small></div><div class="connector">→</div>
+          <div class="node required">CLOSE / DEFER<small>explicit terminal state</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="recommendations">
+      <h2>Recommended changes</h2>
+      <p class="section-intro">Prioritized by expected impact. Use the filters to narrow the review; every card can be annotated directly in Lavish.</p>
+      <div class="toolbar" aria-label="Recommendation filters">
+        <span class="toolbar-label">Show:</span>
+        <button class="filter" type="button" data-filter="all" aria-pressed="true">All</button>
+        <button class="filter" type="button" data-filter="P1" aria-pressed="false">P1 · lifecycle</button>
+        <button class="filter" type="button" data-filter="P2" aria-pressed="false">P2 · leverage</button>
+      </div>
+      <div class="recommendations">
+        <article class="recommendation" data-priority="P1">
+          <div class="rec-top"><div class="number">01</div><div class="rec-title"><h3>Bind every durable engineering session to one bead</h3><span class="severity">P1 · lifecycle</span></div></div>
+          <div class="evidence">Of 27 Beads-using sessions, 20 showed issues but only 8 explicitly claimed one. Existing in-progress state may explain some cases, but ownership was not mechanically asserted.</div>
+          <p class="action"><strong>Action:</strong> Standardize <code>prime → search → show → claim</code> at session start.</p>
+        </article>
+        <article class="recommendation" data-priority="P1">
+          <div class="rec-top"><div class="number">02</div><div class="rec-title"><h3>Add a project-aware lifecycle gate</h3><span class="severity">P1 · lifecycle</span></div></div>
+          <div class="evidence">The built-in <code>bd preflight --check</code> is not a generic project gate: in this Python repository it incorrectly invokes Go tests, golangci-lint, gofmt, go.sum, and Beads CLI version checks.</div>
+          <p class="action"><strong>Action:</strong> Build a scott-cc lifecycle verifier that checks issue binding, status, schema-bypass absence, decision labels, and the repository's real quality commands.</p>
+        </article>
+        <article class="recommendation" data-priority="P1">
+          <div class="rec-top"><div class="number">03</div><div class="rec-title"><h3>Expire schema-recovery bypasses</h3><span class="severity">P1 · safety</span></div></div>
+          <div class="evidence">Nine sessions used <code>BD_IGNORE_SCHEMA_SKEW=1</code> or <code>--ignore-schema-skew</code>. A recovery session later proved all canonical workspaces passed normal status, yet bypass use continued.</div>
+          <p class="action"><strong>Action:</strong> Allow bypass only inside a bounded recovery procedure; reject it in normal workflows afterward.</p>
+        </article>
+        <article class="recommendation" data-priority="P1">
+          <div class="rec-top"><div class="number">04</div><div class="rec-title"><h3>Create beads for durable repository and service changes</h3><span class="severity">P1 · coverage</span></div></div>
+          <div class="evidence">The skill-cabinet session changed inc-prod configuration, Homebrew state, a managed service, an alias, and the port registry—but only ran <code>bd prime</code>.</div>
+          <p class="action"><strong>Action:</strong> If work changes a repository, deployment, managed service, or durable machine configuration, require an owning bead.</p>
+        </article>
+        <article class="recommendation" data-priority="P2">
+          <div class="rec-top"><div class="number">05</div><div class="rec-title"><h3>Surface decision beads through the human queue</h3><span class="severity">P2 · discoverability</span></div></div>
+          <div class="evidence">Current decision issues <code>scc-pjk</code> and <code>scc-i2w</code> correctly await Scott, but lack the <code>human</code> label and therefore do not appear in <code>bd human list</code>.</div>
+          <p class="action"><strong>Action:</strong> Label human-blocked decisions <code>human</code>; keep them unclaimed until answered.</p>
+        </article>
+        <article class="recommendation" data-priority="P2">
+          <div class="rec-top"><div class="number">06</div><div class="rec-title"><h3>Prefer append-only, structured checkpoints</h3><span class="severity">P2 · evidence</span></div></div>
+          <div class="evidence">Mutation and migration sessions recorded excellent evidence, but sometimes embedded large reports directly in <code>--notes</code>.</div>
+          <p class="action"><strong>Action:</strong> Use <code>--append-notes</code>, artifact paths/hashes, <code>--external-ref</code>, and <code>--await-id</code> where applicable.</p>
+        </article>
+        <article class="recommendation" data-priority="P2">
+          <div class="rec-top"><div class="number">07</div><div class="rec-title"><h3>Use project memory for reusable operating knowledge</h3><span class="severity">P2 · continuity</span></div></div>
+          <div class="evidence">No reviewed session used <code>bd remember</code>, despite several reusable lessons: mutation-worktree placement, Dolt recovery invariants, and project-specific migration verification rules.</div>
+          <p class="action"><strong>Action:</strong> Save stable cross-issue facts only—not temporary status or task progress.</p>
+        </article>
+        <article class="recommendation" data-priority="P2">
+          <div class="rec-top"><div class="number">08</div><div class="rec-title"><h3>Make repository selection explicit</h3><span class="severity">P2 · correctness</span></div></div>
+          <div class="evidence">Sixteen Beads-using sessions had no persisted session workspace. Tool-level workdirs often saved them, but compaction or a bare command could target the wrong database.</div>
+          <p class="action"><strong>Action:</strong> Start inside the owning repository and use <code>bd -C /absolute/repo/path …</code> in scripts and delegated work.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="evidence">
+      <h2>Lifecycle evidence matrix</h2>
+      <p class="section-intro">The numbers show strong issue content but uneven session boundaries.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Behavior</th><th>Sessions</th><th>Assessment</th><th>Interpretation</th></tr></thead>
+          <tbody>
+            <tr><td>Used Beads</td><td><strong>27 / 41</strong> interactive</td><td class="good-text">Healthy</td><td>Beads is already a normal part of engineering work.</td></tr>
+            <tr><td>Ran <code>bd prime</code></td><td><strong>21</strong></td><td class="good-text">Healthy</td><td>Context recovery is common and usually early.</td></tr>
+            <tr><td>Inspected an issue</td><td><strong>20</strong></td><td class="good-text">Healthy</td><td>Agents generally look before acting.</td></tr>
+            <tr><td>Explicitly claimed</td><td><strong>8</strong></td><td class="warn-text">Inconsistent</td><td>Ownership is often implicit rather than mechanically proven.</td></tr>
+            <tr><td>Closed an issue</td><td><strong>11</strong></td><td class="warn-text">Contextual</td><td>Some sessions were intentionally ongoing, but exit state is not consistently explicit.</td></tr>
+            <tr><td>Closed with reason</td><td><strong>10 / 11</strong> closes</td><td class="good-text">Excellent</td><td>When closure happens, the rationale is usually durable and specific.</td></tr>
+            <tr><td>Created issues with acceptance criteria</td><td><strong>5 / 6</strong> creation sessions</td><td class="good-text">Excellent</td><td>Newly modeled work is generally testable and well bounded.</td></tr>
+            <tr><td>Ran a project-appropriate lifecycle gate</td><td><strong>0</strong></td><td class="danger-text">Gap</td><td>The built-in <code>bd preflight --check</code> is Beads-source-specific, so this repository needs its own verifier.</td></tr>
+            <tr><td>Used schema bypass</td><td><strong>9</strong></td><td class="danger-text">Risk</td><td>A recovery-only mechanism leaked into ordinary workflows.</td></tr>
+            <tr><td>Delegated child sessions writing Beads</td><td><strong>0 / 262</strong></td><td class="good-text">Excellent</td><td>Parent-owned mutation discipline is already working.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="strengths">
+      <h2>Keep these behaviors</h2>
+      <p class="section-intro">The review is not an argument for more ceremony. These are already strong and should remain untouched.</p>
+      <div class="recommendations">
+        <article class="recommendation" data-priority="keep"><h3>Acceptance criteria are concrete</h3><p>Major epics usually define measurable outcomes, boundary behavior, dependencies, and explicit exclusions.</p></article>
+        <article class="recommendation" data-priority="keep"><h3>Close reasons carry evidence</h3><p>Ten of eleven closing sessions recorded a reason; release and mutation work frequently included exact verification results.</p></article>
+        <article class="recommendation" data-priority="keep"><h3>Dependencies model real ordering</h3><p>Mutation-testing and RAG epics used parent-child structure and blocker edges rather than flat issue piles.</p></article>
+        <article class="recommendation" data-priority="keep"><h3>Delegated workers do not mutate project state</h3><p>Across 262 related child sessions, no Beads writes were detected. Keep lifecycle ownership in the parent.</p></article>
+      </div>
+    </section>
+
+    <section id="review">
+      <h2>Choose the adoption level</h2>
+      <p class="section-intro">Select a policy and the recommendations you want implemented. Queueing sends one precise prompt back through Lavish; selections stay local until you press the button.</p>
+      <div class="review-grid">
+        <form class="decision" id="policy-form" data-lavish-question="beads-policy">
+          <h3>Lifecycle policy</h3>
+          <fieldset>
+            <legend>How strict should the default be?</legend>
+            <label class="choice"><input type="radio" name="policy" value="Balanced" checked><span><strong>Balanced — recommended</strong><small>Require ownership, checkpoint, a project-aware lifecycle gate, and terminal state for durable repository work. Skip Beads for disposable personal troubleshooting.</small></span></label>
+            <label class="choice"><input type="radio" name="policy" value="Minimum"><span><strong>Minimum</strong><small>Add preflight and stop schema bypasses, but leave claiming and close-state discipline advisory.</small></span></label>
+            <label class="choice"><input type="radio" name="policy" value="Strict"><span><strong>Strict</strong><small>Every repository-changing session must create or claim an issue before any edit, with automated enforcement.</small></span></label>
+          </fieldset>
+          <div class="button-row"><button class="button primary" type="submit">Queue policy choice</button></div>
+          <div class="queue-status" id="policy-status" aria-live="polite"></div>
+        </form>
+
+        <form class="select-plan" id="actions-form" data-lavish-question="beads-actions">
+          <h3>Implementation scope</h3>
+          <fieldset>
+            <legend>Select recommended changes</legend>
+            <label class="choice"><input type="checkbox" name="action" value="session lifecycle contract" checked><span><strong>Session lifecycle contract</strong><small>Prime, discover, claim, checkpoint, project-aware verification, terminal state.</small></span></label>
+            <label class="choice"><input type="checkbox" name="action" value="schema bypass expiration" checked><span><strong>Schema bypass expiration</strong><small>Fail normal workflows that retain recovery-only flags.</small></span></label>
+            <label class="choice"><input type="checkbox" name="action" value="human decision queue"><span><strong>Human decision queue</strong><small>Label and surface decision beads needing Scott.</small></span></label>
+            <label class="choice"><input type="checkbox" name="action" value="structured evidence and project memory"><span><strong>Structured evidence + memory</strong><small>Append-only checkpoints, artifact references, stable facts.</small></span></label>
+          </fieldset>
+          <div class="button-row"><button class="button primary" type="submit">Queue selected changes</button><button class="button secondary" type="button" id="copy-summary">Copy summary</button></div>
+          <div class="queue-status" id="actions-status" aria-live="polite"></div>
+        </form>
+      </div>
+    </section>
+
+    <section id="sessions">
+      <h2>Representative session evidence</h2>
+      <p class="section-intro">Exact session identifiers are preserved for follow-up in Hermes.</p>
+      <ul class="session-list">
+        <li><strong>Strong epic modeling</strong><span>Mutation-driven core model hardening</span><span class="session-id">@session:default/20260830_001749_c771e2</span></li>
+        <li><strong>Strong dependency modeling</strong><span>RAG abstraction-quality audit and epic</span><span class="session-id">@session:default/20260901_225851_68ab44</span></li>
+        <li><strong>Strong evidence and close reason</strong><span>Review-panel context hardening release</span><span class="session-id">@session:default/20260830_221038_634c33</span></li>
+        <li><strong>Recovery proved normal operation</strong><span>Beads/Dolt schema mismatch resolution</span><span class="session-id">@session:default/20260828_233327_4e1f68</span></li>
+        <li><strong>Bypass persisted afterward</strong><span>Database migration continuation</span><span class="session-id">@session:default/20260829_125605_7f91f0</span></li>
+        <li><strong>Durable work without an owning issue</strong><span>skill-cabinet service and port registration</span><span class="session-id">@session:default/20260831_131828_6bfde1</span></li>
+      </ul>
+    </section>
+
+    <footer>Generated from the 50 most recent titled sessions visible during the review. Source: Hermes session database and live <code>bd</code> CLI state. No Beads issues or repository code were mutated by the review.</footer>
+  </main>
+
+  <script>
+    const filters = document.querySelectorAll('.filter');
+    const cards = document.querySelectorAll('#recommendations .recommendation');
+    filters.forEach((button) => {
+      button.addEventListener('click', () => {
+        const selected = button.dataset.filter;
+        filters.forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+        cards.forEach((card) => { card.hidden = selected !== 'all' && card.dataset.priority !== selected; });
+      });
+    });
+
+    function queuePrompt(text, options, statusElement) {
+      if (window.lavish && typeof window.lavish.queuePrompt === 'function') {
+        window.lavish.queuePrompt(text, options);
+        statusElement.textContent = 'Queued for review. Use Lavish “Send to Agent” when ready.';
+      } else {
+        navigator.clipboard.writeText(text).then(
+          () => { statusElement.textContent = 'Lavish bridge not detected; prompt copied to clipboard.'; },
+          () => { statusElement.textContent = text; }
+        );
+      }
+    }
+
+    document.getElementById('policy-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const policy = new FormData(event.currentTarget).get('policy');
+      if (!policy) return;
+      queuePrompt(
+        `Adopt the ${policy} Beads lifecycle policy from the HTML review artifact. Update the relevant project guidance and enforcement with tests, while preserving the report's stated non-goals.`,
+        { tag: 'choice', text: `Beads policy: ${policy}`, queueKey: 'beads-policy', element: event.currentTarget, data: { policy } },
+        document.getElementById('policy-status')
+      );
+    });
+
+    document.getElementById('actions-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const actions = [...new FormData(event.currentTarget).getAll('action')];
+      if (!actions.length) {
+        document.getElementById('actions-status').textContent = 'Select at least one change.';
+        return;
+      }
+      queuePrompt(
+        `Implement these approved Beads improvements from the HTML review artifact: ${actions.join('; ')}. Create acceptance criteria first, track the work in Beads, verify mechanically, and present the diff for review.`,
+        { tag: 'scope', text: `Approved changes: ${actions.join(', ')}`, queueKey: 'beads-actions', element: event.currentTarget, data: { actions } },
+        document.getElementById('actions-status')
+      );
+    });
+
+    document.getElementById('copy-summary').addEventListener('click', () => {
+      const summary = 'Beads review: issue quality is strong; adopt a mechanical session lifecycle, add a project-aware lifecycle verifier before close/push, expire schema bypasses, surface human decisions, and use bounded append-only evidence.';
+      navigator.clipboard.writeText(summary).then(() => {
+        document.getElementById('actions-status').textContent = 'Summary copied.';
+      });
+    });
+  </script>
+</body>
+</html>

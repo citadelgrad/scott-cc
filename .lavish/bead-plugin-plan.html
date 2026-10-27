@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Beads workflow — skill first, scoped hooks second</title>
+  <style>
+    :root{--paper:#fffefa;--ink:#18231e;--muted:#667169;--line:#d9ddd4;--navy:#153047;--blue:#26627f;--green:#177149;--green-soft:#e7f5ec;--amber:#9a5d16;--amber-soft:#fff2dc;--red:#9b4037;--red-soft:#fbe9e7;--shadow:0 12px 34px rgba(26,43,34,.08);--mono:ui-monospace,SFMono-Regular,Menlo,monospace;--sans:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}*{box-sizing:border-box}body{margin:0;background:linear-gradient(150deg,#f6f3eb,#edf2ed);color:var(--ink);font:16px/1.55 var(--sans)}code{font-family:var(--mono);font-size:.9em;background:#edf1ed;border:1px solid #d7ddd8;border-radius:5px;padding:.08rem .32rem;overflow-wrap:anywhere}.page{width:min(1420px,calc(100% - 40px));margin:auto;padding:18px 0 50px}header,section{background:var(--paper);border:1px solid var(--line);box-shadow:var(--shadow)}header{padding:clamp(36px,6vw,76px);border-radius:22px;background:var(--navy);color:white}header code{color:#fff;background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.25)}.eyebrow{color:#95d8b5;text-transform:uppercase;letter-spacing:.15em;font-size:.76rem;font-weight:850}h1{max-width:1000px;margin:12px 0 18px;font-size:clamp(2.3rem,5.7vw,4.7rem);line-height:.99;letter-spacing:-.05em}.lede{max-width:970px;margin:0;color:#d5dfd9;font-size:clamp(1rem,1.4vw,1.2rem)}.pills{display:flex;gap:9px;flex-wrap:wrap;margin-top:25px}.pill{padding:7px 11px;border:1px solid rgba(255,255,255,.2);border-radius:999px;font-size:.8rem}.pill strong{color:#9ce1be}nav{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}nav a{padding:7px 11px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.75);color:var(--ink);text-decoration:none;font-size:.82rem;font-weight:760}section{margin-top:20px;padding:clamp(22px,4vw,38px);border-radius:18px;min-width:0}h2{margin:0 0 8px;font-size:clamp(1.45rem,3vw,2.2rem);letter-spacing:-.03em}h3{margin:0 0 7px}.intro{max-width:920px;margin:0 0 22px;color:var(--muted)}.callout{padding:19px 21px;border-left:6px solid var(--green);border-radius:12px;background:var(--green-soft)}.callout strong{display:block;font-size:1.08rem}.callout p:last-child{margin-bottom:0}.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.card{min-width:0;padding:20px;border:1px solid var(--line);border-radius:14px;background:#f8faf7}.card.good{background:var(--green-soft);border-color:#b6d9c7}.card.warn{background:var(--amber-soft);border-color:#dfc59f}.card.bad{background:var(--red-soft);border-color:#dfbbb6}.card p:last-child,.card ul:last-child{margin-bottom:0}.card ul{padding-left:19px}.card li{margin:6px 0}.rank{display:inline-grid;place-items:center;width:29px;height:29px;margin-bottom:10px;border-radius:8px;background:var(--green);color:#fff;font:850 .78rem var(--mono)}.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}table{width:100%;border-collapse:collapse;font-size:.9rem}th,td{padding:12px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}th{background:#f2f5f1;color:var(--muted);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase}tr:last-child td{border-bottom:0}.yes{color:var(--green);font-weight:850}.no{color:var(--red);font-weight:850}.limited{color:var(--amber);font-weight:850}.figure{overflow-x:auto;padding:16px;border:1px solid var(--line);border-radius:14px;background:#f4f7f3}.figure svg{display:block;width:100%;min-width:880px;height:auto}.caption{margin:10px 0 0;color:var(--muted);font-size:.82rem}.steps{display:grid;gap:9px}.step{display:grid;grid-template-columns:40px minmax(0,1fr);gap:13px;padding:15px;border:1px solid var(--line);border-radius:12px;background:#fafbf9}.num{display:grid;place-items:center;width:34px;height:34px;border-radius:8px;background:var(--blue);color:white;font:850 .78rem var(--mono)}.step p{margin:2px 0;color:var(--muted)}.note{padding:18px 20px;border:1px solid #dfc39a;border-radius:12px;background:var(--amber-soft)}.note p:last-child{margin-bottom:0}.verdict{padding:22px;border:2px solid var(--green);border-radius:15px;background:linear-gradient(145deg,#e7f5ec,#fbfdfb)}.verdict h3{color:var(--green);font-size:1.3rem}footer{padding:18px 4px;color:var(--muted);font-size:.82rem}@media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr}}@media(max-width:700px){.page{width:min(100% - 20px,1420px);padding-top:10px}.figure svg{min-width:0}#pas .table-wrap{overflow:visible;border:0}#pas table,#pas tbody,#pas tr,#pas td{display:block;width:100%}#pas thead{display:none}#pas tr{margin-bottom:12px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}#pas td{padding:10px 12px;border-bottom:1px solid var(--line)}#pas td:last-child{border-bottom:0}#pas td::before{display:block;margin-bottom:3px;color:var(--muted);font-size:.67rem;font-weight:850;letter-spacing:.08em;text-transform:uppercase}#pas td:nth-child(1)::before{content:"Decision dimension"}#pas td:nth-child(2)::before{content:"Planned Hermes skill"}#pas td:nth-child(3)::before{content:"PAS + separate Codex"}#pas td:nth-child(4)::before{content:"Practical consequence"}}@media print{body{background:white}.page{width:100%}header,section{box-shadow:none}nav{display:none}}
+  </style>
+</head>
+<body><main class="page">
+<header>
+  <div class="eyebrow">Second revision · scope before machinery</div>
+  <h1>Start with the Beads skill. Add hooks only for proven enforcement gaps.</h1>
+  <p class="lede">A skill is the right home for workflow knowledge. A hook is justified only when we need mechanical enforcement that prose cannot provide. Those hooks can be scoped to Beads sessions instead of policing every Hermes task.</p>
+  <div class="pills"><span class="pill"><strong>Recommended now:</strong> improve skill</span><span class="pill"><strong>Deferred:</strong> enforcement plugin</span><span class="pill"><strong>No new commands</strong></span><span class="pill"><strong>Scope:</strong> armed sessions only</span></div>
+</header>
+<nav><a href="#answer">Answer</a><a href="#choice">Skill vs hook</a><a href="#scope">Scoping</a><a href="#pas">PAS comparison</a><a href="#swarm">Hermes swarm</a><a href="#flow">Flow</a><a href="#limits">Limits</a><a href="#recommendation">Recommendation</a></nav>
+
+<section id="answer">
+  <h2>Yes—but not declaratively</h2>
+  <p class="intro">Hermes does not currently expose a “run this hook only while skill X is active” option on <code>register_hook()</code>. Enabled plugin callbacks are invoked for their registered events.</p>
+  <div class="callout"><strong>We can still scope behavior precisely.</strong><p>The callback immediately returns <code>None</code> unless the current session has loaded the <code>beads</code> skill. Hermes exposes <code>on_skill_lifecycle</code> with <code>action="loaded"</code>, <code>skill_name</code>, and <code>session_id</code>, so a companion plugin can arm policy for that session and stay inert everywhere else.</p></div>
+  <div class="note" style="margin-top:13px"><p><strong>Important distinction:</strong> the hook technically fires, but it performs no Beads lookup and cannot block anything unless the session is armed. This is conditional behavior, not a native per-skill hook registration feature.</p></div>
+</section>
+
+<section id="choice">
+  <h2>Skill and hooks solve different problems</h2>
+  <div class="table-wrap"><table><thead><tr><th>Concern</th><th>Beads skill</th><th>Scoped hook companion</th></tr></thead><tbody>
+    <tr><td>Teach the workflow and native commands</td><td class="yes">Best fit</td><td class="no">Wrong layer</td></tr>
+    <tr><td>Explain when to create, claim, update, defer, or close</td><td class="yes">Best fit</td><td class="no">Should not duplicate this</td></tr>
+    <tr><td>Adapt to task nuance and exceptions</td><td class="yes">LLM can reason from guidance</td><td class="limited">Rigid policy is risky</td></tr>
+    <tr><td>Stop a file write before execution</td><td class="no">Cannot enforce</td><td class="yes"><code>pre_tool_call</code> can block</td></tr>
+    <tr><td>Prevent a premature final answer</td><td class="no">Advisory only</td><td class="yes"><code>pre_verify</code> can continue</td></tr>
+    <tr><td>Know a Beads skill was loaded</td><td>It is the event source</td><td class="yes"><code>on_skill_lifecycle</code> observes it</td></tr>
+  </tbody></table></div>
+</section>
+
+<section id="options">
+  <h2>Three designs</h2>
+  <div class="grid3">
+    <article class="card good"><span class="rank">1</span><h3>Skill only</h3><p>Improve the existing <code>beads</code> skill with the lifecycle guidance discovered in the 50-session review. No runtime code.</p><p><strong>Best next step.</strong> Cheapest and least surprising. Measure whether misses remain.</p></article>
+    <article class="card warn"><span class="rank">2</span><h3>Skill + dormant hook companion</h3><p>The skill remains the product. A tiny optional plugin supplies enforcement only for sessions where that skill is loaded.</p><p><strong>Use later</strong> if evidence shows instructions are still skipped.</p></article>
+    <article class="card bad"><span class="rank">3</span><h3>Always-on policy plugin</h3><p>Every coding session gets Beads checks whenever a repository contains <code>.beads</code>.</p><p><strong>Reject.</strong> Too broad, surprising, and likely to block unrelated work.</p></article>
+  </div>
+</section>
+
+<section id="scope">
+  <h2>How scoped hooks would work</h2>
+  <p class="intro">Activation is session-specific and fail-quiet. The skill is the switch.</p>
+  <div class="figure">
+    <svg viewBox="0 0 1120 350" role="img" aria-labelledby="t d"><title id="t">Skill-scoped hook flow</title><desc id="d">A normal Hermes session bypasses the dormant policy. Loading the Beads skill arms policy for that session only.</desc>
+      <defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0 0L0 6L9 3z" fill="#5a7064"/></marker></defs>
+      <rect x="25" y="35" width="230" height="105" rx="15" fill="#e8f1f6" stroke="#8db2c5"/><text x="47" y="72" font-family="system-ui" font-size="18" font-weight="800" fill="#153047">Normal Hermes task</text><text x="47" y="103" font-family="system-ui" font-size="14" fill="#344e5e">beads skill not loaded</text><text x="47" y="125" font-family="system-ui" font-size="14" fill="#177149">hooks return None</text>
+      <rect x="25" y="205" width="230" height="105" rx="15" fill="#fff2dc" stroke="#d4aa72"/><text x="47" y="242" font-family="system-ui" font-size="18" font-weight="800" fill="#784813">Beads task</text><text x="47" y="273" font-family="system-ui" font-size="14" fill="#5f4a31">skill_view("beads")</text><text x="47" y="295" font-family="system-ui" font-size="14" fill="#5f4a31">or launch-preloaded skill</text>
+      <path d="M255 257H355" stroke="#5a7064" stroke-width="2.5" marker-end="url(#a)"/>
+      <rect x="372" y="192" width="330" height="130" rx="15" fill="#e7f5ec" stroke="#88c1a2"/><text x="397" y="228" font-family="system-ui" font-size="18" font-weight="800" fill="#177149">on_skill_lifecycle</text><text x="397" y="259" font-family="ui-monospace,monospace" font-size="13" fill="#263d31">action = "loaded"</text><text x="397" y="283" font-family="ui-monospace,monospace" font-size="13" fill="#263d31">skill_name = "beads"</text><text x="397" y="307" font-family="system-ui" font-size="14" fill="#263d31">persist session_id → armed</text>
+      <path d="M702 257H793" stroke="#5a7064" stroke-width="2.5" marker-end="url(#a)"/>
+      <rect x="810" y="173" width="282" height="168" rx="15" fill="#e8f1f6" stroke="#8db2c5"/><text x="835" y="209" font-family="system-ui" font-size="18" font-weight="800" fill="#153047">Scoped enforcement</text><text x="835" y="241" font-family="system-ui" font-size="14" fill="#263d31">pre_tool_call may block</text><text x="835" y="267" font-family="system-ui" font-size="14" fill="#263d31">pre_verify may continue</text><text x="835" y="293" font-family="system-ui" font-size="14" fill="#263d31">native bd remains authoritative</text><text x="835" y="319" font-family="system-ui" font-size="14" fill="#9b4037">other sessions unaffected</text>
+      <path d="M255 87H951V173" fill="none" stroke="#7aa58d" stroke-width="2" stroke-dasharray="7 6" marker-end="url(#a)"/><text x="540" y="77" font-family="system-ui" font-size="13" fill="#47715a">no-op path</text>
+    </svg>
+  </div>
+  <p class="caption">Scoping key: session identity, not merely “this repository contains Beads.”</p>
+</section>
+
+<section id="pas">
+  <h2>Planned Hermes skill vs. PAS + separate Codex processes</h2>
+  <p class="intro">This is the actual architectural choice: should one persistent Hermes agent execute the Beads workflow itself, or should PAS split that workflow into explicit stages handled by separate Codex processes?</p>
+
+  <div class="grid2">
+    <article class="card good"><h3>Planned Hermes Beads skill</h3><p><strong>One continuous coordinator, optionally many workers.</strong> The main Hermes session owns the Beads lifecycle and user conversation. It can perform a bead itself or dynamically delegate independent beads to isolated subagents while preserving the overall plan.</p><ul><li>Best coordinator context and easiest mid-task collaboration</li><li>Can adapt decomposition when scope or evidence changes</li><li>Can add parallel implementation and fresh review on demand</li><li>Workers need explicit task packets because they do not inherit the parent conversation or loaded skill</li><li>The skill guides behavior; optional hooks could later enforce a few local invariants per armed session</li></ul></article>
+    <article class="card warn"><h3>PAS pipeline + separate Codex processes</h3><p><strong>Several isolated agents, one explicit graph.</strong> PAS assigns selection, implementation, quality, review, approval, and publication to separate stages. Each Codex process must reconstruct context from the repository, Beads, and artifacts left by earlier stages.</p><ul><li>Better separation of duties and genuinely fresh review</li><li>Graph ordering, retries, quality nodes, and waits make the workflow repeatable</li><li>Context handoffs are explicit—and lossy if artifacts are weak</li><li>More latency, model calls, and orchestration cost</li><li>Best for long, repeatable, semi-autonomous execution</li></ul></article>
+  </div>
+
+  <div class="table-wrap" style="margin-top:18px"><table><thead><tr><th>Decision dimension</th><th>Planned Hermes skill</th><th>PAS + separate Codex</th><th>Practical consequence</th></tr></thead><tbody>
+    <tr><td>Execution model</td><td>One Hermes coordinator carries the plan and may batch-spawn isolated subagents for independent beads.</td><td>A DOT graph launches distinct Codex processes for predefined stages.</td><td>Hermes decomposes dynamically; PAS follows a declared graph.</td></tr>
+    <tr><td>Context</td><td>Conversation, user corrections, investigation, and implementation knowledge remain in one context.</td><td>Each process starts fresh and rehydrates from Beads, files, Git state, and handoff artifacts.</td><td class="yes">Hermes loses less knowledge. PAS avoids one agent’s assumptions contaminating every stage.</td></tr>
+    <tr><td>Independent review</td><td>The coordinator can reserve a separate subagent for review, but the skill must require that separation explicitly.</td><td>A review node can always run in a clean Codex process that did not implement the change.</td><td class="yes">Both can provide fresh eyes; PAS makes the separation part of the graph.</td></tr>
+    <tr><td>Workflow shape</td><td>The skill describes a flexible lifecycle: inspect → claim → work → verify → update/close.</td><td>The graph explicitly fixes stage order, branches, retries, quality commands, and human waits.</td><td class="yes">PAS is more deterministic; Hermes is easier to adapt midstream.</td></tr>
+    <tr><td>Mechanical guarantees</td><td>A markdown skill is guidance. The planned optional Hermes hooks could enforce selected actions in that session.</td><td>Graph transitions and quality/wait nodes are mechanical; instructions inside agent nodes are still instructions.</td><td class="limited">PAS provides more structure today, but neither magically makes every Beads command truthful.</td></tr>
+    <tr><td>Failure and resume</td><td>The same agent diagnoses failures with its accumulated context; session loss can strand implicit knowledge.</td><td>PAS can retry or route failure by graph edges; durable artifacts must be sufficient for another process to resume.</td><td>PAS recovers better when handoffs are excellent. Hermes recovers better when diagnosis depends on tacit context.</td></tr>
+    <tr><td>Human interaction</td><td>The user can redirect Hermes naturally at any point in the conversation.</td><td>Human involvement occurs at explicit wait/approval nodes unless the pipeline is stopped or redesigned.</td><td class="yes">Hermes is better for exploratory collaboration; PAS is better for controlled autonomy.</td></tr>
+    <tr><td>Cost and latency</td><td>Cheap when handled inline; rises only for beads or review lanes the coordinator chooses to delegate.</td><td>Multiple model startups, repeated repository reading, and stage handoffs on every run.</td><td class="yes">Hermes can spend selectively; PAS pays for the full pipeline structure.</td></tr>
+    <tr><td>Best fit</td><td>Interactive repository work, ambiguous bugs, changing requirements, and tasks where user steering matters.</td><td>Large epics, repeatable procedures, long unattended runs, and work needing clean process separation.</td><td class="yes">Use the skill by default; escalate to PAS when isolation and repeatability justify the overhead.</td></tr>
+  </tbody></table></div>
+
+  <div class="note" style="margin-top:18px"><p><strong>Concrete example—implement one ready epic child:</strong> with the Hermes skill, the coordinator can handle the child itself or give it to one isolated worker, then launch a different worker for review. The parent retains your corrections and owns the final Beads update. With <code>attractor-6im.dot</code>, the same roles are fixed in advance as pipeline nodes: selection, implementation, objective quality, fresh review, approval, and publication. The PAS version buys a repeatable predefined machine; the Hermes version buys a coordinator that decides when parallelism and separation are actually useful.</p></div>
+
+  <div class="callout" style="margin-top:18px"><strong>Recommendation</strong><p>The planned Hermes skill should be the default Beads workflow because most of your work is interactive and benefits from continuous context. PAS is the heavier execution mode for epics where fresh processes, explicit stage gates, autonomous retries, or independent review are worth the extra cost. They are alternative operating modes, not two enforcement layers that need to police each other.</p></div>
+</section>
+
+<section id="swarm">
+  <h2>How the Hermes skill works with a multi-bead swarm</h2>
+  <p class="intro">The skill becomes the coordinator protocol. It does not need every worker to mutate Beads, and loading it in the main session does not automatically load it into isolated subagents.</p>
+
+  <div class="steps">
+    <div class="step"><span class="num">01</span><div><strong>The main Hermes agent chooses only independent ready beads.</strong><p>It runs <code>bd ready</code>/<code>bd show</code>, checks dependencies and write-set overlap, claims each selected bead, and creates an isolated worktree or equally strong workspace boundary for each implementation lane.</p></div></div>
+    <div class="step"><span class="num">02</span><div><strong>Each worker receives one complete execution packet.</strong><p>The delegation includes the exact bead ID, acceptance criteria, absolute worktree, allowed write set, constraints, verification commands, and required return fields. Workers cannot see the parent conversation unless that information is passed explicitly.</p></div></div>
+    <div class="step"><span class="num">03</span><div><strong>Workers build; the parent remains the sole Beads writer.</strong><p>Each worker may read its assigned issue, implement, and test, but reports evidence instead of claiming, closing, or reprioritizing work. This avoids racing lifecycle updates and keeps project state coherent.</p></div></div>
+    <div class="step"><span class="num">04</span><div><strong>The parent independently verifies every returned lane.</strong><p>A subagent summary is a self-report, not proof. Hermes inspects each worktree and diff, reruns the relevant gates, checks cross-lane compatibility, and can dispatch a separate fresh reviewer before integration.</p></div></div>
+    <div class="step"><span class="num">05</span><div><strong>The parent reconciles results back into Beads.</strong><p>It integrates in dependency order, records evidence, closes only verified beads, and leaves failed or blocked beads open with a durable checkpoint. One failed lane does not turn successful siblings into “done.”</p></div></div>
+  </div>
+
+  <div class="grid2" style="margin-top:14px">
+    <article class="card good"><h3>Recommended ownership model</h3><p><strong>Parent owns Beads; workers own code lanes.</strong> That gives us one authoritative lifecycle writer, isolated implementation, selective parallelism, and clean integration responsibility.</p></article>
+    <article class="card warn"><h3>If workers must own their beads</h3><p>Each child must be given explicit Beads authority and load the skill independently. Any skill-scoped hook must arm separately for that child session. The parent cannot assume its loaded skill or session state propagated.</p></article>
+  </div>
+
+  <div class="callout" style="margin-top:18px"><strong>This is a dynamic pipeline, not a hidden PAS clone.</strong><p>Hermes decides the swarm shape from the live task, can ask you questions, and can add or stop lanes. PAS declares the stages and transitions before execution. Hermes <code>delegate_task</code> workers are also bounded by the parent session—if the parent is interrupted they are cancelled—so PAS remains the better choice for a durable unattended workflow.</p></div>
+</section>
+
+<section id="flow">
+  <h2>What happens during a scoped Beads task</h2>
+  <div class="steps">
+    <div class="step"><span class="num">01</span><div><strong>The Beads skill loads because the task is about tracked project work.</strong><p>That remains a normal skill-selection decision. Merely being inside a Beads repository does not arm enforcement.</p></div></div>
+    <div class="step"><span class="num">02</span><div><strong><code>on_skill_lifecycle</code> records this session as armed.</strong><p>State is keyed by opaque Hermes <code>session_id</code> and cleared on reset/finalization.</p></div></div>
+    <div class="step"><span class="num">03</span><div><strong>Read-only exploration is still allowed.</strong><p>The hook returns immediately for <code>read_file</code>, searches, web research, and other non-mutating operations.</p></div></div>
+    <div class="step"><span class="num">04</span><div><strong>The agent uses native <code>bd</code> commands.</strong><p>No replacement verbs. A successful <code>bd update &lt;id&gt; --claim</code> establishes the session’s issue binding.</p></div></div>
+    <div class="step"><span class="num">05</span><div><strong>Only then do mutation and finish gates apply.</strong><p>If the session is unarmed, every callback returns <code>None</code>. If armed but unclaimed, durable mutation can be blocked.</p></div></div>
+  </div>
+</section>
+
+<section id="limits">
+  <h2>What a skill cannot do</h2>
+  <div class="grid2">
+    <article class="card"><h3>A skill is guidance</h3><p>It can tell the agent to claim before editing and update before finishing. It cannot intercept <code>patch</code>, terminal execution, or the final-response transition.</p></article>
+    <article class="card"><h3>A hook is enforcement</h3><p>If we truly need “this operation must not happen,” some executable integration is required: a plugin hook or shell hook. A markdown skill cannot provide that guarantee.</p></article>
+  </div>
+  <div class="note" style="margin-top:14px"><p><strong>Honest limitation:</strong> current Hermes hooks have no declarative skill matcher. The implementation must maintain the armed-session set itself. We would test preload, normal <code>skill_view</code>, resume, reset, compression, subagents, and parallel sessions before trusting it.</p></div>
+</section>
+
+<section id="recommendation">
+  <h2>Recommendation</h2>
+  <div class="verdict"><h3>Do the skill work first. Don’t build the plugin yet.</h3><ol><li>Update the existing <code>beads</code> skill with the concrete workflow improvements from the session review.</li><li>Use it across real Beads tasks and record actual misses: unclaimed mutations, absent checkpoints, premature completion, ambiguous parallel ownership.</li><li>Only if those misses persist, build a tiny optional hook companion scoped by <code>on_skill_lifecycle</code>.</li><li>Keep the companion unnamed in normal use—it exposes no tool, CLI, or slash command. Its package name is implementation detail.</li></ol></div>
+  <p class="intro" style="margin-top:14px">This preserves the useful idea—hooks can enforce boundaries—without prematurely turning a workflow problem into permanent runtime machinery.</p>
+</section>
+
+<section id="grounding"><h2>Grounding</h2><ul><li><a href="https://hermes-agent.nousresearch.com/docs/user-guide/features/hooks#on_skill_lifecycle">Hermes <code>on_skill_lifecycle</code></a> exposes <code>action</code>, <code>skill_name</code>, <code>task_id</code>, and <code>session_id</code>.</li><li><a href="https://hermes-agent.nousresearch.com/docs/user-guide/features/hooks#pre_tool_call">Hermes <code>pre_tool_call</code></a> can block, approve, or modify tool calls and fails closed on timeout.</li><li><a href="https://hermes-agent.nousresearch.com/docs/user-guide/features/plugins">Hermes plugins</a> can bundle skills and register hooks, but skills themselves do not register executable lifecycle callbacks.</li></ul></section>
+<footer>Plan status: revised again; recommendation is skill-first and no plugin implementation yet.</footer>
+</main></body></html>

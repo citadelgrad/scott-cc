@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Interactive engineering brief for adopting OpenCodeReview patterns in scott-cc Review Panel.">
+  <title>OpenCodeReview → Review Panel · Adoption Brief</title>
+  <style>
+    :root {
+      --ink: #16201c;
+      --muted: #58665f;
+      --paper: #f3f0e8;
+      --surface: #fffdf7;
+      --surface-2: #faf7ef;
+      --line: #d8d2c3;
+      --green: #1e6b50;
+      --green-soft: #dcece4;
+      --amber: #9a5a18;
+      --amber-soft: #f5e7d3;
+      --red: #963e36;
+      --red-soft: #f3ddda;
+      --blue: #315b7d;
+      --blue-soft: #dfe9f1;
+      --violet: #66558d;
+      --violet-soft: #ebe5f5;
+      --shadow: 0 14px 40px rgba(35, 39, 34, .08);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(rgba(255,255,255,.3) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px),
+        var(--paper);
+      background-size: 26px 26px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+    a { color: var(--blue); text-underline-offset: 3px; }
+    button, input { font: inherit; }
+    .page { width: min(1480px, calc(100% - 64px)); margin: 0 auto; padding: 36px 0 72px; }
+    header {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(30px, 5vw, 62px);
+      background: var(--ink);
+      color: #fdf9ee;
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+    header::before, header::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    header::before { width: 430px; height: 430px; right: -170px; top: -235px; border: 62px solid rgba(113,192,155,.14); }
+    header::after { width: 220px; height: 220px; right: 140px; bottom: -170px; border: 34px solid rgba(111,154,189,.12); }
+    .eyebrow { color: #8dd2ae; letter-spacing: .14em; font-size: .78rem; font-weight: 850; text-transform: uppercase; }
+    h1 { max-width: 930px; margin: 12px 0 16px; font-size: clamp(2.25rem, 5vw, 4.5rem); line-height: 1.01; letter-spacing: -.05em; }
+    .lede { max-width: 980px; margin: 0; color: #d6ddd8; font-size: clamp(1rem, 1.35vw, 1.22rem); }
+    .status-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 27px; }
+    .badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid rgba(255,255,255,.18); border-radius: 999px; color: #e8eee9; font-size: .86rem; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #7dd5a8; box-shadow: 0 0 0 4px rgba(125,213,168,.14); }
+    .dot.warn { background: #edb76e; box-shadow: 0 0 0 4px rgba(237,183,110,.14); }
+    nav { display: flex; gap: 8px; flex-wrap: wrap; margin: 22px 0; position: sticky; top: 10px; z-index: 10; }
+    nav a { color: var(--ink); background: rgba(255,253,247,.94); backdrop-filter: blur(12px); border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; text-decoration: none; font-size: .84rem; font-weight: 760; box-shadow: 0 5px 18px rgba(35,39,34,.05); }
+    nav a:hover { background: #fff; border-color: #aaa38f; }
+    section { margin-top: 24px; padding: clamp(22px, 4vw, 40px); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); min-width: 0; }
+    h2 { margin: 0 0 8px; font-size: clamp(1.48rem, 3vw, 2.25rem); letter-spacing: -.03em; }
+    h3 { margin: 0 0 8px; font-size: 1.04rem; }
+    p, li, td, th, code { overflow-wrap: anywhere; }
+    .section-intro { color: var(--muted); max-width: 850px; margin: 0 0 24px; }
+    .decision {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(260px, .65fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+    .decision-main { padding: clamp(22px, 4vw, 38px); background: var(--green-soft); border: 1px solid #afd2c0; border-radius: 16px; }
+    .decision-main .label { color: var(--green); font-size: .76rem; font-weight: 850; letter-spacing: .13em; text-transform: uppercase; }
+    .decision-main strong { display: block; max-width: 860px; margin-top: 8px; font-size: clamp(1.35rem, 3vw, 2.3rem); line-height: 1.12; letter-spacing: -.03em; }
+    .decision-side { padding: 22px; background: var(--red-soft); border: 1px solid #dfb9b3; border-radius: 16px; }
+    .decision-side ul { padding-left: 19px; margin: 11px 0 0; }
+    .decision-side li { margin: 6px 0; }
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+    .metric { padding: 18px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface-2); min-width: 0; }
+    .metric strong { display: block; font-size: clamp(1.65rem, 4vw, 2.55rem); line-height: 1; letter-spacing: -.045em; }
+    .metric span { display: block; color: var(--muted); margin-top: 8px; font-size: .84rem; }
+    .metric.good strong { color: var(--green); }
+    .metric.warn strong { color: var(--amber); }
+    .metric.info strong { color: var(--blue); }
+    .diagram-shell { border: 1px solid var(--line); border-radius: 16px; background: #fcfaf4; padding: 14px; overflow: hidden; }
+    .mode-switch { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .mode-btn { border: 1px solid var(--line); background: #fff; color: var(--ink); border-radius: 999px; padding: 7px 12px; cursor: pointer; font-weight: 760; font-size: .82rem; }
+    .mode-btn[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+    svg { display: block; width: 100%; height: auto; }
+    svg text { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    .current-layer, .proposed-layer, .delta-layer { transition: opacity .2s ease; }
+    [data-view="current"] .proposed-layer, [data-view="current"] .delta-layer { opacity: .11; }
+    [data-view="proposed"] .current-layer { opacity: .22; }
+    [data-view="delta"] .current-layer { opacity: .12; }
+    [data-view="delta"] .proposed-layer { opacity: .34; }
+    .architecture-notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+    .note { padding: 17px; border: 1px solid var(--line); border-radius: 13px; background: #fff; }
+    .note strong { display: block; margin-bottom: 5px; }
+    .note small { color: var(--muted); }
+    .option-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .option { position: relative; min-width: 0; padding: 22px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface-2); }
+    .option.recommended { background: var(--green-soft); border-color: #9bc9b2; box-shadow: inset 0 4px 0 var(--green); }
+    .option.rejected { background: #fffaf7; box-shadow: inset 0 4px 0 var(--red); }
+    .option.pilot { background: #fbf9ff; box-shadow: inset 0 4px 0 var(--violet); }
+    .option-tag { display: inline-flex; padding: 4px 8px; border-radius: 999px; font-size: .7rem; font-weight: 850; text-transform: uppercase; letter-spacing: .08em; background: rgba(255,255,255,.72); border: 1px solid rgba(0,0,0,.1); }
+    .option h3 { margin-top: 14px; font-size: 1.22rem; }
+    .option ul { margin: 12px 0 0; padding-left: 19px; }
+    .option li { margin: 7px 0; }
+    .score { margin-top: 16px; padding-top: 13px; border-top: 1px solid rgba(0,0,0,.12); font-weight: 820; }
+    .score.good { color: var(--green); }
+    .score.bad { color: var(--red); }
+    .score.maybe { color: var(--violet); }
+    .flow { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; align-items: stretch; }
+    .phase { min-width: 0; padding: 15px 10px; border: 1px solid #b9c8d4; background: var(--blue-soft); border-radius: 12px; text-align: center; font-weight: 820; font-size: .82rem; }
+    .phase.added { border-color: #9bc9b2; background: var(--green-soft); }
+    .phase small { display: block; margin-top: 5px; color: var(--muted); font-weight: 560; }
+    .arrow-row { display: grid; grid-template-columns: repeat(13, minmax(0, 1fr)); align-items: center; margin: 7px 0; color: var(--blue); }
+    .arrow-row span:nth-child(odd) { text-align: center; font-weight: 900; }
+    .artifacts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 20px; }
+    .artifact { padding: 17px; border-radius: 13px; border: 1px solid var(--line); background: #fff; }
+    .artifact .file { color: var(--blue); font: 760 .83rem ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .artifact p { color: var(--muted); margin: 7px 0 0; font-size: .88rem; }
+    code { color: #244b68; background: #e8eef2; padding: 2px 5px; border-radius: 5px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .84em; }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 17px; }
+    .controls input { flex: 1 1 280px; min-width: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); }
+    .filter-btn { border: 1px solid var(--line); background: #fff; color: var(--ink); border-radius: 10px; padding: 9px 12px; cursor: pointer; font-size: .82rem; font-weight: 760; }
+    .filter-btn[aria-pressed="true"] { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .task-list { display: grid; gap: 9px; }
+    .task { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 13px; align-items: center; padding: 14px 15px; border: 1px solid var(--line); border-radius: 12px; background: #fff; min-width: 0; }
+    .task[hidden] { display: none; }
+    .task-num { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; color: #fff; background: var(--blue); font: 850 .8rem ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .task h3 { margin: 0; font-size: .98rem; }
+    .task p { margin: 3px 0 0; color: var(--muted); font-size: .84rem; }
+    .stage { padding: 5px 8px; border-radius: 999px; font-size: .7rem; font-weight: 850; text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; }
+    .stage.docs { background: var(--violet-soft); color: var(--violet); }
+    .stage.contract { background: var(--blue-soft); color: var(--blue); }
+    .stage.code { background: var(--green-soft); color: var(--green); }
+    .stage.test { background: var(--amber-soft); color: var(--amber); }
+    .stage.gate { background: var(--red-soft); color: var(--red); }
+    .results { margin-top: 10px; color: var(--muted); font-size: .82rem; }
+    .risk-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .risk { padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+    .risk h3 { display: flex; align-items: center; gap: 9px; }
+    .risk-mark { width: 25px; height: 25px; display: inline-grid; place-items: center; border-radius: 7px; color: #fff; background: var(--amber); font-weight: 900; font-size: .75rem; flex: 0 0 auto; }
+    .risk p { margin: 7px 0 0; color: var(--muted); font-size: .9rem; }
+    .questions { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    .questions th, .questions td { padding: 13px 14px; text-align: left; border-bottom: 1px solid var(--line); vertical-align: top; }
+    .questions th { color: var(--muted); font-size: .71rem; text-transform: uppercase; letter-spacing: .08em; }
+    .questions tr:last-child td { border-bottom: 0; }
+    .questions .recommended-answer { color: var(--green); font-weight: 780; }
+    .source-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .source { display: block; min-width: 0; padding: 13px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 11px; text-decoration: none; }
+    .source strong { display: block; color: var(--ink); font-size: .88rem; }
+    .source span { display: block; color: var(--muted); font: .73rem ui-monospace, SFMono-Regular, Menlo, monospace; margin-top: 4px; overflow-wrap: anywhere; }
+    .source:hover { border-color: var(--blue); background: #fff; }
+    .callout { margin-top: 18px; padding: 18px; border-left: 5px solid var(--amber); border-radius: 12px; background: var(--amber-soft); }
+    .callout strong { display: block; margin-bottom: 4px; }
+    .checklist { list-style: none; padding: 0; margin: 0; }
+    .checklist li { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+    .checklist li:last-child { border-bottom: 0; }
+    .check { color: var(--green); font-weight: 900; }
+    footer { margin-top: 20px; padding: 18px 4px; color: var(--muted); font-size: .82rem; }
+    @media (max-width: 1050px) {
+      .metrics, .option-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .option:last-child { grid-column: 1 / -1; }
+      .architecture-notes, .artifacts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .flow { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+    @media (max-width: 740px) {
+      .page { width: min(100% - 22px, 1480px); padding-top: 11px; }
+      header { padding: 28px 22px; }
+      h1 { font-size: clamp(2rem, 11vw, 2.7rem); line-height: 1.04; }
+      nav { position: static; }
+      .decision, .metrics, .option-grid, .architecture-notes, .artifacts, .risk-grid, .source-list { grid-template-columns: 1fr; }
+      .option:last-child { grid-column: auto; }
+      .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .task { grid-template-columns: 42px minmax(0, 1fr); }
+      .task .stage { grid-column: 2; justify-self: start; }
+      .questions { min-width: 680px; }
+      .table-scroll { overflow-x: auto; }
+    }
+    @media (max-width: 430px) { .flow { grid-template-columns: 1fr; } }
+    @media print {
+      body { background: white; }
+      .page { width: 100%; }
+      header, section { box-shadow: none; break-inside: avoid; }
+      nav, .controls, .mode-switch { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="eyebrow">Research-backed engineering plan · scott-cc</div>
+      <h1>Use OpenCodeReview’s contracts — not its whole runtime</h1>
+      <p class="lede">Alibaba’s OpenCodeReview has several excellent ideas for deterministic review coverage. The right move for scott-cc is to graft those ideas onto the existing Review Panel, not install a second autonomous reviewer beside it.</p>
+      <div class="status-row">
+        <span class="badge"><span class="dot"></span> Recommended: native pattern borrowing</span>
+        <span class="badge"><span class="dot warn"></span> OCR v1.12.7 has an open silent no-op report</span>
+        <span class="badge">14 implementation tasks · TDD-first</span>
+      </div>
+    </header>
+
+    <nav aria-label="Brief sections">
+      <a href="#decision">Decision</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#options">Options</a>
+      <a href="#contract">Run contract</a>
+      <a href="#workplan">Work plan</a>
+      <a href="#risks">Risks</a>
+      <a href="#questions">Open questions</a>
+      <a href="#sources">Sources</a>
+    </nav>
+
+    <section id="decision">
+      <h2>The decision</h2>
+      <p class="section-intro">Keep one review engine. Add the deterministic substrate Review Panel is missing.</p>
+      <div class="decision">
+        <article class="decision-main">
+          <span class="label">Recommended direction</span>
+          <strong>Build a native changed-file inventory, selection manifest, and coverage ledger inside <code>plugins/review-panel</code>.</strong>
+          <p>Every selected file gets a stable identity. Every review stage carries the same manifest hashes. A run cannot report <code>converged</code> while any selected file is skipped, failed, or unaccounted for.</p>
+        </article>
+        <aside class="decision-side">
+          <h3>Do not add</h3>
+          <ul>
+            <li>Another LLM/provider configuration</li>
+            <li>OCR telemetry or session storage</li>
+            <li>MCP setup commands</li>
+            <li>Remote install scripts</li>
+            <li>Automatic GitHub posting</li>
+            <li>Default test exclusions</li>
+          </ul>
+        </aside>
+      </div>
+      <div class="metrics">
+        <div class="metric good"><strong>1</strong><span>Review engine remains: Review Panel</span></div>
+        <div class="metric info"><strong>3</strong><span>New contract artifacts: input, selection, coverage</span></div>
+        <div class="metric warn"><strong>0</strong><span>Production OCR dependencies or credentials</span></div>
+        <div class="metric"><strong>25</strong><span>Existing maximum files per bounded review target</span></div>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <h2>What changes in the architecture?</h2>
+      <p class="section-intro">The current pipeline packages one shared diff, but it lacks a canonical per-file ledger. The proposal inserts deterministic identity and selection before CAST, then mechanically reconciles coverage before CONVERGE.</p>
+      <div class="diagram-shell" id="architectureDiagram" data-view="proposed">
+        <div class="mode-switch" role="group" aria-label="Architecture view">
+          <button class="mode-btn" data-mode="current" aria-pressed="false">Current only</button>
+          <button class="mode-btn" data-mode="proposed" aria-pressed="true">Current + proposed</button>
+          <button class="mode-btn" data-mode="delta" aria-pressed="false">Delta focus</button>
+        </div>
+        <svg viewBox="0 0 1240 460" role="img" aria-labelledby="archTitle archDesc">
+          <title id="archTitle">Current and proposed Review Panel architecture</title>
+          <desc id="archDesc">A deterministic inventory and selection preflight is added before CAST, while coverage reconciliation is added before CONVERGE.</desc>
+          <defs>
+            <marker id="arrowBlue" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#315b7d"/></marker>
+            <marker id="arrowGreen" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#1e6b50"/></marker>
+          </defs>
+          <g id="current-topology" class="current-layer">
+            <title>Current Review Panel stages</title>
+            <rect x="33" y="182" width="132" height="74" rx="12" fill="#dfe9f1" stroke="#9eb6c9"/>
+            <text x="99" y="212" text-anchor="middle" font-size="15" font-weight="800" fill="#16201c">PACKAGE</text>
+            <text x="99" y="235" text-anchor="middle" font-size="12" fill="#58665f">review.diff</text>
+            <rect x="206" y="182" width="112" height="74" rx="12" fill="#dfe9f1" stroke="#9eb6c9"/>
+            <text x="262" y="225" text-anchor="middle" font-size="15" font-weight="800" fill="#16201c">CAST</text>
+            <rect x="358" y="182" width="112" height="74" rx="12" fill="#dfe9f1" stroke="#9eb6c9"/>
+            <text x="414" y="225" text-anchor="middle" font-size="15" font-weight="800" fill="#16201c">SPAWN</text>
+            <rect x="510" y="182" width="112" height="74" rx="12" fill="#dfe9f1" stroke="#9eb6c9"/>
+            <text x="566" y="225" text-anchor="middle" font-size="15" font-weight="800" fill="#16201c">MERGE</text>
+            <rect x="662" y="182" width="112" height="74" rx="12" fill="#dfe9f1" stroke="#9eb6c9"/>
+            <text x="718" y="225" text-anchor="middle" font-size="15" font-weight="800" fill="#16201c">VALIDATE</text>
+            <rect x="814" y="182" width="112" height="74" rx="12" fill="#dfe9f1" stroke="#9eb6c9"/>
+            <text x="870" y="225" text-anchor="middle" font-size="15" font-weight="800" fill="#16201c">FIX</text>
+            <rect x="966" y="182" width="112" height="74" rx="12" fill="#dfe9f1" stroke="#9eb6c9"/>
+            <text x="1022" y="213" text-anchor="middle" font-size="14" font-weight="800" fill="#16201c">RE-REVIEW</text>
+            <text x="1022" y="235" text-anchor="middle" font-size="12" fill="#58665f">fresh package</text>
+            <rect x="1118" y="182" width="96" height="74" rx="12" fill="#dfe9f1" stroke="#9eb6c9"/>
+            <text x="1166" y="225" text-anchor="middle" font-size="13" font-weight="800" fill="#16201c">CONVERGE</text>
+            <path d="M165 219 H199 M318 219 H351 M470 219 H503 M622 219 H655 M774 219 H807 M926 219 H959 M1078 219 H1111" stroke="#315b7d" stroke-width="3" fill="none" marker-end="url(#arrowBlue)"/>
+          </g>
+          <g id="deterministic-preflight" class="proposed-layer">
+            <title>Proposed deterministic inventory and selection preflight</title>
+            <rect x="28" y="28" width="448" height="112" rx="16" fill="#dcece4" stroke="#78b397" stroke-width="2"/>
+            <text x="50" y="58" font-size="13" font-weight="850" fill="#1e6b50" letter-spacing="1.2">NEW · DETERMINISTIC PREFLIGHT</text>
+            <rect x="50" y="76" width="175" height="43" rx="9" fill="#fffdf7" stroke="#9bc9b2"/>
+            <text x="138" y="102" text-anchor="middle" font-size="14" font-weight="800" fill="#16201c">input-manifest.json</text>
+            <rect x="250" y="76" width="196" height="43" rx="9" fill="#fffdf7" stroke="#9bc9b2"/>
+            <text x="348" y="102" text-anchor="middle" font-size="14" font-weight="800" fill="#16201c">selection-manifest.json</text>
+            <path d="M252 140 L150 177" stroke="#1e6b50" stroke-width="3" fill="none" marker-end="url(#arrowGreen)"/>
+          </g>
+          <g id="coverage-reconciliation" class="proposed-layer">
+            <title>Proposed coverage reconciliation before convergence</title>
+            <rect x="790" y="300" width="424" height="128" rx="16" fill="#dcece4" stroke="#78b397" stroke-width="2"/>
+            <text x="812" y="330" font-size="13" font-weight="850" fill="#1e6b50" letter-spacing="1.2">NEW · FAIL-CLOSED COVERAGE</text>
+            <rect x="812" y="349" width="168" height="51" rx="9" fill="#fffdf7" stroke="#9bc9b2"/>
+            <text x="896" y="372" text-anchor="middle" font-size="14" font-weight="800" fill="#16201c">coverage.json</text>
+            <text x="896" y="389" text-anchor="middle" font-size="11" fill="#58665f">reviewed · skipped · failed</text>
+            <rect x="1000" y="349" width="192" height="51" rx="9" fill="#fffdf7" stroke="#9bc9b2"/>
+            <text x="1096" y="372" text-anchor="middle" font-size="14" font-weight="800" fill="#16201c">review-contract</text>
+            <text x="1096" y="389" text-anchor="middle" font-size="11" fill="#58665f">reject false convergence</text>
+            <path d="M1022 256 L990 294" stroke="#1e6b50" stroke-width="3" fill="none" marker-end="url(#arrowGreen)"/>
+          </g>
+          <g id="hash-binding" class="delta-layer">
+            <title>Manifest hashes bind every stage to one frozen target</title>
+            <path d="M235 151 C430 115, 740 115, 1120 162" stroke="#9a5a18" stroke-width="3" stroke-dasharray="8 6" fill="none" marker-end="url(#arrowGreen)"/>
+            <text x="680" y="105" text-anchor="middle" font-size="13" font-weight="800" fill="#9a5a18">same manifest hashes carried through every stage</text>
+          </g>
+        </svg>
+      </div>
+      <div class="architecture-notes">
+        <article class="note"><strong>Deterministic code owns facts</strong><small>Git identity, changed paths, binary/secret safety, canonical JSON, hashes, and coverage totals.</small></article>
+        <article class="note"><strong>LLMs keep judgment</strong><small>CAST still chooses lenses from actual diff content; seats still identify and explain findings.</small></article>
+        <article class="note"><strong>Convergence becomes provable</strong><small>A clean narrative is insufficient. Coverage must be complete and mechanically validated.</small></article>
+      </div>
+    </section>
+
+    <section id="options">
+      <h2>Three adoption options</h2>
+      <p class="section-intro">One option is clearly better. Pretending they are equivalent would be fake neutrality.</p>
+      <div class="option-grid">
+        <article class="option rejected">
+          <span class="option-tag">Reject</span>
+          <h3>Deploy <code>ocr review</code> directly</h3>
+          <ul>
+            <li>Gets OCR’s complete review loop and GitHub integration.</li>
+            <li>Duplicates Hermes/Review Panel providers, transcripts, and orchestration.</li>
+            <li>Adds telemetry, credential, supply-chain, and MCP trust boundaries.</li>
+            <li>Current upstream issue reports a silent green no-op on some non-empty diffs.</li>
+          </ul>
+          <div class="score bad">Fit: low · operational surface: high</div>
+        </article>
+        <article class="option pilot">
+          <span class="option-tag">Later pilot only</span>
+          <h3>Wrap <code>ocr delegate</code></h3>
+          <ul>
+            <li>Uses OCR for deterministic selection without OCR-side LLM calls.</li>
+            <li>Could benchmark local selection and rule routing.</li>
+            <li>Still adds a pinned binary dependency and upstream semantics.</li>
+            <li>Safe only on synthetic fixtures after checksum and telemetry controls.</li>
+          </ul>
+          <div class="score maybe">Fit: medium · use as evidence, not infrastructure</div>
+        </article>
+        <article class="option recommended">
+          <span class="option-tag">Recommended</span>
+          <h3>Borrow the patterns natively</h3>
+          <ul>
+            <li>Preserves the existing seven-stage Review Panel.</li>
+            <li>Adds exactly the missing deterministic contracts.</li>
+            <li>Keeps tests first-class and avoids extra data egress.</li>
+            <li>Lets Foundry fail closed on incomplete coverage.</li>
+          </ul>
+          <div class="score good">Fit: high · smallest durable architecture</div>
+        </article>
+      </div>
+    </section>
+
+    <section id="contract">
+      <h2>The proposed run contract</h2>
+      <p class="section-intro">Three new artifacts turn “we reviewed it” from a claim into a checkable statement.</p>
+      <div class="flow" aria-label="Review pipeline stages">
+        <div class="phase added">INVENTORY<small>freeze file identities</small></div>
+        <div class="phase added">SELECT<small>decision + reason</small></div>
+        <div class="phase">CAST<small>choose lenses</small></div>
+        <div class="phase">SPAWN<small>review assigned IDs</small></div>
+        <div class="phase">MERGE<small>dedupe findings</small></div>
+        <div class="phase">VALIDATE<small>challenge claims</small></div>
+        <div class="phase added">RECONCILE<small>prove coverage</small></div>
+      </div>
+      <div class="artifacts">
+        <article class="artifact">
+          <div class="file">input-manifest.json</div>
+          <p>Mode, resolved refs, path, status, source, old path, blob/content identity, stable entry ID, manifest hash.</p>
+        </article>
+        <article class="artifact">
+          <div class="file">selection-manifest.json</div>
+          <p>One decision per changed entry: reviewable or excluded, with a closed reason vocabulary and counts.</p>
+        </article>
+        <article class="artifact">
+          <div class="file">coverage.json</div>
+          <p>One terminal state per selected entry: reviewed, skipped, or failed. <code>complete</code> is true only when all are reviewed.</p>
+        </article>
+      </div>
+      <div class="callout">
+        <strong>The crucial failure boundary</strong>
+        A genuinely empty diff may converge with explicit zero counts. A non-empty diff that selects zero files must fail with <code>zero_reviewable_nonempty_diff</code>. Green no-op reviews are worse than red failures because they lie.
+      </div>
+    </section>
+
+    <section id="workplan">
+      <h2>Implementation work plan</h2>
+      <p class="section-intro">Fourteen small tasks, with production integration stopping before the optional OCR benchmark. Search or filter the list.</p>
+      <div class="controls">
+        <input id="taskSearch" type="search" placeholder="Search tasks, paths, or behavior…" aria-label="Search implementation tasks">
+        <button class="filter-btn" data-filter="all" aria-pressed="true">All</button>
+        <button class="filter-btn" data-filter="docs" aria-pressed="false">Docs</button>
+        <button class="filter-btn" data-filter="contract" aria-pressed="false">Contracts</button>
+        <button class="filter-btn" data-filter="code" aria-pressed="false">Code</button>
+        <button class="filter-btn" data-filter="test" aria-pressed="false">Tests</button>
+        <button class="filter-btn" data-filter="gate" aria-pressed="false">Gate</button>
+      </div>
+      <div class="task-list" id="taskList">
+        <article class="task" data-kind="gate" data-search="protect dirty baseline git status ownership"><div class="task-num">01</div><div><h3>Protect the dirty baseline</h3><p>Record current status; do not overwrite or stage unrelated work.</p></div><span class="stage gate">guard</span></article>
+        <article class="task" data-kind="docs" data-search="research decision docs research open code review adoption"><div class="task-num">02</div><div><h3>Write the research decision artifact</h3><p><code>docs/research/open-code-review-adoption.md</code></p></div><span class="stage docs">docs</span></article>
+        <article class="task" data-kind="test contract" data-search="schema presence tests jsonschema"><div class="task-num">03</div><div><h3>Write failing schema-presence tests</h3><p>Freeze the expected contract names before implementation.</p></div><span class="stage test">red</span></article>
+        <article class="task" data-kind="contract" data-search="json schema input selection coverage"><div class="task-num">04</div><div><h3>Add three JSON Schemas</h3><p>Input, selection, and coverage; strict objects and hash formats.</p></div><span class="stage contract">schema</span></article>
+        <article class="task" data-kind="test code" data-search="black box inventory tests git fixtures tests binaries secrets symlinks"><div class="task-num">05</div><div><h3>Write inventory black-box tests</h3><p>Range, worktree, untracked, test-only, deleted, secret, binary, symlink, empty.</p></div><span class="stage test">red</span></article>
+        <article class="task" data-kind="code" data-search="review inventory python canonical manifest hashing"><div class="task-num">06</div><div><h3>Implement <code>review-inventory</code></h3><p>Canonical Git inventory and safe deterministic selection.</p></div><span class="stage code">code</span></article>
+        <article class="task" data-kind="code test" data-search="review package manifests untracked synthetic diff"><div class="task-num">07</div><div><h3>Bind packaging to the frozen selection</h3><p>Include reviewable untracked content; never include excluded sensitive content.</p></div><span class="stage code">code</span></article>
+        <article class="task" data-kind="code contract test" data-search="review contract validate reconcile final coverage"><div class="task-num">08</div><div><h3>Add semantic contract validation</h3><p><code>validate</code>, <code>reconcile</code>, and <code>check-final</code> commands.</p></div><span class="stage contract">contract</span></article>
+        <article class="task" data-kind="contract docs" data-search="reviewer output seat artifact per file coverage"><div class="task-num">09</div><div><h3>Require machine-readable seat coverage</h3><p>Every assigned entry is reviewed, skipped, or failed—with a reason.</p></div><span class="stage contract">contract</span></article>
+        <article class="task" data-kind="docs contract" data-search="preflight skill inventory cast hashes zero selected"><div class="task-num">10</div><div><h3>Wire inventory into preflight</h3><p>Inventory → select → package → scope → tier → CAST.</p></div><span class="stage docs">wiring</span></article>
+        <article class="task" data-kind="gate contract docs" data-search="converge fail closed foundry jq coverage"><div class="task-num">11</div><div><h3>Fail closed on incomplete coverage</h3><p>Foundry and CONVERGE reject skipped, failed, or unaccounted files.</p></div><span class="stage gate">gate</span></article>
+        <article class="task" data-kind="test" data-search="end to end fixtures inventory convergence stale hashes"><div class="task-num">12</div><div><h3>Add inventory-to-convergence E2E tests</h3><p>Prove the full contract using real temporary Git repositories.</p></div><span class="stage test">e2e</span></article>
+        <article class="task" data-kind="docs" data-search="operator workflow command context hardening documentation"><div class="task-num">13</div><div><h3>Document operator workflow</h3><p>Explain artifacts, hashes, empty-vs-zero-selected behavior, and test coverage.</p></div><span class="stage docs">docs</span></article>
+        <article class="task" data-kind="gate test" data-search="optional ocr shadow benchmark pinned checksum telemetry synthetic"><div class="task-num">14</div><div><h3>Optional OCR shadow benchmark</h3><p>Separate approval; pinned binary; synthetic fixtures; never production gating.</p></div><span class="stage gate">optional</span></article>
+      </div>
+      <div class="results" id="taskResults" aria-live="polite">Showing 14 of 14 tasks.</div>
+    </section>
+
+    <section id="risks">
+      <h2>Risks that matter</h2>
+      <p class="section-intro">The proposal is intentionally narrow, but Git and review provenance are unforgiving. These are the failure modes to design around.</p>
+      <div class="risk-grid">
+        <article class="risk"><h3><span class="risk-mark">1</span>Prompt/schema drift</h3><p>Every stage must validate artifacts before consuming them. Otherwise the schema is decorative paperwork.</p></article>
+        <article class="risk"><h3><span class="risk-mark">2</span>Git edge cases</h3><p>Renames, staged-delete/untracked-recreation, symlinks, odd filenames, and binary detection need NUL-delimited parsing and fixtures.</p></article>
+        <article class="risk"><h3><span class="risk-mark">3</span>Sensitive artifact retention</h3><p>Review packages contain source. Keep them ignored, mode 0600 where practical, exclude secret content, and decide retention before CI use.</p></article>
+        <article class="risk"><h3><span class="risk-mark">4</span>False confidence</h3><p>Schema validity proves shape and coverage, not reasoning quality. Independent validation remains necessary.</p></article>
+        <article class="risk"><h3><span class="risk-mark">5</span>Stale worktrees</h3><p>Files may change after inventory. Blob identities and hashes must be rechecked before packaging and final reconciliation.</p></article>
+        <article class="risk"><h3><span class="risk-mark">6</span>Upstream churn</h3><p>Any OCR evaluation must pin an exact checksum. <code>latest</code> has no place in a required quality gate.</p></article>
+      </div>
+    </section>
+
+    <section id="questions">
+      <h2>Open questions before optional benchmarking</h2>
+      <p class="section-intro">None blocks the native contract. They matter only for retention policy or a later OCR pilot.</p>
+      <div class="table-scroll">
+        <table class="questions">
+          <thead><tr><th>Question</th><th>Recommended default</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>How long should local review artifacts live?</td><td class="recommended-answer">Delete after the run is accepted or superseded.</td><td>Minimize proprietary-code retention while preserving enough evidence for review.</td></tr>
+            <tr><td>Can an exclusion-only change pass?</td><td class="recommended-answer">No—not without an explicit named project policy.</td><td>A green no-op is unsafe by default.</td></tr>
+            <tr><td>Should generated/vendor paths be excluded?</td><td class="recommended-answer">Keep reviewable until evidence justifies a repository-owned rule.</td><td>YAGNI; silent exclusions hide supply-chain and generated-code changes.</td></tr>
+            <tr><td>Which worker engine should Review Panel standardize on?</td><td class="recommended-answer">Defer.</td><td>The deterministic contract works under Hermes, Claude Task, or a future neutral adapter.</td></tr>
+            <tr><td>What if OCR delegation selects files better?</td><td class="recommended-answer">Turn the behavior into native tests first.</td><td>Prefer evidence transfer over permanent binary coupling.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="sources">
+      <h2>Evidence and source links</h2>
+      <p class="section-intro">Verified upstream behavior and local integration points. Issue reports are labeled as reports, not universal facts.</p>
+      <div class="source-list">
+        <a class="source" href="https://github.com/alibaba/open-code-review/tree/v1.12.7" target="_blank" rel="noreferrer"><strong>OpenCodeReview v1.12.7</strong><span>github.com/alibaba/open-code-review/tree/v1.12.7</span></a>
+        <a class="source" href="https://github.com/alibaba/open-code-review/blob/v1.12.7/plugins/open-code-review/skills/open-code-review-delegate/SKILL.md" target="_blank" rel="noreferrer"><strong>Delegation mode contract</strong><span>preview · rules · coverage checklist</span></a>
+        <a class="source" href="https://github.com/alibaba/open-code-review/blob/v1.12.7/internal/agent/selection.go" target="_blank" rel="noreferrer"><strong>Deterministic selection source</strong><span>internal/agent/selection.go</span></a>
+        <a class="source" href="https://github.com/alibaba/open-code-review/blob/v1.12.7/internal/llmloop/loop.go" target="_blank" rel="noreferrer"><strong>Bounded LLM loop source</strong><span>internal/llmloop/loop.go</span></a>
+        <a class="source" href="https://github.com/alibaba/open-code-review/issues/1454" target="_blank" rel="noreferrer"><strong>Open issue #1454</strong><span>Reported zero-selection success on some non-empty diffs</span></a>
+        <a class="source" href="https://github.com/alibaba/open-code-review/issues/1440" target="_blank" rel="noreferrer"><strong>Open issue #1440</strong><span>Reported credential-assurance mismatch</span></a>
+        <a class="source" href="../docs/review-panel-context-hardening.html"><strong>Existing Review Panel brief</strong><span>docs/reports/review-panel-context-hardening.html</span></a>
+        <a class="source" href="../.hermes/plans/2026-09-19_121954-open-code-review-adoption.md"><strong>Full implementation plan</strong><span>.hermes/plans/2026-09-19_121954-open-code-review-adoption.md</span></a>
+      </div>
+      <div class="callout">
+        <strong>Verification target</strong>
+        Final implementation must pass focused inventory/contract tests, Review Panel context and checkpoint tests, Ruff on every modified Python path, the full <code>uv run pytest</code> suite, and <code>git diff --check</code>.
+      </div>
+    </section>
+
+    <section id="completion">
+      <h2>Done means all of this is true</h2>
+      <ul class="checklist">
+        <li><span class="check">✓</span><span>Every changed file has one deterministic identity and selection decision.</span></li>
+        <li><span class="check">✓</span><span>Tests are reviewable by default.</span></li>
+        <li><span class="check">✓</span><span>Every selected file has one terminal coverage state.</span></li>
+        <li><span class="check">✓</span><span><code>converged</code> is impossible with skipped, failed, or unaccounted files.</span></li>
+        <li><span class="check">✓</span><span>Empty diff and non-empty zero-selected diff are distinct states.</span></li>
+        <li><span class="check">✓</span><span>All artifacts are hash-bound to one frozen target.</span></li>
+        <li><span class="check">✓</span><span>No OCR runtime, provider credentials, telemetry, MCP, or posting path entered production.</span></li>
+      </ul>
+    </section>
+
+    <footer>
+      Self-contained engineering brief generated from the OpenCodeReview adoption plan. Visual language matches the existing Review Panel context-hardening report; no external assets are required.
+    </footer>
+  </main>
+
+  <script>
+    const diagram = document.getElementById('architectureDiagram');
+    const modeButtons = [...document.querySelectorAll('.mode-btn')];
+    for (const button of modeButtons) {
+      button.addEventListener('click', () => {
+        diagram.dataset.view = button.dataset.mode;
+        for (const candidate of modeButtons) {
+          candidate.setAttribute('aria-pressed', String(candidate === button));
+        }
+      });
+    }
+
+    const search = document.getElementById('taskSearch');
+    const tasks = [...document.querySelectorAll('.task')];
+    const filterButtons = [...document.querySelectorAll('.filter-btn')];
+    const results = document.getElementById('taskResults');
+    let activeFilter = 'all';
+
+    function applyTaskFilter() {
+      const query = search.value.trim().toLowerCase();
+      let shown = 0;
+      for (const task of tasks) {
+        const kindMatch = activeFilter === 'all' || task.dataset.kind.split(' ').includes(activeFilter);
+        const haystack = `${task.dataset.search} ${task.textContent}`.toLowerCase();
+        const queryMatch = !query || haystack.includes(query);
+        task.hidden = !(kindMatch && queryMatch);
+        if (!task.hidden) shown += 1;
+      }
+      results.textContent = `Showing ${shown} of ${tasks.length} tasks.`;
+    }
+
+    search.addEventListener('input', applyTaskFilter);
+    for (const button of filterButtons) {
+      button.addEventListener('click', () => {
+        activeFilter = button.dataset.filter;
+        for (const candidate of filterButtons) {
+          candidate.setAttribute('aria-pressed', String(candidate === button));
+        }
+        applyTaskFilter();
+      });
+    }
+  </script>
+</body>
+</html>

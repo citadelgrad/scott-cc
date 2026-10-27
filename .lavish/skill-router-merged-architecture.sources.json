@@ -1,0 +1,834 @@
+{
+  "sources": [
+    {
+      "id": "S1",
+      "title": "Latest host seam",
+      "repository": "/Volumes/qwiizlab/projects/oss/hermes-agent-skill-router-slice1",
+      "path": "agent/skill_router_host.py",
+      "lines": "18\u201328, 57\u2013154, 242\u2013293",
+      "claim": "v1 immutable DTO; deny-before-callback; max three; host catalog IDs",
+      "sha256": "99fdcfb88a0300956dd7e4c029c9b7c1ccb22fc657133e07fff884371eac26e4"
+    },
+    {
+      "id": "S2",
+      "title": "Hermes turn placement",
+      "repository": "/Volumes/qwiizlab/projects/oss/hermes-agent-skill-router-slice1",
+      "path": "agent/turn_context.py",
+      "lines": "1083\u20131093, 1141\u20131178, 1211\u20131224",
+      "claim": "One pre-prompt call; current-user API sidecar; stable system prefix",
+      "sha256": "4972e94e52c97cb8d688eb5643e27d131e07ffe2562e8adbd7b9777cd2d75879"
+    },
+    {
+      "id": "S3",
+      "title": "Turn scope and Codex",
+      "repository": "/Volumes/qwiizlab/projects/oss/hermes-agent-skill-router-slice1",
+      "path": "agent/conversation_loop.py",
+      "lines": "1725\u20131751",
+      "claim": "contextvars begin/finally reset; Codex directive composition in same file",
+      "sha256": "3b152c3038563e6ccbde40509757a7e5b1fde9cfff3ea01471df98ed66a99691"
+    },
+    {
+      "id": "S4",
+      "title": "Plugin registration",
+      "repository": "/Volumes/qwiizlab/projects/oss/hermes-agent-skill-router-slice1",
+      "path": "hermes_cli/plugins.py",
+      "lines": "979\u2013999, 1345\u20131360",
+      "claim": "Exclusive v1 callback and lifecycle timeout; disposal releases slot",
+      "sha256": "c6bab0de8f2f8758be084b3e46d4fde5621ba18d68c92c346c4309938d0c270a"
+    },
+    {
+      "id": "S5",
+      "title": "Slice 1 loader gate",
+      "repository": "/Volumes/qwiizlab/projects/oss/hermes-agent-skill-router-slice1",
+      "path": "tools/skills_tool.py",
+      "lines": "573\u2013616",
+      "claim": "Requested-ID gate; ordinary loader, not digest-bound",
+      "sha256": "8fc8be0eadfc3ccbad66a9e9a216ed5443d934d8e8506340c177e2cd33c1017c"
+    },
+    {
+      "id": "S6",
+      "title": "Standalone algorithm",
+      "repository": "/Volumes/qwiizlab/projects/oss/hermes-hybrid-skill-router",
+      "path": "src/hermes_hybrid_skill_router/core.py",
+      "lines": "41\u201345, 104\u2013143, 175\u2013211, 471\u2013604, 1201\u20131544",
+      "claim": "BM25, local RRF, intent guard, legacy overlap, ambiguity and bounded classifier",
+      "sha256": "2f093db7165356410ad192a0ad74a52849db36046bc2e80206415d38b3143355"
+    },
+    {
+      "id": "S7",
+      "title": "Native adapter",
+      "repository": "/Volumes/qwiizlab/projects/oss/hermes-hybrid-skill-router",
+      "path": "__init__.py",
+      "lines": "64\u201367, 186\u2013272, 275\u2013335, 342\u2013438",
+      "claim": "Explicit roots; v2\u2192v1 negotiation; host-ID translation; ctx.llm classifier; hooks fallback",
+      "sha256": "323775db691716afa04b6c5e1b6aeeb0d48f0c1a7bf52764fd2f37c47ae42a77"
+    },
+    {
+      "id": "S8",
+      "title": "Portable registry",
+      "repository": "/Volumes/qwiizlab/projects/oss/hermes-hybrid-skill-router",
+      "path": "src/hermes_hybrid_skill_router/registry.py",
+      "lines": "73\u2013130, 133\u2013194, 210\u2013220",
+      "claim": "Whole SKILL.md read/hash at registration; stores metadata; legacy description up to 1024 chars",
+      "sha256": "86521c1269809b2cc9bdd3b0080990b7c45accb5a4450f7cb7e173173bdef5d7"
+    },
+    {
+      "id": "S9",
+      "title": "Intent, policy and hash backend",
+      "repository": "/Volumes/qwiizlab/projects/oss/hermes-hybrid-skill-router",
+      "path": "src/hermes_hybrid_skill_router/turn_request.py",
+      "lines": "104\u2013152, 194\u2013275",
+      "claim": "Offline hash vectors; operation policy; textual deferred identifiers; policy read each turn",
+      "sha256": "006191b62189924b7a3d29c7f03cfd52cf818f52e6e2698647a923de957752cb"
+    },
+    {
+      "id": "S10",
+      "title": "Full host candidate",
+      "repository": "/Volumes/qwiizlab/projects/oss/hermes-agent-hybrid-router-host",
+      "path": "agent/skill_router_host.py",
+      "lines": "145\u2013163, 270\u2013319, 355\u2013381, 470\u2013605, 608\u2013713",
+      "claim": "v2 facts; frozen prompt mode; resource binding; v3 HMAC; compatibility replay",
+      "sha256": "bf91da2a6b14b503842a45f5aaa37776ab6fec712e7f880d1e16e3b6bbf4442d"
+    },
+    {
+      "id": "S11",
+      "title": "Full candidate resource reads",
+      "repository": "/Volumes/qwiizlab/projects/oss/hermes-agent-hybrid-router-host",
+      "path": "tools/skills_tool.py",
+      "lines": "578\u2013704, 724\u2013814",
+      "claim": "Read/hash all catalog resource bodies and recursive linked files; re-capture and compare at load",
+      "sha256": "8fab9a01a9a058449d08ce3de0c60fd71ec3e54d83df7a7290b2d91784bfc068"
+    },
+    {
+      "id": "S12",
+      "title": "Shared physical provider budget",
+      "repository": "/Volumes/qwiizlab/projects/oss/hermes-agent-hybrid-router-host",
+      "path": "agent/provider_request_budget.py",
+      "lines": "25\u2013114, 170\u2013245",
+      "claim": "Reserve/dispatch/settle; abandoned reservations charged; not logical iteration count",
+      "sha256": "eaaa9844e8c5bace84b20c945af66ec5de9150c0819456b19fc3e9a22fc2d9ac"
+    },
+    {
+      "id": "S13",
+      "title": "Original accepted design",
+      "repository": "/Volumes/qwiizlab/projects/oss/scott-cc",
+      "path": "docs/plans/2026-09-08-hermes-hybrid-skill-router.md",
+      "lines": "19\u201321, 109\u2013148, 290\u2013349, 530\u2013546",
+      "claim": "Design-only cache/budget targets and attestation matrix; do not equate with extraction",
+      "sha256": "f940dbefaf73cdcd43adb97c0fb21110225aaa493bbb3ea2c531c9e9e7f6b9e4"
+    },
+    {
+      "id": "S14",
+      "title": "Historical embedded migration",
+      "repository": "/Volumes/qwiizlab/projects/oss/hermes-agent-scc-8a7",
+      "path": "docs/hybrid-skill-router-migration.md",
+      "lines": "9\u201362",
+      "claim": "skills.router.mode and embedded classifier config belong to historical monolith",
+      "sha256": "875ea42ab799728ddbe15ffdaf17593e4d63fca5487403c32f48065539de5fe8"
+    },
+    {
+      "id": "S15",
+      "title": "Claude plugin hooks",
+      "repository": "/Volumes/qwiizlab/projects/oss/scott-cc",
+      "path": "hooks/hooks.json",
+      "lines": "3\u201368",
+      "claim": "Session identity/compaction; unrelated PreToolUse guards; no router prompt hook",
+      "sha256": "0ea289c06982239038a307244be83a588d5f4fbd38db7142b006e4ad9661ac0a"
+    },
+    {
+      "id": "S16",
+      "title": "Claude project settings",
+      "repository": "/Volumes/qwiizlab/projects/oss/scott-cc",
+      "path": ".claude/settings.json",
+      "lines": "1\u20133",
+      "claim": "Empty hooks object; no routing adapter here",
+      "sha256": "78922a784ee78e9e50587e93628cd3b9d4dfbe49087adc4514e6781cea38cbb9"
+    },
+    {
+      "id": "S17",
+      "title": "Router command entrypoints",
+      "repository": "/Volumes/qwiizlab/projects/oss/hermes-hybrid-skill-router",
+      "path": "pyproject.toml",
+      "lines": "14\u201316",
+      "claim": "Evaluation and release-evaluation CLIs only; no route CLI/MCP service",
+      "sha256": "aec5f6e76b71a0fb7d4ddba8f0e481287951e996c08da67beb57066c04761f6c"
+    },
+    {
+      "id": "S18",
+      "title": "Published V11 attestation",
+      "repository": "/Volumes/qwiizlab/projects/oss/hermes-hybrid-skill-router",
+      "path": "docs/evidence/standalone-v11-summary.json",
+      "lines": "22\u201375",
+      "claim": "405/405, 45 exact debits; frozen plugin ebf760b and older full host dbc6654 only",
+      "sha256": "afd3ff3106808fb01394365fbd71d7d41bc3b318e15dfd307cca3e8b83670559"
+    },
+    {
+      "id": "S19",
+      "title": "Design contract tests",
+      "repository": "/Volumes/qwiizlab/projects/oss/scott-cc",
+      "path": "scripts/tests/test_hermes_hybrid_skill_router_contract.py",
+      "lines": "136\u2013292",
+      "claim": "Schema structural tests, not production routing or behavioral release",
+      "sha256": "ab124fcbda13a82e62ebdb438c5ce80243f815a4edc27b2efcbc52489f72d72d"
+    },
+    {
+      "id": "S20",
+      "title": "Stack ownership and limitations",
+      "repository": "/Volumes/qwiizlab/projects/oss/hermes-hybrid-skill-router",
+      "path": "docs/HERMES_AGENT_PR_REPORT.md",
+      "lines": "366\u2013473",
+      "claim": "Rebase resource/receipt/budget/facts slices; unsigned compatibility; opaque Codex accounting",
+      "sha256": "62a05492a37f5a7c0eadccb0d12258f60d1da2138d3e511fb0f1899c34137e52"
+    }
+  ],
+  "repositories": {
+    "hermes-agent-hybrid-router-host": {
+      "path": "/Volumes/qwiizlab/projects/oss/hermes-agent-hybrid-router-host",
+      "head": "dbc66547dd46456c3f2b79e5eeb40f9613395af8",
+      "branch": "feature/hybrid-skill-router-host-api",
+      "status": ""
+    },
+    "hermes-agent-scc-8a7": {
+      "path": "/Volumes/qwiizlab/projects/oss/hermes-agent-scc-8a7",
+      "head": "7080f264f00a999e3b18888c8d90ac08bbbef312",
+      "branch": "task/scc-8a7",
+      "status": ""
+    },
+    "hermes-agent-skill-router-slice1": {
+      "path": "/Volumes/qwiizlab/projects/oss/hermes-agent-skill-router-slice1",
+      "head": "76c7157cacb699064e7fbc68cee0f1fba733e80e",
+      "branch": "feature/skill-router-slice1-seam",
+      "status": ""
+    },
+    "hermes-hybrid-skill-router": {
+      "path": "/Volumes/qwiizlab/projects/oss/hermes-hybrid-skill-router",
+      "head": "d37daba158135988510e281aabc90357fca2e1fd",
+      "branch": "main",
+      "status": "?? .beads.gate.lock"
+    },
+    "scott-cc": {
+      "path": "/Volumes/qwiizlab/projects/oss/scott-cc",
+      "head": "2683c5b3905cd7fa03ee0bc60b71f70d5f015aa3",
+      "branch": "feature/hermes-beads-v1",
+      "status": "M .gitignore\n M Makefile\n M scripts/tests/beads_contract/test_safe_output.py\n M scripts/tests/beads_solo/test_secret_redaction.py\n M scripts/tests/beads_swarm/test_fixture_manifest.py\n M scripts/tests/beads_swarm/test_recovery.py\n M scripts/tests/fixtures/beads_solo/secret-bearing-command.json\n M scripts/tests/fixtures/beads_swarm/04_crash_resume.json\n M scripts/tests/fixtures/beads_swarm/PROVENANCE.md\n M skills/beads/scripts/safe_output.py\n?? .hermes/\n?? .lavish/ai-cli-project-fit.html\n?? .lavish/bead-plugin-plan-artifact.png\n?? .lavish/bead-plugin-plan-mobile.png\n?? .lavish/bead-plugin-plan-session.png\n?? .lavish/bead-plugin-plan.html\n?? .lavish/beads-session-usage-review.html\n?? .lavish/open-code-review-adoption.html\n?? .lavish/remaining-beads-path-forward.html\n?? .lavish/skillranker-citations.json\n?? .lavish/skillranker-hermes-architecture-exact.png\n?? .lavish/skillranker-hermes-architecture-full.png\n?? .lavish/skillranker-hermes-architecture-visible.png\n?? .lavish/skillranker-hermes-architecture.png\n?? .lavish/skillranker-hermes-evaluation.html\n?? .lavish/skillranker-hermes-mobile.png\n?? .lavish/skillranker-hermes-top.png\n?? capability_security_probe.py\n?? docs/research/laya/"
+    }
+  },
+  "pull_request": {
+    "baseRefName": "review/upstream-main-6ec05205a9",
+    "headRefName": "feature/skill-router-slice1-seam",
+    "headRefOid": "76c7157cacb699064e7fbc68cee0f1fba733e80e",
+    "isDraft": true,
+    "mergeStateStatus": "UNSTABLE",
+    "mergeable": "MERGEABLE",
+    "mergedAt": null,
+    "number": 17,
+    "state": "OPEN",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:10:05Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110075931393",
+        "name": "Detect affected areas",
+        "startedAt": "2026-09-30T20:09:46Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:08:07Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770477727/job/110075282323",
+        "name": "Resolve release phase",
+        "startedAt": "2026-09-30T20:08:04Z",
+        "status": "COMPLETED",
+        "workflowName": "Docker Build, Test, and Publish"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:08:24Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770477602/job/110075287249",
+        "name": "Detect affected areas",
+        "startedAt": "2026-09-30T20:08:05Z",
+        "status": "COMPLETED",
+        "workflowName": "Nix flake check"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T20:10:06Z",
+        "conclusion": "CANCELLED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076073295",
+        "name": "Python tests / Run tests",
+        "startedAt": "2026-09-30T20:10:06Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T20:08:25Z",
+        "conclusion": "CANCELLED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770477602/job/110075428742",
+        "name": "nix flake check",
+        "startedAt": "2026-09-30T20:08:24Z",
+        "status": "COMPLETED",
+        "workflowName": "Nix flake check"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:08:26Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770477727/job/110075318428",
+        "name": "Detect affected areas",
+        "startedAt": "2026-09-30T20:08:09Z",
+        "status": "COMPLETED",
+        "workflowName": "Docker Build, Test, and Publish"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T20:10:06Z",
+        "conclusion": "CANCELLED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076073379",
+        "name": "Python tests / e2e",
+        "startedAt": "2026-09-30T20:10:06Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:08:07Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770477727/job/110075320769",
+        "name": "Publish tested Docker image (${{ matrix.variant }}/${{ matrix.arch }})",
+        "startedAt": "2026-09-30T20:08:08Z",
+        "status": "COMPLETED",
+        "workflowName": "Docker Build, Test, and Publish"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:08:26Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770477727/job/110075446564",
+        "name": "Build and test image (${{ matrix.variant }}/${{ matrix.arch }})",
+        "startedAt": "2026-09-30T20:08:27Z",
+        "status": "COMPLETED",
+        "workflowName": "Docker Build, Test, and Publish"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:10:13Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076073356",
+        "name": "Python tests / e2e-upgrade-plan",
+        "startedAt": "2026-09-30T20:10:08Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T20:10:14Z",
+        "conclusion": "CANCELLED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076124894",
+        "name": "Python tests / e2e-upgrade (core)",
+        "startedAt": "2026-09-30T20:10:13Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:08:07Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770477727/job/110075321224",
+        "name": "Assemble versioned manifest and digest receipt",
+        "startedAt": "2026-09-30T20:08:08Z",
+        "status": "COMPLETED",
+        "workflowName": "Docker Build, Test, and Publish"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T20:10:14Z",
+        "conclusion": "CANCELLED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076124903",
+        "name": "Python tests / e2e-upgrade (git)",
+        "startedAt": "2026-09-30T20:10:13Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T20:10:14Z",
+        "conclusion": "CANCELLED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076124788",
+        "name": "Python tests / e2e-upgrade (handoff)",
+        "startedAt": "2026-09-30T20:10:13Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T20:10:14Z",
+        "conclusion": "CANCELLED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076124772",
+        "name": "Python tests / e2e-upgrade (hosts)",
+        "startedAt": "2026-09-30T20:10:13Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T20:10:14Z",
+        "conclusion": "CANCELLED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076124912",
+        "name": "Python tests / e2e-upgrade (network)",
+        "startedAt": "2026-09-30T20:10:13Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T20:10:14Z",
+        "conclusion": "CANCELLED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076124824",
+        "name": "Python tests / e2e-upgrade (pm)",
+        "startedAt": "2026-09-30T20:10:13Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:08:27Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770477727/job/110075446420",
+        "name": "publish",
+        "startedAt": "2026-09-30T20:08:27Z",
+        "status": "COMPLETED",
+        "workflowName": "Docker Build, Test, and Publish"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:17:55Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076073325",
+        "name": "OS-specific tests / macOS-only tests",
+        "startedAt": "2026-09-30T20:10:16Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T20:10:06Z",
+        "conclusion": "CANCELLED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076073296",
+        "name": "OS-specific tests / Windows-only tests",
+        "startedAt": "2026-09-30T20:10:06Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T20:10:06Z",
+        "conclusion": "CANCELLED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076073490",
+        "name": "OS-specific tests / Windows-only tests (arm64)",
+        "startedAt": "2026-09-30T20:10:06Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T20:10:06Z",
+        "conclusion": "CANCELLED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076074161",
+        "name": "OS-specific tests / Windows install + update E2E / Windows install.ps1 + hermes update E2E",
+        "startedAt": "2026-09-30T20:10:06Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:08:27Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770477727/job/110075447228",
+        "name": "Docker phase requirements met",
+        "startedAt": "2026-09-30T20:08:27Z",
+        "status": "COMPLETED",
+        "workflowName": "Docker Build, Test, and Publish"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T20:10:06Z",
+        "conclusion": "CANCELLED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076073360",
+        "name": "OS-specific tests / Windows E2E (real processes)",
+        "startedAt": "2026-09-30T20:10:06Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:08:27Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770477727/job/110075447637",
+        "name": "merge",
+        "startedAt": "2026-09-30T20:08:27Z",
+        "status": "COMPLETED",
+        "workflowName": "Docker Build, Test, and Publish"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:11:52Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076073515",
+        "name": "Python lints / ruff + ty diff",
+        "startedAt": "2026-09-30T20:10:08Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:10:48Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076073475",
+        "name": "Python lints / ruff enforcement (blocking)",
+        "startedAt": "2026-09-30T20:10:08Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:11:37Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076073384",
+        "name": "Python lints / Windows footguns (blocking)",
+        "startedAt": "2026-09-30T20:10:08Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:10:05Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076076049",
+        "name": "JS & TS checks",
+        "startedAt": "2026-09-30T20:10:06Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:10:05Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076074919",
+        "name": "Rust tests",
+        "startedAt": "2026-09-30T20:10:06Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:10:05Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076074290",
+        "name": "Bootstrap installer",
+        "startedAt": "2026-09-30T20:10:06Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:10:05Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076073573",
+        "name": "Desktop E2E",
+        "startedAt": "2026-09-30T20:10:06Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T20:10:06Z",
+        "conclusion": "CANCELLED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076073314",
+        "name": "Desktop core E2E / Desktop core E2E (Linux)",
+        "startedAt": "2026-09-30T20:10:06Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T20:10:06Z",
+        "conclusion": "CANCELLED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076073604",
+        "name": "Desktop update E2E / Desktop install/update E2E (Linux, first-run)",
+        "startedAt": "2026-09-30T20:10:06Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T20:10:06Z",
+        "conclusion": "CANCELLED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076074471",
+        "name": "Desktop update E2E / Desktop install/update E2E (Linux, app-update)",
+        "startedAt": "2026-09-30T20:10:06Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T20:10:06Z",
+        "conclusion": "CANCELLED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076073409",
+        "name": "Desktop update E2E / Desktop install/update E2E (Linux, build-fail)",
+        "startedAt": "2026-09-30T20:10:06Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T20:10:06Z",
+        "conclusion": "CANCELLED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076073380",
+        "name": "Desktop update E2E / Desktop install/update E2E (Linux, update-concurrency)",
+        "startedAt": "2026-09-30T20:10:06Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:15:24Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076072892",
+        "name": "Docs Site / docs-site-checks",
+        "startedAt": "2026-09-30T20:10:07Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:11:05Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076072753",
+        "name": "Deny unrelated histories / check-common-ancestor",
+        "startedAt": "2026-09-30T20:10:07Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:11:09Z",
+        "conclusion": "FAILURE",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076072804",
+        "name": "Check contributors / check-attribution",
+        "startedAt": "2026-09-30T20:10:07Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:10:05Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076074839",
+        "name": "Check uv.lock",
+        "startedAt": "2026-09-30T20:10:06Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:10:23Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076072795",
+        "name": "Check no committed infographics / check-no-committed-infographics",
+        "startedAt": "2026-09-30T20:10:08Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:10:23Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076072775",
+        "name": "Profile artifact check / Reject profile archives",
+        "startedAt": "2026-09-30T20:10:08Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:11:25Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076072813",
+        "name": "Icon assets freshness / Regenerate icons + diff against committed",
+        "startedAt": "2026-09-30T20:10:08Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:10:23Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076072955",
+        "name": "Check no case-colliding filenames / check-case-collisions",
+        "startedAt": "2026-09-30T20:10:07Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:10:36Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076072950",
+        "name": "No production imports of the tools.lazy_deps stub / No production imports of the tools.lazy_deps stub",
+        "startedAt": "2026-09-30T20:10:08Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:10:05Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076074771",
+        "name": "package-lock.json diff",
+        "startedAt": "2026-09-30T20:10:06Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:10:05Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076074961",
+        "name": "Lint Docker scripts",
+        "startedAt": "2026-09-30T20:10:06Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:11:01Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076072852",
+        "name": "Supply-chain scan / Scan PR for critical supply chain risks",
+        "startedAt": "2026-09-30T20:10:08Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:10:05Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076073867",
+        "name": "Supply-chain scan / Check PyPI dependency upper bounds",
+        "startedAt": "2026-09-30T20:10:06Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:11:07Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076437650",
+        "name": "Supply-chain scan / Aggregate review statuses",
+        "startedAt": "2026-09-30T20:11:03Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-09-30T20:11:07Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110076477144",
+        "name": "Review label gate",
+        "startedAt": "2026-09-30T20:11:07Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T20:10:34Z",
+        "conclusion": "FAILURE",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110562054292",
+        "name": "All required checks pass",
+        "startedAt": "2026-10-01T20:10:16Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T20:11:55Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/actions/runs/36770478548/job/110562191099",
+        "name": "CI timing report",
+        "startedAt": "2026-10-01T20:10:36Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      }
+    ],
+    "title": "feat(plugins): add authoritative skill router host seam (Slice 1)",
+    "url": "https://github.com/citadelgrad/hermes-agent-hybrid-router-wip/pull/17"
+  },
+  "schema_version": "skill-router-architecture-provenance.v1",
+  "observed_at": "2026-10-09T16:35:59Z",
+  "scope": "Source-backed integration projection, not a merged/deployed build",
+  "target": {
+    "Hermes": "latest v1 Slice 1 plus re-port of older full-host resource/receipt/budget/v2-facts work; standalone plugin, not embedded router",
+    "Claude Code": "proposed hook/CLI adapter plus optional guarded MCP body tool; absent in inspected implementation"
+  },
+  "validation": [
+    {
+      "command": "uv run pytest -q scripts/tests/test_hermes_hybrid_skill_router_contract.py",
+      "cwd": "/Volumes/qwiizlab/projects/oss/scott-cc",
+      "result": "19 passed in 0.37s",
+      "scope": "structural design contract"
+    },
+    {
+      "command": "uv run --offline pytest -q tests/test_public_api.py tests/test_plugin_and_protocol.py tests/test_turn_request_enrichment.py tests/test_router_determinism.py",
+      "cwd": "/Volumes/qwiizlab/projects/oss/hermes-hybrid-skill-router",
+      "result": "40 passed in 0.30s",
+      "scope": "portable router and native adapter focused contracts, offline"
+    }
+  ],
+  "parent_verification": {
+    "browser_url": "file:///Volumes/qwiizlab/projects/oss/scott-cc/.lavish/skill-router-merged-architecture.html",
+    "browser_interactions": "Both state modes and all 21 distinct node detail dialogs exercised in real Chromium; current-mode proposed opacity 0.38, target 1",
+    "diagram_layout": "All five SVGs rendered; no node text outside its rectangle; mobile page width 390 at viewport width 390",
+    "visual_review": "Desktop overview, mobile layout, and complete Hermes/Claude sequences inspected; no severe clipping or overlap; some dense annotations",
+    "screenshots_directory": "/Users/scott/.hermes/cache/scratch/router-architecture-check",
+    "source_bindings": "20 hashes independently checked; zero mismatches",
+    "design_contract_pytest": "19 passed in 0.26s",
+    "portable_router_pytest": "40 passed in 0.25s, offline",
+    "desktop_open": "open -a 'Microsoft Edge' artifact-path exited 0",
+    "lint_scope": "Only HTML and JSON created; Ruff is not applicable. Initial explicit-file Ruff invocation parsed these as Python and failed; extension-excluded invocation correctly found no Python files. Browser JS and JSON parsing verified separately.",
+    "runtime_scope": "No merged integration build or provider/model evaluation performed"
+  },
+  "mechanical_verification": {
+    "html_parse": "PASS",
+    "inline_svg_xml": "5 PASS",
+    "unique_ids": 45,
+    "node_records": 21,
+    "source_bindings": "20 SHA-256 matches",
+    "external_assets": 0,
+    "javascript_syntax": "PASS",
+    "javascript_interactions": "both modes; all 21 node details; keyboard; close; source links",
+    "interaction_scope": "Node VM with a minimal DOM test double; not browser rendering",
+    "artifact_bytes": 90014,
+    "artifact_sha256": "b5d082c068f5b57877f9b3ec3ba8b64e3cc980969c0f3c925bb8a01d485c1410",
+    "command": "python3 /Users/scott/.hermes/cache/scratch/skill-router-architecture-check.py",
+    "exit_code": 0
+  },
+  "external_docs": [
+    {
+      "url": "https://code.claude.com/docs/en/hooks",
+      "used_for": "Hook lifecycle feasibility only; does not establish our implementation"
+    }
+  ],
+  "limitations": [
+    "No merged integration build was executed",
+    "No provider/model call was made",
+    "Parent browser rendering and interactions verified; see parent_verification",
+    "Latest Slice 1 is not descendant of older full-host candidate; backport is a target projection",
+    "V11 attestation source freeze differs from current plugin HEAD",
+    "Claude Code adapter not found in inspected repositories; no router CLI/MCP entrypoint"
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "id": 1,
+      "url": "https://github.com/Dicklesworthstone/skillranker/tree/876b37bfa58ec67eb44ba81488c92795b17ea014",
+      "title": "SkillRanker implementation snapshot",
+      "accessed": "2026-09-19"
+    },
+    {
+      "id": 2,
+      "url": "https://github.com/Dicklesworthstone/skillranker/blob/93423348dd098e143c6b048e4409fd012fc48582/LICENSE",
+      "title": "SkillRanker license",
+      "accessed": "2026-09-19"
+    },
+    {
+      "id": 3,
+      "url": "https://github.com/Dicklesworthstone/skillranker/blob/876b37bfa58ec67eb44ba81488c92795b17ea014/src/capabilities.rs",
+      "title": "SkillRanker capability registry",
+      "accessed": "2026-09-19"
+    },
+    {
+      "id": 4,
+      "url": "https://github.com/Dicklesworthstone/skillranker/blob/876b37bfa58ec67eb44ba81488c92795b17ea014/Cargo.toml",
+      "title": "SkillRanker Cargo manifest",
+      "accessed": "2026-09-19"
+    },
+    {
+      "id": 5,
+      "url": "https://typesafe.ai/terms",
+      "title": "TypeSafe terms of service",
+      "accessed": "2026-09-19"
+    },
+    {
+      "id": 6,
+      "url": "https://typesafe.ai/privacy",
+      "title": "TypeSafe privacy policy",
+      "accessed": "2026-09-19"
+    },
+    {
+      "id": 7,
+      "url": "https://docs.typesafe.ai/models.md",
+      "title": "TypeSafe model documentation",
+      "accessed": "2026-09-19"
+    },
+    {
+      "id": 8,
+      "url": "https://docs.typesafe.ai/cookbooks/skill_suggestion.md",
+      "title": "TypeSafe skill suggestion cookbook",
+      "accessed": "2026-09-19"
+    }
+  ]
+}
