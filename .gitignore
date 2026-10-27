@@ -75,3 +75,6 @@ text_*_archived_replacement_*.json
 # disk, for one), which drops thousands of fixture files into the repo root.
 # Ignored so that fallback can never reach a commit.
 pytest-of-*/
+
+# bv (beads viewer) local config and caches
+.bv/
