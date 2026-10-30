@@ -22,7 +22,8 @@ def test_pas_skill_documents_provider_and_model_detection() -> None:
     assert "generation is Claude-only" in skill
     assert "Gemini authentication is unverified" in reference
     assert "Codex and Gemini are invoked in YOLO mode" in reference
-    assert "Codex ignores `allowed_tools`" in reference
+    assert "Codex rejects `allowed_tools`" in reference
+    assert "pi" in skill and 'llm_provider="pi"' in reference
     assert 'llm_provider="codex"' in reference
     assert 'llm_provider="hermes"' in skill
     assert "Omit graph `model` and node `llm_model` by default" in reference
@@ -38,7 +39,7 @@ def test_pas_skill_distinguishes_generation_from_execution_dry_run() -> None:
     assert "without any LLM calls" not in skill
 
 
-def test_pas_skill_documents_v094_operational_safety_contracts() -> None:
+def test_pas_skill_documents_v0111_operational_safety_contracts() -> None:
     skill = (PAS_SKILL / "SKILL.md").read_text(encoding="utf-8")
     reference = REFERENCE.read_text(encoding="utf-8")
 
@@ -50,6 +51,10 @@ def test_pas_skill_documents_v094_operational_safety_contracts() -> None:
         "PAS_TRUST_THIS=1",
         "subscription-bare",
         "commit/push",
+        "--allow-shared-workdir",
+        "pas stop",
+        "pas kill",
+        "provider_required",
     ):
         assert required in skill + reference
 

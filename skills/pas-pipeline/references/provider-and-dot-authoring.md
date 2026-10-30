@@ -1,7 +1,7 @@
-# PAS 0.9.4 Provider, DOT, Trust, and Runtime Contract
+# PAS 0.11.1 Provider, DOT, Trust, and Runtime Contract
 
-Source: `citadelgrad/pascals-discrete-attractor` stable tag `v0.9.4`, commit
-`62ef831`. This reference is mandatory before authoring or running DOT.
+Source: `citadelgrad/pascals-discrete-attractor` stable tag `v0.11.1`, commit
+`b82172d`. This reference is mandatory before authoring or running DOT.
 
 ## 1. Provider Detection and Generation Boundary
 
@@ -11,6 +11,7 @@ Check relevant CLIs without reading credentials:
 command -v codex && codex --version && codex login status
 command -v claude && claude --version && claude auth status --json
 command -v gemini && gemini --version
+command -v pi && pi --version && pi auth check --model <provider/model-id> --json
 ```
 
 - A binary existing is not authentication proof.
@@ -21,9 +22,14 @@ command -v gemini && gemini --version
 - If several runtime providers are authenticated and no preference is established,
   ask before selecting a subscription/billing surface.
 
-PAS 0.9.4 generation is Claude-only: `generate`, `launch` generation, and
+- pi "ready" means a credential is configured, not valid. PAS runs this check
+  itself before the first pi node and stops before creating a Run directory on failure.
+
+PAS 0.11.1 generation is Claude-only: `generate`, `launch` generation, and
 `plan --from-prompt` call Claude and expose no provider/model selector. Runtime
-nodes separately accept canonical `claude`, `codex`, and `gemini` providers.
+nodes separately accept canonical `claude`, `codex`, `gemini`, and `pi` providers.
+Minimum provider CLIs: claude 2.1.282, codex 0.151.0, gemini 0.11.0 for
+`stream-json` (older uses `json`), pi 1.0.4 (any 1.x).
 Aliases `anthropic`, `openai`, and `google` exist but are less clear.
 
 ## 2. Model Selection
@@ -36,10 +42,15 @@ codex debug models
 ```
 
 Use an exact returned slug. Never pass Claude aliases such as `sonnet` to Codex.
-Only set `reasoning_effort` when the selected model catalog supports that value.
+Do not set `reasoning_effort`; PAS rejects it (`unsupported_execution_capability`).
 
-Generated DOT commonly contains graph `model="sonnet"`; normalize it and add an
-explicit `llm_provider` to every runtime agent node before execution.
+A pi node is different: it requires `llm_model` as `provider/model-id[:thinking]`
+(thinking is `off|minimal|low|medium|high|xhigh|max`), and the graph `model` does
+not apply. Write `llm_provider="pi"`; `"openai"` selects Codex.
+
+Generated DOT commonly contains graph `model="sonnet"`; normalize it. Every
+provider-consuming node needs an explicit `llm_provider`: PAS 0.11.1 has no
+implicit Claude fallback and `pas validate` blocks with `provider_required`.
 For a Codex node, write `llm_provider="codex"` explicitly.
 
 ## 3. Strict DOT Contract
@@ -49,9 +60,11 @@ Start from `assets/codex-pipeline.dot`.
 - Use `digraph`, bare ASCII IDs, and `->`.
 - Define exactly one `shape="Mdiamond"` start and one `shape="Msquare"` exit.
 - Every agent task needs a prompt, explicit provider, timeout, and least-privilege
-  execution environment. `allowed_tools` restricts Claude only in v0.9.4.
-- A diamond maps to the conditional handler by shape in v0.9.4;
-  `node_type="conditional"` is recommended explicitness, not a validation requirement.
+  execution environment. `allowed_tools` restricts Claude and pi only; elsewhere
+  it is rejected at compile time.
+- A diamond with a prompt maps to the conditional handler by shape; a diamond
+  without a prompt is pass-through. `node_type="conditional"` is recommended
+  explicitness, not a validation requirement.
 - Quote strings; avoid quoted/numeric-only IDs, HTML labels, ports, and undirected edges.
 - Set `loop_restart=true` on a back-edge that must clear completed-node state.
 
@@ -89,8 +102,11 @@ cover semantics that deterministic checks cannot.
 ## 4. Least Privilege and Generated Artifact Review
 
 - For Claude, set `allowed_tools` to the minimum required surface.
-- Codex ignores `allowed_tools`; PAS invokes `codex exec --yolo`.
-- Gemini ignores `allowed_tools`; PAS invokes `--approval-mode yolo`.
+- Codex rejects `allowed_tools`; PAS invokes `codex exec --yolo`.
+- Gemini rejects `allowed_tools`; PAS invokes `--approval-mode yolo`.
+- pi runs isolated (`--no-session`, `--offline`, no personal extensions, skills,
+  MCP, or `.pi` files) and maps `allowed_tools` to `--tools`. Codex also loads the
+  user's full `~/.codex`, `~/.agents/skills`, and `AGENTS.md`.
 - Codex and Gemini are invoked in YOLO mode, so prompt text such as “do not edit”
   is guidance, not containment. Run them only in a disposable isolated worktree.
 - Keep prompts role-specific anyway: investigators read/search, implementers edit,
@@ -123,11 +139,13 @@ and writes files. Its run phase suppresses provider calls, not all side effects.
 ## 6. Runtime Bounds and Claude Isolation
 
 Codex and Gemini CLI output reports no per-call dollar cost, so
-`--max-budget-usd` cannot enforce their real usage. Require explicit node timeouts,
+`--max-budget-usd` cannot enforce their real usage. Claude and pi report cost.
+For pi, PAS stops the process group when summed cost exceeds the node
+`max_budget_usd`; one message can overshoot. Require explicit node timeouts,
 small `--max-steps`, bounded prompts, least-privilege tools, and an isolated
 worktree.
 
-Claude runtime controls exposed by PAS 0.9.4 include:
+Claude runtime controls exposed by PAS 0.11.1 include:
 
 - `--codergen-claude-settings-mode`
 - `--codergen-claude-setting-sources`
@@ -136,6 +154,12 @@ Claude runtime controls exposed by PAS 0.9.4 include:
 - `--codergen-claude-agents`
 - `--codergen-claude-plugin-dir`
 - `--codergen-claude-mcp-config`
+
+Per-run resources (new in 0.11.1): `--codergen-skill`,
+`--codergen-pi-extension`, `--codergen-pi-prompt-template`, or `pas.toml`
+`[codergen] skills` and `[codergen.pi]`. A flag list replaces the manifest list.
+Skills load on pi and on Claude `inherit`/`strict-bare` only; others warn
+`CODERGEN_SKILLS_NOT_LOADED`. Extensions from `pas.toml` need trust.
 
 Modes:
 
@@ -150,8 +174,8 @@ current `pas run --help`; these controls are release-sensitive.
 
 ## 7. Manifest and Trust
 
-Actual PAS 0.9.4 manifest sections are project, toolchain, quality stages/hooks,
-and optional Claude codergen settings. It does not define default run budget,
+Actual PAS 0.11.1 manifest sections are project, toolchain, quality stages/hooks,
+optional Claude codergen settings, and per-run resources. It does not define default run budget,
 workdir, or generic model selection.
 
 ```bash
@@ -171,7 +195,8 @@ Environment variables:
 | Variable | Purpose |
 |---|---|
 | `PAS_NON_INTERACTIVE=1` | Suppress interactive prompts |
-| `PAS_AGENT=1` | Select agent/non-interactive behavior |
+| `PAS_AGENT=1` | Non-interactive agent mode; never prompts, never trusts |
+| `PAS_STATE_DIR` | Run Index (`runs.jsonl`) and Monitor plan workspaces; default `$XDG_STATE_HOME/pas` or `~/.local/state/pas` |
 | `PAS_TRUST_THIS=1` | Bypass manifest trust; unsafe outside controlled debugging |
 | `XDG_CONFIG_HOME` | Trust-store base directory |
 | `OPENAI_API_KEY` | Direct OpenAI adapter |
@@ -189,6 +214,11 @@ from the canonical pipeline path, not file content. Therefore:
 - `--fresh` clears the selected checkpoint; confirm scope before using it.
 - Directory runs maintain additional cross-file completion state and execute files
   sorted lexically.
+- Checkpoints record a compiled-plan fingerprint: resume rejects a mismatched
+  pipeline or a newer schema.
+- Each Attempt takes a Pipeline lock (exit 5 if held) and a worktree lock (exit 6
+  for another pipeline in the same git worktree). `pas stop` / `pas kill` keep the
+  checkpoint; rerun the same command to resume. Run status comes from `pas runs`.
 
 ## 9. Ordering and Launch Hazard
 
